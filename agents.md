@@ -10,7 +10,7 @@ These are the official requirements provided by the client:
 * **Application Name**: `Jyoti Kirana`
 * **Contact Details**: Phone: `9860460325` | Email: `vishvatejkatkar007@gmail.com`
 * **Business Model**: Hybrid Wholesale & Retail.
-* **Access Control**: **Manual Approval Required**. Users need manual approval (verified by admin) before they can place orders or view full pricing details.
+* **Access Control**: **Manual Approval Required** for normal users. The system supports **two user roles**: `Admin` (owner) for product & order management, and `Normal User` (retailer/customer).
 * **Minimum Order Amount**: **₹2,500** (enforced at checkout).
 * **Inventory & Content**: 6 to 10 initial categories. Product images are ready.
 * **Payment Methods**: Cash on Delivery (COD) & Online UPI.
@@ -61,7 +61,7 @@ These are the official requirements provided by the client:
 ## 📈 Future Action Items & Checklist
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
 - [ ] Set up Firebase Project / backend config.
-- [ ] Implement onboarding & authentication flows (with manual admin approval status check).
+- [ ] Implement onboarding & authentication flows (with role-based routing and manual admin approval status check).
 - [ ] Enforce business rules in code (Minimum order of ₹2,500, delivery charge calculation per km).
 - [ ] Implement initial theme & design system screens (Home, Category, Detail).
 
@@ -81,4 +81,5 @@ These are the official requirements provided by the client:
    - Always validate minimum checkout amount is ₹2,500.
    - Require account verification/manual approval check on onboarding/login.
    - Show contact support with phone `9860460325` / email `vishvatejkatkar007@gmail.com` if account is pending approval.
+   - Support two user roles: Admin (owner) and Normal User. On login, dynamically route Admin to the Admin dashboard (to manage products, categories, and view orders) and Normal Users to the consumer marketplace.
 
