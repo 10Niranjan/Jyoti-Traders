@@ -4,6 +4,21 @@ This file serves as a persistent record of the development progress, decisions, 
 
 ---
 
+## 📋 Client Specifications: Jyoti Kirana
+
+These are the official requirements provided by the client:
+* **Application Name**: `Jyoti Kirana`
+* **Contact Details**: Phone: `9860460325` | Email: `vishvatejkatkar007@gmail.com`
+* **Business Model**: Hybrid Wholesale & Retail.
+* **Access Control**: **Manual Approval Required**. Users need manual approval (verified by admin) before they can place orders or view full pricing details.
+* **Minimum Order Amount**: **₹2,500** (enforced at checkout).
+* **Inventory & Content**: 6 to 10 initial categories. Product images are ready.
+* **Payment Methods**: Cash on Delivery (COD) & Online UPI.
+* **Logistics & Delivery**: Client's own delivery personnel. Delivery fee calculated **per kilometer**.
+* **Google Play Developer Account**: Not yet available (will need guidance/setup support).
+
+---
+
 ## 📅 Session Log: 2026-07-09
 
 ### 📋 Current Status & Tasks completed:
@@ -44,9 +59,10 @@ This file serves as a persistent record of the development progress, decisions, 
 ---
 
 ## 📈 Future Action Items & Checklist
-- [ ] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
+- [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
 - [ ] Set up Firebase Project / backend config.
-- [ ] Implement onboarding & authentication flows.
+- [ ] Implement onboarding & authentication flows (with manual admin approval status check).
+- [ ] Enforce business rules in code (Minimum order of ₹2,500, delivery charge calculation per km).
 - [ ] Implement initial theme & design system screens (Home, Category, Detail).
 
 ---
@@ -61,4 +77,8 @@ This file serves as a persistent record of the development progress, decisions, 
    - Use `CachedNetworkImage` with clean shimmers.
 4. **Resilient Networking**: Dio HTTP client with interceptors for error handling, JWT refresh, and retry logic.
 5. **Type Safety**: Safe serialization/deserialization with null-safe mappings and default fallbacks.
+6. **Strict Business Rule Validation**:
+   - Always validate minimum checkout amount is ₹2,500.
+   - Require account verification/manual approval check on onboarding/login.
+   - Show contact support with phone `9860460325` / email `vishvatejkatkar007@gmail.com` if account is pending approval.
 
