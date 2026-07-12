@@ -30,6 +30,7 @@ class ApiException implements Exception {
           dioError.response?.data,
         );
       case DioExceptionType.unknown:
+      default:
         return ApiException('Unexpected error occurred. Please try again.');
     }
   }
