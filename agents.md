@@ -25,6 +25,24 @@ This file serves as a persistent record of the development progress, decisions, 
 
 ---
 
+## 📅 Session Log: 2026-07-12
+
+### 📋 Current Status & Tasks completed:
+- **Resolved Compilation Errors**:
+  - Replaced undefined `FontWeight.semibold` with `FontWeight.w600` in `app_theme.dart`.
+  - Upgraded `CardTheme` instantiation to `CardThemeData` to align with Flutter Material 3.
+  - Made the `DioExceptionType` switch statement exhaustive by adding a fallback `default` case in `api_exceptions.dart`.
+  - Replaced the failing smoke test in `test/widget_test.dart` with a compile-friendly version matching `TradersRetailerApp` and initialized Hive for test environment.
+- **Git Repo Setup**:
+  - Initialized a local Git repository on `main` branch.
+  - Committed all scaffolded files, core themes, network client, and local storage configurations cleanly.
+
+### 💬 Latest Discussion Summary:
+1. **Compilation Check**: Confirmed that `flutter analyze` runs with zero issues.
+2. **Git Status & Next Step**: Ready to add remote origin and push folder structure as soon as the user provides the GitHub repository URL.
+
+---
+
 ## 📈 Future Action Items & Checklist
 - [ ] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
 - [ ] Set up Firebase Project / backend config.
