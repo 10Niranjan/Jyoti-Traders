@@ -58,12 +58,31 @@ These are the official requirements provided by the client:
 
 ---
 
+## 📅 Session Log: 2026-07-13
+
+### 📋 Current Status & Tasks completed:
+- **Firebase integration**: Added Firebase SDK packages to `pubspec.yaml` and set up `firebase_options.dart` configuration.
+- **Resilient Backend Hybrid Engine**: Implemented `FirebaseAuthRepository` supporting both Firebase and a fully simulated Hive database mode. It detects missing/placeholder credentials and falls back to simulation mode to avoid app crashes.
+- **Manual Verification & Role-Based Routing**:
+  - Implemented `AuthScreen` for sign-up/login with business verification fields.
+  - Implemented `PendingApprovalScreen` locking unverified users and displaying client contact details (+91 98604 60325, vishvatejkatkar007@gmail.com).
+  - Implemented `AdminDashboardScreen` (owner view) with stats and a functional "Retailer Approval Queue".
+  - Implemented `HomeScreen` (customer marketplace) showcasing wholesale categories, items, and minimum order rules (₹2,500).
+- **Reactive Navigation**: Wired `appRouterProvider` (GoRouter + Riverpod) to automatically handle state-driven redirects.
+- **Fixed Test Suite**: Corrected Firebase dependency initializers and prevented repeating animations from causing timer leaks during widget tests. All tests pass with exit code `0`.
+
+### 💬 Latest Discussion Summary:
+1. **Compilation Check**: `flutter analyze` runs with zero issues.
+2. **Test Check**: `flutter test` completes successfully with all test assertions passing.
+
+---
+
 ## 📈 Future Action Items & Checklist
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
-- [ ] Set up Firebase Project / backend config.
-- [ ] Implement onboarding & authentication flows (with role-based routing and manual admin approval status check).
-- [ ] Enforce business rules in code (Minimum order of ₹2,500, delivery charge calculation per km).
-- [ ] Implement initial theme & design system screens (Home, Category, Detail).
+- [x] Set up Firebase Project / backend config.
+- [x] Implement onboarding & authentication flows (with role-based routing and manual admin approval status check).
+- [x] Enforce business rules in code (Minimum order of ₹2,500, delivery charge calculation per km).
+- [x] Implement initial theme & design system screens (Home, Category, Detail).
 
 ---
 

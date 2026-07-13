@@ -24,5 +24,8 @@ void main() {
     );
 
     expect(find.byType(TradersRetailerApp), findsOneWidget);
+
+    // Settle the splash screen redirect timer
+    await tester.pumpAndSettle(const Duration(seconds: 2));
   });
 }

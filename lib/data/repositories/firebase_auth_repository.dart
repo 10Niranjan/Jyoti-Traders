@@ -1,0 +1,368 @@
+import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'auth_repository.dart';
+import '../models/user_model.dart';
+
+class FirebaseAuthRepository implements AuthRepository {
+  fb.FirebaseAuth? _firebaseAuth;
+  FirebaseFirestore? _firestore;
+  final Box _userCacheBox;
+
+  final _mockStreamController = StreamController<UserModel?>.broadcast();
+  bool _useMock = false;
+  UserModel? _mockCurrentUser;
+
+  FirebaseAuthRepository({
+    fb.FirebaseAuth? firebaseAuth,
+    FirebaseFirestore? firestore,
+    required Box userCacheBox,
+  })  : _userCacheBox = userCacheBox {
+    _initFirebaseAndMock(firebaseAuth, firestore);
+  }
+
+  void _initFirebaseAndMock(fb.FirebaseAuth? firebaseAuth, FirebaseFirestore? firestore) {
+    try {
+      _firebaseAuth = firebaseAuth ?? fb.FirebaseAuth.instance;
+      _firestore = firestore ?? FirebaseFirestore.instance;
+      
+      final app = _firebaseAuth!.app;
+      if (app.options.projectId == 'jyoti-kirana-placeholder' ||
+          app.options.apiKey.contains('YOUR-')) {
+        _useMock = true;
+        _initMockUser();
+      } else {
+        _useMock = false;
+      }
+    } catch (e) {
+      _useMock = true;
+      _initMockUser();
+      debugPrint('AuthRepository: Firebase not available, using simulation mode: $e');
+    }
+    debugPrint('AuthRepository: Running in ${_useMock ? "SIMULATION" : "FIREBASE"} mode.');
+  }
+
+  void _initMockUser() {
+    final cached = _userCacheBox.get('current_user');
+    if (cached != null) {
+      try {
+        final Map<String, dynamic> map = Map<String, dynamic>.from(cached as Map);
+        _mockCurrentUser = UserModel.fromJson(map);
+        _mockStreamController.add(_mockCurrentUser);
+      } catch (e) {
+        debugPrint('Error loading cached user: $e');
+      }
+    } else {
+      _mockStreamController.add(null);
+    }
+  }
+
+  @override
+  Stream<UserModel?> get authStateChanges {
+    if (_useMock) {
+      return () async* {
+        yield _mockCurrentUser;
+        yield* _mockStreamController.stream;
+      }();
+    }
+
+    return _firebaseAuth!.authStateChanges().asyncMap((fbUser) async {
+      if (fbUser == null) {
+        return null;
+      }
+      return await _getUserFromFirestore(fbUser.uid);
+    });
+  }
+
+  Future<UserModel?> _getUserFromFirestore(String uid) async {
+    try {
+      final doc = await _firestore!.collection('users').doc(uid).get();
+      if (doc.exists && doc.data() != null) {
+        final user = UserModel.fromJson(doc.data()!);
+        // Sync to cache
+        await _userCacheBox.put('current_user', user.toJson());
+        return user;
+      }
+    } catch (e) {
+      debugPrint('Firestore read error: $e');
+    }
+    
+    // Check cache as fallback
+    final cached = _userCacheBox.get('current_user');
+    if (cached != null) {
+      final Map<String, dynamic> map = Map<String, dynamic>.from(cached as Map);
+      final cachedUser = UserModel.fromJson(map);
+      if (cachedUser.uid == uid) {
+        return cachedUser;
+      }
+    }
+    return null;
+  }
+
+  @override
+  Future<UserModel?> signUp({
+    required String name,
+    required String email,
+    required String password,
+    required String phone,
+    required UserRole role,
+    required String businessName,
+  }) async {
+    if (_useMock) {
+      await Future.delayed(const Duration(milliseconds: 800));
+      
+      // Check if user already exists in simulated db
+      final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+      final exists = users.any((u) => (u as Map)['email'] == email);
+      if (exists) {
+        throw Exception('An account already exists with this email address.');
+      }
+
+      final uid = 'mock_uid_${DateTime.now().millisecondsSinceEpoch}';
+      
+      // Admins are approved by default; normal users need manual approval
+      final isApproved = role == UserRole.admin;
+
+      final newUser = UserModel(
+        uid: uid,
+        name: name,
+        email: email,
+        phone: phone,
+        role: role,
+        isApproved: isApproved,
+        businessName: businessName,
+        createdAt: DateTime.now(),
+      );
+
+      // Save to simulation database list
+      final userMapList = List<Map<String, dynamic>>.from(
+        users.map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+      userMapList.add(newUser.toJson());
+      await _userCacheBox.put('simulated_users', userMapList);
+
+      // Set current session
+      _mockCurrentUser = newUser;
+      await _userCacheBox.put('current_user', newUser.toJson());
+      _mockStreamController.add(newUser);
+
+      return newUser;
+    }
+
+    // Firebase Auth implementation
+    final userCredential = await _firebaseAuth!.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    final fbUser = userCredential.user;
+    if (fbUser == null) {
+      throw Exception('User creation failed.');
+    }
+
+    final isApproved = role == UserRole.admin; // Admin is approved by default
+    final user = UserModel(
+      uid: fbUser.uid,
+      name: name,
+      email: email,
+      phone: phone,
+      role: role,
+      isApproved: isApproved,
+      businessName: businessName,
+      createdAt: DateTime.now(),
+    );
+
+    // Save to Firestore
+    await _firestore!.collection('users').doc(fbUser.uid).set(user.toJson());
+    await _userCacheBox.put('current_user', user.toJson());
+
+    return user;
+  }
+
+  @override
+  Future<UserModel?> signIn({
+    required String email,
+    required String password,
+  }) async {
+    if (_useMock) {
+      await Future.delayed(const Duration(milliseconds: 800));
+      
+      // Special accounts for quick testing
+      if (email == 'admin@jyoti.com' && password == 'admin123') {
+        final admin = UserModel(
+          uid: 'mock_admin_uid',
+          name: 'Admin Owner',
+          email: 'admin@jyoti.com',
+          phone: '9860460325',
+          role: UserRole.admin,
+          isApproved: true,
+          businessName: 'Jyoti Kirana Wholesale',
+          createdAt: DateTime.now(),
+        );
+        _mockCurrentUser = admin;
+        await _userCacheBox.put('current_user', admin.toJson());
+        _mockStreamController.add(admin);
+        return admin;
+      }
+      
+      if (email == 'retailer@jyoti.com' && password == 'retailer123') {
+        final retailer = UserModel(
+          uid: 'mock_retailer_uid',
+          name: 'Retailer Ram',
+          email: 'retailer@jyoti.com',
+          phone: '9876543210',
+          role: UserRole.customer,
+          isApproved: true,
+          businessName: 'Ram Kirana Store',
+          createdAt: DateTime.now(),
+        );
+        _mockCurrentUser = retailer;
+        await _userCacheBox.put('current_user', retailer.toJson());
+        _mockStreamController.add(retailer);
+        return retailer;
+      }
+
+      // Check simulated users list
+      final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+      final matchingUserMap = users.firstWhere(
+        (u) => (u as Map)['email'] == email,
+        orElse: () => null,
+      );
+
+      if (matchingUserMap == null) {
+        throw Exception('No account found for this email address.');
+      }
+
+      final foundUser = UserModel.fromJson(Map<String, dynamic>.from(matchingUserMap as Map));
+      _mockCurrentUser = foundUser;
+      await _userCacheBox.put('current_user', foundUser.toJson());
+      _mockStreamController.add(foundUser);
+      return foundUser;
+    }
+
+    // Firebase Auth implementation
+    final userCredential = await _firebaseAuth!.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+
+    final fbUser = userCredential.user;
+    if (fbUser == null) {
+      throw Exception('Login failed.');
+    }
+
+    final user = await _getUserFromFirestore(fbUser.uid);
+    if (user == null) {
+      throw Exception('User data not found in database.');
+    }
+
+    return user;
+  }
+
+  @override
+  Future<void> signOut() async {
+    if (_useMock) {
+      _mockCurrentUser = null;
+      await _userCacheBox.delete('current_user');
+      _mockStreamController.add(null);
+      return;
+    }
+
+    await _firebaseAuth!.signOut();
+    await _userCacheBox.delete('current_user');
+  }
+
+  @override
+  Future<UserModel?> getCurrentUser() async {
+    if (_useMock) {
+      return _mockCurrentUser;
+    }
+
+    final fbUser = _firebaseAuth!.currentUser;
+    if (fbUser == null) return null;
+    return await _getUserFromFirestore(fbUser.uid);
+  }
+
+  @override
+  Future<UserModel?> refreshUserStatus(String uid) async {
+    if (_useMock) {
+      // Re-read simulated database list
+      final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+      final matchingUserMap = users.firstWhere(
+        (u) => (u as Map)['uid'] == uid,
+        orElse: () => null,
+      );
+      
+      if (matchingUserMap != null) {
+        final updated = UserModel.fromJson(Map<String, dynamic>.from(matchingUserMap as Map));
+        if (_mockCurrentUser?.uid == uid) {
+          _mockCurrentUser = updated;
+          await _userCacheBox.put('current_user', updated.toJson());
+          _mockStreamController.add(updated);
+        }
+        return updated;
+      }
+      return _mockCurrentUser;
+    }
+
+    // Firebase Auth implementation
+    try {
+      final doc = await _firestore!.collection('users').doc(uid).get();
+      if (doc.exists && doc.data() != null) {
+        final user = UserModel.fromJson(doc.data()!);
+        await _userCacheBox.put('current_user', user.toJson());
+        return user;
+      }
+    } catch (e) {
+      debugPrint('Error refreshing user status: $e');
+    }
+    return null;
+  }
+
+  // Simulation-only helper to toggle approval status of a user (useful for admin testing screen)
+  Future<void> simulateToggleApproval(String uid, bool approve) async {
+    if (!_useMock) {
+      // Production database update
+      await _firestore!.collection('users').doc(uid).update({'isApproved': approve});
+      return;
+    }
+    
+    final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+    final userMapList = List<Map<String, dynamic>>.from(
+      users.map((e) => Map<String, dynamic>.from(e as Map)),
+    );
+    
+    for (int i = 0; i < userMapList.length; i++) {
+      if (userMapList[i]['uid'] == uid) {
+        userMapList[i]['isApproved'] = approve;
+      }
+    }
+    await _userCacheBox.put('simulated_users', userMapList);
+    
+    if (_mockCurrentUser?.uid == uid) {
+      _mockCurrentUser = _mockCurrentUser!.copyWith(isApproved: approve);
+      await _userCacheBox.put('current_user', _mockCurrentUser!.toJson());
+      _mockStreamController.add(_mockCurrentUser);
+    }
+  }
+
+  // Simulation-only helper to list all pending users
+  Future<List<UserModel>> getPendingUsersSimulation() async {
+    if (!_useMock) {
+      final snap = await _firestore!
+          .collection('users')
+          .where('role', isEqualTo: 'customer')
+          .where('isApproved', isEqualTo: false)
+          .get();
+      return snap.docs.map((doc) => UserModel.fromJson(doc.data())).toList();
+    }
+
+    final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+    return users
+        .map((u) => UserModel.fromJson(Map<String, dynamic>.from(u as Map)))
+        .where((u) => u.role == UserRole.customer && !u.isApproved)
+        .toList();
+  }
+}
