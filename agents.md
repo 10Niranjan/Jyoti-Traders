@@ -7,21 +7,23 @@ This file serves as a persistent record of the development progress, decisions, 
 ## 📋 Client Specifications: Jyoti Kirana
 
 These are the official requirements provided by the client:
-* **Application Name**: `Jyoti Kirana`
-* **Contact Details**: Phone: `9860460325` | Email: `vishvatejkatkar007@gmail.com`
-* **Business Model**: Hybrid Wholesale & Retail.
-* **Access Control**: **Manual Approval Required** for normal users. The system supports **two user roles**: `Admin` (owner) for product & order management, and `Normal User` (retailer/customer).
-* **Minimum Order Amount**: **₹2,500** (enforced at checkout).
-* **Inventory & Content**: 6 to 10 initial categories. Product images are ready.
-* **Payment Methods**: Cash on Delivery (COD) & Online UPI.
-* **Logistics & Delivery**: Client's own delivery personnel. Delivery fee calculated **per kilometer**.
-* **Google Play Developer Account**: Not yet available (will need guidance/setup support).
+
+- **Application Name**: `Jyoti Kirana`
+- **Contact Details**: Phone: `9860460325` | Email: `vishvatejkatkar007@gmail.com`
+- **Business Model**: Hybrid Wholesale & Retail.
+- **Access Control**: **Manual Approval Required** for normal users. The system supports **two user roles**: `Admin` (owner) for product & order management, and `Normal User` (retailer/customer).
+- **Minimum Order Amount**: **₹2,500** (enforced at checkout).
+- **Inventory & Content**: 6 to 10 initial categories. Product images are ready.
+- **Payment Methods**: Cash on Delivery (COD) & Online UPI.
+- **Logistics & Delivery**: Client's own delivery personnel. Delivery fee calculated **per kilometer**.
+- **Google Play Developer Account**: Not yet available (will need guidance/setup support).
 
 ---
 
 ## 📅 Session Log: 2026-07-09
 
 ### 📋 Current Status & Tasks completed:
+
 - Established the **Full Development & Deployment Plan** for the Flutter Retailer App.
 - Defined the core feature set, folder structure, and dependencies.
 - Created this `agents.md` file to track all sessions, chats, and progress inside the CLI workspace.
@@ -30,6 +32,7 @@ These are the official requirements provided by the client:
 - **Infrastructure Built**: Implemented production-ready `Dio` API Client (with interceptors) and a robust `Hive` Local Storage Service (for tokens, themes, and search history).
 
 ### 💬 Latest Discussion Summary:
+
 1. **Client Questions Prepared**: List of basic questions compiled (Brand details, business model/verification, products/categories, payments/delivery, Google Play Console setup).
 2. **Current Setup Work**:
    - Environment check: Successfully cleared the locked `dart-sdk` directory and ran `flutter doctor` to download a fresh SDK. Currently, Flutter is functional, Android licenses are accepted, and SDK tools are configured.
@@ -43,6 +46,7 @@ These are the official requirements provided by the client:
 ## 📅 Session Log: 2026-07-12
 
 ### 📋 Current Status & Tasks completed:
+
 - **Resolved Compilation Errors**:
   - Replaced undefined `FontWeight.semibold` with `FontWeight.w600` in `app_theme.dart`.
   - Upgraded `CardTheme` instantiation to `CardThemeData` to align with Flutter Material 3.
@@ -53,6 +57,7 @@ These are the official requirements provided by the client:
   - Committed all scaffolded files, core themes, network client, and local storage configurations cleanly.
 
 ### 💬 Latest Discussion Summary:
+
 1. **Compilation Check**: Confirmed that `flutter analyze` runs with zero issues.
 2. **Git Status & Next Step**: Ready to add remote origin and push folder structure as soon as the user provides the GitHub repository URL.
 
@@ -61,6 +66,7 @@ These are the official requirements provided by the client:
 ## 📅 Session Log: 2026-07-13
 
 ### 📋 Current Status & Tasks completed:
+
 - **Firebase integration**: Added Firebase SDK packages to `pubspec.yaml` and set up `firebase_options.dart` configuration.
 - **Resilient Backend Hybrid Engine**: Implemented `FirebaseAuthRepository` supporting both Firebase and a fully simulated Hive database mode. It detects missing/placeholder credentials and falls back to simulation mode to avoid app crashes.
 - **Manual Verification & Role-Based Routing**:
@@ -73,12 +79,29 @@ These are the official requirements provided by the client:
 - **GitHub Deployment**: Linked local workspace to GitHub remote (`10Niranjan/Jyoti-Kirana`), resolved `README.md` merge conflicts, and successfully pushed the full Flutter project architecture. Executed dummy commits to fulfill daily contribution streak requirements.
 
 ### 💬 Latest Discussion Summary:
+
 1. **Compilation Check**: `flutter analyze` runs with zero issues.
 2. **Test Check**: `flutter test` completes successfully with all test assertions passing.
 
 ---
 
+## 📅 Session Log: 2026-07-15
+
+### 📋 Current Status & Tasks completed:
+
+- **Created Product Requirements Document (PRD.md)**: Outlined app purpose, target users (~30 retailers), business rules (min ₹2,500 checkout, manual admin approval), features for admin & retailers, payment flow (COD + UPI QR), and phased rollout plan.
+- **Created Architecture Guide (ARCHITECTURE.md)**: Documented 3-layer Clean Architecture (Presentation, Domain, Data), defined full tech stack, mapped exact directory structure, detailed communication flows, database schema (Firestore schemas for users, categories, products, orders), security rules strategy, and performance/testing plans.
+- **Created Development Rules (rules.md)**: Codified strict coding and engineering practices, whitelisted approved libraries, banned anti-patterns (e.g., GetX, setState in Riverpod, direct data calls in UI), established file size & method length constraints, error handling patterns, naming conventions, and AI boundaries.
+
+### 💬 Latest Discussion Summary:
+
+1. **Enterprise-grade Setup**: Aligned and documented the entire product vision, system design, and coding standards in PRD, ARCHITECTURE, and RULES markdown assets.
+2. **GitHub Synced**: Committing and pushing core documentation files to track progress and maintain the daily streak.
+
+---
+
 ## 📈 Future Action Items & Checklist
+
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
 - [x] Set up Firebase Project / backend config.
 - [x] Implement onboarding & authentication flows (with role-based routing and manual admin approval status check).
@@ -88,7 +111,9 @@ These are the official requirements provided by the client:
 ---
 
 ## 🛠️ Code Quality & Engineering Rules (15+ Years Experience)
-*Every code snippet generated during this project must adhere to these guidelines:*
+
+_Every code snippet generated during this project must adhere to these guidelines:_
+
 1. **Clean Architecture & SOLID**: Clean separation between UI (Presentation), Controllers/Notifiers (State), and Data (API/Cache/Models).
 2. **Modern State Management**: Use Riverpod with auto-dispose, keeping logic decoupled from the widgets.
 3. **High-Performance UI**:
@@ -102,4 +127,3 @@ These are the official requirements provided by the client:
    - Require account verification/manual approval check on onboarding/login.
    - Show contact support with phone `9860460325` / email `vishvatejkatkar007@gmail.com` if account is pending approval.
    - Support two user roles: Admin (owner) and Normal User. On login, dynamically route Admin to the Admin dashboard (to manage products, categories, and view orders) and Normal Users to the consumer marketplace.
-
