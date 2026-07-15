@@ -92,11 +92,13 @@ These are the official requirements provided by the client:
 - **Created Product Requirements Document (PRD.md)**: Outlined app purpose, target users (~30 retailers), business rules (min ₹2,500 checkout, manual admin approval), features for admin & retailers, payment flow (COD + UPI QR), and phased rollout plan.
 - **Created Architecture Guide (ARCHITECTURE.md)**: Documented 3-layer Clean Architecture (Presentation, Domain, Data), defined full tech stack, mapped exact directory structure, detailed communication flows, database schema (Firestore schemas for users, categories, products, orders), security rules strategy, and performance/testing plans.
 - **Created Development Rules (rules.md)**: Codified strict coding and engineering practices, whitelisted approved libraries, banned anti-patterns (e.g., GetX, setState in Riverpod, direct data calls in UI), established file size & method length constraints, error handling patterns, naming conventions, and AI boundaries.
+- **Fixed App Name & Title**: Renamed `TradersRetailerApp` to `JyotiKiranaApp` in `lib/main.dart` and `test/widget_test.dart`, and corrected the `MaterialApp` title parameter to `'Jyoti Kirana'` to match the actual client specs.
 
 ### 💬 Latest Discussion Summary:
 
 1. **Enterprise-grade Setup**: Aligned and documented the entire product vision, system design, and coding standards in PRD, ARCHITECTURE, and RULES markdown assets.
-2. **GitHub Synced**: Committing and pushing core documentation files to track progress and maintain the daily streak.
+2. **App Title Corrected**: Cleaned up legacy "Traders Retailer" placeholder naming in code and tests.
+3. **GitHub Synced**: Committing and pushing core documentation files to track progress and maintain the daily streak.
 
 ---
 
