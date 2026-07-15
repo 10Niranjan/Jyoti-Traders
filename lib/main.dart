@@ -25,20 +25,20 @@ void main() async {
 
   runApp(
     const ProviderScope(
-      child: TradersRetailerApp(),
+      child: JyotiKiranaApp(),
     ),
   );
 }
 
-class TradersRetailerApp extends ConsumerWidget {
-  const TradersRetailerApp({super.key});
+class JyotiKiranaApp extends ConsumerWidget {
+  const JyotiKiranaApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(appRouterProvider);
     
     return MaterialApp.router(
-      title: 'Traders Retailer',
+      title: 'Jyoti Kirana',
       debugShowCheckedModeBanner: false,
       
       // Theme settings using custom app design tokens
