@@ -1,3 +1,4 @@
+import '../../domain/entities/address_entity.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRepository {
@@ -22,4 +23,12 @@ abstract class AuthRepository {
   Future<UserModel?> getCurrentUser();
 
   Future<UserModel?> refreshUserStatus(String uid);
+
+  /// Self-service profile update (shop address, GST number) — distinct from
+  /// admin approval/rejection, which lives on `UserRepository` in `domain/`.
+  Future<UserModel?> updateProfile({
+    required String uid,
+    AddressEntity? address,
+    String? gstNumber,
+  });
 }

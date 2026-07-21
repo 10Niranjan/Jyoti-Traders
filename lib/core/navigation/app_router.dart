@@ -9,72 +9,72 @@ import '../../features/auth/controllers/auth_controller.dart';
 import '../../features/auth/controllers/auth_state.dart';
 import '../../features/auth/screens/auth_screen.dart';
 import '../../features/auth/screens/pending_approval_screen.dart';
-import '../../features/home/screens/home_screen.dart';
+import '../../features/cart/screens/cart_screen.dart';
+import '../../features/checkout/screens/checkout_screen.dart';
+import '../../features/checkout/screens/order_success_screen.dart';
 import '../../features/home/screens/admin_dashboard_screen.dart';
+import '../../features/home/screens/home_screen.dart';
+import '../../features/orders/screens/order_detail_screen.dart';
+import '../../features/orders/screens/order_history_screen.dart';
+import '../../features/products/screens/category_products_screen.dart';
+import '../../features/products/screens/product_detail_screen.dart';
+import '../../features/products/screens/search_screen.dart';
+import '../../features/profile/screens/profile_screen.dart';
+import '../../shared/widgets/bottom_nav_bar.dart';
 import '../constants/app_colors.dart';
+import '../constants/route_names.dart';
 
-final appRouter = GoRouter(
-  initialLocation: '/',
-  routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const SplashScreen(),
-    ),
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const AuthScreen(),
-    ),
-    GoRoute(
-      path: '/pending-approval',
-      builder: (context, state) => const PendingApprovalScreen(),
-    ),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => const HomeScreen(),
-    ),
-    GoRoute(
-      path: '/admin',
-      builder: (context, state) => const AdminDashboardScreen(),
-    ),
-  ],
-);
+/// Notifies GoRouter to re-run its `redirect` callback whenever auth state
+/// changes, without recreating the `GoRouter` instance itself. Building a
+/// brand-new `GoRouter` on every state change (e.g. via `ref.watch` at the
+/// top of the provider) is a well-known anti-pattern that leaves navigation
+/// stuck mid-transition — `MaterialApp.router` doesn't reliably resume a
+/// swapped-out router's in-flight redirect.
+class _AuthRefreshNotifier extends ChangeNotifier {
+  _AuthRefreshNotifier(Ref ref) {
+    ref.listen(authControllerProvider, (previous, next) => notifyListeners());
+  }
+}
 
-// Router Provider that automatically recalculates and handles redirection reactively
+// Router Provider — built exactly once; reacts to auth state via
+// refreshListenable instead of rebuilding the whole GoRouter.
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authControllerProvider);
+  final refreshNotifier = _AuthRefreshNotifier(ref);
 
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: RouteNames.splash,
+    refreshListenable: refreshNotifier,
     redirect: (context, state) {
+      final authState = ref.read(authControllerProvider);
       final location = state.matchedLocation;
-      
+
       // If we are still checking local token or auth status, wait on Splash
       if (authState is AuthInitial || authState is AuthLoading) {
-        return location == '/' ? null : '/';
+        return location == RouteNames.splash ? null : RouteNames.splash;
       }
 
       // If user is not authenticated, force Auth screen
       if (authState is Unauthenticated || authState is AuthError) {
-        return location == '/login' ? null : '/login';
+        return location == RouteNames.login ? null : RouteNames.login;
       }
 
       // If user is pending manual admin approval, restrict to Pending Screen
       if (authState is PendingApproval) {
-        return location == '/pending-approval' ? null : '/pending-approval';
+        return location == RouteNames.pendingApproval ? null : RouteNames.pendingApproval;
       }
 
       // If user is Admin, route to Admin Panel
       if (authState is AuthenticatedAdmin) {
-        final target = (location == '/' || location == '/login' || location == '/home' || location == '/pending-approval') 
-            ? '/admin' 
+        final target = (location == RouteNames.splash || location == RouteNames.login || location == RouteNames.home || location == RouteNames.pendingApproval)
+            ? RouteNames.admin
             : null;
         return target;
       }
 
       // If user is verified Customer/Retailer, route to Marketplace
       if (authState is AuthenticatedCustomer) {
-        final target = (location == '/' || location == '/login' || location == '/admin' || location == '/pending-approval') 
-            ? '/home' 
+        final target = (location == RouteNames.splash || location == RouteNames.login || location == RouteNames.admin || location == RouteNames.pendingApproval)
+            ? RouteNames.home
             : null;
         return target;
       }
@@ -83,28 +83,83 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     },
     routes: [
       GoRoute(
-        path: '/',
+        path: RouteNames.splash,
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
-        path: '/login',
+        path: RouteNames.login,
         builder: (context, state) => const AuthScreen(),
       ),
       GoRoute(
-        path: '/pending-approval',
+        path: RouteNames.pendingApproval,
         builder: (context, state) => const PendingApprovalScreen(),
       ),
       GoRoute(
-        path: '/home',
-        builder: (context, state) => const HomeScreen(),
+        path: RouteNames.admin,
+        builder: (context, state) => const AdminDashboardScreen(),
+      ),
+
+      // Retailer bottom-nav shell — Home/Search/Cart/Orders/Profile keep
+      // independent navigation state across tab switches.
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) => _RetailerShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(routes: [
+            GoRoute(path: RouteNames.home, builder: (context, state) => const HomeScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: RouteNames.search, builder: (context, state) => const SearchScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: RouteNames.cart, builder: (context, state) => const CartScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: RouteNames.orders, builder: (context, state) => const OrderHistoryScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            GoRoute(path: RouteNames.profile, builder: (context, state) => const ProfileScreen()),
+          ]),
+        ],
+      ),
+
+      // Full-screen push routes on top of the shell (no bottom nav visible).
+      GoRoute(
+        path: RouteNames.productCategory,
+        builder: (context, state) => CategoryProductsScreen(categoryId: state.pathParameters['categoryId']!),
       ),
       GoRoute(
-        path: '/admin',
-        builder: (context, state) => const AdminDashboardScreen(),
+        path: RouteNames.productDetail,
+        builder: (context, state) => ProductDetailScreen(productId: state.pathParameters['productId']!),
+      ),
+      GoRoute(
+        path: RouteNames.checkout,
+        builder: (context, state) => const CheckoutScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.orderSuccess,
+        builder: (context, state) => OrderSuccessScreen(orderId: state.pathParameters['orderId']!),
+      ),
+      GoRoute(
+        path: RouteNames.orderDetail,
+        builder: (context, state) => OrderDetailScreen(orderId: state.pathParameters['orderId']!),
       ),
     ],
   );
 });
+
+class _RetailerShell extends StatelessWidget {
+  final StatefulNavigationShell navigationShell;
+
+  const _RetailerShell({required this.navigationShell});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: navigationShell,
+      bottomNavigationBar: BottomNavBar(navigationShell: navigationShell),
+    );
+  }
+}
 
 class SplashScreen extends ConsumerWidget {
   const SplashScreen({super.key});
@@ -143,9 +198,9 @@ class SplashScreen extends ConsumerWidget {
                 if (!kIsWeb && Platform.environment.containsKey('FLUTTER_TEST')) return;
                 controller.repeat(reverse: true);
               }).scale(begin: const Offset(0.9, 0.9), end: const Offset(1.1, 1.1), duration: 1200.ms, curve: Curves.easeInOut),
-              
+
               const SizedBox(height: 24),
-              
+
               Text(
                 'Jyoti Kirana',
                 style: GoogleFonts.poppins(
@@ -155,9 +210,9 @@ class SplashScreen extends ConsumerWidget {
                   letterSpacing: 0.5,
                 ),
               ).animate().fadeIn(duration: 400.ms),
-              
+
               const SizedBox(height: 8),
-              
+
               Text(
                 'Wholesale Market Store',
                 style: GoogleFonts.inter(
@@ -165,9 +220,9 @@ class SplashScreen extends ConsumerWidget {
                   color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                 ),
               ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
-              
+
               const SizedBox(height: 48),
-              
+
               const CircularProgressIndicator(
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                 strokeWidth: 3,

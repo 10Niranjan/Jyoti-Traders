@@ -102,6 +102,66 @@ These are the official requirements provided by the client:
 
 ---
 
+## 📅 Session Log: 2026-07-21
+
+### 📋 Current Status & Tasks completed:
+
+- **Phase 2 complete — Domain Layer & Data Models**: Built the entire backend backbone with no UI changes.
+  - **Value objects**: `Money` (validates ≥ 0, ₹ formatting), `PhoneNumber` (10-digit Indian validation).
+  - **Entities**: `UserEntity`, `AddressEntity`, `CategoryEntity`, `ProductEntity`, `OrderEntity`/`OrderItemEntity`, `CartEntity`/`CartItemEntity` — all pure Dart, `Equatable`-based, zero Flutter/Firebase imports.
+  - **Repository interfaces** (`domain/repositories/`): `CategoryRepository`, `ProductRepository`, `OrderRepository`, `UserRepository` (admin approve/reject/list), `CartRepository` (local-only).
+  - **Use cases**: `GetProductsUseCase`, `SearchProductsUseCase`, `GetCategoriesUseCase`, `PlaceOrderUseCase` (enforces ₹2,500 minimum against subtotal — not grand total, so delivery charge can't artificially clear the bar — throws `MinimumOrderException`), `GetOrderHistoryUseCase`, `UpdateOrderStatusUseCase`, `ApproveUserUseCase`, `GetPendingUsersUseCase`.
+  - **Data models/DTOs**: New `CategoryModel`, `ProductModel`, `OrderModel`, `CartItemModel` (hand-written, `.withConverter`-based Firestore mapping, no freezed/codegen). Extended existing `UserModel` with `status` (pending/approved/rejected), `address`, `gstNumber`, `fcmToken` — `isApproved` kept as a computed getter so `AuthController`/screens keep compiling unchanged.
+  - **Data sources**: `CategoryRemoteDatasource`, `ProductRemoteDatasource`, `OrderRemoteDatasource`, `UserRemoteDatasource` — each real-Firestore-or-Hive-simulation dual-mode, mirroring the existing `FirebaseAuthRepository` pattern (Firebase is still on placeholder credentials). `CartLocalDatasource` (pure Hive), `ProductLocalDatasource` (offline catalog cache).
+  - **Repository implementations** + one consolidated `repository_providers.dart` exposing all five as Riverpod providers.
+  - **Core additions**: `app_constants.dart`, `firestore_paths.dart`, `hive_keys.dart`, `route_names.dart` (wired into `app_router.dart` and `local_storage_service.dart`, replacing hardcoded strings), `currency_formatter.dart`, `date_formatter.dart`, `validators.dart`, `extensions.dart`, and a shared `firebase_mode.dart` helper (extracted from `FirebaseAuthRepository`'s inline placeholder-detection check).
+  - **New dependencies**: `equatable`, `uuid` (runtime), `mocktail` (dev) — all pre-approved in `rules.md` §1, none previously declared in `pubspec.yaml`.
+  - **Deliberate scope exception**: did not create `domain/repositories/auth_repository.dart` or auth use cases (login/register/logout) — the existing Phase-1 auth flow (`AuthController` → `FirebaseAuthRepository`) already works end-to-end; duplicating it would touch working code for no functional gain this phase.
+  - **Tests added**: `test/unit/value_objects/money_test.dart`, `phone_number_test.dart`, `test/unit/usecases/place_order_usecase_test.dart` (asserts `MinimumOrderException` below ₹2,500, and specifically that delivery charge doesn't count toward the minimum), `approve_user_usecase_test.dart` — using `mocktail` against the repository interfaces.
+  - **Verification**: `flutter analyze` — zero issues. `flutter test` — 16/16 passing, including the pre-existing widget smoke test (untouched).
+
+### 💬 Latest Discussion Summary:
+
+1. Confirmed with the user before starting: (a) add `address`/`gstNumber`/`fcmToken`/`status` to the User schema now rather than deferring, since Phase 5 (delivery-charge calc) and GST display need them anyway; (b) write everything hand-rolled (no freezed/json_serializable/build_runner), matching the existing `UserModel` style and Rule Zero.
+2. `phases.md` updated: Phase 2 marked complete (8/12 — the 4 unchecked items are the deliberately-skipped auth interface/use cases, noted inline). Current active phase is now **Phase 3 — Core Commerce (Retailer Side)**, starting with wiring `HomeScreen` to real Firestore categories.
+
+### 🐛 Backend check (same day, follow-up): 2 pre-existing bugs found and fixed
+
+Asked to check whether any real backend was connected and to test it. Confirmed there is **no live Firebase project** — no `google-services.json`, no `GoogleService-Info.plist`, no `firebase.json`/`.firebaserc`, and `firebase_options.dart` is 100% placeholder credentials. What's actually running today is the Hive-based simulation layer. Wrote `test/integration/simulation_backend_test.dart` to exercise it end-to-end (sign-up → pending → admin approval, category/product CRUD, cart, order placement/status update). This surfaced two real, pre-existing bugs (both predate Phase 2, in Phase-1 code):
+
+1. **`Timestamp` written to Hive crashes simulation-mode writes.** `UserModel.toJson()` (and the new `ProductModel`/`OrderModel`) wrapped dates in `Timestamp.fromDate()`/`Timestamp.now()` — but that same `toJson()` map is what gets persisted to Hive in simulation mode, and Hive has no adapter for Firestore's `Timestamp` type. Any simulated sign-up would have crashed the instant it tried to save. **Fix**: write plain `DateTime` instead (Firestore's SDK auto-converts `DateTime` → `Timestamp` on real writes, so production behavior is unchanged) and added `core/utils/firestore_date_parser.dart` (`parseFirestoreDate`) to read either a `Timestamp` (real Firestore) or a `DateTime` (Hive) back out.
+2. **`refreshUserStatus` and the email-lookup path in `signIn` crashed at runtime** (`firebase_auth_repository.dart`) — both used `list.firstWhere(test, orElse: () => null)` on a `List<dynamic>` whose actual reified runtime type was `List<Map<String, dynamic>>`; Dart resolves the generic against the object's real type, so `orElse: () => null` didn't satisfy the required `Map<String, dynamic> Function()` and threw a `TypeError`. **Fix**: replaced both with `indexWhere` + manual null check, which sidesteps the generic-inference footgun entirely.
+
+All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.gitignore` doesn't currently exclude Hive test scratch directories (`temp_hive*`) — `temp_hive/*.hive` (0-byte placeholder files) are already tracked in git; worth deciding whether to keep them tracked or add to `.gitignore` and remove.
+
+---
+
+## 📅 Session Log: 2026-07-21 (continued) — Phase 3 Core Commerce
+
+### 📋 Current Status & Tasks completed:
+
+- **Phase 3 complete — Core Commerce (Retailer Side)**: the full retailer shopping experience, built on Phase 2's domain/data layer.
+  - **Navigation restructure**: `app_router.dart` now uses a `StatefulShellRoute.indexedStack` bottom-nav shell (Home/Search/Cart/Orders/Profile as persistent tabs) instead of flat routes, plus push routes for category products, product detail, checkout, order success, and order detail. `route_names.dart` extended with all new paths.
+  - **New `shared/widgets/`** (didn't exist before): `ProductCard`, `CategoryCard`, `PrimaryButton`, `QtyStepper`, `OrderStatusBadge`, `ShimmerLoader` (grid/list), `EmptyStateWidget`/`ErrorStateWidget`, `PromoBannerCarousel`, `BottomNavBar`.
+  - **New features**: Home (real categories), Products (category grid, product detail, debounced search with recent-searches), Cart (Hive-backed, ₹2,500 minimum gating), Checkout (COD, editable delivery address, stub delivery charge), Orders (history + detail with status badges), Profile (editable address/GST, tap-to-call/email support).
+  - **Demo catalog seeder** (`demo_catalog_seeder.dart`): seeds the 8 PRD §5 categories + demo products into the simulation store on first launch, since Phase 4's Admin product-management UI doesn't exist yet to add real ones.
+  - **New `AuthRepository.updateProfile()`**: self-service profile updates (address, GST), separate from the admin-side `UserRepository` built in Phase 2.
+  - **Scope deferred to Phase 5** (already owns this in `phases.md`, avoiding duplicate work): real per-km `geolocator` delivery charge, UPI QR payment screen, FCM-to-admin notification.
+  - **Real bugs found and fixed while testing** (both pre-existing, from Phase 1, never previously exercised by any test):
+    1. `appRouterProvider` rebuilt the entire `GoRouter` instance on every auth-state change (`ref.watch` at the top of the provider) — a known Riverpod+go_router anti-pattern that left navigation stuck mid-transition after sign-in. Fixed with a `refreshListenable` bridge (`_AuthRefreshNotifier`) so the router is built once and just re-runs `redirect` reactively.
+    2. `PromoBannerCarousel`'s `autoPlay: true` set up a repeating `Timer` that would hang any widget test touching Home (`pumpAndSettle` never settles on a perpetual timer) — guarded with the same `FLUTTER_TEST` env check the splash screen animation already used.
+  - **Tests**: added `checkout_controller_test.dart` (₹2,500 gating, cart-clear-on-success, repository-failure handling) and `search_controller_test.dart` (recent-searches capping/persistence/clearing) — 8 new tests, all passing.
+  - An in-progress end-to-end `WidgetTester` flow test (login → browse → cart → checkout → orders → profile) was abandoned and deleted after it ran into test-*infrastructure* issues unrelated to app code — Flutter's fake test clock doesn't resolve real `Future.delayed` timers (needs `runAsync`), compounded by `google_fonts` attempting real network font fetches that fail in the sandboxed test environment. Not worth the further token spend to chase; the two real bugs above were already found and fixed in the process.
+  - **Verification**: `flutter analyze` — zero issues. `flutter test` — 28/28 passing (20 from Phase 2 + 8 new).
+
+### 💬 Latest Discussion Summary:
+
+1. Confirmed with the user before building (all recommended options): bottom-nav shell over flat routes; seed a demo catalog since Admin product-management doesn't exist yet; stub the delivery charge and defer UPI/FCM to Phase 5 rather than duplicate that work.
+2. `phases.md` updated: Phase 3 marked complete (12/14 — the 2 unchecked items are the deliberately-deferred UPI/FCM/delivery-calc bullets, noted inline). `PRD.md` §12 Phase 2 updated to reflect retailer-side commerce as done, Admin product/category management still outstanding. Current active phase is now **Phase 4 — Admin Panel**, starting with wiring `AdminDashboardScreen` to real stats.
+3. Housekeeping: added `temp_hive*/` to `.gitignore` (test scratch directories were showing up as untracked clutter).
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

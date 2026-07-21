@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'auth_repository.dart';
 import '../models/user_model.dart';
+import '../../core/network/firebase_mode.dart';
+import '../../domain/entities/address_entity.dart';
 
 class FirebaseAuthRepository implements AuthRepository {
   fb.FirebaseAuth? _firebaseAuth;
@@ -27,10 +29,8 @@ class FirebaseAuthRepository implements AuthRepository {
     try {
       _firebaseAuth = firebaseAuth ?? fb.FirebaseAuth.instance;
       _firestore = firestore ?? FirebaseFirestore.instance;
-      
-      final app = _firebaseAuth!.app;
-      if (app.options.projectId == 'jyoti-kirana-placeholder' ||
-          app.options.apiKey.contains('YOUR-')) {
+
+      if (isFirebasePlaceholder(_firebaseAuth!.app)) {
         _useMock = true;
         _initMockUser();
       } else {
@@ -121,9 +121,9 @@ class FirebaseAuthRepository implements AuthRepository {
       }
 
       final uid = 'mock_uid_${DateTime.now().millisecondsSinceEpoch}';
-      
+
       // Admins are approved by default; normal users need manual approval
-      final isApproved = role == UserRole.admin;
+      final status = role == UserRole.admin ? UserStatus.approved : UserStatus.pending;
 
       final newUser = UserModel(
         uid: uid,
@@ -131,7 +131,7 @@ class FirebaseAuthRepository implements AuthRepository {
         email: email,
         phone: phone,
         role: role,
-        isApproved: isApproved,
+        status: status,
         businessName: businessName,
         createdAt: DateTime.now(),
       );
@@ -162,14 +162,15 @@ class FirebaseAuthRepository implements AuthRepository {
       throw Exception('User creation failed.');
     }
 
-    final isApproved = role == UserRole.admin; // Admin is approved by default
+    // Admin is approved by default
+    final status = role == UserRole.admin ? UserStatus.approved : UserStatus.pending;
     final user = UserModel(
       uid: fbUser.uid,
       name: name,
       email: email,
       phone: phone,
       role: role,
-      isApproved: isApproved,
+      status: status,
       businessName: businessName,
       createdAt: DateTime.now(),
     );
@@ -197,7 +198,7 @@ class FirebaseAuthRepository implements AuthRepository {
           email: 'admin@jyoti.com',
           phone: '9860460325',
           role: UserRole.admin,
-          isApproved: true,
+          status: UserStatus.approved,
           businessName: 'Jyoti Kirana Wholesale',
           createdAt: DateTime.now(),
         );
@@ -214,7 +215,7 @@ class FirebaseAuthRepository implements AuthRepository {
           email: 'retailer@jyoti.com',
           phone: '9876543210',
           role: UserRole.customer,
-          isApproved: true,
+          status: UserStatus.approved,
           businessName: 'Ram Kirana Store',
           createdAt: DateTime.now(),
         );
@@ -226,10 +227,8 @@ class FirebaseAuthRepository implements AuthRepository {
 
       // Check simulated users list
       final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
-      final matchingUserMap = users.firstWhere(
-        (u) => (u as Map)['email'] == email,
-        orElse: () => null,
-      );
+      final matchIndex = users.indexWhere((u) => (u as Map)['email'] == email);
+      final matchingUserMap = matchIndex == -1 ? null : users[matchIndex];
 
       if (matchingUserMap == null) {
         throw Exception('No account found for this email address.');
@@ -290,11 +289,9 @@ class FirebaseAuthRepository implements AuthRepository {
     if (_useMock) {
       // Re-read simulated database list
       final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
-      final matchingUserMap = users.firstWhere(
-        (u) => (u as Map)['uid'] == uid,
-        orElse: () => null,
-      );
-      
+      final matchIndex = users.indexWhere((u) => (u as Map)['uid'] == uid);
+      final matchingUserMap = matchIndex == -1 ? null : users[matchIndex];
+
       if (matchingUserMap != null) {
         final updated = UserModel.fromJson(Map<String, dynamic>.from(matchingUserMap as Map));
         if (_mockCurrentUser?.uid == uid) {
@@ -321,28 +318,83 @@ class FirebaseAuthRepository implements AuthRepository {
     return null;
   }
 
+  @override
+  Future<UserModel?> updateProfile({
+    required String uid,
+    AddressEntity? address,
+    String? gstNumber,
+  }) async {
+    if (_useMock) {
+      final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+      final userMapList = List<Map<String, dynamic>>.from(
+        users.map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+
+      UserModel? updated;
+      for (int i = 0; i < userMapList.length; i++) {
+        if (userMapList[i]['uid'] == uid) {
+          final current = UserModel.fromJson(userMapList[i]);
+          updated = current.copyWith(address: address, gstNumber: gstNumber);
+          userMapList[i] = updated.toJson();
+        }
+      }
+      await _userCacheBox.put('simulated_users', userMapList);
+
+      if (updated != null && _mockCurrentUser?.uid == uid) {
+        _mockCurrentUser = updated;
+        await _userCacheBox.put('current_user', updated.toJson());
+        _mockStreamController.add(updated);
+      }
+      return updated;
+    }
+
+    final updateData = <String, dynamic>{};
+    if (address != null) {
+      updateData['address'] = {
+        'street': address.street,
+        'city': address.city,
+        'pincode': address.pincode,
+      };
+    }
+    if (gstNumber != null) {
+      updateData['gstNumber'] = gstNumber;
+    }
+    if (updateData.isEmpty) {
+      return getCurrentUser();
+    }
+
+    await _firestore!.collection('users').doc(uid).update(updateData);
+    return _getUserFromFirestore(uid);
+  }
+
   // Simulation-only helper to toggle approval status of a user (useful for admin testing screen)
   Future<void> simulateToggleApproval(String uid, bool approve) async {
+    final status = approve ? UserStatus.approved : UserStatus.pending;
+
     if (!_useMock) {
       // Production database update
-      await _firestore!.collection('users').doc(uid).update({'isApproved': approve});
+      await _firestore!.collection('users').doc(uid).update({
+        'isApproved': approve,
+        'status': status.value,
+      });
       return;
     }
-    
+
     final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
     final userMapList = List<Map<String, dynamic>>.from(
       users.map((e) => Map<String, dynamic>.from(e as Map)),
     );
-    
+
     for (int i = 0; i < userMapList.length; i++) {
       if (userMapList[i]['uid'] == uid) {
         userMapList[i]['isApproved'] = approve;
+        userMapList[i]['status'] = status.value;
       }
     }
     await _userCacheBox.put('simulated_users', userMapList);
-    
+
     if (_mockCurrentUser?.uid == uid) {
-      _mockCurrentUser = _mockCurrentUser!.copyWith(isApproved: approve);
+      _mockCurrentUser = _mockCurrentUser!.copyWith(status: status);
       await _userCacheBox.put('current_user', _mockCurrentUser!.toJson());
       _mockStreamController.add(_mockCurrentUser);
     }

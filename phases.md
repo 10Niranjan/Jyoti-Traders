@@ -13,8 +13,8 @@
 | Phase | Title | Status | Progress |
 |---|---|---|---|
 | Phase 1 | Foundation & Infrastructure | ✅ Complete | 10/10 |
-| Phase 2 | Domain Layer & Data Models | ⬜ Not Started | 0/12 |
-| Phase 3 | Core Commerce — Retailer Side | ⬜ Not Started | 0/14 |
+| Phase 2 | Domain Layer & Data Models | ✅ Complete (Auth use cases deliberately deferred — see note) | 8/12 |
+| Phase 3 | Core Commerce — Retailer Side | ✅ Complete (delivery charge stubbed, UPI/FCM deferred — see note) | 12/14 |
 | Phase 4 | Admin Panel — Full Implementation | ⬜ Not Started | 0/12 |
 | Phase 5 | Delivery, Payments & Notifications | ⬜ Not Started | 0/10 |
 | Phase 6 | Polish, Animations & UX Refinement | ⬜ Not Started | 0/9 |
@@ -48,120 +48,130 @@
 
 ---
 
-## ⬜ Phase 2 — Domain Layer & Data Models
-> **Status**: NOT STARTED ⬜  
+## ✅ Phase 2 — Domain Layer & Data Models
+> **Status**: COMPLETE ✅ (2026-07-21) — with one deliberate scope exception, see note below
 > **Goal**: Build the entire Domain layer (Entities, UseCases, Repository interfaces) and Data layer (Models, DataSources, Repository implementations). This is the backbone — no UI yet, just pure business logic.
 
+> **Note on Auth scope**: `domain/repositories/auth_repository.dart` and the `auth/login_usecase.dart` / `register_usecase.dart` / `logout_usecase.dart` use cases were **deliberately not created**. The existing `data/repositories/auth_repository.dart` + `FirebaseAuthRepository` (built in Phase 1) already implement login/signup/signout end-to-end and are actively used by `AuthController`. Duplicating that under `domain/` or routing it through new use cases would touch working, tested code for no functional gain. Admin user-management (approve/reject/list pending) got its own new `UserRepository` in `domain/`, separate from `AuthRepository`, which covers everything Phase 4 needs from this layer.
+
 ### 2.1 — Value Objects & Entities
-- [ ] Create `domain/value_objects/money.dart` — wraps amount, validates ≥ 0, formats ₹
-- [ ] Create `domain/value_objects/phone_number.dart` — validates 10-digit Indian number
-- [ ] Create `domain/entities/user_entity.dart` — `uid, fullName, shopName, phone, role, status, address, fcmToken, createdAt`
-- [ ] Create `domain/entities/product_entity.dart` — `id, name, categoryId, imageUrl, price, unit, stock, isActive`
-- [ ] Create `domain/entities/category_entity.dart` — `id, name, iconUrl, displayOrder, isActive`
-- [ ] Create `domain/entities/order_entity.dart` — `id, userId, items, subtotal, deliveryCharge, grandTotal, paymentMethod, orderStatus, createdAt`
-- [ ] Create `domain/entities/cart_entity.dart` — `items: List<CartItem>, subtotal`
+- [x] Create `domain/value_objects/money.dart` — wraps amount, validates ≥ 0, formats ₹
+- [x] Create `domain/value_objects/phone_number.dart` — validates 10-digit Indian number
+- [x] Create `domain/entities/user_entity.dart` — `uid, fullName, shopName, phone, role, status, address, fcmToken, createdAt`
+- [x] Create `domain/entities/product_entity.dart` — `id, name, categoryId, imageUrl, price, unit, stock, isActive`
+- [x] Create `domain/entities/category_entity.dart` — `id, name, iconUrl, displayOrder, isActive`
+- [x] Create `domain/entities/order_entity.dart` — `id, userId, items, subtotal, deliveryCharge, grandTotal, paymentMethod, orderStatus, createdAt`
+- [x] Create `domain/entities/cart_entity.dart` — `items: List<CartItem>, subtotal`
 
 ### 2.2 — Repository Interfaces (Abstract)
-- [ ] Create `domain/repositories/auth_repository.dart` — abstract interface
-- [ ] Create `domain/repositories/product_repository.dart` — abstract interface
-- [ ] Create `domain/repositories/order_repository.dart` — abstract interface
-- [ ] Create `domain/repositories/user_repository.dart` — abstract interface
+- [ ] ~~Create `domain/repositories/auth_repository.dart`~~ — skipped, see scope note above
+- [x] Create `domain/repositories/product_repository.dart` — abstract interface
+- [x] Create `domain/repositories/order_repository.dart` — abstract interface
+- [x] Create `domain/repositories/user_repository.dart` — abstract interface
+- [x] Create `domain/repositories/category_repository.dart` — abstract interface (added; needed by Category Management, Phase 4.4)
+- [x] Create `domain/repositories/cart_repository.dart` — abstract interface (added; local-only, Hive-backed)
 
 ### 2.3 — Use Cases
-- [ ] Create `domain/usecases/auth/login_usecase.dart`
-- [ ] Create `domain/usecases/auth/register_usecase.dart`
-- [ ] Create `domain/usecases/auth/logout_usecase.dart`
-- [ ] Create `domain/usecases/product/get_products_usecase.dart`
-- [ ] Create `domain/usecases/product/search_products_usecase.dart`
-- [ ] Create `domain/usecases/order/place_order_usecase.dart` — **MUST validate ₹2,500 minimum — throws `MinimumOrderException` if violated**
-- [ ] Create `domain/usecases/order/get_order_history_usecase.dart`
-- [ ] Create `domain/usecases/order/update_order_status_usecase.dart` (admin)
-- [ ] Create `domain/usecases/user/approve_user_usecase.dart` (admin)
-- [ ] Create `domain/usecases/user/get_pending_users_usecase.dart` (admin)
+- [ ] ~~Create `domain/usecases/auth/login_usecase.dart` / `register_usecase.dart` / `logout_usecase.dart`~~ — skipped, see scope note above
+- [x] Create `domain/usecases/product/get_products_usecase.dart`
+- [x] Create `domain/usecases/product/search_products_usecase.dart`
+- [x] Create `domain/usecases/category/get_categories_usecase.dart` (added)
+- [x] Create `domain/usecases/order/place_order_usecase.dart` — **validates ₹2,500 minimum against subtotal — throws `MinimumOrderException` if violated**
+- [x] Create `domain/usecases/order/get_order_history_usecase.dart`
+- [x] Create `domain/usecases/order/update_order_status_usecase.dart` (admin)
+- [x] Create `domain/usecases/user/approve_user_usecase.dart` (admin)
+- [x] Create `domain/usecases/user/get_pending_users_usecase.dart` (admin)
 
 ### 2.4 — Data Models (DTOs)
-- [ ] Create `data/models/user_model.dart` — with `fromFirestore()` + `toFirestore()` using `.withConverter`
-- [ ] Create `data/models/product_model.dart` — with `fromFirestore()` + `toFirestore()`
-- [ ] Create `data/models/category_model.dart` — with `fromFirestore()` + `toFirestore()`
-- [ ] Create `data/models/order_model.dart` — with `fromFirestore()` + `toFirestore()`
-- [ ] Create `data/models/cart_item_model.dart` — with Hive `TypeAdapter`
+- [x] Extend `data/models/user_model.dart` — added `status`, `address`, `gstNumber`, `fcmToken`; `isApproved` kept as a computed getter for backward compatibility with existing call sites
+- [x] Create `data/models/product_model.dart` — with `fromFirestore()` + `toFirestore()` via `.withConverter`
+- [x] Create `data/models/category_model.dart` — with `fromFirestore()` + `toFirestore()` via `.withConverter`
+- [x] Create `data/models/order_model.dart` — with `fromFirestore()` + `toFirestore()` via `.withConverter`
+- [x] Create `data/models/cart_item_model.dart` — hand-written, stored as a plain Map in Hive (no `TypeAdapter` codegen — matches the no-codegen decision and how every other Hive box in this project already stores data)
 
 ### 2.5 — Data Sources & Repository Implementations
-- [ ] Create `data/datasources/remote/product_remote_datasource.dart` — Firestore CRUD
-- [ ] Create `data/datasources/remote/order_remote_datasource.dart` — Firestore CRUD
-- [ ] Create `data/datasources/remote/user_remote_datasource.dart` — Firestore user management
-- [ ] Create `data/datasources/local/cart_local_datasource.dart` — Hive cart persistence
-- [ ] Create `data/datasources/local/product_local_datasource.dart` — Hive catalog cache
-- [ ] Create `data/repositories/product_repository.dart` — implements domain interface
-- [ ] Create `data/repositories/order_repository.dart` — implements domain interface
-- [ ] Create `data/repositories/user_repository.dart` — implements domain interface
+- [x] Create `data/datasources/remote/category_remote_datasource.dart` — Firestore CRUD + Hive-simulation fallback (added)
+- [x] Create `data/datasources/remote/product_remote_datasource.dart` — Firestore CRUD + Hive-simulation fallback
+- [x] Create `data/datasources/remote/order_remote_datasource.dart` — Firestore CRUD + Hive-simulation fallback
+- [x] Create `data/datasources/remote/user_remote_datasource.dart` — Firestore user management + Hive-simulation fallback
+- [x] Create `data/datasources/local/cart_local_datasource.dart` — Hive cart persistence
+- [x] Create `data/datasources/local/product_local_datasource.dart` — Hive catalog cache
+- [x] Create `data/repositories/category_repository_impl.dart` — implements domain interface (added)
+- [x] Create `data/repositories/product_repository_impl.dart` — implements domain interface
+- [x] Create `data/repositories/order_repository_impl.dart` — implements domain interface
+- [x] Create `data/repositories/user_repository_impl.dart` — implements domain interface
+- [x] Create `data/repositories/cart_repository_impl.dart` — implements domain interface (added)
+- [x] Create `data/repositories/repository_providers.dart` — consolidated Riverpod providers for all five repositories above
 
 ### 2.6 — Core Constants & Utilities
-- [ ] Create `core/constants/app_constants.dart` — `kMinOrderAmount = 2500.0`, `kSupportPhone`, `kSupportEmail`, `kAppName`
-- [ ] Create `core/constants/firestore_paths.dart` — all collection/document path strings
-- [ ] Create `core/constants/hive_keys.dart` — all Hive box and key name constants
-- [ ] Create `core/constants/route_names.dart` — all GoRouter route name constants
-- [ ] Create `core/utils/currency_formatter.dart` — `formatRupees(double amount)` → `₹2,500`
-- [ ] Create `core/utils/date_formatter.dart` — `formatOrderDate(DateTime)` → `15 Jul 2026`
-- [ ] Create `core/utils/validators.dart` — phone, GST, name, address validators
-- [ ] Create `core/utils/extensions.dart` — String, DateTime, List extension methods
+- [x] Create `core/constants/app_constants.dart` — `kMinOrderAmount = 2500.0`, `kSupportPhone`, `kSupportEmail`, `kAppName`
+- [x] Create `core/constants/firestore_paths.dart` — all collection/document path strings
+- [x] Create `core/constants/hive_keys.dart` — all Hive box and key name constants
+- [x] Create `core/constants/route_names.dart` — all GoRouter route name constants (wired into `app_router.dart`)
+- [x] Create `core/utils/currency_formatter.dart` — `formatRupees(double amount)` → `₹2,500`
+- [x] Create `core/utils/date_formatter.dart` — `formatOrderDate(DateTime)` → `15 Jul 2026`
+- [x] Create `core/utils/validators.dart` — phone, GST, name, address validators
+- [x] Create `core/utils/extensions.dart` — String, DateTime, List extension methods
+- [x] Create `core/network/firebase_mode.dart` — shared placeholder-detection helper (added; extracted from `FirebaseAuthRepository`)
 
 ---
 
-## ⬜ Phase 3 — Core Commerce (Retailer Side)
-> **Status**: NOT STARTED ⬜  
+## ✅ Phase 3 — Core Commerce (Retailer Side)
+> **Status**: COMPLETE ✅ (2026-07-21)  
 > **Goal**: Build the complete retailer-facing shopping experience — browse, search, cart, checkout, and order history.
 
+> **Scope notes**: (1) No `assets/images/` exist, so the "promotional banner" is an informational `PromoBannerCarousel` (icon + text slides), not photography. (2) Navigation uses a `StatefulShellRoute` bottom-nav shell (Home/Search/Cart/Orders/Profile) rather than plain push routes — matches `ARCHITECTURE.md`'s documented `bottom_nav_bar.dart`. (3) The 8 PRD §5 categories + demo products are auto-seeded into the simulated catalog on first launch (`demo_catalog_seeder.dart`) since Phase 4's Admin product-management UI doesn't exist yet to add real ones. (4) Checkout ships **COD only** with a **flat placeholder delivery charge** (`kStubDeliveryCharge`) — real per-km `geolocator` calculation, the UPI QR screen, and FCM-to-admin are deferred to Phase 5, which already owns this scope in full; building it twice would be wasted work.
+
 ### 3.1 — Home Screen (Real Data)
-- [ ] Wire `HomeScreen` to `homeController` — fetch real categories from Firestore
-- [ ] Build `CategoryCard` widget — icon, name, tap → navigate to category products
-- [ ] Build horizontal promotional banner (static images from `assets/images/`)
-- [ ] Add shimmer loading state while categories are fetching
-- [ ] Add empty state if no categories are available
+- [x] Wire `HomeScreen` to `categoriesProvider` — fetch real categories via `GetCategoriesUseCase`
+- [x] Build `CategoryCard` widget — icon (resolved from name), name, tap → navigate to category products
+- [x] Build promotional banner — `PromoBannerCarousel` (informational slides, no image assets exist)
+- [x] Add shimmer loading state while categories are fetching
+- [x] Add empty state if no categories are available
 
 ### 3.2 — Product Browsing
-- [ ] Build `CategoryProductsScreen` — filtered product grid by `categoryId`
-- [ ] Build `ProductCard` widget — image, name, price (₹), unit, "Add to Cart" button
-- [ ] Build `ProductDetailScreen` — full image, name, price, unit, stock info, description, "Add to Cart"
-- [ ] Implement `productController` — fetches products from Firestore via `GetProductsUseCase`
-- [ ] Add shimmer loading for product grid
-- [ ] Add empty state for categories with no products
+- [x] Build `CategoryProductsScreen` — filtered product grid by `categoryId`
+- [x] Build `ProductCard` widget — image (icon fallback), name, price (₹), unit, "Add to Cart" button
+- [x] Build `ProductDetailScreen` — full image, name, price, unit, stock info, description, qty stepper, "Add to Cart"
+- [x] Implement `productController` (`productsByCategoryProvider`, `productByIdProvider`) — fetches via `GetProductsUseCase`
+- [x] Add shimmer loading for product grid
+- [x] Add empty state for categories with no products
 
 ### 3.3 — Search
-- [ ] Build `SearchScreen` — text field, real-time search via `SearchProductsUseCase`
-- [ ] Display search results as product list tiles
-- [ ] Save recent search terms to Hive (max 5)
-- [ ] Show recent searches when search field is empty
+- [x] Build `SearchScreen` — text field, debounced search via `SearchProductsUseCase`
+- [x] Display search results as product list tiles
+- [x] Save recent search terms to Hive (max 5, via existing `LocalStorageService`)
+- [x] Show recent searches when search field is empty
 
 ### 3.4 — Cart
-- [ ] Build `CartScreen` — list of cart items, quantity controls, subtotal, checkout CTA
-- [ ] Implement `cartController` (Hive-backed) — `addItem`, `removeItem`, `updateQty`, `clearCart`
-- [ ] Show real-time cart badge count on bottom nav bar
-- [ ] Show ₹2,500 minimum order warning banner when subtotal < ₹2,500
-- [ ] Disable "Proceed to Checkout" button if subtotal < ₹2,500
-- [ ] Build `CartItemTile` widget — image, name, qty stepper, item total
+- [x] Build `CartScreen` — list of cart items, quantity controls, subtotal, checkout CTA
+- [x] Implement `CartController` (Hive-backed via `CartRepository`) — `addItem`, `removeItem`, `updateQty`, `clearCart`
+- [x] Show real-time cart badge count on bottom nav bar
+- [x] Show ₹2,500 minimum order warning banner when subtotal < ₹2,500
+- [x] Disable "Proceed to Checkout" button if subtotal < ₹2,500
+- [x] Build cart item tile — image, name, qty stepper, item total
 
 ### 3.5 — Checkout
-- [ ] Build `CheckoutScreen` — order summary, delivery address, payment method selector, delivery charge display, "Place Order" CTA
-- [ ] Implement `checkoutController` — calls `PlaceOrderUseCase`, handles loading/success/error
-- [ ] Validate ₹2,500 minimum one final time in `PlaceOrderUseCase` before Firestore write
-- [ ] Calculate and display delivery charge (per-km logic using `geolocator`)
-- [ ] COD option — immediate order placement
-- [ ] UPI option — display owner's UPI QR code image + UPI ID for manual payment
-- [ ] Send FCM notification to admin on successful order placement
+- [x] Build `CheckoutScreen` — order summary, delivery address (editable, pre-filled from profile), payment method (COD), delivery charge display, "Place Order" CTA
+- [x] Implement `CheckoutController` — calls `PlaceOrderUseCase`, handles loading/success/error via `AsyncValue`
+- [x] `PlaceOrderUseCase` validates ₹2,500 minimum (against subtotal, not grand total) before the order is written
+- [ ] ~~Calculate delivery charge via `geolocator` (per-km)~~ — stubbed as a flat placeholder; real calc is Phase 5 scope
+- [x] COD option — immediate order placement
+- [ ] ~~UPI option (QR code image + manual confirmation)~~ — deferred to Phase 5
+- [ ] ~~Send FCM notification to admin on order placement~~ — deferred to Phase 5 (FCM isn't set up yet)
 
 ### 3.6 — Order Success & History
-- [ ] Build `OrderSuccessScreen` — order ID, summary, Lottie success animation
-- [ ] Build `OrderHistoryScreen` — list of past orders with status badges
-- [ ] Build `OrderDetailScreen` — full order breakdown, status timeline, item list
-- [ ] Implement `orderController` — fetches order history via `GetOrderHistoryUseCase`
-- [ ] Stream real-time order status updates from Firestore
+- [x] Build `OrderSuccessScreen` — order ID, confirmation message (icon-based, no Lottie assets exist)
+- [x] Build `OrderHistoryScreen` — list of past orders with status badges
+- [x] Build `OrderDetailScreen` — full order breakdown, item list, delivery address, payment method
+- [x] Implement `orderController` (`orderHistoryProvider`, `orderByIdProvider`) — fetches via `GetOrderHistoryUseCase`
+- [x] Real-time order status updates stream from the (simulated) backend
 
 ### 3.7 — Profile
-- [ ] Build `ProfileScreen` — shop name, phone, address, logout button
-- [ ] Add "Contact Support" section — tap-to-call `+91 98604 60325`, tap-to-email button
-- [ ] Allow editing of delivery address (important for km calculation)
-- [ ] Implement `profileController` — update user profile in Firestore
+- [x] Build `ProfileScreen` — shop name, phone, editable address, GST number, logout button
+- [x] Add "Contact Support" section — tap-to-call `9860460325`, tap-to-email, via `url_launcher` + `AppConstants`
+- [x] Allow editing of delivery address (needed for Phase 5's km calculation)
+- [x] Implement `ProfileController` + new `AuthRepository.updateProfile()` — updates the user's own profile (self-service, separate from admin's `UserRepository`)
 
 ---
 
@@ -279,9 +289,9 @@
 
 > **When you ask "what's next?" or "what should we do now?" — the answer is always the first unchecked `[ ]` task inside the current active phase.**
 
-### Current Active Phase: **Phase 2 — Domain Layer & Data Models**
+### Current Active Phase: **Phase 4 — Admin Panel (Full Implementation)**
 ### Next Immediate Task:
-> ✅ Start with **`domain/value_objects/money.dart`** — the foundational value object for all ₹ amounts in the system.
+> ✅ Start with **4.1 Admin Dashboard (Real Data)** — wire the existing `AdminDashboardScreen` shell to real Firestore/simulated counts (today's orders, pending approvals, total retailers) instead of its Phase-1 placeholder stats.
 
 ---
 

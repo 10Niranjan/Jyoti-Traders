@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import '../../core/constants/hive_keys.dart';
 
 /// Provider for accessing the local storage service globally
 final localStorageProvider = Provider<LocalStorageService>((ref) {
@@ -9,34 +10,24 @@ final localStorageProvider = Provider<LocalStorageService>((ref) {
 /// A robust wrapper around Hive for managing local on-device storage.
 /// Handles caching of auth tokens, user preferences, and app settings.
 class LocalStorageService {
-  // Box Names (initialized in main.dart)
-  static const String _settingsBoxName = 'settings_cache';
-  static const String _userBoxName = 'user_cache';
-
-  // Storage Keys
-  static const String _keyAuthToken = 'auth_token';
-  static const String _keyThemeMode = 'theme_mode';
-  static const String _keyIsFirstLaunch = 'is_first_launch';
-  static const String _keyRecentSearches = 'recent_searches';
-
   // Lazy box getters to ensure they are accessed safely
-  Box get _settingsBox => Hive.box(_settingsBoxName);
-  Box get _userBox => Hive.box(_userBoxName);
+  Box get _settingsBox => Hive.box(HiveBoxes.settingsCache);
+  Box get _userBox => Hive.box(HiveBoxes.userCache);
 
   // ==========================================
   // Auth Token Management
   // ==========================================
   
   Future<void> saveAuthToken(String token) async {
-    await _userBox.put(_keyAuthToken, token);
+    await _userBox.put(HiveKeys.authToken, token);
   }
 
   String? getAuthToken() {
-    return _userBox.get(_keyAuthToken) as String?;
+    return _userBox.get(HiveKeys.authToken) as String?;
   }
 
   Future<void> clearAuthToken() async {
-    await _userBox.delete(_keyAuthToken);
+    await _userBox.delete(HiveKeys.authToken);
   }
 
   bool get isAuthenticated => getAuthToken() != null;
@@ -47,22 +38,22 @@ class LocalStorageService {
 
   /// Saves the user's theme preference (true for dark mode, false for light)
   Future<void> saveThemePreference(bool isDarkMode) async {
-    await _settingsBox.put(_keyThemeMode, isDarkMode);
+    await _settingsBox.put(HiveKeys.themeMode, isDarkMode);
   }
 
   /// Returns the saved theme preference, defaults to system (null) if not set
   bool? getThemePreference() {
-    return _settingsBox.get(_keyThemeMode) as bool?;
+    return _settingsBox.get(HiveKeys.themeMode) as bool?;
   }
 
   /// Checks if the app is launched for the first time (to show onboarding)
   bool isFirstLaunch() {
-    return _settingsBox.get(_keyIsFirstLaunch, defaultValue: true) as bool;
+    return _settingsBox.get(HiveKeys.isFirstLaunch, defaultValue: true) as bool;
   }
 
   /// Marks the onboarding as completed
   Future<void> setFirstLaunchCompleted() async {
-    await _settingsBox.put(_keyIsFirstLaunch, false);
+    await _settingsBox.put(HiveKeys.isFirstLaunch, false);
   }
 
   // ==========================================
@@ -70,7 +61,7 @@ class LocalStorageService {
   // ==========================================
 
   List<String> getRecentSearches() {
-    final List<dynamic>? searches = _userBox.get(_keyRecentSearches);
+    final List<dynamic>? searches = _userBox.get(HiveKeys.recentSearches);
     if (searches == null) return [];
     return searches.cast<String>();
   }
@@ -89,11 +80,11 @@ class LocalStorageService {
       searches.removeLast();
     }
     
-    await _userBox.put(_keyRecentSearches, searches);
+    await _userBox.put(HiveKeys.recentSearches, searches);
   }
 
   Future<void> clearRecentSearches() async {
-    await _userBox.delete(_keyRecentSearches);
+    await _userBox.delete(HiveKeys.recentSearches);
   }
 
   // ==========================================

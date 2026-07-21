@@ -240,13 +240,13 @@ Admin Dashboard
 - Auth screens, role-based routing, pending approval flow
 - Admin Dashboard shell + Approval Queue
 
-### 🔄 Phase 2 — Core Commerce (Current Target)
+### 🔄 Phase 2 — Core Commerce (In Progress)
 
-- Product & Category Management (Admin)
-- Home Screen with category grid (Retailer)
-- Product Detail Screen
-- Cart & Checkout (with ₹2,500 minimum validation)
-- Order placement and Order History
+- [x] Home Screen with category grid (Retailer)
+- [x] Product Detail Screen, search, cart
+- [x] Checkout (with ₹2,500 minimum validation) — COD only for now; delivery charge is a flat placeholder pending Phase 3's per-km calculation
+- [x] Order placement and Order History
+- [ ] Product & Category Management (Admin) — not yet built; retailers currently browse a seeded demo catalog
 
 ### 📅 Phase 3 — Delivery & Payments
 

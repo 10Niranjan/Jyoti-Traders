@@ -1,18 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../core/utils/firestore_date_parser.dart';
+import '../../domain/entities/address_entity.dart';
+import '../../domain/entities/user_entity.dart';
 
-enum UserRole {
-  admin,
-  customer;
-
-  String get value => name;
-
-  static UserRole fromString(String role) {
-    return UserRole.values.firstWhere(
-      (e) => e.name.toLowerCase() == role.toLowerCase(),
-      orElse: () => UserRole.customer,
-    );
-  }
-}
+export '../../domain/entities/user_entity.dart' show UserRole, UserStatus;
 
 class UserModel {
   final String uid;
@@ -20,8 +10,11 @@ class UserModel {
   final String email;
   final String phone;
   final UserRole role;
-  final bool isApproved;
+  final UserStatus status;
   final String businessName;
+  final AddressEntity? address;
+  final String? gstNumber;
+  final String? fcmToken;
   final DateTime createdAt;
 
   UserModel({
@@ -30,10 +23,17 @@ class UserModel {
     required this.email,
     required this.phone,
     required this.role,
-    required this.isApproved,
+    required this.status,
     required this.businessName,
+    this.address,
+    this.gstNumber,
+    this.fcmToken,
     required this.createdAt,
   });
+
+  /// Backward-compatible view of [status] for existing call sites
+  /// (`AuthController`, screens) that only care about the binary check.
+  bool get isApproved => status == UserStatus.approved;
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
@@ -42,11 +42,31 @@ class UserModel {
       email: json['email'] as String? ?? '',
       phone: json['phone'] as String? ?? '',
       role: UserRole.fromString(json['role'] as String? ?? 'customer'),
-      isApproved: json['isApproved'] as bool? ?? false,
+      status: _statusFromJson(json),
       businessName: json['businessName'] as String? ?? '',
-      createdAt: json['createdAt'] != null
-          ? (json['createdAt'] as Timestamp).toDate()
-          : DateTime.now(),
+      address: _addressFromJson(json['address']),
+      gstNumber: json['gstNumber'] as String?,
+      fcmToken: json['fcmToken'] as String?,
+      createdAt: parseFirestoreDate(json['createdAt']),
+    );
+  }
+
+  /// Older docs only have `isApproved: bool`; new docs have `status: String`.
+  static UserStatus _statusFromJson(Map<String, dynamic> json) {
+    if (json['status'] != null) {
+      return UserStatus.fromString(json['status'] as String);
+    }
+    final legacyApproved = json['isApproved'] as bool? ?? false;
+    return legacyApproved ? UserStatus.approved : UserStatus.pending;
+  }
+
+  static AddressEntity? _addressFromJson(dynamic value) {
+    if (value == null) return null;
+    final map = Map<String, dynamic>.from(value as Map);
+    return AddressEntity(
+      street: map['street'] as String? ?? '',
+      city: map['city'] as String? ?? '',
+      pincode: map['pincode'] as String? ?? '',
     );
   }
 
@@ -57,10 +77,39 @@ class UserModel {
       'email': email,
       'phone': phone,
       'role': role.value,
+      'status': status.value,
       'isApproved': isApproved,
       'businessName': businessName,
-      'createdAt': Timestamp.fromDate(createdAt),
+      if (address != null)
+        'address': {
+          'street': address!.street,
+          'city': address!.city,
+          'pincode': address!.pincode,
+        },
+      'gstNumber': gstNumber,
+      'fcmToken': fcmToken,
+      // Plain DateTime, not Timestamp.fromDate() — this map is written to
+      // both real Firestore (which auto-converts DateTime -> Timestamp on
+      // write) and to Hive for simulation mode, which cannot serialize
+      // Timestamp directly.
+      'createdAt': createdAt,
     };
+  }
+
+  UserEntity toEntity() {
+    return UserEntity(
+      uid: uid,
+      fullName: name,
+      shopName: businessName,
+      email: email,
+      phone: phone,
+      role: role,
+      status: status,
+      address: address,
+      gstNumber: gstNumber,
+      fcmToken: fcmToken,
+      createdAt: createdAt,
+    );
   }
 
   UserModel copyWith({
@@ -69,8 +118,11 @@ class UserModel {
     String? email,
     String? phone,
     UserRole? role,
-    bool? isApproved,
+    UserStatus? status,
     String? businessName,
+    AddressEntity? address,
+    String? gstNumber,
+    String? fcmToken,
     DateTime? createdAt,
   }) {
     return UserModel(
@@ -79,8 +131,11 @@ class UserModel {
       email: email ?? this.email,
       phone: phone ?? this.phone,
       role: role ?? this.role,
-      isApproved: isApproved ?? this.isApproved,
+      status: status ?? this.status,
       businessName: businessName ?? this.businessName,
+      address: address ?? this.address,
+      gstNumber: gstNumber ?? this.gstNumber,
+      fcmToken: fcmToken ?? this.fcmToken,
       createdAt: createdAt ?? this.createdAt,
     );
   }
