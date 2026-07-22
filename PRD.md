@@ -251,6 +251,7 @@ Admin Dashboard
 - [x] Product Management (Admin) — full CRUD with image upload, active/inactive toggle, and low-stock alerts
 - [x] Category Management (Admin) — full CRUD with icon upload, active/inactive toggle, and drag-to-reorder
 - [x] Order Management (Admin) — filterable order list + status update dropdown (Pending → Confirmed → Out for Delivery → Delivered)
+- [x] Retailer Management (Admin) — retailer list with total spend/order count, tap-through to full order history — **Phase 4 (Admin Panel) now fully complete**
 
 ### 📅 Phase 3 — Delivery & Payments
 

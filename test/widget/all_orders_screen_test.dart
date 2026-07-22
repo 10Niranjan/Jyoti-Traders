@@ -5,7 +5,9 @@ import 'package:traders_retailer/data/repositories/repository_providers.dart';
 import 'package:traders_retailer/domain/entities/address_entity.dart';
 import 'package:traders_retailer/domain/entities/order_entity.dart';
 import 'package:traders_retailer/domain/entities/order_item_entity.dart';
+import 'package:traders_retailer/domain/entities/user_entity.dart';
 import 'package:traders_retailer/domain/repositories/order_repository.dart';
+import 'package:traders_retailer/domain/repositories/user_repository.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/admin/screens/all_orders_screen.dart';
 
@@ -26,14 +28,32 @@ class FakeOrderRepository implements OrderRepository {
   Future<void> updateOrderStatus(String orderId, OrderStatus status) async {}
 }
 
+class FakeUserRepository implements UserRepository {
+  final List<UserEntity> approved;
+  FakeUserRepository([this.approved = const []]);
+
+  @override
+  Stream<List<UserEntity>> watchPendingUsers() => const Stream.empty();
+
+  @override
+  Future<List<UserEntity>> getApprovedUsers() async => approved;
+
+  @override
+  Future<void> approveUser(String uid) async {}
+
+  @override
+  Future<void> rejectUser(String uid) async {}
+}
+
 OrderEntity _order({
   required String id,
   required String shopName,
+  String userId = 'u1',
   OrderStatus status = OrderStatus.pending,
 }) =>
     OrderEntity(
       id: id,
-      userId: 'u1',
+      userId: userId,
       shopName: shopName,
       items: [OrderItemEntity(productId: 'p1', name: 'Basmati Rice', qty: 2, unitPrice: Money(1500))],
       subtotal: Money(3000),
@@ -48,6 +68,14 @@ OrderEntity _order({
 Widget _wrap(FakeOrderRepository repo) => ProviderScope(
       overrides: [orderRepositoryProvider.overrideWithValue(repo)],
       child: const MaterialApp(home: AllOrdersScreen()),
+    );
+
+Widget _wrapScoped(FakeOrderRepository orderRepo, FakeUserRepository userRepo, String retailerId) => ProviderScope(
+      overrides: [
+        orderRepositoryProvider.overrideWithValue(orderRepo),
+        userRepositoryProvider.overrideWithValue(userRepo),
+      ],
+      child: MaterialApp(home: AllOrdersScreen(retailerId: retailerId)),
     );
 
 void main() {
@@ -93,5 +121,34 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('No delivered orders'), findsOneWidget);
+  });
+
+  testWidgets('scoped to a retailer, only that retailer\'s orders show and the shop name is the title', (tester) async {
+    final user = UserEntity(
+      uid: 'u1',
+      fullName: 'Owner u1',
+      shopName: 'Shop A',
+      email: 'u1@test.com',
+      phone: '9876543210',
+      role: UserRole.customer,
+      status: UserStatus.approved,
+      createdAt: DateTime.now(),
+    );
+
+    await tester.pumpWidget(_wrapScoped(
+      FakeOrderRepository([
+        _order(id: 'o1', shopName: 'Shop A', userId: 'u1'),
+        _order(id: 'o2', shopName: 'Shop B', userId: 'u2'),
+      ]),
+      FakeUserRepository([user]),
+      'u1',
+    ));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Shop A — Orders'), findsOneWidget); // app bar title
+    expect(find.text('Order #${'o1'.toUpperCase()}'), findsOneWidget);
+    expect(find.text('Order #${'o2'.toUpperCase()}'), findsNothing);
+    // The per-row shop name is redundant once already scoped to one retailer.
+    expect(find.text('Shop A'), findsNothing);
   });
 }

@@ -95,14 +95,26 @@ class AdminDashboardScreen extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => context.push(RouteNames.adminOrders),
-                  icon: const Icon(Icons.receipt_long_outlined, size: 18),
-                  label: const Text('All Orders'),
-                  style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => context.push(RouteNames.adminOrders),
+                      icon: const Icon(Icons.receipt_long_outlined, size: 18),
+                      label: const Text('All Orders'),
+                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => context.push(RouteNames.adminRetailers),
+                      icon: const Icon(Icons.storefront_outlined, size: 18),
+                      label: const Text('Retailers'),
+                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 28),

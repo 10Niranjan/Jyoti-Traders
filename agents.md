@@ -253,6 +253,26 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-07-23 (continued) — Phase 4.6, Retailer Management — Phase 4 Complete
+
+### 📋 Tasks completed:
+
+- **4.6 — Retailer Management**: the last item in Phase 4.
+  - `retailerSummariesProvider` — per-retailer order count and lifetime spend, derived client-side by grouping the existing `approvedUsersProvider`/`allOrdersProvider` streams by `userId` (no new repository query, same pattern as every other Phase 4 stat). Sorted by total spend, highest first.
+  - `RetailerListScreen` + `RetailerSummaryTile` — shop name, owner, total spend, order count, tap-through to that retailer's order history.
+  - Reused `AllOrdersScreen` for the tap-through history rather than building a second near-duplicate screen: it now takes an optional `retailerId` that scopes the order list, swaps the app-bar title to the retailer's shop name (looked up from `approvedUsersProvider`), and hides the per-row shop name (redundant once already scoped to one retailer). New route `/admin/retailers/:retailerId/orders`.
+  - Added a "Retailers" button to `AdminDashboardScreen`, next to "All Orders".
+- **Tests added** (4 new, 70 total): `retailer_list_screen_test.dart` (3 — empty state, a retailer with zero orders still lists correctly, spend/count computed and sorted correctly across multiple retailers), plus one new case in `all_orders_screen_test.dart` for the `retailerId`-scoped view (title, filtering, hidden shop-name row).
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 70/70 passing.
+- **Phase 4 — Admin Panel is now fully complete: 21/21 across 4.1–4.6.**
+
+### 💬 Latest Discussion Summary:
+
+1. `phases.md` updated: Phase 4 marked ✅ Complete (21/21) in both the summary table and its own section header. `PRD.md` §4/§12 updated: Retailer Management (Admin) checked off, noting Phase 4 is now fully complete.
+2. Current active phase moves to **Phase 5 — Delivery, Payments & Notifications**. Next immediate task: Firebase Cloud Messaging setup (`FirebaseMessaging.onMessage` + background handler, notification permission request, FCM token saved to Firestore on login/refresh) — this unblocks every FCM item deferred across Phases 3–4 (order-placed-to-admin, approval/rejection-to-retailer, status-change-to-retailer).
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

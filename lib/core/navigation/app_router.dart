@@ -16,6 +16,7 @@ import '../../features/admin/screens/all_orders_screen.dart';
 import '../../features/admin/screens/manage_categories_screen.dart';
 import '../../features/admin/screens/manage_products_screen.dart';
 import '../../features/admin/screens/order_management_screen.dart';
+import '../../features/admin/screens/retailer_list_screen.dart';
 import '../../features/auth/screens/pending_approval_screen.dart';
 import '../../features/cart/screens/cart_screen.dart';
 import '../../features/checkout/screens/checkout_screen.dart';
@@ -140,6 +141,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.adminOrderManagement,
         builder: (context, state) => OrderManagementScreen(orderId: state.pathParameters['orderId']!),
+      ),
+      GoRoute(
+        path: RouteNames.adminRetailers,
+        builder: (context, state) => const RetailerListScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminRetailerOrders,
+        builder: (context, state) => AllOrdersScreen(retailerId: state.pathParameters['retailerId']!),
       ),
 
       // Retailer bottom-nav shell — Home/Search/Cart/Orders/Profile keep

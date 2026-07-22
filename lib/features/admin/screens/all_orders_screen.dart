@@ -13,10 +13,17 @@ import '../../../shared/widgets/order_status_badge.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
 import '../controllers/admin_dashboard_controller.dart';
 
-/// `null` means "All" — kept out of [OrderStatus] itself since it isn't a
-/// real order state, just a UI filter option.
+/// `null` filter means "All" — kept out of [OrderStatus] itself since it
+/// isn't a real order state, just a UI filter option.
+///
+/// When [retailerId] is set, the list is additionally scoped to that
+/// retailer's orders only — used by [RetailerListScreen]'s "view history"
+/// tap-through, reusing this screen's list/filter UI rather than a near-
+/// duplicate.
 class AllOrdersScreen extends ConsumerStatefulWidget {
-  const AllOrdersScreen({super.key});
+  final String? retailerId;
+
+  const AllOrdersScreen({super.key, this.retailerId});
 
   @override
   ConsumerState<AllOrdersScreen> createState() => _AllOrdersScreenState();
@@ -28,9 +35,20 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
   @override
   Widget build(BuildContext context) {
     final ordersAsync = ref.watch(allOrdersProvider);
+    final retailerId = widget.retailerId;
+
+    final title = retailerId == null
+        ? 'All Orders'
+        : ref.watch(approvedUsersProvider).maybeWhen(
+            data: (users) {
+              final match = users.where((u) => u.uid == retailerId);
+              return match.isEmpty ? 'Retailer Orders' : '${match.first.shopName} — Orders';
+            },
+            orElse: () => 'Retailer Orders',
+          );
 
     return Scaffold(
-      appBar: AppBar(title: Text('All Orders', style: GoogleFonts.poppins(fontWeight: FontWeight.bold))),
+      appBar: AppBar(title: Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.bold))),
       body: Column(
         children: [
           Padding(
@@ -67,7 +85,8 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
                   ],
                 ),
                 data: (orders) {
-                  final filtered = _filter == null ? orders : orders.where((o) => o.orderStatus == _filter).toList();
+                  final scoped = retailerId == null ? orders : orders.where((o) => o.userId == retailerId).toList();
+                  final filtered = _filter == null ? scoped : scoped.where((o) => o.orderStatus == _filter).toList();
 
                   if (filtered.isEmpty) {
                     return ListView(
@@ -109,11 +128,13 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
                                   OrderStatusBadge(status: order.orderStatus),
                                 ],
                               ),
-                              const SizedBox(height: 6),
-                              Text(
-                                order.shopName,
-                                style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.primary),
-                              ),
+                              if (retailerId == null) ...[
+                                const SizedBox(height: 6),
+                                Text(
+                                  order.shopName,
+                                  style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600, color: AppColors.primary),
+                                ),
+                              ],
                               const SizedBox(height: 4),
                               Text(
                                 '${order.items.length} items · ${formatOrderDate(order.createdAt)}',

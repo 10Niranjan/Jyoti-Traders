@@ -15,7 +15,7 @@
 | Phase 1 | Foundation & Infrastructure | ✅ Complete | 10/10 |
 | Phase 2 | Domain Layer & Data Models | ✅ Complete (Auth use cases deliberately deferred — see note) | 8/12 |
 | Phase 3 | Core Commerce — Retailer Side | ✅ Complete (delivery charge stubbed, UPI/FCM deferred — see note) | 12/14 |
-| Phase 4 | Admin Panel — Full Implementation | 🔄 In Progress | 18/21 |
+| Phase 4 | Admin Panel — Full Implementation | ✅ Complete | 21/21 |
 | Phase 5 | Delivery, Payments & Notifications | ⬜ Not Started | 0/10 |
 | Phase 6 | Polish, Animations & UX Refinement | ⬜ Not Started | 0/9 |
 | Phase 7 | Testing & Quality Assurance | ⬜ Not Started | 0/10 |
@@ -175,8 +175,8 @@
 
 ---
 
-## 🔄 Phase 4 — Admin Panel (Full Implementation)
-> **Status**: IN PROGRESS 🔄 (4.1 complete 2026-07-22)  
+## ✅ Phase 4 — Admin Panel (Full Implementation)
+> **Status**: COMPLETE ✅ (4.1–4.2 2026-07-22, 4.3–4.6 2026-07-23)  
 > **Goal**: Give the admin owner full control — manage products, categories, approve retailers, and handle orders.
 
 ### 4.1 — Admin Dashboard (Real Data) ✅
@@ -218,9 +218,12 @@
 
 > **Scope notes**: (1) Filter chips cover all 4 real `OrderStatus` values (Pending / Confirmed / Out for Delivery / Delivered), not just the 3 named in this checklist — the extra status already exists in the domain model and hiding it from the filter would have made "Out for Delivery" orders unreachable by filter. (2) Extracted `OrderDetailBody` into `shared/widgets/` from what was `OrderDetailScreen`'s private `_OrderDetailBody` — now shared between the retailer's read-only order detail view and the admin's `OrderManagementScreen`, which adds the shop name (`showShopName: true`) and a status-update dropdown via a `header` slot rather than forking a near-duplicate of the same ~90-line layout. (3) Added `OrderStatusLabelExtension.label` on `OrderStatus` (`core/utils/extensions.dart`) so `OrderStatusBadge` and the new admin status dropdown render identical wording from one source instead of two parallel switch statements. (4) `AllOrdersScreen`/`OrderManagementScreen` reuse the dashboard's existing `allOrdersProvider` (`admin_dashboard_controller.dart`) rather than adding a duplicate stream — it was already unfiltered and already the source the dashboard's own stats are derived from. (5) **Real bug found and fixed**: `order.id.substring(0, 8)` (used to build the "Order #XXXXXXXX" label) would throw a `RangeError` on any order id under 8 characters. Real ids are always 36-char UUIDs so this was never reachable in production, but it's a defensive gap in shared display code — fixed once via a new `String.shortId` extension and applied to `OrderDetailBody`, `AllOrdersScreen`, and the pre-existing `OrderHistoryScreen`, which had the same unguarded call. (6) Tests: `all_orders_screen_test.dart` (4 — empty state, unfiltered listing, status filtering, filtered-empty message), `order_management_screen_test.dart` (3 — renders breakdown, not-found state, status-change interaction confirms via repository call + snackbar). 66/66 passing, `flutter analyze` zero issues.
 
-### 4.6 — Retailer Management
-- [ ] Build `RetailerListScreen` — all approved retailers with total spend, order count
-- [ ] Allow admin to tap a retailer and view their full order history
+### 4.6 — Retailer Management ✅
+- [x] Build `RetailerListScreen` — all approved retailers with total spend, order count
+- [x] Allow admin to tap a retailer and view their full order history
+
+> **Scope notes**: (1) `retailerSummariesProvider` derives per-retailer order count and total spend client-side from the existing `approvedUsersProvider` + `allOrdersProvider` streams (grouped by `userId`) — no new repository query, consistent with every other Phase 4 stat. Sorted by total spend, highest first, so the admin's most valuable retailers surface at the top. (2) Reused `AllOrdersScreen` for the tap-through history instead of a new screen — it now takes an optional `retailerId` that scopes the list, swaps the app-bar title to the retailer's shop name, and hides the now-redundant per-row shop name. Route: `/admin/retailers/:retailerId/orders`. (3) Added a "Retailers" button to `AdminDashboardScreen`, alongside "All Orders" in a second button row. (4) Tests: `retailer_list_screen_test.dart` (3 — empty state, zero-order retailer still listed, spend/count computed correctly and sorted), plus one new case in `all_orders_screen_test.dart` covering the `retailerId` scoping (title, filtered list, hidden shop-name row). 70/70 passing, `flutter analyze` zero issues.
+> **Phase 4 complete.** All 21 tasks across 4.1–4.6 done.
 
 ---
 
@@ -299,9 +302,9 @@
 
 > **When you ask "what's next?" or "what should we do now?" — the answer is always the first unchecked `[ ]` task inside the current active phase.**
 
-### Current Active Phase: **Phase 4 — Admin Panel (Full Implementation)**
+### Current Active Phase: **Phase 5 — Delivery, Payments & Notifications**
 ### Next Immediate Task:
-> ✅ 4.1–4.5 are done. Move to **4.6 Retailer Management** — build `RetailerListScreen` (all approved retailers with total spend and order count, derived client-side from `UserRepository.getApprovedUsers()` + `allOrdersProvider` grouped by `userId`, same "derive from an existing stream" pattern used throughout Phase 4) and let the admin tap a retailer to view their full order history (reuse `AllOrdersScreen`'s list-tile styling, filtered to that retailer's `userId`). This is the last item in Phase 4 — completing it closes out the phase (21/21).
+> ✅ Phase 4 (Admin Panel) is fully complete — 21/21. Phase 5 starts with Firebase Cloud Messaging setup: `FirebaseMessaging.onMessage` + background handler, request notification permission on app startup, and save the FCM token to Firestore on login/refresh. This unblocks every FCM item deferred from Phases 3–4 (order-placed-to-admin, approval/rejection-to-retailer, status-change-to-retailer).
 
 ---
 
