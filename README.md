@@ -32,5 +32,5 @@ flutter analyze
 flutter test
 ```
 
-<!-- Last updated maintenance log: 2026-07-22 -->
+<!-- Maintenance check tag: 2026-07-22 (routine check) -->
 
