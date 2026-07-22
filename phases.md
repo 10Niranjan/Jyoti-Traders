@@ -15,7 +15,7 @@
 | Phase 1 | Foundation & Infrastructure | ✅ Complete | 10/10 |
 | Phase 2 | Domain Layer & Data Models | ✅ Complete (Auth use cases deliberately deferred — see note) | 8/12 |
 | Phase 3 | Core Commerce — Retailer Side | ✅ Complete (delivery charge stubbed, UPI/FCM deferred — see note) | 12/14 |
-| Phase 4 | Admin Panel — Full Implementation | ⬜ Not Started | 0/12 |
+| Phase 4 | Admin Panel — Full Implementation | 🔄 In Progress | 6/21 |
 | Phase 5 | Delivery, Payments & Notifications | ⬜ Not Started | 0/10 |
 | Phase 6 | Polish, Animations & UX Refinement | ⬜ Not Started | 0/9 |
 | Phase 7 | Testing & Quality Assurance | ⬜ Not Started | 0/10 |
@@ -175,20 +175,24 @@
 
 ---
 
-## ⬜ Phase 4 — Admin Panel (Full Implementation)
-> **Status**: NOT STARTED ⬜  
+## 🔄 Phase 4 — Admin Panel (Full Implementation)
+> **Status**: IN PROGRESS 🔄 (4.1 complete 2026-07-22)  
 > **Goal**: Give the admin owner full control — manage products, categories, approve retailers, and handle orders.
 
-### 4.1 — Admin Dashboard (Real Data)
-- [ ] Wire `AdminDashboardScreen` to real Firestore counts (today's orders, pending approvals, total retailers)
-- [ ] Build stat cards with real-time stream data
-- [ ] Add `fl_chart` bar chart — orders per day (last 7 days)
+### 4.1 — Admin Dashboard (Real Data) ✅
+- [x] Wire `AdminDashboardScreen` to real Firestore counts (today's orders, pending approvals, total retailers) — via new `admin_dashboard_controller.dart` providers over the existing `UserRepository`/`OrderRepository`
+- [x] Build stat cards with real-time stream data — `AdminStatCard` widget, `StreamProvider`-backed, shimmer while loading
+- [x] Add `fl_chart` bar chart — orders per day (last 7 days) — `OrdersBarChart` widget
 
-### 4.2 — Retailer Approval
-- [ ] Build `ApprovalQueueScreen` — live stream of pending users
-- [ ] Build `RetailerApprovalCard` — shop name, phone, address, Approve/Reject buttons
-- [ ] Implement `approvalController` — calls `ApproveUserUseCase` / `RejectUserUseCase`
-- [ ] Send FCM to retailer on approval/rejection
+> **Scope notes**: (1) Moved `AdminDashboardScreen` from `lib/features/home/screens/` to `lib/features/admin/screens/` to match the module structure `ARCHITECTURE.md` already documents (needed by 4.2–4.6 anyway). (2) Replaced the old `ConsumerStatefulWidget`/`setState()` + direct `FirebaseAuthRepository` casting (a Phase-1 shortcut that bypassed the domain layer) with a proper `ConsumerWidget` over `StreamProvider`s, per rules.md §2.2/§5. (3) Added `RejectUserUseCase` (mirrors `ApproveUserUseCase`) to wire up the approval queue's previously-dead "Reject" button — `UserRepository.rejectUser()` already existed unused. (4) "Today's orders"/"last 7 days" counts are derived client-side from `OrderRepository.watchAllOrders()` rather than new aggregation queries, consistent with how `orderByIdProvider` derives from `orderHistoryProvider` elsewhere in the codebase.
+
+### 4.2 — Retailer Approval ✅
+- [x] Build `ApprovalQueueScreen` — live stream of pending users (`pendingUsersProvider`), pull-to-refresh, shimmer loading, empty/error states
+- [x] Build `RetailerApprovalCard` — shop name, owner, phone, **address** (falls back to "Address not provided yet" — retailers don't set one until Profile, Phase 3.7), Approve/Reject buttons with a per-card busy spinner
+- [x] Implement `approvalController` — `StateNotifier<AsyncValue<void>>` calling `ApproveUserUseCase` / `RejectUserUseCase`, same pattern as `CheckoutController`
+- [ ] ~~Send FCM to retailer on approval/rejection~~ — deferred to Phase 5 (FCM isn't set up yet, same deferral as 3.5/4.1)
+
+> **Scope notes**: (1) The 4.1 dashboard's inline approval queue now shows a 3-item preview + "View All" link into this screen, reusing `RetailerApprovalCard`/`EmptyApprovalQueueCard` rather than duplicating markup. (2) New route `RouteNames.adminApprovalQueue` (`/admin/approval-queue`), a top-level push route like `checkout`/`orderDetail` — no extra role guard needed since it's admin-only reachable from the dashboard and GoRouter's redirect already doesn't restrict authenticated-admin sub-routes. (3) Found and fixed a real bug via an interaction widget test: `approvalControllerProvider` is `.autoDispose`, and grabbing its notifier via `ref.read` in `build()` let Riverpod dispose it mid-await on the first approve/reject tap (`StateError: Tried to use ApprovalController after dispose was called`) — fixed by `ref.watch`-ing the notifier instead so the card's own subscription keeps it alive for the async call.
 
 ### 4.3 — Product Management
 - [ ] Build `ManageProductsScreen` — paginated product list with edit/delete actions
@@ -291,7 +295,7 @@
 
 ### Current Active Phase: **Phase 4 — Admin Panel (Full Implementation)**
 ### Next Immediate Task:
-> ✅ Start with **4.1 Admin Dashboard (Real Data)** — wire the existing `AdminDashboardScreen` shell to real Firestore/simulated counts (today's orders, pending approvals, total retailers) instead of its Phase-1 placeholder stats.
+> ✅ 4.1 and 4.2 are done. Move to **4.3 Product Management** — build `ManageProductsScreen` (paginated list, edit/delete), `AddEditProductScreen` (form + image upload to Firebase Storage), `adminProductController` (CRUD), and a stock ≤ 5 alert highlight.
 
 ---
 

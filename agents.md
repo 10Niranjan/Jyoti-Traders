@@ -162,6 +162,27 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-07-22 — Phase 4.1 & 4.2, Admin Dashboard + Approval Queue
+
+### 📋 Tasks completed:
+
+- **4.1 — Admin Dashboard (Real Data)**: replaced the Phase-1 placeholder (`ConsumerStatefulWidget` + `setState()` + a direct `FirebaseAuthRepository` cast that bypassed the domain layer entirely) with a real `ConsumerWidget` wired to `StreamProvider`s.
+  - New `lib/features/admin/controllers/admin_dashboard_controller.dart` — `pendingApprovalsCountProvider`, `totalRetailersCountProvider`, `todayOrderCountProvider`, `last7DaysOrderCountsProvider`, all derived client-side from `OrderRepository.watchAllOrders()` / `UserRepository`, the same "derive from an existing stream" pattern `orderByIdProvider` already used — no new repository/datasource methods needed for pure aggregation.
+  - Added `fl_chart` (was already pre-approved in `ARCHITECTURE.md`/`rules.md` but never installed) for a 7-day orders bar chart.
+  - Moved `AdminDashboardScreen` from `lib/features/home/screens/` to `lib/features/admin/screens/`, matching the `lib/features/admin/` module `ARCHITECTURE.md` already documented but which didn't exist on disk yet — needed anyway for 4.2–4.6.
+  - Added `RejectUserUseCase` (mirrors `ApproveUserUseCase`) — `UserRepository.rejectUser()` already existed but the UI's "Reject" button was a dead no-op.
+- **4.2 — Retailer Approval**: extracted a dedicated `ApprovalQueueScreen` (live stream, pull-to-refresh, shimmer/empty/error states) + reusable `RetailerApprovalCard` (shop name, owner, phone, address — falls back to "Address not provided yet" since address isn't collected at signup) + `approvalController` (`StateNotifier<AsyncValue<void>>`, same shape as `CheckoutController`). The 4.1 dashboard now shows a 3-item queue preview with a "View All" link into the full screen, reusing the same widgets. New push route `RouteNames.adminApprovalQueue` (`/admin/approval-queue`).
+- **Real bug found and fixed via an interaction test** (not just a render test): `approvalControllerProvider` is `.autoDispose`; grabbing its notifier with `ref.read()` inside `build()` let Riverpod tear it down mid-await the moment nothing was left watching it, so the very first Approve/Reject tap threw `StateError: Tried to use ApprovalController after dispose was called`. Fixed by `ref.watch`-ing the notifier instead, so the card's own subscription keeps the provider alive for the async call. A widget test that only pumps-and-checks-text would have missed this — it only surfaced once a test actually tapped the button and awaited the result.
+- **Tests added**: `test/unit/usecases/reject_user_usecase_test.dart`, `test/widget/admin_dashboard_screen_test.dart` (fake-repository-backed, asserts real derived stat counts/chart/queue render), `test/widget/approval_queue_screen_test.dart` (5 tests — empty state, address rendering incl. the no-address fallback, and the tap-Approve/tap-Reject interaction tests that caught the autoDispose bug above).
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 37/37 passing.
+
+### 💬 Latest Discussion Summary:
+
+1. Confirmed with the user before starting on structural decisions (moving the screen into a new `lib/features/admin/` module, adding the `fl_chart` dependency, wiring the previously-dead Reject button) — user said to use judgment and proceed.
+2. `phases.md` updated: 4.1 and 4.2 marked complete inline (6/21 in Phase 4; the FCM-on-approval/rejection sub-bullet stays deferred to Phase 5, same reasoning as 3.5). `PRD.md` §12 Phase 2 updated to note the Admin Dashboard and Approval Queue now run on real data instead of Phase-1 placeholders. Current active phase remains **Phase 4 — Admin Panel**, next up is **4.3 Product Management**.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

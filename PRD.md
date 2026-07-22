@@ -246,6 +246,8 @@ Admin Dashboard
 - [x] Product Detail Screen, search, cart
 - [x] Checkout (with ₹2,500 minimum validation) — COD only for now; delivery charge is a flat placeholder pending Phase 3's per-km calculation
 - [x] Order placement and Order History
+- [x] Admin Dashboard — real-time stats (pending approvals, total retailers, today's orders) + orders-per-day bar chart, replacing the Phase-1 placeholder stats
+- [x] Admin Retailer Approval — dedicated approval queue screen with live approve/reject, replacing the Phase-1 placeholder
 - [ ] Product & Category Management (Admin) — not yet built; retailers currently browse a seeded demo catalog
 
 ### 📅 Phase 3 — Delivery & Payments
