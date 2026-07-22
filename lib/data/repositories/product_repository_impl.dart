@@ -22,6 +22,13 @@ class ProductRepositoryImpl implements ProductRepository {
   }
 
   @override
+  Stream<List<ProductEntity>> watchAllProducts() {
+    // Deliberately not cached to `_local` — that cache backs retailer
+    // offline browsing, which must not see inactive products.
+    return _remote.watchAllProducts().map((list) => list.map((m) => m.toEntity()).toList());
+  }
+
+  @override
   Future<List<ProductEntity>> searchProducts(String query) async {
     final results = await _remote.searchProducts(query);
     return results.map((m) => m.toEntity()).toList();

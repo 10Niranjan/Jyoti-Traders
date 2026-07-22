@@ -183,6 +183,30 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-07-22 (continued) — Phase 4.3, Product Management
+
+### 📋 Tasks completed:
+
+- **4.3 — Product Management**: full admin CRUD over the product catalog.
+  - `ManageProductsScreen` — product list with edit/delete, pull-to-refresh, shimmer/empty/error states, and a delete confirmation dialog that explicitly points the admin at the "Active" toggle as the non-destructive alternative.
+  - `AddEditProductScreen` — one screen serving both create and edit, with validation (name required, price > 0, stock ≥ 0, category required), a category dropdown fed by the existing `categoriesProvider`, a `ProductUnit` dropdown, description, and an active toggle. Extracted `ProductImagePickerField` into `widgets/` to stay under rules.md §4.1's 300-line screen limit.
+  - `AdminProductController` — `StateNotifier<AsyncValue<void>>` with explicit `create()`/`update()`/`delete()` methods, plus `allProductsProvider` and a derived `adminProductByIdProvider`. New use cases: `CreateProductUseCase`, `UpdateProductUseCase`, `DeleteProductUseCase`, `GetAllProductsUseCase`.
+  - `ImageUploadService` (`core/services/`) + `StoragePaths` — real Firebase Storage upload when a live project is configured, falling back to returning the picked file's local path in simulation mode (same `isFirebasePlaceholder` pattern every other Firebase-touching class here uses). Admin screens render local paths via `Image.file`; retailer-side `CachedNetworkImage` already degrades to its placeholder icon via `errorWidget`, so nothing breaks either way.
+  - Low-stock alerting via a new `AppConstants.kLowStockThreshold = 5` — a per-row warning icon + bold red stock count, plus a summary banner at the top of the list.
+- **Real bug found and fixed**: `watchProducts()` hardcoded `isActive == true` in **both** its Firestore and Hive-simulation branches — correct for retailer browsing, but it meant an admin who deactivated a product could never see it again to re-activate it. Fixed additively with a separate `watchAllProducts()` threaded through datasource → repository interface → impl → new use case, leaving retailer browsing completely untouched. Covered by a new integration test asserting both visibility rules at once.
+- **New packages**: `firebase_storage` (already pre-approved in rules.md §1) and `image_picker` — the latter was **not** in the approved list, so per rules.md §11 it was explicitly put to the user for approval before being added, and approved.
+- **Tests added** (12 new, 49 total): `manage_products_screen_test.dart` (6 — empty state, list rendering, inactive-products-visible, low-stock banner/warning, and a delete flow verifying the confirmation dialog actually gates the delete), `add_edit_product_screen_test.dart` (5 — create/edit modes, validation blocking submission, edit keeping the product's id rather than duplicating), and one integration test for the `isActive` fix above.
+  - Note: the Add/Edit form tests needed an enlarged test viewport (1000×2400) — the form is taller than the default 800×600 surface, which left the submit button off-screen where taps silently no-op. That was a test-harness artifact, not an app bug.
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 49/49 passing.
+
+### 💬 Latest Discussion Summary:
+
+1. User asked whether to start 4.3 or wait on the client for real catalog data/Firebase access. Recommended starting now — the client items only block making it *real*, not building it, and the simulation-mode fallback means zero rework once Firebase lands. User agreed.
+2. Approved `image_picker` as the image-picking package (over `file_picker`) when asked, per rules.md §11.
+3. `phases.md` updated: 4.3 marked complete with scope notes (11/21 in Phase 4). Next up is **4.4 Category Management**, which should be simpler — `CategoryRepository` already has full CRUD and no `isActive` read-filter gap, and `ImageUploadService` is reusable for the category icon.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

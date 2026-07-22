@@ -15,7 +15,7 @@
 | Phase 1 | Foundation & Infrastructure | ✅ Complete | 10/10 |
 | Phase 2 | Domain Layer & Data Models | ✅ Complete (Auth use cases deliberately deferred — see note) | 8/12 |
 | Phase 3 | Core Commerce — Retailer Side | ✅ Complete (delivery charge stubbed, UPI/FCM deferred — see note) | 12/14 |
-| Phase 4 | Admin Panel — Full Implementation | 🔄 In Progress | 6/21 |
+| Phase 4 | Admin Panel — Full Implementation | 🔄 In Progress | 11/21 |
 | Phase 5 | Delivery, Payments & Notifications | ⬜ Not Started | 0/10 |
 | Phase 6 | Polish, Animations & UX Refinement | ⬜ Not Started | 0/9 |
 | Phase 7 | Testing & Quality Assurance | ⬜ Not Started | 0/10 |
@@ -194,12 +194,14 @@
 
 > **Scope notes**: (1) The 4.1 dashboard's inline approval queue now shows a 3-item preview + "View All" link into this screen, reusing `RetailerApprovalCard`/`EmptyApprovalQueueCard` rather than duplicating markup. (2) New route `RouteNames.adminApprovalQueue` (`/admin/approval-queue`), a top-level push route like `checkout`/`orderDetail` — no extra role guard needed since it's admin-only reachable from the dashboard and GoRouter's redirect already doesn't restrict authenticated-admin sub-routes. (3) Found and fixed a real bug via an interaction widget test: `approvalControllerProvider` is `.autoDispose`, and grabbing its notifier via `ref.read` in `build()` let Riverpod dispose it mid-await on the first approve/reject tap (`StateError: Tried to use ApprovalController after dispose was called`) — fixed by `ref.watch`-ing the notifier instead so the card's own subscription keeps it alive for the async call.
 
-### 4.3 — Product Management
-- [ ] Build `ManageProductsScreen` — paginated product list with edit/delete actions
-- [ ] Build `AddEditProductScreen` — form: name, category, price, unit, stock, image upload, active toggle
-- [ ] Implement product image upload to Firebase Storage
-- [ ] Implement `adminProductController` — CRUD operations on Firestore products
-- [ ] Add product stock alert (highlight when stock ≤ 5)
+### 4.3 — Product Management ✅
+- [x] Build `ManageProductsScreen` — product list with edit/delete actions, pull-to-refresh, shimmer/empty/error states, delete confirmation dialog
+- [x] Build `AddEditProductScreen` — form: name, category dropdown, price, unit, stock, description, image picker, active toggle, with validation
+- [x] Implement product image upload to Firebase Storage — `ImageUploadService`, with simulation-mode fallback
+- [x] Implement `adminProductController` — CRUD via new `Create`/`Update`/`Delete`/`GetAllProducts` use cases
+- [x] Add product stock alert (highlight when stock ≤ `AppConstants.kLowStockThreshold`) — per-row warning + a summary banner
+
+> **Scope notes**: (1) **Real bug found and fixed**: `watchProducts()` hardcoded `isActive == true` in *both* its Firestore and simulation branches (retailer-browsing semantics), so deactivated products would have been invisible to the admin — permanently unrecoverable, since there'd be no way to find one to re-activate it. Added a separate `watchAllProducts()` through datasource → repository → use case rather than changing the existing method, so retailer browsing is untouched; covered by a new integration test asserting both visibilities. (2) New packages: `firebase_storage` (already pre-approved in rules.md §1) and `image_picker` (**explicitly approved by the user** this session, as rules.md §11 requires — it was not in the approved list). (3) Firebase is still on placeholder credentials, so `ImageUploadService` falls back to returning the picked file's **local path** as the image URL; admin screens render that via `Image.file`, and retailer-side `CachedNetworkImage` degrades to its existing placeholder icon through `errorWidget`. When a real Firebase project is configured this starts returning real download URLs with no call-site changes. (4) "Paginated" is implemented as the existing capped `.limit(200)` query, matching every other list in this codebase — no cursor-based infinite scroll exists anywhere yet, and introducing that pattern for a catalog of dozens of SKUs would be premature. (5) `ProductEntity.copyWith({imageUrl})` added — narrow by design, only the upload flow needs it.
 
 ### 4.4 — Category Management
 - [ ] Build `ManageCategoriesScreen` — list with drag-to-reorder display order
@@ -295,7 +297,7 @@
 
 ### Current Active Phase: **Phase 4 — Admin Panel (Full Implementation)**
 ### Next Immediate Task:
-> ✅ 4.1 and 4.2 are done. Move to **4.3 Product Management** — build `ManageProductsScreen` (paginated list, edit/delete), `AddEditProductScreen` (form + image upload to Firebase Storage), `adminProductController` (CRUD), and a stock ≤ 5 alert highlight.
+> ✅ 4.1, 4.2 and 4.3 are done. Move to **4.4 Category Management** — build `ManageCategoriesScreen` (list with drag-to-reorder `displayOrder`), `AddEditCategoryScreen` (name, icon upload, active toggle), and `adminCategoryController`. Note `CategoryRepository` already exposes full CRUD and `watchCategories()` is *not* `isActive`-filtered, so unlike 4.3 there's no data-layer gap to fix first — and `ImageUploadService` can be reused for the category icon.
 
 ---
 

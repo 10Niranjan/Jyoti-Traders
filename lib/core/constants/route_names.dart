@@ -8,6 +8,9 @@ class RouteNames {
   static const String home = '/home';
   static const String admin = '/admin';
   static const String adminApprovalQueue = '/admin/approval-queue';
+  static const String adminProducts = '/admin/products';
+  static const String adminAddProduct = '/admin/products/new';
+  static const String adminEditProduct = '/admin/products/:productId/edit';
 
   // Retailer bottom-nav tabs (Phase 3)
   static const String search = '/search';
@@ -21,6 +24,8 @@ class RouteNames {
   static const String checkout = '/checkout';
   static const String orderSuccess = '/order-success/:orderId';
   static const String orderDetail = '/order/:orderId';
+
+  static String adminEditProductPath(String productId) => '/admin/products/$productId/edit';
 
   static String productCategoryPath(String categoryId) => '/product-category/$categoryId';
   static String productDetailPath(String productId) => '/product/$productId';

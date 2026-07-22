@@ -8,8 +8,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../features/auth/controllers/auth_controller.dart';
 import '../../features/auth/controllers/auth_state.dart';
 import '../../features/auth/screens/auth_screen.dart';
+import '../../features/admin/screens/add_edit_product_screen.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
 import '../../features/admin/screens/approval_queue_screen.dart';
+import '../../features/admin/screens/manage_products_screen.dart';
 import '../../features/auth/screens/pending_approval_screen.dart';
 import '../../features/cart/screens/cart_screen.dart';
 import '../../features/checkout/screens/checkout_screen.dart';
@@ -102,6 +104,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.adminApprovalQueue,
         builder: (context, state) => const ApprovalQueueScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminProducts,
+        builder: (context, state) => const ManageProductsScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminAddProduct,
+        builder: (context, state) => const AddEditProductScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminEditProduct,
+        builder: (context, state) => AddEditProductScreen(productId: state.pathParameters['productId']!),
       ),
 
       // Retailer bottom-nav shell — Home/Search/Cart/Orders/Profile keep

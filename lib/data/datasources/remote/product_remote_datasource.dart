@@ -56,6 +56,19 @@ class ProductRemoteDatasource {
     return query.limit(200).snapshots().map((snap) => snap.docs.map((d) => d.data()).toList());
   }
 
+  /// Admin-side product list — unlike [watchProducts], this deliberately
+  /// does **not** filter on `isActive`, so the admin can still see (and
+  /// re-activate) products they've deactivated.
+  Stream<List<ProductModel>> watchAllProducts() {
+    if (_useMock) {
+      return () async* {
+        yield _readAllSimulated();
+        yield* _controller.stream;
+      }();
+    }
+    return _collection.limit(200).snapshots().map((snap) => snap.docs.map((d) => d.data()).toList());
+  }
+
   Future<List<ProductModel>> searchProducts(String query) async {
     final lowerQuery = query.trim().toLowerCase();
     if (lowerQuery.isEmpty) return [];

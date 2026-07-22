@@ -72,6 +72,20 @@ class AdminDashboardScreen extends ConsumerWidget {
               const SizedBox(height: 20),
               const OrdersBarChart(),
 
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => context.push(RouteNames.adminProducts),
+                      icon: const Icon(Icons.inventory_2_outlined, size: 18),
+                      label: const Text('Manage Products'),
+                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                    ),
+                  ),
+                ],
+              ),
+
               const SizedBox(height: 28),
 
               Row(

@@ -114,6 +114,44 @@ void main() {
     expect(searchResults, isNotEmpty);
   });
 
+  test('deactivated products stay visible to the admin but disappear from retailer browsing', () async {
+    final productRepo = ProductRepositoryImpl(
+      ProductRemoteDatasource(catalogBox: catalogBox),
+      ProductLocalDatasource(catalogBox: catalogBox),
+    );
+
+    await productRepo.createProduct(ProductEntity(
+      id: 'prod_active',
+      name: 'Active Product',
+      categoryId: 'cat_grains',
+      imageUrl: '',
+      price: Money(500),
+      unit: ProductUnit.kg,
+      stock: 10,
+      isActive: true,
+    ));
+    await productRepo.createProduct(ProductEntity(
+      id: 'prod_hidden',
+      name: 'Hidden Product',
+      categoryId: 'cat_grains',
+      imageUrl: '',
+      price: Money(500),
+      unit: ProductUnit.kg,
+      stock: 10,
+      isActive: false,
+    ));
+
+    // Retailer browsing must not surface the inactive one...
+    final browsable = await productRepo.watchProducts().first;
+    expect(browsable.map((p) => p.id), contains('prod_active'));
+    expect(browsable.map((p) => p.id), isNot(contains('prod_hidden')));
+
+    // ...but the admin list must, or a deactivated product could never be
+    // found again to re-activate it.
+    final allForAdmin = await productRepo.watchAllProducts().first;
+    expect(allForAdmin.map((p) => p.id), containsAll(['prod_active', 'prod_hidden']));
+  });
+
   test('cart add/update/clear round-trips through Hive', () async {
     final cartRepo = CartRepositoryImpl(CartLocalDatasource(cartBox: cartBox));
 

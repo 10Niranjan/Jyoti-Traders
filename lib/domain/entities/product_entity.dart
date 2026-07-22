@@ -42,6 +42,20 @@ class ProductEntity extends Equatable {
 
   bool get isInStock => stock > 0;
 
+  ProductEntity copyWith({String? imageUrl}) {
+    return ProductEntity(
+      id: id,
+      name: name,
+      categoryId: categoryId,
+      imageUrl: imageUrl ?? this.imageUrl,
+      price: price,
+      unit: unit,
+      stock: stock,
+      description: description,
+      isActive: isActive,
+    );
+  }
+
   @override
   List<Object?> get props =>
       [id, name, categoryId, imageUrl, price, unit, stock, description, isActive];
