@@ -9,6 +9,8 @@ import 'package:traders_retailer/domain/repositories/product_repository.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/admin/screens/add_edit_product_screen.dart';
 
+import '../helpers/test_viewport.dart';
+
 class FakeCategoryRepository implements CategoryRepository {
   @override
   Stream<List<CategoryEntity>> watchCategories() => Stream.value(const [
@@ -64,19 +66,9 @@ Widget _wrap(FakeProductRepository productRepo, {String? productId}) => Provider
     );
 
 void main() {
-  // The form is taller than the default 800x600 test surface, which would
-  // leave the submit button un-tappable (off-screen hit tests are no-ops).
-  setUp(() {
-    final view = TestWidgetsFlutterBinding.ensureInitialized().platformDispatcher.views.first;
-    view.physicalSize = const Size(1000, 2400);
-    view.devicePixelRatio = 1.0;
-  });
-
-  tearDown(() {
-    final view = TestWidgetsFlutterBinding.ensureInitialized().platformDispatcher.views.first;
-    view.resetPhysicalSize();
-    view.resetDevicePixelRatio();
-  });
+  // This form is taller than the default 800x600 test surface, which would
+  // otherwise leave the submit button outside the hit-testable area.
+  useTallTestViewport();
 
   testWidgets('create mode shows an empty "Add Product" form', (tester) async {
     await tester.pumpWidget(_wrap(FakeProductRepository()));
