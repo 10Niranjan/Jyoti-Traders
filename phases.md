@@ -15,7 +15,7 @@
 | Phase 1 | Foundation & Infrastructure | ✅ Complete | 10/10 |
 | Phase 2 | Domain Layer & Data Models | ✅ Complete (Auth use cases deliberately deferred — see note) | 8/12 |
 | Phase 3 | Core Commerce — Retailer Side | ✅ Complete (delivery charge stubbed, UPI/FCM deferred — see note) | 12/14 |
-| Phase 4 | Admin Panel — Full Implementation | 🔄 In Progress | 14/21 |
+| Phase 4 | Admin Panel — Full Implementation | 🔄 In Progress | 18/21 |
 | Phase 5 | Delivery, Payments & Notifications | ⬜ Not Started | 0/10 |
 | Phase 6 | Polish, Animations & UX Refinement | ⬜ Not Started | 0/9 |
 | Phase 7 | Testing & Quality Assurance | ⬜ Not Started | 0/10 |
@@ -210,11 +210,13 @@
 
 > **Scope notes**: (1) **Real bug found and fixed**: adding the "Active" toggle is what first made `CategoryEntity.isActive` actually settable to `false` — and the retailer-facing `categoriesProvider` (`features/home/controllers/home_controller.dart`) never filtered on it, so a deactivated category would still have shown up on the retailer Home screen and in `CategoryProductsScreen`, permanently un-hideable. Fixed by filtering to `isActive` at that provider (retailer-facing only); `adminCategoryController`'s own `adminCategoriesProvider` stays unfiltered so the admin can still see and re-activate hidden categories, mirroring 4.3's `watchAllProducts()` split. (2) That filter change created a second latent bug: `AddEditProductScreen`'s category dropdown was fed by the same (now-filtered) `categoriesProvider`, so editing a product already assigned to a category the admin has since deactivated would hit Flutter's "exactly one matching dropdown item" assertion and crash. Fixed by pointing that dropdown at the unfiltered `adminCategoriesProvider` instead. (3) Reordering persists via `AdminCategoryController.reorder()` — takes the full post-drag list and writes a new `displayOrder` only for entries whose index actually changed, rather than rewriting every row on every drag. (4) Reused `ProductImagePickerField` as-is for the category icon picker — its logic (local file / network URL / empty placeholder) was already generic, not product-specific, so a near-identical copy would have been pure duplication. (5) `ImageUploadService` and `StoragePaths` extended with `uploadCategoryIcon`/`deleteCategoryIcon` and `categoryIcon(id)`, same simulation-mode fallback pattern as the product image methods. (6) New use cases: `CreateCategoryUseCase`, `UpdateCategoryUseCase`, `DeleteCategoryUseCase` (mirroring the product ones) — `CategoryRepository` already had the methods, just no use-case wrappers yet. (7) Added a "Manage Categories" button to `AdminDashboardScreen` next to "Manage Products". (8) Tests: `manage_categories_screen_test.dart` (5 — empty state, listing, inactive-visible, delete-confirmation gating, drag-to-reorder persists), `add_edit_category_screen_test.dart` (5 — create/edit modes, validation, new-category display-order placement, active toggle). 59/59 passing, `flutter analyze` zero issues.
 
-### 4.5 — Order Management
-- [ ] Build `AllOrdersScreen` — filterable list by status: All / Pending / Confirmed / Delivered
-- [ ] Build `OrderManagementScreen` — full order details + status update dropdown
-- [ ] Implement `adminOrderController` — calls `UpdateOrderStatusUseCase`
-- [ ] Send FCM to retailer on each status change
+### 4.5 — Order Management ✅
+- [x] Build `AllOrdersScreen` — filterable list by status: All / Pending / Confirmed / Delivered
+- [x] Build `OrderManagementScreen` — full order details + status update dropdown
+- [x] Implement `adminOrderController` — calls `UpdateOrderStatusUseCase`
+- [ ] ~~Send FCM to retailer on each status change~~ — deferred to Phase 5, same reasoning as every other FCM item so far
+
+> **Scope notes**: (1) Filter chips cover all 4 real `OrderStatus` values (Pending / Confirmed / Out for Delivery / Delivered), not just the 3 named in this checklist — the extra status already exists in the domain model and hiding it from the filter would have made "Out for Delivery" orders unreachable by filter. (2) Extracted `OrderDetailBody` into `shared/widgets/` from what was `OrderDetailScreen`'s private `_OrderDetailBody` — now shared between the retailer's read-only order detail view and the admin's `OrderManagementScreen`, which adds the shop name (`showShopName: true`) and a status-update dropdown via a `header` slot rather than forking a near-duplicate of the same ~90-line layout. (3) Added `OrderStatusLabelExtension.label` on `OrderStatus` (`core/utils/extensions.dart`) so `OrderStatusBadge` and the new admin status dropdown render identical wording from one source instead of two parallel switch statements. (4) `AllOrdersScreen`/`OrderManagementScreen` reuse the dashboard's existing `allOrdersProvider` (`admin_dashboard_controller.dart`) rather than adding a duplicate stream — it was already unfiltered and already the source the dashboard's own stats are derived from. (5) **Real bug found and fixed**: `order.id.substring(0, 8)` (used to build the "Order #XXXXXXXX" label) would throw a `RangeError` on any order id under 8 characters. Real ids are always 36-char UUIDs so this was never reachable in production, but it's a defensive gap in shared display code — fixed once via a new `String.shortId` extension and applied to `OrderDetailBody`, `AllOrdersScreen`, and the pre-existing `OrderHistoryScreen`, which had the same unguarded call. (6) Tests: `all_orders_screen_test.dart` (4 — empty state, unfiltered listing, status filtering, filtered-empty message), `order_management_screen_test.dart` (3 — renders breakdown, not-found state, status-change interaction confirms via repository call + snackbar). 66/66 passing, `flutter analyze` zero issues.
 
 ### 4.6 — Retailer Management
 - [ ] Build `RetailerListScreen` — all approved retailers with total spend, order count
@@ -299,7 +301,7 @@
 
 ### Current Active Phase: **Phase 4 — Admin Panel (Full Implementation)**
 ### Next Immediate Task:
-> ✅ 4.1, 4.2, 4.3 and 4.4 are done. Move to **4.5 Order Management** — build `AllOrdersScreen` (filterable by status: All / Pending / Confirmed / Delivered), `OrderManagementScreen` (full order details + status update dropdown), and `adminOrderController` calling `UpdateOrderStatusUseCase` (already exists from Phase 2). The FCM-to-retailer-on-status-change sub-task stays deferred to Phase 5, same reasoning as every other FCM item so far.
+> ✅ 4.1–4.5 are done. Move to **4.6 Retailer Management** — build `RetailerListScreen` (all approved retailers with total spend and order count, derived client-side from `UserRepository.getApprovedUsers()` + `allOrdersProvider` grouped by `userId`, same "derive from an existing stream" pattern used throughout Phase 4) and let the admin tap a retailer to view their full order history (reuse `AllOrdersScreen`'s list-tile styling, filtered to that retailer's `userId`). This is the last item in Phase 4 — completing it closes out the phase (21/21).
 
 ---
 

@@ -12,8 +12,10 @@ import '../../features/admin/screens/add_edit_category_screen.dart';
 import '../../features/admin/screens/add_edit_product_screen.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
 import '../../features/admin/screens/approval_queue_screen.dart';
+import '../../features/admin/screens/all_orders_screen.dart';
 import '../../features/admin/screens/manage_categories_screen.dart';
 import '../../features/admin/screens/manage_products_screen.dart';
+import '../../features/admin/screens/order_management_screen.dart';
 import '../../features/auth/screens/pending_approval_screen.dart';
 import '../../features/cart/screens/cart_screen.dart';
 import '../../features/checkout/screens/checkout_screen.dart';
@@ -130,6 +132,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.adminEditCategory,
         builder: (context, state) => AddEditCategoryScreen(categoryId: state.pathParameters['categoryId']!),
+      ),
+      GoRoute(
+        path: RouteNames.adminOrders,
+        builder: (context, state) => const AllOrdersScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminOrderManagement,
+        builder: (context, state) => OrderManagementScreen(orderId: state.pathParameters['orderId']!),
       ),
 
       // Retailer bottom-nav shell — Home/Search/Cart/Orders/Profile keep

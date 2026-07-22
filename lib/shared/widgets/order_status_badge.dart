@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/extensions.dart';
 import '../../domain/entities/order_entity.dart';
 
 class OrderStatusBadge extends StatelessWidget {
@@ -9,12 +10,13 @@ class OrderStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final (color, label) = switch (status) {
-      OrderStatus.pending => (AppColors.warning, 'Pending'),
-      OrderStatus.confirmed => (AppColors.info, 'Confirmed'),
-      OrderStatus.outForDelivery => (AppColors.primary, 'Out for Delivery'),
-      OrderStatus.delivered => (AppColors.success, 'Delivered'),
+    final color = switch (status) {
+      OrderStatus.pending => AppColors.warning,
+      OrderStatus.confirmed => AppColors.info,
+      OrderStatus.outForDelivery => AppColors.primary,
+      OrderStatus.delivered => AppColors.success,
     };
+    final label = status.label;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

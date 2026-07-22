@@ -250,13 +250,13 @@ Admin Dashboard
 - [x] Admin Retailer Approval — dedicated approval queue screen with live approve/reject, replacing the Phase-1 placeholder
 - [x] Product Management (Admin) — full CRUD with image upload, active/inactive toggle, and low-stock alerts
 - [x] Category Management (Admin) — full CRUD with icon upload, active/inactive toggle, and drag-to-reorder
+- [x] Order Management (Admin) — filterable order list + status update dropdown (Pending → Confirmed → Out for Delivery → Delivered)
 
 ### 📅 Phase 3 — Delivery & Payments
 
 - Delivery charge calculation (per km)
 - UPI QR code payment flow
-- Order status management (Admin)
-- FCM push notifications
+- FCM push notifications (including order-status-change notifications to retailers)
 
 ### 📅 Phase 4 — Polish & Launch
 

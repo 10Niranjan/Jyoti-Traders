@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
 import '../../../core/utils/date_formatter.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/order_status_badge.dart';
@@ -54,7 +55,7 @@ class OrderHistoryScreen extends ConsumerWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              'Order #${order.id.substring(0, 8).toUpperCase()}',
+                              'Order #${order.id.shortId}',
                               style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13),
                             ),
                             OrderStatusBadge(status: order.orderStatus),

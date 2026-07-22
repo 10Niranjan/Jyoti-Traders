@@ -231,6 +231,28 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-07-23 (continued) — Phase 4.5, Order Management
+
+### 📋 Tasks completed:
+
+- **4.5 — Order Management**: full admin visibility and control over every order in the system.
+  - `AllOrdersScreen` — filter chips for All + all 4 `OrderStatus` values (the checklist named only 3; the 4th, "Out for Delivery", already exists in the domain model and skipping it would have made those orders unfilterable), pull-to-refresh, shimmer/empty/error states, and a status-specific empty message ("No delivered orders") when a filter matches nothing.
+  - `OrderManagementScreen` — full order breakdown plus a status-update dropdown; navigating there and changing status shows a confirmation snackbar and re-derives the order from the live stream so the dropdown reflects the just-saved state.
+  - `AdminOrderController` — `updateStatus()` over the existing `UpdateOrderStatusUseCase`; `adminOrderByIdProvider` derived from the dashboard's existing `allOrdersProvider` (no new stream needed — same "derive from an existing stream" pattern as `orderByIdProvider`/`adminProductByIdProvider`).
+  - Extracted `OrderDetailBody` into `shared/widgets/` (previously a private `_OrderDetailBody` inside `OrderDetailScreen`) so the retailer's read-only order view and the admin's editable one render from one ~90-line layout instead of two. Admin mode adds the shop name and a `header` slot for the status dropdown.
+  - Added `OrderStatusLabelExtension.label` (`core/utils/extensions.dart`) so `OrderStatusBadge` and the new status dropdown share one source of truth for status wording instead of two parallel switch statements.
+  - Added an "All Orders" button to `AdminDashboardScreen`.
+- **Real bug found and fixed**: `order.id.substring(0, 8)` (building the "Order #XXXXXXXX" label) throws a `RangeError` for any order id under 8 characters. Unreachable in production — real ids are always 36-char UUIDs — but it's a defensive gap in shared display code, and the same unguarded call already existed in the pre-4.5 `OrderHistoryScreen`. Fixed once via a new `String.shortId` extension, applied to `OrderDetailBody`, `AllOrdersScreen`, and `OrderHistoryScreen`.
+- **Tests added** (7 new, 66 total): `all_orders_screen_test.dart` (4 — empty state, unfiltered listing, status filtering, filtered-empty message), `order_management_screen_test.dart` (3 — renders breakdown with shop name, not-found state, status-change interaction verifying both the repository call and the confirmation snackbar).
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 66/66 passing.
+
+### 💬 Latest Discussion Summary:
+
+1. User asked to proceed straight to 4.5 and fix any bugs found along the way immediately rather than deferring them — the `shortId` fix above was applied inline as part of this same session rather than logged for later.
+2. `phases.md` updated: 4.5 marked complete with scope notes (18/21 in Phase 4). `PRD.md` §4/§12 updated: Order Management (Admin) checked off, moved out of the old §12 "Phase 3" bucket. Current active phase remains **Phase 4 — Admin Panel**, next up is **4.6 Retailer Management** (`RetailerListScreen` with total spend/order count per retailer, tap-through to their order history) — the last item in Phase 4.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
