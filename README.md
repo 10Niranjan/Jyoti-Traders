@@ -31,3 +31,6 @@ Firebase is currently on placeholder credentials (`lib/firebase_options.dart`) â
 flutter analyze
 flutter test
 ```
+
+<!-- Last updated maintenance log: 2026-07-22 -->
+
