@@ -83,6 +83,15 @@ class AdminDashboardScreen extends ConsumerWidget {
                       style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
                     ),
                   ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => context.push(RouteNames.adminCategories),
+                      icon: const Icon(Icons.category_outlined, size: 18),
+                      label: const Text('Manage Categories'),
+                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                    ),
+                  ),
                 ],
               ),
 

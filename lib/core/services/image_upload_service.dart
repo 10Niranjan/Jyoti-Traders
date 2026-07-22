@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import '../constants/storage_paths.dart';
 import '../network/firebase_mode.dart';
 
-/// Uploads product images to Firebase Storage, with the same
+/// Uploads product images and category icons to Firebase Storage, with the same
 /// simulation-mode fallback every other Firebase-touching service in this
 /// app uses (see [isFirebasePlaceholder]).
 ///
@@ -52,6 +52,26 @@ class ImageUploadService {
       await _storage.ref(StoragePaths.productImage(productId)).delete();
     } catch (e) {
       debugPrint('ImageUploadService: no stored image to delete for $productId ($e)');
+    }
+  }
+
+  /// Same upload/simulation-fallback behavior as [uploadProductImage], for
+  /// category icons.
+  Future<String> uploadCategoryIcon({required String categoryId, required String localFilePath}) async {
+    if (_useMock || _storage == null) {
+      return localFilePath;
+    }
+    final ref = _storage.ref(StoragePaths.categoryIcon(categoryId));
+    await ref.putFile(File(localFilePath));
+    return ref.getDownloadURL();
+  }
+
+  Future<void> deleteCategoryIcon(String categoryId) async {
+    if (_useMock || _storage == null) return;
+    try {
+      await _storage.ref(StoragePaths.categoryIcon(categoryId)).delete();
+    } catch (e) {
+      debugPrint('ImageUploadService: no stored icon to delete for $categoryId ($e)');
     }
   }
 }

@@ -7,7 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../domain/value_objects/money.dart';
-import '../../../features/home/controllers/home_controller.dart';
+import '../controllers/admin_category_controller.dart';
 import '../controllers/admin_product_controller.dart';
 import '../widgets/product_image_picker_field.dart';
 
@@ -127,7 +127,10 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final categories = ref.watch(categoriesProvider);
+    // Unfiltered — a product may already be assigned to a category the
+    // admin has since deactivated, and it must still appear so the dropdown
+    // has a matching value instead of crashing.
+    final categories = ref.watch(adminCategoriesProvider);
     final saveState = ref.watch(adminProductControllerProvider);
     final isSaving = saveState.isLoading;
 

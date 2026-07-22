@@ -249,7 +249,7 @@ Admin Dashboard
 - [x] Admin Dashboard — real-time stats (pending approvals, total retailers, today's orders) + orders-per-day bar chart, replacing the Phase-1 placeholder stats
 - [x] Admin Retailer Approval — dedicated approval queue screen with live approve/reject, replacing the Phase-1 placeholder
 - [x] Product Management (Admin) — full CRUD with image upload, active/inactive toggle, and low-stock alerts
-- [ ] Category Management (Admin) — not yet built; retailers currently browse a seeded demo catalog
+- [x] Category Management (Admin) — full CRUD with icon upload, active/inactive toggle, and drag-to-reorder
 
 ### 📅 Phase 3 — Delivery & Payments
 

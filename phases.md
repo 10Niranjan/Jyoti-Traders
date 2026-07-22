@@ -15,7 +15,7 @@
 | Phase 1 | Foundation & Infrastructure | ✅ Complete | 10/10 |
 | Phase 2 | Domain Layer & Data Models | ✅ Complete (Auth use cases deliberately deferred — see note) | 8/12 |
 | Phase 3 | Core Commerce — Retailer Side | ✅ Complete (delivery charge stubbed, UPI/FCM deferred — see note) | 12/14 |
-| Phase 4 | Admin Panel — Full Implementation | 🔄 In Progress | 11/21 |
+| Phase 4 | Admin Panel — Full Implementation | 🔄 In Progress | 14/21 |
 | Phase 5 | Delivery, Payments & Notifications | ⬜ Not Started | 0/10 |
 | Phase 6 | Polish, Animations & UX Refinement | ⬜ Not Started | 0/9 |
 | Phase 7 | Testing & Quality Assurance | ⬜ Not Started | 0/10 |
@@ -203,10 +203,12 @@
 
 > **Scope notes**: (1) **Real bug found and fixed**: `watchProducts()` hardcoded `isActive == true` in *both* its Firestore and simulation branches (retailer-browsing semantics), so deactivated products would have been invisible to the admin — permanently unrecoverable, since there'd be no way to find one to re-activate it. Added a separate `watchAllProducts()` through datasource → repository → use case rather than changing the existing method, so retailer browsing is untouched; covered by a new integration test asserting both visibilities. (2) New packages: `firebase_storage` (already pre-approved in rules.md §1) and `image_picker` (**explicitly approved by the user** this session, as rules.md §11 requires — it was not in the approved list). (3) Firebase is still on placeholder credentials, so `ImageUploadService` falls back to returning the picked file's **local path** as the image URL; admin screens render that via `Image.file`, and retailer-side `CachedNetworkImage` degrades to its existing placeholder icon through `errorWidget`. When a real Firebase project is configured this starts returning real download URLs with no call-site changes. (4) "Paginated" is implemented as the existing capped `.limit(200)` query, matching every other list in this codebase — no cursor-based infinite scroll exists anywhere yet, and introducing that pattern for a catalog of dozens of SKUs would be premature. (5) `ProductEntity.copyWith({imageUrl})` added — narrow by design, only the upload flow needs it.
 
-### 4.4 — Category Management
-- [ ] Build `ManageCategoriesScreen` — list with drag-to-reorder display order
-- [ ] Build `AddEditCategoryScreen` — form: name, icon upload, active toggle
-- [ ] Implement `adminCategoryController` — CRUD on Firestore categories
+### 4.4 — Category Management ✅
+- [x] Build `ManageCategoriesScreen` — list with drag-to-reorder display order
+- [x] Build `AddEditCategoryScreen` — form: name, icon upload, active toggle
+- [x] Implement `adminCategoryController` — CRUD on Firestore categories
+
+> **Scope notes**: (1) **Real bug found and fixed**: adding the "Active" toggle is what first made `CategoryEntity.isActive` actually settable to `false` — and the retailer-facing `categoriesProvider` (`features/home/controllers/home_controller.dart`) never filtered on it, so a deactivated category would still have shown up on the retailer Home screen and in `CategoryProductsScreen`, permanently un-hideable. Fixed by filtering to `isActive` at that provider (retailer-facing only); `adminCategoryController`'s own `adminCategoriesProvider` stays unfiltered so the admin can still see and re-activate hidden categories, mirroring 4.3's `watchAllProducts()` split. (2) That filter change created a second latent bug: `AddEditProductScreen`'s category dropdown was fed by the same (now-filtered) `categoriesProvider`, so editing a product already assigned to a category the admin has since deactivated would hit Flutter's "exactly one matching dropdown item" assertion and crash. Fixed by pointing that dropdown at the unfiltered `adminCategoriesProvider` instead. (3) Reordering persists via `AdminCategoryController.reorder()` — takes the full post-drag list and writes a new `displayOrder` only for entries whose index actually changed, rather than rewriting every row on every drag. (4) Reused `ProductImagePickerField` as-is for the category icon picker — its logic (local file / network URL / empty placeholder) was already generic, not product-specific, so a near-identical copy would have been pure duplication. (5) `ImageUploadService` and `StoragePaths` extended with `uploadCategoryIcon`/`deleteCategoryIcon` and `categoryIcon(id)`, same simulation-mode fallback pattern as the product image methods. (6) New use cases: `CreateCategoryUseCase`, `UpdateCategoryUseCase`, `DeleteCategoryUseCase` (mirroring the product ones) — `CategoryRepository` already had the methods, just no use-case wrappers yet. (7) Added a "Manage Categories" button to `AdminDashboardScreen` next to "Manage Products". (8) Tests: `manage_categories_screen_test.dart` (5 — empty state, listing, inactive-visible, delete-confirmation gating, drag-to-reorder persists), `add_edit_category_screen_test.dart` (5 — create/edit modes, validation, new-category display-order placement, active toggle). 59/59 passing, `flutter analyze` zero issues.
 
 ### 4.5 — Order Management
 - [ ] Build `AllOrdersScreen` — filterable list by status: All / Pending / Confirmed / Delivered
@@ -297,7 +299,7 @@
 
 ### Current Active Phase: **Phase 4 — Admin Panel (Full Implementation)**
 ### Next Immediate Task:
-> ✅ 4.1, 4.2 and 4.3 are done. Move to **4.4 Category Management** — build `ManageCategoriesScreen` (list with drag-to-reorder `displayOrder`), `AddEditCategoryScreen` (name, icon upload, active toggle), and `adminCategoryController`. Note `CategoryRepository` already exposes full CRUD and `watchCategories()` is *not* `isActive`-filtered, so unlike 4.3 there's no data-layer gap to fix first — and `ImageUploadService` can be reused for the category icon.
+> ✅ 4.1, 4.2, 4.3 and 4.4 are done. Move to **4.5 Order Management** — build `AllOrdersScreen` (filterable by status: All / Pending / Confirmed / Delivered), `OrderManagementScreen` (full order details + status update dropdown), and `adminOrderController` calling `UpdateOrderStatusUseCase` (already exists from Phase 2). The FCM-to-retailer-on-status-change sub-task stays deferred to Phase 5, same reasoning as every other FCM item so far.
 
 ---
 

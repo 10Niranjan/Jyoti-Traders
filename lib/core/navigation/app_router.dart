@@ -8,9 +8,11 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../features/auth/controllers/auth_controller.dart';
 import '../../features/auth/controllers/auth_state.dart';
 import '../../features/auth/screens/auth_screen.dart';
+import '../../features/admin/screens/add_edit_category_screen.dart';
 import '../../features/admin/screens/add_edit_product_screen.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
 import '../../features/admin/screens/approval_queue_screen.dart';
+import '../../features/admin/screens/manage_categories_screen.dart';
 import '../../features/admin/screens/manage_products_screen.dart';
 import '../../features/auth/screens/pending_approval_screen.dart';
 import '../../features/cart/screens/cart_screen.dart';
@@ -116,6 +118,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.adminEditProduct,
         builder: (context, state) => AddEditProductScreen(productId: state.pathParameters['productId']!),
+      ),
+      GoRoute(
+        path: RouteNames.adminCategories,
+        builder: (context, state) => const ManageCategoriesScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminAddCategory,
+        builder: (context, state) => const AddEditCategoryScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminEditCategory,
+        builder: (context, state) => AddEditCategoryScreen(categoryId: state.pathParameters['categoryId']!),
       ),
 
       // Retailer bottom-nav shell — Home/Search/Cart/Orders/Profile keep

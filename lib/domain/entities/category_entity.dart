@@ -15,6 +15,16 @@ class CategoryEntity extends Equatable {
     required this.isActive,
   });
 
+  CategoryEntity copyWith({String? iconUrl, int? displayOrder}) {
+    return CategoryEntity(
+      id: id,
+      name: name,
+      iconUrl: iconUrl ?? this.iconUrl,
+      displayOrder: displayOrder ?? this.displayOrder,
+      isActive: isActive,
+    );
+  }
+
   @override
   List<Object?> get props => [id, name, iconUrl, displayOrder, isActive];
 }

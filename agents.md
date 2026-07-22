@@ -207,6 +207,30 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-07-23 — Phase 4.4, Category Management
+
+### 📋 Tasks completed:
+
+- **4.4 — Category Management**: full admin CRUD over categories, including drag-to-reorder.
+  - `ManageCategoriesScreen` — `ReorderableListView.builder` (custom drag handle only, via `ReorderableDragStartListener`, so edit/delete taps aren't affected), pull-to-refresh, shimmer/empty/error states, delete confirmation dialog matching the product screen's pattern.
+  - `AddEditCategoryScreen` — name, active toggle, icon picker (reused `ProductImagePickerField` as-is — its logic was already generic, not product-specific, so duplicating it would have been pure copy-paste). New categories are appended at the end of `displayOrder`; existing ones keep their order, which only the list screen's drag can change.
+  - `AdminCategoryController` — `create()`/`update()`/`delete()` mirroring `AdminProductController`, plus `reorder(List<CategoryEntity>)` which writes a new `displayOrder` only for rows whose index actually changed after a drag. New use cases `CreateCategoryUseCase`/`UpdateCategoryUseCase`/`DeleteCategoryUseCase` (the repository already had the methods, just no use-case wrappers).
+  - `ImageUploadService` + `StoragePaths` extended with `uploadCategoryIcon`/`deleteCategoryIcon`/`categoryIcon(id)`, same simulation-mode fallback as the product image methods from 4.3.
+  - Added a "Manage Categories" button to `AdminDashboardScreen` next to "Manage Products".
+- **Two real bugs found and fixed, chained from one root cause**: this is the first time `CategoryEntity.isActive` was ever settable to `false` (creation always defaulted it to `true`, and nothing else could change it). That exposed:
+  1. The retailer-facing `categoriesProvider` (`features/home/controllers/home_controller.dart`) never filtered on `isActive` — so a deactivated category would have stayed fully visible on the retailer Home screen and reachable via `CategoryProductsScreen`, with no way to ever hide it. Fixed by filtering to `isActive` there; the admin's own `adminCategoriesProvider` stays unfiltered (same split as 4.3's `watchProducts()`/`watchAllProducts()`).
+  2. That filter then broke `AddEditProductScreen`'s category dropdown, which was fed by the same provider — editing a product already assigned to a category the admin had since deactivated would hit Flutter's "exactly one matching dropdown item" assertion and crash, since the assigned category would no longer be in the filtered list. Fixed by pointing that dropdown at the unfiltered `adminCategoriesProvider` instead.
+  - Neither bug was reachable before this session, since nothing could ever set `isActive: false` on a category until this feature existed to do it.
+- **Tests added** (10 new, 59 total): `manage_categories_screen_test.dart` (5 — empty state, listing, inactive-still-visible-to-admin, delete-confirmation gating, drag-to-reorder persists the new order), `add_edit_category_screen_test.dart` (5 — create/edit modes, required-name validation, new-category display-order placement, active-toggle persistence).
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 59/59 passing.
+
+### 💬 Latest Discussion Summary:
+
+1. `phases.md` updated: 4.4 marked complete with scope notes (14/21 in Phase 4). Current active phase remains **Phase 4 — Admin Panel**, next up is **4.5 Order Management** (`AllOrdersScreen` filterable by status, `OrderManagementScreen`, `adminOrderController` over the existing `UpdateOrderStatusUseCase`; FCM-on-status-change stays deferred to Phase 5).
+2. `PRD.md` §4/§12 updated: Category Management (Admin) checked off.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
