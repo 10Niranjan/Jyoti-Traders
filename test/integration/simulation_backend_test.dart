@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:traders_retailer/data/datasources/local/cart_local_datasource.dart';
@@ -41,12 +42,16 @@ void main() {
   late Box notificationsBox;
   late Box settingsBox;
 
+  late Directory tempDir;
+
   setUp(() async {
-    // Unique per-test-run directory — a fixed shared path can be left behind
-    // by a previous run on Windows if `deleteFromDisk` races with file-handle
-    // release, which would leak state (e.g. a "user already exists") into
-    // the next run.
-    Hive.init('temp_hive_integration_${DateTime.now().microsecondsSinceEpoch}');
+    // Written under the OS temp directory, not the project folder — Hive's
+    // `deleteFromDisk()` is unreliable on Windows (file-handle release races
+    // with the delete), so even a "successful" run can leave its directory
+    // behind. Scratch that leaks belongs in the OS temp dir, not cluttering
+    // the project tree / IDE explorer.
+    tempDir = Directory.systemTemp.createTempSync('jyoti_kirana_hive_test_');
+    Hive.init(tempDir.path);
     userCacheBox = await Hive.openBox('user_cache');
     catalogBox = await Hive.openBox('catalog_cache');
     ordersBox = await Hive.openBox('orders_cache');
@@ -57,7 +62,12 @@ void main() {
 
   tearDown(() async {
     await Hive.close();
-    await Hive.deleteFromDisk();
+    try {
+      if (tempDir.existsSync()) tempDir.deleteSync(recursive: true);
+    } catch (_) {
+      // Best-effort — worst case this leaks into the OS temp dir, not the
+      // project folder, so it's cleaned up by the OS eventually regardless.
+    }
   });
 
   test('retailer sign-up starts pending, then admin approval flips it to approved', () async {

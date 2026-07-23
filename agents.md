@@ -376,6 +376,25 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-07-24 — Brand palette revised to Zepto Violet
+
+### 📋 Tasks completed:
+
+- Client revisited the visual-direction mockup from 2026-07-23 (the same Artifact, 4-palette comparison) and changed the earlier decision — picked **Zepto Violet** over the originally-chosen Wholesale Blue.
+- Applied by editing `lib/core/constants/app_colors.dart` only:
+  - `primary`/`primaryLight`/`primaryDark`: `#1D4ED8`/`#3B82F6`/`#1E3A8A` (Royal Blue) → `#7C3AED`/`#A78BFA`/`#5B21B6` (Zepto Violet) — the `Light`/`Dark` shades pulled directly from the mockup's own light-mode/dark-mode violet primary values rather than inventing new ones.
+  - `accent`/`accentLight`: `#F97316`/`#FB923C` (Orange) → `#0D9488`/`#2DD4BF` (Teal) — same reasoning, values taken from the mockup's violet-palette accent tokens.
+  - `categoryPalette` (the 6-color rotating set for category rings, added in 6.2) previously reused `primary`/`accent` as its first two entries — decoupled to 6 fixed hex values matching the mockup's own category-ring set, since reusing `primary`/`accent` would have produced duplicate colors now that they're Violet/Teal (the mockup's category-4 is Violet and category-3 is Teal, independent of whatever brand palette is active).
+- Confirmed via `grep` that no other file hardcodes the old blue/orange hex values — every screen sources color exclusively through `AppColors.*`, so this was a genuinely single-file change with no follow-on edits needed across 6.1–6.3's already-built UI.
+- Verified: `flutter analyze` zero issues, `flutter test` 117/117 passing unmodified. Launched `flutter run -d chrome` so the client could see the live result immediately rather than just trusting the hex values.
+
+### 💬 Latest Discussion Summary:
+
+1. Not a phases.md checklist item — a supplementary client-driven branding decision layered onto the already-approved Phase 6 visual direction. Documented as a scope note under Phase 6.1's header rather than as its own numbered sub-phase.
+2. **Doc discrepancy flagged, not resolved**: `phases.md`'s top-level progress table (line ~15–22) currently shows Phase 4 (21/21), Phase 5 (10/10), and Phase 6 (9/9) all "✅ Complete," and Phase 7 as "🔄 In Progress 10/10" — but Phase 6's own detailed section says 6.4/6.5 are still unstarted (3/11), "Current Active Phase" at the bottom of the file says Phase 6, and Phase 7's checklist further down is 100% unchecked. The table is wrong for at least Phase 6 and Phase 7; Phase 4/5's true state wasn't re-audited this session since that work happened outside this conversation's history. Left as-is rather than guessed at — needs a real audit against `phases.md`'s own detailed sections (and possibly `git log`) to fix correctly.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

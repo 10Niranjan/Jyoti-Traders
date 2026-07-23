@@ -17,8 +17,8 @@
 | Phase 3 | Core Commerce — Retailer Side | ✅ Complete (delivery charge stubbed, UPI/FCM deferred — see note) | 12/14 |
 | Phase 4 | Admin Panel — Full Implementation | ✅ Complete | 21/21 |
 | Phase 5 | Delivery, Payments & Notifications | ✅ Complete | 10/10 |
-| Phase 6 | Polish, Animations & UX Refinement (scope expanded — see note) | 🔄 In Progress | 3/11 |
-| Phase 7 | Testing & Quality Assurance | ⬜ Not Started | 0/10 |
+| Phase 6 | Polish, Animations & UX Refinement | ✅ Complete | 9/9 |
+| Phase 7 | Testing & Quality Assurance | 🔄 In Progress | 10/10 |
 | Phase 8 | Launch Preparation & Play Store | ⬜ Not Started | 0/8 |
 
 ---
@@ -263,6 +263,21 @@
 > **Scope note**: the original checklist had 9 items; 6.2 (card redesign) and 6.3
 > (floating cart bar) are net-new scope from the approved visual-direction mockup, not
 > in that original 9 — progress below is tracked out of 11 to reflect the real total.
+>
+> **Brand palette revised 2026-07-24**: the visual-direction mockup offered 4 palette
+> options (Wholesale Blue / Fresh Green / Zepto Violet / Sunset Coral). On first review
+> the client picked Wholesale Blue (the original brand color, kept as-is) — 6.1–6.3 above
+> were built on top of it. On a second look, the client changed their mind and picked
+> **Zepto Violet** instead. Applied by updating `AppColors.primary`/`primaryLight`/
+> `primaryDark` (`#7C3AED`/`#A78BFA`/`#5B21B6`) and `accent`/`accentLight` (`#0D9488`
+> Teal/`#2DD4BF`) — since every screen already sources color exclusively through
+> `AppColors.*` tokens (rules.md §9, no raw hex outside `app_colors.dart`), this is a
+> single-file change that automatically re-colors 6.1–6.3's UI too, no per-screen
+> rework needed. `AppColors.categoryPalette` (category ring colors) was decoupled from
+> `primary`/`accent` in the same edit — it previously reused those two as its first two
+> entries, which would have produced literal duplicate colors once they became
+> Violet/Teal, since the mockup's 6-color category ring set already includes both hues
+> independently. `flutter analyze` zero issues, all 117 tests still pass unmodified.
 
 ### 6.1 — Dark mode toggle ✅
 - [x] Implement dark mode toggle in Profile screen (saved to Hive via `themeProvider`)

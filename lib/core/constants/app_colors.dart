@@ -7,14 +7,15 @@ import 'package:flutter/material.dart';
 class AppColors {
   const AppColors._();
 
-  // Brand Primaries
-  static const Color primary = Color(0xFF1D4ED8);      // Tailored Royal Blue
-  static const Color primaryLight = Color(0xFF3B82F6);
-  static const Color primaryDark = Color(0xFF1E3A8A);
-  
+  // Brand Primaries — "Zepto Violet" (chosen from the visual-direction
+  // mockup over the original Wholesale Blue).
+  static const Color primary = Color(0xFF7C3AED);      // Zepto Violet
+  static const Color primaryLight = Color(0xFFA78BFA); // used on dark surfaces (e.g. promo gradients)
+  static const Color primaryDark = Color(0xFF5B21B6);
+
   // Secondary / Accents
-  static const Color accent = Color(0xFFF97316);       // Premium Orange
-  static const Color accentLight = Color(0xFFFB923C);
+  static const Color accent = Color(0xFF0D9488);       // Teal
+  static const Color accentLight = Color(0xFF2DD4BF);  // used on dark surfaces (e.g. floating cart bar)
   
   // Neutral Background & Surfaces
   static const Color backgroundLight = Color(0xFFF8FAFC); // Off-White
@@ -36,9 +37,13 @@ class AppColors {
   /// `categoryPalette[index % categoryPalette.length]`. Tint backgrounds are
   /// derived at the call site via `.withOpacity()`, matching how every other
   /// tinted surface in this app already works (see `CategoryCard`).
+  ///
+  /// Fixed regardless of brand palette (unlike [primary]/[accent]) — these
+  /// six colors exist purely to make an 8+ item category grid scannable at a
+  /// glance, per the visual-direction mockup.
   static const List<Color> categoryPalette = [
-    primary, // Royal Blue
-    accent, // Premium Orange
+    Color(0xFF1D4ED8), // Blue
+    Color(0xFFEA580C), // Burnt Orange
     Color(0xFF0D9488), // Teal
     Color(0xFF7C3AED), // Violet
     Color(0xFFBE185D), // Pink
