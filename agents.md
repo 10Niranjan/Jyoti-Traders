@@ -391,7 +391,7 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 ### 💬 Latest Discussion Summary:
 
 1. Not a phases.md checklist item — a supplementary client-driven branding decision layered onto the already-approved Phase 6 visual direction. Documented as a scope note under Phase 6.1's header rather than as its own numbered sub-phase.
-2. **Doc discrepancy flagged, not resolved**: `phases.md`'s top-level progress table (line ~15–22) currently shows Phase 4 (21/21), Phase 5 (10/10), and Phase 6 (9/9) all "✅ Complete," and Phase 7 as "🔄 In Progress 10/10" — but Phase 6's own detailed section says 6.4/6.5 are still unstarted (3/11), "Current Active Phase" at the bottom of the file says Phase 6, and Phase 7's checklist further down is 100% unchecked. The table is wrong for at least Phase 6 and Phase 7; Phase 4/5's true state wasn't re-audited this session since that work happened outside this conversation's history. Left as-is rather than guessed at — needs a real audit against `phases.md`'s own detailed sections (and possibly `git log`) to fix correctly.
+2. **Doc discrepancy flagged, then fixed same day**: audited every phase's top-table row against its own detailed section. Phases 1–5 and 8 all checked out (status badges and detail match; Phase 1–3's fractions use an older, coarser counting convention than Phase 4 onward's raw-checkbox-count style, but their status is correct, which is what actually drives "what's next"). Only two rows were genuinely wrong: **Phase 6** (table said "✅ Complete 9/9," should be "🔄 In Progress 3/11" — 6.4/6.5 are still unstarted) and **Phase 7** (table said "🔄 In Progress 10/10," should be "⬜ Not Started 0/12" — every item is unchecked). Both corrected in `phases.md`.
 
 ---
 

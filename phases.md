@@ -17,8 +17,8 @@
 | Phase 3 | Core Commerce — Retailer Side | ✅ Complete (delivery charge stubbed, UPI/FCM deferred — see note) | 12/14 |
 | Phase 4 | Admin Panel — Full Implementation | ✅ Complete | 21/21 |
 | Phase 5 | Delivery, Payments & Notifications | ✅ Complete | 10/10 |
-| Phase 6 | Polish, Animations & UX Refinement | ✅ Complete | 9/9 |
-| Phase 7 | Testing & Quality Assurance | 🔄 In Progress | 10/10 |
+| Phase 6 | Polish, Animations & UX Refinement (6.1–6.3 done; 6.4–6.5 remain) | 🔄 In Progress | 3/11 |
+| Phase 7 | Testing & Quality Assurance | ⬜ Not Started | 0/12 |
 | Phase 8 | Launch Preparation & Play Store | ⬜ Not Started | 0/8 |
 
 ---
