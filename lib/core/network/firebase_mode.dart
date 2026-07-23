@@ -9,5 +9,8 @@ import 'package:firebase_core/firebase_core.dart';
 /// project is wired up.
 bool isFirebasePlaceholder(FirebaseApp app) {
   return app.options.projectId == 'jyoti-kirana-placeholder' ||
-      app.options.apiKey.contains('YOUR-');
+      app.options.projectId == 'jyoti-kirana-demo' ||
+      app.options.apiKey.contains('YOUR-') ||
+      app.options.apiKey.contains('DummyKey');
 }
+

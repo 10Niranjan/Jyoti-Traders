@@ -30,6 +30,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   UserRole _selectedRole = UserRole.customer;
 
   @override
+  void initState() {
+    super.initState();
+    _emailController.text = 'admin@jyoti.com';
+    _passwordController.text = 'admin123';
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -371,20 +378,54 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '💡 Simulation Quick Credentials:',
+                              '💡 Simulation Demo Quick Login:',
                               style: GoogleFonts.inter(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: AppColors.primary,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '• Admin: admin@jyoti.com / admin123\n• Customer: retailer@jyoti.com / retailer123',
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
-                                color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                              ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () {
+                                      setState(() {
+                                        _isLogin = true;
+                                        _emailController.text = 'admin@jyoti.com';
+                                        _passwordController.text = 'admin123';
+                                      });
+                                      _submit();
+                                    },
+                                    icon: const Icon(Icons.admin_panel_settings, size: 16),
+                                    label: const Text('Admin Demo', style: TextStyle(fontSize: 11)),
+                                    style: OutlinedButton.styleFrom(
+                                      visualDensity: VisualDensity.compact,
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: OutlinedButton.icon(
+                                    onPressed: () {
+                                      setState(() {
+                                        _isLogin = true;
+                                        _emailController.text = 'retailer@jyoti.com';
+                                        _passwordController.text = 'retailer123';
+                                      });
+                                      _submit();
+                                    },
+                                    icon: const Icon(Icons.store, size: 16),
+                                    label: const Text('Retailer Demo', style: TextStyle(fontSize: 11)),
+                                    style: OutlinedButton.styleFrom(
+                                      visualDensity: VisualDensity.compact,
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
