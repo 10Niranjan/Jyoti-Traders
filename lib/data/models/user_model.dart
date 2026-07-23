@@ -67,6 +67,8 @@ class UserModel {
       street: map['street'] as String? ?? '',
       city: map['city'] as String? ?? '',
       pincode: map['pincode'] as String? ?? '',
+      latitude: (map['latitude'] as num?)?.toDouble(),
+      longitude: (map['longitude'] as num?)?.toDouble(),
     );
   }
 
@@ -85,6 +87,8 @@ class UserModel {
           'street': address!.street,
           'city': address!.city,
           'pincode': address!.pincode,
+          'latitude': address!.latitude,
+          'longitude': address!.longitude,
         },
       'gstNumber': gstNumber,
       'fcmToken': fcmToken,

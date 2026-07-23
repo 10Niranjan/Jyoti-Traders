@@ -118,6 +118,16 @@ class AdminDashboardScreen extends ConsumerWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push(RouteNames.adminDeliverySettings),
+                  icon: const Icon(Icons.local_shipping_outlined, size: 18),
+                  label: const Text('Delivery Settings'),
+                  style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                ),
+              ),
 
               const SizedBox(height: 28),
 

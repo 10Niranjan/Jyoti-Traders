@@ -3,6 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../../core/constants/hive_keys.dart';
 import '../../domain/repositories/cart_repository.dart';
 import '../../domain/repositories/category_repository.dart';
+import '../../domain/repositories/delivery_config_repository.dart';
 import '../../domain/repositories/order_repository.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../../domain/repositories/user_repository.dart';
@@ -11,11 +12,13 @@ import '../datasources/local/cart_local_datasource.dart';
 import '../datasources/local/notification_local_datasource.dart';
 import '../datasources/local/product_local_datasource.dart';
 import '../datasources/remote/category_remote_datasource.dart';
+import '../datasources/remote/delivery_config_remote_datasource.dart';
 import '../datasources/remote/order_remote_datasource.dart';
 import '../datasources/remote/product_remote_datasource.dart';
 import '../datasources/remote/user_remote_datasource.dart';
 import 'category_repository_impl.dart';
 import 'cart_repository_impl.dart';
+import 'delivery_config_repository_impl.dart';
 import 'notification_repository_impl.dart';
 import 'order_repository_impl.dart';
 import 'product_repository_impl.dart';
@@ -52,4 +55,9 @@ final cartRepositoryProvider = Provider<CartRepository>((ref) {
 final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
   final box = Hive.box(HiveBoxes.notificationsCache);
   return NotificationRepositoryImpl(NotificationLocalDatasource(box: box));
+});
+
+final deliveryConfigRepositoryProvider = Provider<DeliveryConfigRepository>((ref) {
+  final settingsBox = Hive.box(HiveBoxes.settingsCache);
+  return DeliveryConfigRepositoryImpl(DeliveryConfigRemoteDatasource(settingsBox: settingsBox));
 });

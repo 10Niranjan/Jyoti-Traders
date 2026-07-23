@@ -110,11 +110,11 @@ These are **hard requirements** enforced in the app at all times:
 
 ---
 
-### 4.4 Delivery Charge Calculation
+### 4.4 Delivery Charge Calculation ✅ Implemented (Phase 5)
 
-- Admin sets a **per-km rate** (e.g., ₹10/km)
-- At checkout, the app calculates distance from the retailer's registered address to the warehouse using Google Maps Distance Matrix API or a manual admin-set zone system
-- Delivery charge is shown transparently before order confirmation
+- Admin sets a **per-km rate** (e.g., ₹10/km) and the warehouse's coordinates via `DeliverySettingsScreen`
+- At checkout, the app calculates straight-line (Haversine) distance from the retailer's GPS-captured address to the warehouse — no Google Maps API dependency, avoiding an API key/billing requirement
+- Delivery charge is shown transparently before order confirmation; falls back to a flat placeholder if the retailer hasn't captured their GPS location yet
 
 ---
 
@@ -253,10 +253,10 @@ Admin Dashboard
 - [x] Order Management (Admin) — filterable order list + status update dropdown (Pending → Confirmed → Out for Delivery → Delivered)
 - [x] Retailer Management (Admin) — retailer list with total spend/order count, tap-through to full order history — **Phase 4 (Admin Panel) now fully complete**
 - [x] Push Notifications (FCM) — permission request, token save on login/refresh, foreground message handling, background handler, and a local (Hive) `NotificationsScreen` with an unread-count bell badge on both the retailer and admin home screens. Actual server-side sending (a Cloud Function) is still out of scope — this is the client-side plumbing only.
+- [x] Delivery Charge Calculation (§4.4) — real per-km pricing via `geolocator` GPS capture + Haversine distance from an admin-configured warehouse location + an admin-settable per-km rate (`DeliverySettingsScreen`), replacing the flat placeholder. Falls back to the placeholder gracefully for any retailer who hasn't captured their location yet.
 
 ### 📅 Phase 3 — Delivery & Payments
 
-- Delivery charge calculation (per km)
 - UPI QR code payment flow
 
 ### 📅 Phase 4 — Polish & Launch

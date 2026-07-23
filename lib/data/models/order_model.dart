@@ -108,6 +108,8 @@ class OrderModel {
         street: addressMap['street'] as String? ?? '',
         city: addressMap['city'] as String? ?? '',
         pincode: addressMap['pincode'] as String? ?? '',
+        latitude: (addressMap['latitude'] as num?)?.toDouble(),
+        longitude: (addressMap['longitude'] as num?)?.toDouble(),
       ),
       notes: json['notes'] as String?,
       createdAt: parseFirestoreDate(json['createdAt']),
@@ -129,6 +131,8 @@ class OrderModel {
         'street': deliveryAddress.street,
         'city': deliveryAddress.city,
         'pincode': deliveryAddress.pincode,
+        'latitude': deliveryAddress.latitude,
+        'longitude': deliveryAddress.longitude,
       },
       'notes': notes,
       // Plain DateTime, not Timestamp.fromDate() — see note in user_model.dart.

@@ -6,13 +6,17 @@ import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/route_names.dart';
-import '../../../core/utils/validators.dart';
+import '../../../core/services/location_service.dart';
 import '../../../data/repositories/auth_repository_provider.dart';
 import '../../../domain/entities/address_entity.dart';
+import '../../../domain/entities/delivery_config_entity.dart';
 import '../../../domain/entities/order_entity.dart';
 import '../../../domain/entities/order_item_entity.dart';
+import '../../../domain/usecases/delivery/calculate_delivery_charge_usecase.dart';
 import '../../../domain/value_objects/money.dart';
+import '../../../shared/widgets/address_form_fields.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../admin/controllers/admin_delivery_config_controller.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/controllers/auth_state.dart';
 import '../../cart/controllers/cart_controller.dart';
@@ -31,6 +35,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _cityController = TextEditingController();
   final _pincodeController = TextEditingController();
   bool _prefilled = false;
+  double? _latitude;
+  double? _longitude;
+  bool _isLocating = false;
 
   @override
   void dispose() {
@@ -45,7 +52,48 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     _streetController.text = address.street;
     _cityController.text = address.city;
     _pincodeController.text = address.pincode;
+    _latitude = address.latitude;
+    _longitude = address.longitude;
     _prefilled = true;
+  }
+
+  Future<void> _useCurrentLocation() async {
+    setState(() => _isLocating = true);
+    final position = await ref.read(locationServiceProvider).getCurrentPosition();
+    if (!mounted) return;
+    setState(() {
+      _isLocating = false;
+      if (position != null) {
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+      }
+    });
+    if (position == null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Couldn\'t get your location. Check location permission and try again.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
+  AddressEntity _currentAddress() => AddressEntity(
+        street: _streetController.text.trim(),
+        city: _cityController.text.trim(),
+        pincode: _pincodeController.text.trim(),
+        latitude: _latitude,
+        longitude: _longitude,
+      );
+
+  /// Real per-km charge once the address has coordinates and the delivery
+  /// config has loaded; otherwise the flat placeholder — rules.md §10
+  /// requires a delivery charge is always calculated and shown, never left
+  /// blank while waiting on either.
+  Money _deliveryChargeFor(AddressEntity address, DeliveryConfigEntity? config) {
+    if (config == null) return Money(AppConstants.kStubDeliveryCharge);
+    return CalculateDeliveryChargeUseCase()(config: config, address: address) ??
+        Money(AppConstants.kStubDeliveryCharge);
   }
 
   Future<void> _placeOrder() async {
@@ -55,15 +103,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     if (authState is! AuthenticatedCustomer) return;
     final user = authState.user;
 
-    final address = AddressEntity(
-      street: _streetController.text.trim(),
-      city: _cityController.text.trim(),
-      pincode: _pincodeController.text.trim(),
-    );
+    final address = _currentAddress();
 
     // Persist the address to the profile too, so it's pre-filled next time.
     await ref.read(authRepositoryProvider).updateProfile(uid: user.uid, address: address);
 
+    final config = ref.read(deliveryConfigProvider).valueOrNull;
     final cart = ref.read(cartControllerProvider);
     final order = OrderEntity(
       id: const Uuid().v4(),
@@ -73,7 +118,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           .map((i) => OrderItemEntity(productId: i.productId, name: i.name, qty: i.qty, unitPrice: i.unitPrice))
           .toList(),
       subtotal: cart.subtotal,
-      deliveryCharge: Money(AppConstants.kStubDeliveryCharge),
+      deliveryCharge: _deliveryChargeFor(address, config),
       paymentMethod: PaymentMethod.cod,
       paymentStatus: PaymentStatus.pending,
       orderStatus: OrderStatus.pending,
@@ -107,7 +152,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       );
     });
 
-    final grandTotal = cart.subtotal + Money(AppConstants.kStubDeliveryCharge);
+    final config = ref.watch(deliveryConfigProvider).valueOrNull;
+    final deliveryCharge = _deliveryChargeFor(_currentAddress(), config);
+    final grandTotal = cart.subtotal + deliveryCharge;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Checkout')),
@@ -120,21 +167,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             children: [
               Text('Delivery Address', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-              TextFormField(
-                controller: _streetController,
-                decoration: const InputDecoration(labelText: 'Street / Shop Address'),
-                validator: Validators.address,
-              ),
-              TextFormField(
-                controller: _cityController,
-                decoration: const InputDecoration(labelText: 'City'),
-                validator: (v) => Validators.required(v, fieldName: 'City'),
-              ),
-              TextFormField(
-                controller: _pincodeController,
-                decoration: const InputDecoration(labelText: 'Pincode'),
-                keyboardType: TextInputType.number,
-                validator: (v) => Validators.required(v, fieldName: 'Pincode'),
+              AddressFormFields(
+                streetController: _streetController,
+                cityController: _cityController,
+                pincodeController: _pincodeController,
+                hasCoordinates: _latitude != null && _longitude != null,
+                isLocating: _isLocating,
+                onUseCurrentLocation: _useCurrentLocation,
               ),
               const SizedBox(height: 24),
               Text('Payment Method', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
@@ -150,8 +189,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               const SizedBox(height: 8),
               _SummaryRow(label: 'Subtotal (${cart.items.length} items)', value: cart.subtotal.formatted),
               _SummaryRow(
-                label: 'Delivery Charge (estimated)',
-                value: Money(AppConstants.kStubDeliveryCharge).formatted,
+                label: (_latitude != null && _longitude != null) ? 'Delivery Charge' : 'Delivery Charge (estimated)',
+                value: deliveryCharge.formatted,
               ),
               const Divider(),
               _SummaryRow(label: 'Grand Total', value: grandTotal.formatted, bold: true),

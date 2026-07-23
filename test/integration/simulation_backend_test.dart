@@ -7,6 +7,7 @@ import 'package:traders_retailer/data/datasources/remote/product_remote_datasour
 import 'package:traders_retailer/data/datasources/remote/user_remote_datasource.dart';
 import 'package:traders_retailer/data/repositories/cart_repository_impl.dart';
 import 'package:traders_retailer/data/repositories/category_repository_impl.dart';
+import 'package:traders_retailer/data/repositories/delivery_config_repository_impl.dart';
 import 'package:traders_retailer/data/repositories/firebase_auth_repository.dart';
 import 'package:traders_retailer/data/repositories/order_repository_impl.dart';
 import 'package:traders_retailer/data/repositories/notification_repository_impl.dart';
@@ -14,9 +15,11 @@ import 'package:traders_retailer/data/repositories/product_repository_impl.dart'
 import 'package:traders_retailer/data/repositories/user_repository_impl.dart';
 import 'package:traders_retailer/data/datasources/local/notification_local_datasource.dart';
 import 'package:traders_retailer/data/datasources/local/product_local_datasource.dart';
+import 'package:traders_retailer/data/datasources/remote/delivery_config_remote_datasource.dart';
 import 'package:traders_retailer/domain/entities/address_entity.dart';
 import 'package:traders_retailer/domain/entities/cart_item_entity.dart';
 import 'package:traders_retailer/domain/entities/category_entity.dart';
+import 'package:traders_retailer/domain/entities/delivery_config_entity.dart';
 import 'package:traders_retailer/domain/entities/notification_entity.dart';
 import 'package:traders_retailer/domain/entities/order_entity.dart';
 import 'package:traders_retailer/domain/entities/order_item_entity.dart';
@@ -36,6 +39,7 @@ void main() {
   late Box ordersBox;
   late Box cartBox;
   late Box notificationsBox;
+  late Box settingsBox;
 
   setUp(() async {
     // Unique per-test-run directory — a fixed shared path can be left behind
@@ -48,6 +52,7 @@ void main() {
     ordersBox = await Hive.openBox('orders_cache');
     cartBox = await Hive.openBox('cart_box');
     notificationsBox = await Hive.openBox('notifications_cache');
+    settingsBox = await Hive.openBox('settings_cache');
   });
 
   tearDown(() async {
@@ -244,5 +249,24 @@ void main() {
     await notificationRepo.markAllAsRead();
     notifications = await notificationRepo.watchNotifications().first;
     expect(notifications.every((n) => n.isRead), isTrue);
+  });
+
+  test('delivery config falls back to a bootstrapping default, then round-trips an admin update', () async {
+    final deliveryConfigRepo = DeliveryConfigRepositoryImpl(DeliveryConfigRemoteDatasource(settingsBox: settingsBox));
+
+    // Nothing set yet — admin hasn't visited Delivery Settings.
+    final initial = await deliveryConfigRepo.watchConfig().first;
+    expect(initial.perKmRate, greaterThan(0));
+
+    await deliveryConfigRepo.updateConfig(const DeliveryConfigEntity(
+      warehouseLat: 19.0760,
+      warehouseLng: 72.8777,
+      perKmRate: 15.0,
+    ));
+
+    final updated = await deliveryConfigRepo.watchConfig().first;
+    expect(updated.warehouseLat, 19.0760);
+    expect(updated.warehouseLng, 72.8777);
+    expect(updated.perKmRate, 15.0);
   });
 }

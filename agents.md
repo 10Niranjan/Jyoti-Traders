@@ -295,6 +295,28 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-07-23 (continued) — Phase 5: Real Delivery Charge Calculation
+
+### 📋 Tasks completed:
+
+- **Delivery charge calculation, replacing `AppConstants.kStubDeliveryCharge`** — the next 3 Phase 5 checklist items:
+  - Added `geolocator` (pre-approved, rules.md §1) + `ACCESS_FINE_LOCATION`/`ACCESS_COARSE_LOCATION` in `AndroidManifest.xml`. `LocationService` (`core/services/`) wraps every call in one try/catch, same defensive pattern as `FcmService` — permission denial, disabled location services, or an unsupported platform all degrade to `null` rather than throwing.
+  - `AddressEntity` gained optional `latitude`/`longitude` + a `hasCoordinates` getter — nullable and backward compatible. Populated only when a retailer taps "Use current location". Extracted the address form (now 4 elements: street/city/pincode/location-button) that `ProfileScreen` and `CheckoutScreen` were independently duplicating into a shared `AddressFormFields` widget.
+  - Distance math is a hand-rolled pure-Dart Haversine function (`core/utils/distance_calculator.dart`), **not** a call into `geolocator` from the domain layer — the domain layer must stay plugin-free, so `CalculateDeliveryChargeUseCase` depends only on that pure function, while `LocationService` (which does need `geolocator`) stays in `core/services/`, one layer up.
+  - `DeliveryConfigRepository`/`DeliveryConfigEntity` — **the first single-document Firestore repository in this codebase** (`config/delivery`), a genuinely new pattern versus every prior repository being a collection of many docs. Same Hive-simulation dual-mode fallback as everything else, reusing the existing `settings_cache` box. Seeded with a documented bootstrapping default (central-India coordinates, ₹10/km per PRD §4.4's own example) until the admin sets the real location.
+  - `DeliverySettingsScreen` (new "Delivery Settings" button on `AdminDashboardScreen`) — admin edits warehouse lat/lng (with its own "use current location" shortcut) and the per-km rate. The read-side `deliveryConfigProvider` is shared between this screen and `CheckoutScreen`; the write side is admin-only.
+  - `CheckoutScreen` now computes a real per-km charge whenever the address has coordinates and the config has loaded, falling back to the flat placeholder otherwise — rules.md §10's hard rule ("delivery charge must always be calculated and shown") stays satisfied either way, never blank.
+- **No bugs found this round** — the one correctness risk (calling `ref.watch` from an event handler instead of `ref.read`, which `_deliveryCharge` initially did before being split into a pure `_deliveryChargeFor(address, config)` helper) was caught and fixed during implementation, not after.
+- **Tests added** (10 new, 88 total): `distance_calculator_test.dart` (3), `calculate_delivery_charge_usecase_test.dart` (3), `delivery_settings_screen_test.dart` (3), plus one new case in `simulation_backend_test.dart` (bootstrapping default → admin update round-trips).
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 88/88 passing.
+
+### 💬 Latest Discussion Summary:
+
+1. `phases.md` updated: delivery-charge sub-items checked off with scope notes (7/10 in Phase 5). `PRD.md` §4.4 updated to reflect the actual implementation (Haversine + admin-set warehouse/rate, not the Google Maps Distance Matrix API originally sketched there) and §12 checked off.
+2. Current active phase remains **Phase 5**, next up: the UPI payment flow (QR/ID screen, "I have paid" confirmation, admin marks-paid action) — the last unstarted piece of this phase. COD needs no further work.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

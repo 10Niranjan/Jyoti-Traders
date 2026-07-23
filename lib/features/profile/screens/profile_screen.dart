@@ -4,8 +4,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/services/location_service.dart';
 import '../../../core/utils/validators.dart';
 import '../../../domain/entities/address_entity.dart';
+import '../../../shared/widgets/address_form_fields.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/controllers/auth_state.dart';
@@ -25,6 +27,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final _pincodeController = TextEditingController();
   final _gstController = TextEditingController();
   bool _prefilled = false;
+  double? _latitude;
+  double? _longitude;
+  bool _isLocating = false;
 
   @override
   void dispose() {
@@ -42,9 +47,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       _streetController.text = address.street;
       _cityController.text = address.city;
       _pincodeController.text = address.pincode;
+      _latitude = address.latitude;
+      _longitude = address.longitude;
     }
     _gstController.text = state.user.gstNumber ?? '';
     _prefilled = true;
+  }
+
+  Future<void> _useCurrentLocation() async {
+    setState(() => _isLocating = true);
+    final position = await ref.read(locationServiceProvider).getCurrentPosition();
+    if (!mounted) return;
+    setState(() {
+      _isLocating = false;
+      if (position != null) {
+        _latitude = position.latitude;
+        _longitude = position.longitude;
+      }
+    });
+    if (position == null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Couldn\'t get your location. Check location permission and try again.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
   }
 
   Future<void> _save(String uid) async {
@@ -55,6 +83,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             street: _streetController.text.trim(),
             city: _cityController.text.trim(),
             pincode: _pincodeController.text.trim(),
+            latitude: _latitude,
+            longitude: _longitude,
           ),
           gstNumber: _gstController.text.trim().isEmpty ? null : _gstController.text.trim(),
         );
@@ -95,22 +125,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             const SizedBox(height: 24),
             Text('Delivery Address', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
             const SizedBox(height: 8),
-            TextFormField(
-              controller: _streetController,
-              decoration: const InputDecoration(labelText: 'Street / Shop Address'),
-              validator: Validators.address,
+            AddressFormFields(
+              streetController: _streetController,
+              cityController: _cityController,
+              pincodeController: _pincodeController,
+              hasCoordinates: _latitude != null && _longitude != null,
+              isLocating: _isLocating,
+              onUseCurrentLocation: _useCurrentLocation,
             ),
-            TextFormField(
-              controller: _cityController,
-              decoration: const InputDecoration(labelText: 'City'),
-              validator: (v) => Validators.required(v, fieldName: 'City'),
-            ),
-            TextFormField(
-              controller: _pincodeController,
-              decoration: const InputDecoration(labelText: 'Pincode'),
-              keyboardType: TextInputType.number,
-              validator: (v) => Validators.required(v, fieldName: 'Pincode'),
-            ),
+            const SizedBox(height: 8),
             TextFormField(
               controller: _gstController,
               decoration: const InputDecoration(labelText: 'GST Number (optional)'),

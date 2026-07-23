@@ -13,6 +13,7 @@ import '../../features/admin/screens/add_edit_product_screen.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
 import '../../features/admin/screens/approval_queue_screen.dart';
 import '../../features/admin/screens/all_orders_screen.dart';
+import '../../features/admin/screens/delivery_settings_screen.dart';
 import '../../features/admin/screens/manage_categories_screen.dart';
 import '../../features/admin/screens/manage_products_screen.dart';
 import '../../features/admin/screens/order_management_screen.dart';
@@ -134,6 +135,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.adminEditCategory,
         builder: (context, state) => AddEditCategoryScreen(categoryId: state.pathParameters['categoryId']!),
+      ),
+      GoRoute(
+        path: RouteNames.adminDeliverySettings,
+        builder: (context, state) => const DeliverySettingsScreen(),
       ),
       GoRoute(
         path: RouteNames.adminOrders,
