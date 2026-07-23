@@ -17,7 +17,7 @@
 | Phase 3 | Core Commerce — Retailer Side | ✅ Complete (delivery charge stubbed, UPI/FCM deferred — see note) | 12/14 |
 | Phase 4 | Admin Panel — Full Implementation | ✅ Complete | 21/21 |
 | Phase 5 | Delivery, Payments & Notifications | ✅ Complete | 10/10 |
-| Phase 6 | Polish, Animations & UX Refinement | 🔄 In Progress | 1/9 |
+| Phase 6 | Polish, Animations & UX Refinement (scope expanded — see note) | 🔄 In Progress | 2/11 |
 | Phase 7 | Testing & Quality Assurance | ⬜ Not Started | 0/10 |
 | Phase 8 | Launch Preparation & Play Store | ⬜ Not Started | 0/8 |
 
@@ -254,20 +254,26 @@
 ---
 
 ## 🔄 Phase 6 — Polish, Animations & UX Refinement
-> **Status**: IN PROGRESS 🔄 (6.1 complete 2026-07-23)  
+> **Status**: IN PROGRESS 🔄 (6.1, 6.2 complete 2026-07-23)  
 > **Goal**: Elevate the app from functional to premium — plus a Blinkit/Zepto-style
 > quick-commerce visual pass the client approved from a mockup. Broken into 6.1–6.5
 > sub-phases (this project's own convention, mirroring Phases 4–5) even though the
 > original checklist below was a flat list.
+>
+> **Scope note**: the original checklist had 9 items; 6.2 (card redesign) and 6.3
+> (floating cart bar) are net-new scope from the approved visual-direction mockup, not
+> in that original 9 — progress below is tracked out of 11 to reflect the real total.
 
 ### 6.1 — Dark mode toggle ✅
 - [x] Implement dark mode toggle in Profile screen (saved to Hive via `themeProvider`)
 
 > **Scope notes**: (1) `LocalStorageService.saveThemePreference`/`getThemePreference` already existed (Phase 1-era scaffolding) and already round-tripped a nullable bool through `HiveKeys.themeMode` — just never called by anything. Reused as-is; only added `clearThemePreference()` (mirrors the existing `clearAuthToken()` pattern) so "System" has a way to reset to no-preference. (2) New `ThemeModeController` (`core/theme/theme_controller.dart`) + `themeModeProvider`; `main.dart`'s hardcoded `themeMode: ThemeMode.system` now reads `ref.watch(themeModeProvider)`. (3) `ProfileScreen` gained an "Appearance" section (same header+row pattern as the existing "Support" section) with a Material 3 `SegmentedButton<ThemeMode>` (System/Light/Dark). (4) **Test-infra note**: the new `ProfileScreen` widget tests were the first to exercise content below "Support" in that screen's `ListView` — discovered that `find.text()` (not just `tester.tap()`, which `flutter_test_config.dart` already guards) silently fails to find content beyond the default 800×600 test surface, because `SliverList` only inflates Elements within its viewport+cache extent even for eagerly-built `ListView(children:)` children. Fixed with the existing `useTallTestViewport()` helper — same fix, newly-confirmed to also matter for pure assertions, not just taps. (5) Tests: `theme_controller_test.dart` (6 — defaults to system, loads dark/light from a stored bool, all three `setThemeMode` transitions persist correctly), `profile_screen_test.dart` (2 — new file, first ProfileScreen test coverage; renders the three segments, tapping Dark updates state). 105/105 passing, `flutter analyze` zero issues.
 
-### 6.2 — Product card & category card redesign
-- [ ] Blinkit/Zepto-style `ProductCard` — inline qty stepper once in cart, replacing the current one-shot add button
-- [ ] `CategoryCard` — tinted circular rings (rotating palette) + render admin-uploaded `iconUrl` when present, falling back to the existing name-matched icon
+### 6.2 — Product card & category card redesign ✅
+- [x] Blinkit/Zepto-style `ProductCard` — inline qty stepper once in cart, replacing the current one-shot add button
+- [x] `CategoryCard` — tinted circular rings (rotating palette) + render admin-uploaded `iconUrl` when present, falling back to the existing name-matched icon
+
+> **Scope notes**: (1) `AppColors.categoryPalette` — 6 rotating accents (reuses `primary`/`accent` plus 4 new hues); `CategoryCard` picks its ring color via `category.displayOrder % palette.length` rather than a passed-in index, so reordering categories in admin also reshuffles ring colors with zero call-site changes needed. (2) `CategoryCard` now renders `category.iconUrl` when non-empty (via the exact local-path-vs-URL check already established in `AdminCategoryTile._Thumbnail`), falling back to the existing name-matched Material icon — this is the first time an admin-uploaded category icon (Phase 4.4) actually reaches the retailer UI; it was dead data until now. (3) `ProductCard` converted from `StatelessWidget` to `ConsumerWidget` — it now reads/writes `cartControllerProvider` directly (`CartEntity.qtyFor()`, a new small getter) instead of taking an `onAddToCart` callback, so every grid using it gets the add→stepper transition for free with no caller wiring. The existing `QtyStepper` widget doesn't fit a 2-column card's width (it's sized for the full-width Product Detail/Cart row) — added a private `_CompactQtyStepper` in the same file rather than force-fitting the wrong size tier. Dropped the "added to cart" snackbar on the quick-add path — the card visually turning into a stepper is the feedback now (matches how Blinkit/Zepto actually behave); `ProductDetailScreen`'s explicit "Add to Cart" button + snackbar is untouched. (4) Only one call site (`category_products_screen.dart`) needed updating — `search_screen.dart`'s results use a different `ListTile` row layout, not `ProductCard`, left as-is. (5) **Test-infra note**: `ProductCard` only renders correctly at a constrained width (it's always inside a `GridView` cell in production); the first test attempt without that constraint blew the `AspectRatio(1.1)` image out to the full test-surface height and overflowed — fixed by wrapping the card in a `SizedBox(width: 170)` in the test, matching its real usage. (6) Not yet visually verified on a live build (no Android emulator/device attached in this environment) — covered thoroughly by widget tests instead; recommend a manual check on a device/emulator before shipping. (7) Tests: `product_card_test.dart` (4 — add button when absent, add transitions to stepper, stepper increments/decrements/removes at zero, out-of-stock disables it), `category_card_test.dart` (4 — fallback icon, tap callback, uploaded-icon path attempted, ring color matches palette index). 113/113 passing, `flutter analyze` zero issues.
 
 ### 6.3 — Floating cart bar
 - [ ] Persistent "N items · ₹total · View Cart" bar docked above the bottom nav on Home/Search/Category screens
@@ -329,7 +335,7 @@
 
 ### Current Active Phase: **Phase 6 — Polish, Animations & UX Refinement**
 ### Next Immediate Task:
-> ✅ 6.1 (dark mode toggle) is done — 1/9. Next: **6.2 — Product card & category card redesign**, the Blinkit/Zepto-style visual pass the client approved from a mockup: an inline qty stepper on `ProductCard` (reading `cartControllerProvider` directly, replacing the current one-shot add button) and tinted circular `CategoryCard` rings that render admin-uploaded `iconUrl` when present. See `C:\Users\niran\.claude\plans\async-beaming-heron.md` for the full 6.1–6.5 breakdown and audit findings this was planned against.
+> ✅ 6.1 (dark mode) and 6.2 (product/category card redesign) are done — 2/11. Next: **6.3 — Floating cart bar**, a persistent "N items · ₹total · View Cart" pill docked above the bottom nav on Home/Search/Category screens, wired into `app_router.dart`'s `_RetailerShell`. See `C:\Users\niran\.claude\plans\async-beaming-heron.md` for the full 6.1–6.5 breakdown and audit findings this was planned against. Note: 6.1/6.2 haven't been visually verified on a live device/emulator yet (none was attached in this environment) — worth a manual check before shipping.
 
 ---
 

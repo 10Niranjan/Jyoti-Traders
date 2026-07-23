@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/route_names.dart';
-import '../../../domain/entities/cart_item_entity.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/product_card.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
-import '../../cart/controllers/cart_controller.dart';
 import '../../home/controllers/home_controller.dart';
 import '../controllers/product_controller.dart';
 
@@ -46,13 +44,13 @@ class CategoryProductsScreen extends ConsumerWidget {
   }
 }
 
-class _ProductGrid extends ConsumerWidget {
+class _ProductGrid extends StatelessWidget {
   final List<ProductEntity> products;
 
   const _ProductGrid({required this.products});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     if (products.isEmpty) {
       return const EmptyStateWidget(
         icon: Icons.inventory_2_outlined,
@@ -73,21 +71,6 @@ class _ProductGrid extends ConsumerWidget {
         return ProductCard(
           product: product,
           onTap: () => context.push(RouteNames.productDetailPath(product.id)),
-          onAddToCart: () {
-            ref.read(cartControllerProvider.notifier).addItem(
-                  CartItemEntity(
-                    productId: product.id,
-                    name: product.name,
-                    imageUrl: product.imageUrl,
-                    unitPrice: product.price,
-                    unit: product.unit,
-                    qty: 1,
-                  ),
-                );
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('${product.name} added to cart'), duration: const Duration(seconds: 1)),
-            );
-          },
         );
       },
     );

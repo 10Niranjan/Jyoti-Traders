@@ -358,6 +358,14 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 1. `phases.md` restructured: Phase 6 now has 6.1–6.5 sub-headers (was a flat 9-item list); 6.1 marked ✅ with scope notes (1/9). Current active phase remains **Phase 6**, next up: **6.2 — Product card & category card redesign** (the qty-stepper `ProductCard` and tinted-ring `CategoryCard` from the approved mockup).
 2. Full plan detail (all 5 sub-phases, audit findings, file-level decisions) lives in `C:\Users\niran\.claude\plans\async-beaming-heron.md` — reference it directly for 6.2–6.5 rather than re-deriving scope.
 
+**6.2 — Product card & category card redesign, done (same session):**
+- `AppColors.categoryPalette` (6 rotating accents); `CategoryCard` picks its ring color from `category.displayOrder % palette.length` and, for the first time, actually renders an admin-uploaded `category.iconUrl` (Phase 4.4 added the upload path; nothing ever read it back until now) — falls back to the existing name-matched Material icon otherwise.
+- `ProductCard` converted `StatelessWidget` → `ConsumerWidget`: reads/writes `cartControllerProvider` directly (new `CartEntity.qtyFor()` getter) instead of taking an `onAddToCart` callback, so the add→inline-stepper transition works in every grid using it with zero caller wiring. Added a compact `_CompactQtyStepper` sized for a 2-column card — the existing `QtyStepper` is built for the full-width Product Detail/Cart row, a genuinely different size tier. Dropped the "added to cart" snackbar on quick-add — the card turning into a stepper is the feedback now, matching how Blinkit/Zepto actually behave.
+- Real find: `ProductCard` only lays out correctly at a constrained width (always a `GridView` cell in production) — the first test attempt without that constraint blew the image's `AspectRatio` out to the full test-surface height and overflowed; fixed by constraining the test the same way real usage does.
+- Tests added (8 new, 113 total): `product_card_test.dart` (4), `category_card_test.dart` (4). `flutter analyze` zero issues.
+- **Not yet visually verified on a live device/emulator** — no Android device/emulator was attached in this environment, so 6.1 and 6.2 are covered by widget tests only so far. Flagged as a to-do before shipping, not silently skipped.
+3. `phases.md` progress denominator changed from `/9` to `/11` — 6.2 and 6.3 (floating cart bar) are net-new scope from the approved mockup, not part of the original 9-item checklist, so tracking against the smaller number would have understated real progress. Next up: **6.3 — Floating cart bar**.
+
 ---
 
 ## 📈 Future Action Items & Checklist

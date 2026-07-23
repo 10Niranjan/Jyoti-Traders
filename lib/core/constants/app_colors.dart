@@ -31,6 +31,19 @@ class AppColors {
   
   // Discount & Promotional Badges
   static const Color discountBadge = Color(0xFF16A34A); // Emerald green for discounts
+
+  /// Rotating accent set for category rings — a category's color is
+  /// `categoryPalette[index % categoryPalette.length]`. Tint backgrounds are
+  /// derived at the call site via `.withOpacity()`, matching how every other
+  /// tinted surface in this app already works (see `CategoryCard`).
+  static const List<Color> categoryPalette = [
+    primary, // Royal Blue
+    accent, // Premium Orange
+    Color(0xFF0D9488), // Teal
+    Color(0xFF7C3AED), // Violet
+    Color(0xFFBE185D), // Pink
+    Color(0xFF15803D), // Green
+  ];
   
   // Text Colors
   static const Color textPrimaryLight = Color(0xFF0F172A);

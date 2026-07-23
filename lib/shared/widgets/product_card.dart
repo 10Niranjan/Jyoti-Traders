@@ -1,31 +1,54 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import '../../domain/entities/cart_item_entity.dart';
 import '../../domain/entities/product_entity.dart';
+import '../../features/cart/controllers/cart_controller.dart';
 
-class ProductCard extends StatelessWidget {
+/// Cart-aware on its own — reads/writes `cartControllerProvider` directly
+/// rather than taking an `onAddToCart` callback, so every grid using this
+/// card gets the same "+" → inline stepper behavior for free.
+class ProductCard extends ConsumerWidget {
   final ProductEntity product;
   final VoidCallback onTap;
-  final VoidCallback onAddToCart;
 
   const ProductCard({
     super.key,
     required this.product,
     required this.onTap,
-    required this.onAddToCart,
   });
 
+  void _add(WidgetRef ref) {
+    ref.read(cartControllerProvider.notifier).addItem(
+          CartItemEntity(
+            productId: product.id,
+            name: product.name,
+            imageUrl: product.imageUrl,
+            unitPrice: product.price,
+            unit: product.unit,
+            qty: 1,
+          ),
+        );
+  }
+
+  void _updateQty(WidgetRef ref, int qty) {
+    ref.read(cartControllerProvider.notifier).updateQty(product.id, qty);
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final qtyInCart = ref.watch(cartControllerProvider.select((cart) => cart.qtyFor(product.id)));
+
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
           color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.primary.withOpacity(0.08)),
         ),
         clipBehavior: Clip.antiAlias,
@@ -59,28 +82,45 @@ class ProductCard extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        product.price.formatted,
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                      Expanded(
+                        child: Text(
+                          product.price.formatted,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
-                      InkWell(
-                        onTap: product.isInStock ? onAddToCart : null,
-                        borderRadius: BorderRadius.circular(8),
-                        child: Container(
+                      if (!product.isInStock)
+                        Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: product.isInStock
-                                ? AppColors.primary
-                                : AppColors.textSecondaryLight.withOpacity(0.3),
+                            color: (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)
+                                .withOpacity(0.3),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                        )
+                      else if (qtyInCart == 0)
+                        InkWell(
+                          onTap: () => _add(ref),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                          ),
+                        )
+                      else
+                        _CompactQtyStepper(
+                          qty: qtyInCart,
+                          max: product.stock,
+                          onChanged: (qty) => _updateQty(ref, qty),
                         ),
-                      ),
                     ],
                   ),
                   if (!product.isInStock) ...[
@@ -95,6 +135,58 @@ class ProductCard extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// A dense "− qty +" control sized for a 2-column card row, sitting
+/// alongside price text. `QtyStepper` (shared/widgets/qty_stepper.dart) is
+/// too wide for this — it's built for the full-width row on Product Detail
+/// / Cart, a genuinely different size tier, not a duplicate of this one.
+class _CompactQtyStepper extends StatelessWidget {
+  final int qty;
+  final int max;
+  final ValueChanged<int> onChanged;
+
+  const _CompactQtyStepper({required this.qty, required this.max, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(8)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _StepperButton(icon: Icons.remove_rounded, onTap: () => onChanged(qty - 1)),
+          SizedBox(
+            width: 18,
+            child: Text(
+              '$qty',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+            ),
+          ),
+          _StepperButton(icon: Icons.add_rounded, onTap: qty < max ? () => onChanged(qty + 1) : null),
+        ],
+      ),
+    );
+  }
+}
+
+class _StepperButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  const _StepperButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(5),
+        child: Icon(icon, size: 13, color: onTap == null ? Colors.white38 : Colors.white),
       ),
     );
   }

@@ -16,6 +16,15 @@ class CartEntity extends Equatable {
 
   bool get isEmpty => items.isEmpty;
 
+  /// Quantity of [productId] currently in the cart, or 0 if it isn't in it —
+  /// what a product card's qty stepper reads to know its own state.
+  int qtyFor(String productId) {
+    for (final item in items) {
+      if (item.productId == productId) return item.qty;
+    }
+    return 0;
+  }
+
   @override
   List<Object?> get props => [items];
 }

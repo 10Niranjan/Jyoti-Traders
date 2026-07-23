@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
@@ -9,8 +12,8 @@ class CategoryCard extends StatelessWidget {
 
   const CategoryCard({super.key, required this.category, required this.onTap});
 
-  /// No category icon assets exist yet — resolve a reasonable Material icon
-  /// from the category name so the grid isn't just blank boxes.
+  /// Fallback when no admin-uploaded icon exists — resolves a reasonable
+  /// Material icon from the category name so the grid isn't blank boxes.
   static IconData _iconFor(String name) {
     final lower = name.toLowerCase();
     if (lower.contains('atta') || lower.contains('rice') || lower.contains('grain')) {
@@ -31,20 +34,24 @@ class CategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ringColor = AppColors.categoryPalette[category.displayOrder % AppColors.categoryPalette.length];
+
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(999),
       child: Column(
         children: [
           Container(
-            width: 54,
-            height: 54,
+            width: 56,
+            height: 56,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.08),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+              color: ringColor.withOpacity(isDark ? 0.2 : 0.1),
+              shape: BoxShape.circle,
             ),
-            child: Icon(_iconFor(category.name), color: AppColors.primary, size: 26),
+            clipBehavior: Clip.antiAlias,
+            child: category.iconUrl.isEmpty
+                ? Icon(_iconFor(category.name), color: ringColor, size: 26)
+                : _CategoryIconImage(iconUrl: category.iconUrl, fallbackColor: ringColor, fallbackIcon: _iconFor(category.name)),
           ),
           const SizedBox(height: 8),
           Text(
@@ -60,6 +67,37 @@ class CategoryCard extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Renders an admin-uploaded category icon — a real Storage URL, or, in
+/// simulation mode where no bucket exists, a local file path. Mirrors the
+/// exact same local-path-vs-URL check `AdminCategoryTile._Thumbnail` uses.
+class _CategoryIconImage extends StatelessWidget {
+  final String iconUrl;
+  final Color fallbackColor;
+  final IconData fallbackIcon;
+
+  const _CategoryIconImage({required this.iconUrl, required this.fallbackColor, required this.fallbackIcon});
+
+  @override
+  Widget build(BuildContext context) {
+    final fallback = Icon(fallbackIcon, color: fallbackColor, size: 26);
+
+    if (!iconUrl.startsWith('http')) {
+      return Image.file(
+        File(iconUrl),
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Center(child: fallback),
+      );
+    }
+
+    return CachedNetworkImage(
+      imageUrl: iconUrl,
+      fit: BoxFit.cover,
+      placeholder: (context, url) => Center(child: fallback),
+      errorWidget: (context, url, error) => Center(child: fallback),
     );
   }
 }
