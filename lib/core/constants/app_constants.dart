@@ -18,4 +18,10 @@ class AppConstants {
   /// per-km calculation via `geolocator` + warehouse coordinates + an
   /// admin-set per-km rate is Phase 5 scope — see phases.md §5.
   static const double kStubDeliveryCharge = 100.0;
+
+  /// **Placeholder UPI details** — the client hasn't provided the owner's
+  /// real UPI ID/QR yet. Replace before launch; nothing else in the UPI
+  /// payment flow needs to change once real values are set here.
+  static const String kUpiId = 'jyotikirana@upi';
+  static const String kUpiPayeeName = 'Jyoti Kirana Wholesale';
 }

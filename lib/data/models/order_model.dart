@@ -63,6 +63,7 @@ class OrderModel {
   final String orderStatus;
   final AddressEntity deliveryAddress;
   final String? notes;
+  final String? paymentScreenshotUrl;
   final DateTime createdAt;
 
   OrderModel({
@@ -77,6 +78,7 @@ class OrderModel {
     required this.orderStatus,
     required this.deliveryAddress,
     this.notes,
+    this.paymentScreenshotUrl,
     required this.createdAt,
   });
 
@@ -112,6 +114,7 @@ class OrderModel {
         longitude: (addressMap['longitude'] as num?)?.toDouble(),
       ),
       notes: json['notes'] as String?,
+      paymentScreenshotUrl: json['paymentScreenshotUrl'] as String?,
       createdAt: parseFirestoreDate(json['createdAt']),
     );
   }
@@ -135,6 +138,7 @@ class OrderModel {
         'longitude': deliveryAddress.longitude,
       },
       'notes': notes,
+      'paymentScreenshotUrl': paymentScreenshotUrl,
       // Plain DateTime, not Timestamp.fromDate() — see note in user_model.dart.
       'createdAt': createdAt,
     };
@@ -155,6 +159,7 @@ class OrderModel {
       orderStatus: OrderStatus.fromString(orderStatus),
       deliveryAddress: deliveryAddress,
       notes: notes,
+      paymentScreenshotUrl: paymentScreenshotUrl,
       createdAt: createdAt,
     );
   }
@@ -172,6 +177,7 @@ class OrderModel {
       orderStatus: entity.orderStatus.value,
       deliveryAddress: entity.deliveryAddress,
       notes: entity.notes,
+      paymentScreenshotUrl: entity.paymentScreenshotUrl,
       createdAt: entity.createdAt,
     );
   }

@@ -91,6 +91,37 @@ class OrderRemoteDatasource {
     await _collection.doc(orderId).update({'orderStatus': status});
   }
 
+  Future<void> updatePaymentStatus(String orderId, String status) async {
+    if (_useMock) {
+      final list = _readSimulated();
+      final idx = list.indexWhere((o) => o.id == orderId);
+      if (idx != -1) {
+        list[idx] = OrderModel.fromJson({...list[idx].toJson(), 'paymentStatus': status});
+      }
+      await _saveSimulated(list);
+      return;
+    }
+    await _collection.doc(orderId).update({'paymentStatus': status});
+  }
+
+  Future<void> recordPaymentClaim(String orderId, {String? screenshotUrl}) async {
+    const claimedStatus = 'payment_claimed';
+    if (_useMock) {
+      final list = _readSimulated();
+      final idx = list.indexWhere((o) => o.id == orderId);
+      if (idx != -1) {
+        final json = {...list[idx].toJson(), 'paymentStatus': claimedStatus};
+        if (screenshotUrl != null) json['paymentScreenshotUrl'] = screenshotUrl;
+        list[idx] = OrderModel.fromJson(json);
+      }
+      await _saveSimulated(list);
+      return;
+    }
+    final update = <String, dynamic>{'paymentStatus': claimedStatus};
+    if (screenshotUrl != null) update['paymentScreenshotUrl'] = screenshotUrl;
+    await _collection.doc(orderId).update(update);
+  }
+
   List<OrderModel> _sortNewestFirst(List<OrderModel> list) {
     return list..sort((a, b) => b.createdAt.compareTo(a.createdAt));
   }

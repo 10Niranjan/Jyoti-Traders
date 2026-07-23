@@ -3,17 +3,19 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-/// Square image preview + "choose/change image" action for the product form.
+/// Square image preview + "choose/change image" action. Handles all three
+/// shapes an image can take: a freshly-picked local file, an already-saved
+/// value (a real Storage URL, or — in simulation mode, where no bucket
+/// exists — a local path), or nothing at all.
 ///
-/// Handles all three shapes an image can take here: a freshly-picked local
-/// file, an already-saved value (a real Storage URL, or — in simulation
-/// mode, where no bucket exists — a local path), or nothing at all.
-class ProductImagePickerField extends StatelessWidget {
+/// Generic on purpose — reused for product photos, category icons, and UPI
+/// payment screenshots, none of which need different picker behavior.
+class ImagePickerField extends StatelessWidget {
   final String? pickedPath;
   final String? existingUrl;
   final VoidCallback? onPick;
 
-  const ProductImagePickerField({
+  const ImagePickerField({
     super.key,
     required this.pickedPath,
     required this.existingUrl,

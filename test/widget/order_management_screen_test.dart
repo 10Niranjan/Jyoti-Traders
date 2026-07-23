@@ -12,6 +12,7 @@ import 'package:traders_retailer/features/admin/screens/order_management_screen.
 class FakeOrderRepository implements OrderRepository {
   final List<OrderEntity> orders;
   final List<(String, OrderStatus)> statusUpdates = [];
+  final List<String> paymentStatusUpdates = [];
   FakeOrderRepository(this.orders);
 
   @override
@@ -26,6 +27,14 @@ class FakeOrderRepository implements OrderRepository {
   @override
   Future<void> updateOrderStatus(String orderId, OrderStatus status) async {
     statusUpdates.add((orderId, status));
+  }
+
+  @override
+  Future<void> recordPaymentClaim(String orderId, {String? screenshotUrl}) async {}
+
+  @override
+  Future<void> updatePaymentStatus(String orderId, PaymentStatus status) async {
+    paymentStatusUpdates.add(orderId);
   }
 }
 
@@ -77,5 +86,62 @@ void main() {
 
     expect(repo.statusUpdates, [('o1', OrderStatus.confirmed)]);
     expect(find.text('Status updated to Confirmed.'), findsOneWidget);
+  });
+
+  testWidgets('COD orders show no payment status or Mark as Paid button', (tester) async {
+    await tester.pumpWidget(_wrap(FakeOrderRepository([_order])));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mark as Paid'), findsNothing);
+    expect(find.text('Awaiting payment'), findsNothing);
+  });
+
+  testWidgets('UPI orders show payment status and a working Mark as Paid button', (tester) async {
+    final upiOrder = OrderEntity(
+      id: 'o2',
+      userId: 'u1',
+      shopName: 'Basmati Traders',
+      items: [OrderItemEntity(productId: 'p1', name: 'Basmati Rice', qty: 2, unitPrice: Money(1500))],
+      subtotal: Money(3000),
+      deliveryCharge: Money(50),
+      paymentMethod: PaymentMethod.upi,
+      paymentStatus: PaymentStatus.paymentClaimed,
+      orderStatus: OrderStatus.pending,
+      deliveryAddress: const AddressEntity(street: 'St', city: 'City', pincode: '123456'),
+      createdAt: DateTime(2026, 7, 20),
+    );
+    final repo = FakeOrderRepository([upiOrder]);
+    await tester.pumpWidget(_wrap(repo, orderId: 'o2'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Payment claimed — awaiting confirmation'), findsOneWidget);
+    expect(find.text('Mark as Paid'), findsOneWidget);
+
+    await tester.tap(find.text('Mark as Paid'));
+    await tester.pumpAndSettle();
+
+    expect(repo.paymentStatusUpdates, ['o2']);
+    expect(find.text('Payment confirmed.'), findsOneWidget);
+  });
+
+  testWidgets('already-paid UPI orders hide the Mark as Paid button', (tester) async {
+    final paidOrder = OrderEntity(
+      id: 'o3',
+      userId: 'u1',
+      shopName: 'Basmati Traders',
+      items: [OrderItemEntity(productId: 'p1', name: 'Basmati Rice', qty: 2, unitPrice: Money(1500))],
+      subtotal: Money(3000),
+      deliveryCharge: Money(50),
+      paymentMethod: PaymentMethod.upi,
+      paymentStatus: PaymentStatus.paid,
+      orderStatus: OrderStatus.pending,
+      deliveryAddress: const AddressEntity(street: 'St', city: 'City', pincode: '123456'),
+      createdAt: DateTime(2026, 7, 20),
+    );
+    await tester.pumpWidget(_wrap(FakeOrderRepository([paidOrder]), orderId: 'o3'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Paid'), findsOneWidget);
+    expect(find.text('Mark as Paid'), findsNothing);
   });
 }

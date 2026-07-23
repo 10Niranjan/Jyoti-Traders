@@ -27,4 +27,14 @@ class OrderRepositoryImpl implements OrderRepository {
   Future<void> updateOrderStatus(String orderId, OrderStatus status) {
     return _remote.updateOrderStatus(orderId, status.value);
   }
+
+  @override
+  Future<void> recordPaymentClaim(String orderId, {String? screenshotUrl}) {
+    return _remote.recordPaymentClaim(orderId, screenshotUrl: screenshotUrl);
+  }
+
+  @override
+  Future<void> updatePaymentStatus(String orderId, PaymentStatus status) {
+    return _remote.updatePaymentStatus(orderId, status.value);
+  }
 }

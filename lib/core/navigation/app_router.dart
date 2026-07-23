@@ -22,6 +22,7 @@ import '../../features/auth/screens/pending_approval_screen.dart';
 import '../../features/cart/screens/cart_screen.dart';
 import '../../features/checkout/screens/checkout_screen.dart';
 import '../../features/checkout/screens/order_success_screen.dart';
+import '../../features/checkout/screens/upi_payment_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/notifications/screens/notifications_screen.dart';
 import '../../features/orders/screens/order_detail_screen.dart';
@@ -192,6 +193,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.checkout,
         builder: (context, state) => const CheckoutScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.upiPayment,
+        builder: (context, state) => UpiPaymentScreen(orderId: state.pathParameters['orderId']!),
       ),
       GoRoute(
         path: RouteNames.orderSuccess,

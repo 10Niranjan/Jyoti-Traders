@@ -6,7 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/category_entity.dart';
 import '../controllers/admin_category_controller.dart';
-import '../widgets/product_image_picker_field.dart';
+import '../../../shared/widgets/image_picker_field.dart';
 
 /// Create (when [categoryId] is null) or edit an existing category.
 class AddEditCategoryScreen extends ConsumerStatefulWidget {
@@ -132,7 +132,7 @@ class _AddEditCategoryScreenState extends ConsumerState<AddEditCategoryScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ProductImagePickerField(
+              ImagePickerField(
                 pickedPath: _pickedIconPath,
                 existingUrl: _existingIconUrl,
                 onPick: isSaving ? null : _pickIcon,

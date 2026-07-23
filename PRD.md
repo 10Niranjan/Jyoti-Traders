@@ -167,14 +167,16 @@ Admin Dashboard
 
 ---
 
-## 7. 💳 Payment Flow
+## 7. 💳 Payment Flow ✅ Implemented (Phase 5)
 
 | Method                     | Flow                                                                                                                                        |
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | **COD (Cash on Delivery)** | Order placed → Admin confirms → Delivery → Cash collected on site                                                                           |
-| **UPI**                    | Order placed → UPI payment screen shown (UPI ID / QR Code of owner) → Payment screenshot upload or auto-verification → Admin confirms order |
+| **UPI**                    | Order placed → UPI payment screen shown (UPI ID / QR Code of owner) → Payment screenshot upload (optional) → "I have paid" → Admin confirms order |
 
 > **Note**: Full UPI payment gateway integration (Razorpay/PhonePe) can be added in Phase 2. Initial version may use a manual UPI QR code approach.
+>
+> **Implementation note**: the QR is generated client-side (`qr_flutter`) from a standard `upi://pay?...` deep link — no gateway integration, no API key. `AppConstants.kUpiId`/`kUpiPayeeName` are **placeholders** (`jyotikirana@upi`) — the client has not yet provided the owner's real UPI ID. Swap those two constants when real details arrive; nothing else needs to change.
 
 ---
 
@@ -254,6 +256,7 @@ Admin Dashboard
 - [x] Retailer Management (Admin) — retailer list with total spend/order count, tap-through to full order history — **Phase 4 (Admin Panel) now fully complete**
 - [x] Push Notifications (FCM) — permission request, token save on login/refresh, foreground message handling, background handler, and a local (Hive) `NotificationsScreen` with an unread-count bell badge on both the retailer and admin home screens. Actual server-side sending (a Cloud Function) is still out of scope — this is the client-side plumbing only.
 - [x] Delivery Charge Calculation (§4.4) — real per-km pricing via `geolocator` GPS capture + Haversine distance from an admin-configured warehouse location + an admin-settable per-km rate (`DeliverySettingsScreen`), replacing the flat placeholder. Falls back to the placeholder gracefully for any retailer who hasn't captured their location yet.
+- [x] UPI Payment Flow (§7) — QR/UPI-ID payment screen, "I have paid" claim with optional screenshot upload, admin manual payment confirmation (`OrderManagementScreen`'s "Mark as Paid"). **Phase 5 (Delivery, Payments & Notifications) now fully complete.**
 
 ### 📅 Phase 3 — Delivery & Payments
 

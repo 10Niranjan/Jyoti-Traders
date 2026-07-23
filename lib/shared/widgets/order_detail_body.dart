@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
@@ -9,17 +12,20 @@ import 'order_status_badge.dart';
 /// Full order breakdown — id/status, items, totals, delivery address and
 /// payment method. Shared by the retailer's read-only `OrderDetailScreen`
 /// and the admin's `OrderManagementScreen`, which additionally shows the
-/// shop name and injects a status-update control via [header].
+/// shop name, injects a status-update control via [header], and injects
+/// payment-confirmation controls (a "Mark as Paid" button) via [paymentExtra].
 class OrderDetailBody extends StatelessWidget {
   final OrderEntity order;
   final bool showShopName;
   final Widget? header;
+  final Widget? paymentExtra;
 
   const OrderDetailBody({
     super.key,
     required this.order,
     this.showShopName = false,
     this.header,
+    this.paymentExtra,
   });
 
   @override
@@ -86,6 +92,36 @@ class OrderDetailBody extends StatelessWidget {
           order.paymentMethod == PaymentMethod.cod ? 'Cash on Delivery' : 'UPI',
           style: GoogleFonts.inter(fontSize: 13),
         ),
+        if (order.paymentMethod == PaymentMethod.upi) ...[
+          const SizedBox(height: 4),
+          Text(
+            order.paymentStatus.label,
+            style: GoogleFonts.inter(
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+              color: order.paymentStatus == PaymentStatus.paid ? AppColors.success : AppColors.warning,
+            ),
+          ),
+          if (order.paymentScreenshotUrl != null) ...[
+            const SizedBox(height: 10),
+            Text('Payment Screenshot', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: SizedBox(
+                width: 140,
+                height: 140,
+                child: order.paymentScreenshotUrl!.startsWith('http')
+                    ? CachedNetworkImage(imageUrl: order.paymentScreenshotUrl!, fit: BoxFit.cover)
+                    : Image.file(File(order.paymentScreenshotUrl!), fit: BoxFit.cover),
+              ),
+            ),
+          ],
+          if (paymentExtra != null) ...[
+            const SizedBox(height: 12),
+            paymentExtra!,
+          ],
+        ],
       ],
     );
   }

@@ -9,7 +9,7 @@ import '../../../domain/entities/product_entity.dart';
 import '../../../domain/value_objects/money.dart';
 import '../controllers/admin_category_controller.dart';
 import '../controllers/admin_product_controller.dart';
-import '../widgets/product_image_picker_field.dart';
+import '../../../shared/widgets/image_picker_field.dart';
 
 /// Create (when [productId] is null) or edit an existing product.
 class AddEditProductScreen extends ConsumerStatefulWidget {
@@ -154,7 +154,7 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ProductImagePickerField(
+              ImagePickerField(
                 pickedPath: _pickedImagePath,
                 existingUrl: _existingImageUrl,
                 onPick: isSaving ? null : _pickImage,

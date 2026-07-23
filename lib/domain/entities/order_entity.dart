@@ -19,13 +19,17 @@ enum PaymentMethod {
 
 enum PaymentStatus {
   pending,
+
+  /// The retailer tapped "I have paid" on the UPI screen — awaiting the
+  /// admin's manual confirmation. Never set for COD orders.
+  paymentClaimed,
   paid;
 
-  String get value => name;
+  String get value => this == PaymentStatus.paymentClaimed ? 'payment_claimed' : name;
 
   static PaymentStatus fromString(String status) {
     return PaymentStatus.values.firstWhere(
-      (e) => e.name.toLowerCase() == status.toLowerCase(),
+      (e) => e.value == status,
       orElse: () => PaymentStatus.pending,
     );
   }
@@ -61,6 +65,7 @@ class OrderEntity extends Equatable {
   final OrderStatus orderStatus;
   final AddressEntity deliveryAddress;
   final String? notes;
+  final String? paymentScreenshotUrl;
   final DateTime createdAt;
 
   const OrderEntity({
@@ -75,6 +80,7 @@ class OrderEntity extends Equatable {
     required this.orderStatus,
     required this.deliveryAddress,
     this.notes,
+    this.paymentScreenshotUrl,
     required this.createdAt,
   });
 
@@ -93,6 +99,7 @@ class OrderEntity extends Equatable {
         orderStatus,
         deliveryAddress,
         notes,
+        paymentScreenshotUrl,
         createdAt,
       ];
 }

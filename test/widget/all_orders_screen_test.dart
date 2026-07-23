@@ -26,6 +26,12 @@ class FakeOrderRepository implements OrderRepository {
 
   @override
   Future<void> updateOrderStatus(String orderId, OrderStatus status) async {}
+
+  @override
+  Future<void> recordPaymentClaim(String orderId, {String? screenshotUrl}) async {}
+
+  @override
+  Future<void> updatePaymentStatus(String orderId, PaymentStatus status) async {}
 }
 
 class FakeUserRepository implements UserRepository {

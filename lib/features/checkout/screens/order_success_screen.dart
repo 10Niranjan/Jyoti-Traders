@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../shared/widgets/primary_button.dart';
 
 class OrderSuccessScreen extends StatelessWidget {
@@ -32,7 +33,7 @@ class OrderSuccessScreen extends StatelessWidget {
               ).animate().fadeIn(delay: 150.ms),
               const SizedBox(height: 8),
               Text(
-                'Order #${orderId.substring(0, 8).toUpperCase()}',
+                'Order #${orderId.shortId}',
                 style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondaryLight),
               ).animate().fadeIn(delay: 200.ms),
               const SizedBox(height: 4),

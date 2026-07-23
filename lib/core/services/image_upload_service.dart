@@ -3,10 +3,12 @@ import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/storage_paths.dart';
 import '../network/firebase_mode.dart';
 
-/// Uploads product images and category icons to Firebase Storage, with the same
+/// Uploads product images, category icons, and UPI payment screenshots to
+/// Firebase Storage, with the same
 /// simulation-mode fallback every other Firebase-touching service in this
 /// app uses (see [isFirebasePlaceholder]).
 ///
@@ -74,4 +76,17 @@ class ImageUploadService {
       debugPrint('ImageUploadService: no stored icon to delete for $categoryId ($e)');
     }
   }
+
+  /// Same upload/simulation-fallback behavior as [uploadProductImage], for
+  /// a retailer's optional UPI payment screenshot.
+  Future<String> uploadPaymentScreenshot({required String orderId, required String localFilePath}) async {
+    if (_useMock || _storage == null) {
+      return localFilePath;
+    }
+    final ref = _storage.ref(StoragePaths.paymentScreenshot(orderId));
+    await ref.putFile(File(localFilePath));
+    return ref.getDownloadURL();
+  }
 }
+
+final imageUploadServiceProvider = Provider<ImageUploadService>((ref) => ImageUploadService());

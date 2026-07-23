@@ -317,6 +317,30 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-07-23 (continued) — Phase 5 complete: UPI Payment Flow
+
+### 📋 Tasks completed:
+
+- **UPI payment flow — the last 3 items in Phase 5, which is now fully complete (10/10)**:
+  - Added `qr_flutter` — **explicitly approved by the user this session** — to render a real, scannable QR client-side from a standard `upi://pay?...` deep link, rather than a static asset that doesn't exist. Updated `rules.md` §1 and `ARCHITECTURE.md` §2.7's approved-package tables per rules.md's own requirement.
+  - `CheckoutScreen` previously hardcoded COD with no way to actually pick UPI (a real gap against rules.md §10's "COD / UPI only" rule, which implies a real choice) — added a `RadioListTile` selector. UPI orders now route to a new `UpiPaymentScreen` after placement instead of straight to `OrderSuccessScreen`, matching PRD §7's documented flow.
+  - Extended `PaymentStatus` with `paymentClaimed` (retailer tapped "I have paid") between `pending` and `paid`, so the admin can distinguish "never touched" from "claims they paid." New `OrderRepository.recordPaymentClaim()` (retailer) and `.updatePaymentStatus()` (admin-only "Mark as Paid", wired into `OrderManagementScreen` via `OrderDetailBody`'s new `paymentExtra` slot — mirrors the `header` slot pattern from 4.5).
+  - `OrderEntity.paymentScreenshotUrl` — the uploaded screenshot renders back in `OrderDetailBody`'s Payment section for both roles, not just written to Storage and forgotten (an upload nobody can view would be a half-finished feature). Reused `ImageUploadService` with a new `uploadPaymentScreenshot()` method.
+  - **Refactored while here**: moved `imageUploadServiceProvider` from `admin_product_controller.dart` into `core/services/image_upload_service.dart` (mirrors the `locationServiceProvider` precedent from the delivery-charge session) since checkout — a retailer feature — needed it too, and importing a provider from an admin controller file was the wrong coupling direction. Also relocated `features/admin/widgets/product_image_picker_field.dart` → `shared/widgets/image_picker_field.dart` (`ProductImagePickerField` → `ImagePickerField`), since it was already fully generic and is now used by product photos, category icons, *and* payment screenshots.
+  - **No real UPI ID exists** — checked agents.md's own client-spec notes and found only "COD & Online UPI" as a payment method, no actual ID/QR. `AppConstants.kUpiId`/`kUpiPayeeName` are explicit placeholders (`jyotikirana@upi`) to swap before launch.
+- **Real bug found and fixed immediately**: `OrderSuccessScreen` had the exact same unguarded `order.id.substring(0, 8)` crash risk fixed everywhere else in Phase 4.5 — just in a file that phase never touched. Fixed via the existing `String.shortId` extension the moment it was spotted.
+- **Tests added** (9 new, 97 total): `record_payment_claim_usecase_test.dart` (2), `update_payment_status_usecase_test.dart` (1), 3 new cases in `order_management_screen_test.dart` (COD hides payment UI; UPI shows status + a working Mark-as-Paid; already-paid hides the button), `upi_payment_screen_test.dart` (3 — this codebase's first widget test backed by a signed-in `authControllerProvider`, via overriding `authRepositoryProvider` with a fake that emits an already-authenticated retailer).
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 97/97 passing.
+- **Phase 5 — Delivery, Payments & Notifications is now fully complete: 10/10.**
+
+### 💬 Latest Discussion Summary:
+
+1. Asked the user up front whether to add `qr_flutter` for a real QR code vs. a text-only UPI ID with a copy button (rules.md §11 requires explicit approval for any package not already on the approved list) — user chose the real QR code.
+2. `phases.md` updated: Phase 5 marked ✅ Complete (10/10) in both the summary table and its own section header. `PRD.md` §7/§12 updated with the implementation notes (placeholder UPI details, client-side QR generation with no gateway).
+3. Current active phase moves to **Phase 6 — Polish, Animations & UX Refinement**. This phase is UX polish across already-built screens, not new features — flagged that shimmer/pull-to-refresh already exist on most list screens from when they were built, so the first step is auditing what's actually still missing rather than assuming a blank slate; the two Lottie-animation checklist items need actual `.json` asset files sourced/approved first, the same "no assets exist yet" gap noted back in Phase 3.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

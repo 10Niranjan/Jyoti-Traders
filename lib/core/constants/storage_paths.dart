@@ -6,8 +6,11 @@ class StoragePaths {
 
   static const String productImages = 'product_images';
   static const String categoryIcons = 'category_icons';
+  static const String paymentScreenshots = 'payment_screenshots';
 
   static String productImage(String productId) => '$productImages/$productId.jpg';
 
   static String categoryIcon(String categoryId) => '$categoryIcons/$categoryId.jpg';
+
+  static String paymentScreenshot(String orderId) => '$paymentScreenshots/$orderId.jpg';
 }

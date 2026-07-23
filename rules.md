@@ -35,6 +35,7 @@ Only the following packages are approved for this project. **Do not introduce an
 | Fonts | `google_fonts` — Poppins + Inter only |
 | Serialization | `freezed`, `json_annotation`, `json_serializable` |
 | Utilities | `intl`, `equatable`, `uuid`, `url_launcher`, `geolocator`, `permission_handler` |
+| Payments | `qr_flutter` — renders the UPI QR code client-side from the UPI ID string (Phase 5, approved by client-facing user in session) |
 | Testing | `flutter_test`, `mocktail`, `integration_test` |
 | Code Gen | `build_runner` |
 

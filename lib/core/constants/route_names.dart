@@ -30,6 +30,7 @@ class RouteNames {
   static const String productCategory = '/product-category/:categoryId';
   static const String productDetail = '/product/:productId';
   static const String checkout = '/checkout';
+  static const String upiPayment = '/upi-payment/:orderId';
   static const String orderSuccess = '/order-success/:orderId';
   static const String orderDetail = '/order/:orderId';
   static const String notifications = '/notifications';
@@ -38,6 +39,8 @@ class RouteNames {
   static String adminEditCategoryPath(String categoryId) => '/admin/categories/$categoryId/edit';
   static String adminOrderManagementPath(String orderId) => '/admin/orders/$orderId';
   static String adminRetailerOrdersPath(String retailerId) => '/admin/retailers/$retailerId/orders';
+
+  static String upiPaymentPath(String orderId) => '/upi-payment/$orderId';
 
   static String productCategoryPath(String categoryId) => '/product-category/$categoryId';
   static String productDetailPath(String productId) => '/product/$productId';

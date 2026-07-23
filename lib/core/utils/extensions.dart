@@ -38,6 +38,17 @@ extension OrderStatusLabelExtension on OrderStatus {
       };
 }
 
+/// Human-readable payment-status labels, shown on the order detail view for
+/// UPI orders (COD orders never leave `pending`, so this label is skipped
+/// for them — see `OrderDetailBody`).
+extension PaymentStatusLabelExtension on PaymentStatus {
+  String get label => switch (this) {
+        PaymentStatus.pending => 'Awaiting payment',
+        PaymentStatus.paymentClaimed => 'Payment claimed — awaiting confirmation',
+        PaymentStatus.paid => 'Paid',
+      };
+}
+
 extension ListChunkExtension<T> on List<T> {
   /// Splits a list into fixed-size chunks — useful for Firestore `whereIn`
   /// queries, which are capped at 10 values per query.

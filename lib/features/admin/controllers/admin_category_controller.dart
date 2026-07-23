@@ -6,7 +6,6 @@ import '../../../domain/usecases/category/create_category_usecase.dart';
 import '../../../domain/usecases/category/delete_category_usecase.dart';
 import '../../../domain/usecases/category/get_categories_usecase.dart';
 import '../../../domain/usecases/category/update_category_usecase.dart';
-import 'admin_product_controller.dart' show imageUploadServiceProvider;
 
 /// Admin's category list — same `watchCategories()` stream retailers use
 /// (unlike products, it was never `isActive`-filtered, so there's no

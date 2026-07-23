@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/entities/order_entity.dart';
 import '../../../domain/usecases/order/update_order_status_usecase.dart';
+import '../../../domain/usecases/order/update_payment_status_usecase.dart';
 import 'admin_dashboard_controller.dart' show allOrdersProvider;
 
 /// Single order for the management screen, derived from the same
@@ -18,8 +19,10 @@ final adminOrderByIdProvider = Provider.autoDispose.family<AsyncValue<OrderEntit
 
 class AdminOrderController extends StateNotifier<AsyncValue<void>> {
   final UpdateOrderStatusUseCase _updateStatusUseCase;
+  final UpdatePaymentStatusUseCase _updatePaymentStatusUseCase;
 
-  AdminOrderController(this._updateStatusUseCase) : super(const AsyncValue.data(null));
+  AdminOrderController(this._updateStatusUseCase, this._updatePaymentStatusUseCase)
+      : super(const AsyncValue.data(null));
 
   Future<bool> updateStatus(String orderId, OrderStatus status) async {
     state = const AsyncValue.loading();
@@ -32,9 +35,22 @@ class AdminOrderController extends StateNotifier<AsyncValue<void>> {
       return false;
     }
   }
+
+  Future<bool> markAsPaid(String orderId) async {
+    state = const AsyncValue.loading();
+    try {
+      await _updatePaymentStatusUseCase(orderId, PaymentStatus.paid);
+      state = const AsyncValue.data(null);
+      return true;
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+      return false;
+    }
+  }
 }
 
 final adminOrderControllerProvider =
     StateNotifierProvider.autoDispose<AdminOrderController, AsyncValue<void>>((ref) {
-  return AdminOrderController(UpdateOrderStatusUseCase(ref.watch(orderRepositoryProvider)));
+  final repository = ref.watch(orderRepositoryProvider);
+  return AdminOrderController(UpdateOrderStatusUseCase(repository), UpdatePaymentStatusUseCase(repository));
 });

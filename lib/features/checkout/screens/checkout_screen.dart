@@ -38,6 +38,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   double? _latitude;
   double? _longitude;
   bool _isLocating = false;
+  PaymentMethod _paymentMethod = PaymentMethod.cod;
 
   @override
   void dispose() {
@@ -119,7 +120,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           .toList(),
       subtotal: cart.subtotal,
       deliveryCharge: _deliveryChargeFor(address, config),
-      paymentMethod: PaymentMethod.cod,
+      paymentMethod: _paymentMethod,
       paymentStatus: PaymentStatus.pending,
       orderStatus: OrderStatus.pending,
       deliveryAddress: address,
@@ -142,7 +143,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     ref.listen<AsyncValue<String?>>(checkoutControllerProvider, (previous, next) {
       next.whenOrNull(
         data: (orderId) {
-          if (orderId != null) context.pushReplacement(RouteNames.orderSuccessPath(orderId));
+          if (orderId == null) return;
+          // COD goes straight to the success screen; UPI stops at the
+          // payment screen first (PRD §7: "Order placed → UPI payment
+          // screen shown → ... → Admin confirms order").
+          if (_paymentMethod == PaymentMethod.upi) {
+            context.pushReplacement(RouteNames.upiPaymentPath(orderId));
+          } else {
+            context.pushReplacement(RouteNames.orderSuccessPath(orderId));
+          }
         },
         error: (error, stack) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -178,11 +187,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               const SizedBox(height: 24),
               Text('Payment Method', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-              const ListTile(
+              RadioListTile<PaymentMethod>(
                 contentPadding: EdgeInsets.zero,
-                leading: Icon(Icons.payments_outlined, color: AppColors.primary),
-                title: Text('Cash on Delivery (COD)'),
-                trailing: Icon(Icons.check_circle, color: AppColors.success),
+                value: PaymentMethod.cod,
+                groupValue: _paymentMethod,
+                onChanged: (v) => setState(() => _paymentMethod = v ?? PaymentMethod.cod),
+                secondary: const Icon(Icons.payments_outlined, color: AppColors.primary),
+                title: const Text('Cash on Delivery (COD)'),
+              ),
+              RadioListTile<PaymentMethod>(
+                contentPadding: EdgeInsets.zero,
+                value: PaymentMethod.upi,
+                groupValue: _paymentMethod,
+                onChanged: (v) => setState(() => _paymentMethod = v ?? PaymentMethod.cod),
+                secondary: const Icon(Icons.qr_code_rounded, color: AppColors.primary),
+                title: const Text('UPI'),
               ),
               const SizedBox(height: 24),
               Text('Order Summary', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),

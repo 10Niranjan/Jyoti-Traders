@@ -101,6 +101,7 @@ This application is built on **Clean Architecture** principles, popularized by R
 | `url_launcher` | Launch phone dialer & email client for support contact |
 | `permission_handler` | Runtime permissions (notifications, location) |
 | `geolocator` | Retailer GPS location for delivery km calculation |
+| `qr_flutter` | Renders the UPI payment QR code client-side from the UPI ID (Phase 5) |
 
 ### 2.8 Dev & Quality
 

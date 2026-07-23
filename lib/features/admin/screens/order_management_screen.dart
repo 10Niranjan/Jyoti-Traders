@@ -32,6 +32,21 @@ class OrderManagementScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _markAsPaid(BuildContext context, WidgetRef ref, OrderEntity order) async {
+    final success = await ref.read(adminOrderControllerProvider.notifier).markAsPaid(order.id);
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success ? 'Payment confirmed.' : 'Update failed: ${ref.read(adminOrderControllerProvider).error}',
+        ),
+        backgroundColor: success ? AppColors.success : AppColors.error,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orderAsync = ref.watch(adminOrderByIdProvider(orderId));
@@ -65,6 +80,14 @@ class OrderManagementScreen extends ConsumerWidget {
                 onChanged: isSaving ? null : (v) => _changeStatus(context, ref, order, v),
               ),
             ),
+            paymentExtra: order.paymentStatus == PaymentStatus.paid
+                ? null
+                : OutlinedButton.icon(
+                    onPressed: isSaving ? null : () => _markAsPaid(context, ref, order),
+                    icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
+                    label: const Text('Mark as Paid'),
+                    style: OutlinedButton.styleFrom(foregroundColor: AppColors.success),
+                  ),
           );
         },
       ),
