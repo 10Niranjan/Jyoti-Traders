@@ -22,6 +22,7 @@ import '../../features/cart/screens/cart_screen.dart';
 import '../../features/checkout/screens/checkout_screen.dart';
 import '../../features/checkout/screens/order_success_screen.dart';
 import '../../features/home/screens/home_screen.dart';
+import '../../features/notifications/screens/notifications_screen.dart';
 import '../../features/orders/screens/order_detail_screen.dart';
 import '../../features/orders/screens/order_history_screen.dart';
 import '../../features/products/screens/category_products_screen.dart';
@@ -194,6 +195,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.orderDetail,
         builder: (context, state) => OrderDetailScreen(orderId: state.pathParameters['orderId']!),
+      ),
+      GoRoute(
+        path: RouteNames.notifications,
+        builder: (context, state) => const NotificationsScreen(),
       ),
     ],
   );

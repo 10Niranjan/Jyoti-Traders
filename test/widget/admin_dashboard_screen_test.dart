@@ -3,13 +3,29 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:traders_retailer/data/repositories/repository_providers.dart';
 import 'package:traders_retailer/domain/entities/address_entity.dart';
+import 'package:traders_retailer/domain/entities/notification_entity.dart';
 import 'package:traders_retailer/domain/entities/order_entity.dart';
 import 'package:traders_retailer/domain/entities/order_item_entity.dart';
 import 'package:traders_retailer/domain/entities/user_entity.dart';
+import 'package:traders_retailer/domain/repositories/notification_repository.dart';
 import 'package:traders_retailer/domain/repositories/order_repository.dart';
 import 'package:traders_retailer/domain/repositories/user_repository.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/admin/screens/admin_dashboard_screen.dart';
+
+class FakeNotificationRepository implements NotificationRepository {
+  @override
+  Stream<List<NotificationEntity>> watchNotifications() => Stream.value(const []);
+
+  @override
+  Future<void> addNotification(NotificationEntity notification) async {}
+
+  @override
+  Future<void> markAsRead(String id) async {}
+
+  @override
+  Future<void> markAllAsRead() async {}
+}
 
 class FakeUserRepository implements UserRepository {
   final List<UserEntity> pending;
@@ -92,6 +108,7 @@ void main() {
               _order('o2', now.subtract(const Duration(days: 2))),
             ]),
           ),
+          notificationRepositoryProvider.overrideWithValue(FakeNotificationRepository()),
         ],
         child: const MaterialApp(home: AdminDashboardScreen()),
       ),
@@ -120,6 +137,7 @@ void main() {
         overrides: [
           userRepositoryProvider.overrideWithValue(FakeUserRepository(pending: [], approved: [])),
           orderRepositoryProvider.overrideWithValue(FakeOrderRepository([])),
+          notificationRepositoryProvider.overrideWithValue(FakeNotificationRepository()),
         ],
         child: const MaterialApp(home: AdminDashboardScreen()),
       ),

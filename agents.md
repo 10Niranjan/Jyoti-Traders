@@ -273,6 +273,28 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-07-23 (continued) — Phase 5 begins: Push Notifications (FCM)
+
+### 📋 Tasks completed:
+
+- **Phase 5, first slice — push notifications end to end**, the first 4 of Phase 5's 10 checklist items:
+  - Added `firebase_messaging` (pre-approved, rules.md §1). `FcmService` (`core/services/`) wraps every call (`requestPermission`, `getToken`, `onTokenRefresh`, `onMessage`) in its own try/catch, degrading to `null`/an empty stream on failure — there's no Firestore/Auth-style "simulation mode" substitute for FCM, so this defensive wrapping is the fallback for unconfigured credentials, an unsupported platform, or a test environment with no platform channel. Confirmed working live: the widget-test smoke test logs `FcmService: permission/token request unavailable, skipping` and continues rather than crashing.
+  - `firebaseMessagingBackgroundHandler` — a required top-level function (Firebase runs it in a separate isolate), registered in `main.dart` via `FirebaseMessaging.onBackgroundMessage` before `runApp`. It only re-initializes Firebase and otherwise no-ops: the OS renders the notification natively from the message's `notification` payload, and a background isolate can't safely touch the main isolate's already-open Hive boxes.
+  - `AuthRepository.updateFcmToken(uid, fcmToken)` — new method (mirrors `updateProfile`'s mock/Firestore branches) — called on login and again on every `onTokenRefresh`, via `fcmInitializerProvider`: a plain (non-autoDispose) `Provider<void>` watched once from `JyotiKiranaApp.build()` so it initializes exactly once per app lifetime regardless of auth state.
+  - `NotificationsScreen` + `NotificationRepository` — local-only (Hive `notifications_cache` box, no Firestore), following the exact pattern `CartRepository` already established: datasource → repository → controller, no use-case layer, since it's simple CRUD over one box.
+  - `NotificationBellButton` (shared widget, bell + unread-count badge via the existing `badges` package) added to both `HomeScreen` and `AdminDashboardScreen` app bars — notification history is per-device, not per-role, so both point at the shared `/notifications` route.
+  - Deliberately out of scope: tap-to-open-order-detail from a notification, and native foreground tray notifications (`flutter_local_notifications` isn't on rules.md's approved package list) — neither was asked for by the checklist. Also out of scope: an actual Cloud Function to *send* these — this phase only wires the client side, so the notification list will stay empty in practice until a backend sender exists.
+- **Test-infra note**: `fcmInitializerProvider` is watched unconditionally at the app root (unlike every other repository provider in this app, which only gets read once a specific auth-gated screen builds), so `test/widget_test.dart`'s smoke test now needs the `notifications_cache` Hive box opened in its `setUp()`, and `admin_dashboard_screen_test.dart` needed a `FakeNotificationRepository` override added (since `AdminDashboardScreen` now renders the bell button too). Both fixed.
+- **Tests added** (8 new, 78 total): `notifications_screen_test.dart` (5), `notification_bell_button_test.dart` (2), plus a new Hive round-trip case in `simulation_backend_test.dart` (add → newest-first ordering → mark-as-read → mark-all-read).
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 78/78 passing.
+
+### 💬 Latest Discussion Summary:
+
+1. User asked to proceed with Phase 5 and fix any bugs found along the way immediately — no bugs surfaced this round; the test-infra gaps above were anticipated and fixed inline as part of the same implementation pass, not discovered after the fact.
+2. `phases.md` updated: Phase 5's first 4 items checked off with scope notes (4/10). `PRD.md` §4/§12 updated to note push-notification plumbing is done, client-side only. Current active phase remains **Phase 5**, next up: delivery charge calculation (`geolocator` + warehouse-coordinates config doc + admin-settable per-km rate), replacing `AppConstants.kStubDeliveryCharge`.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

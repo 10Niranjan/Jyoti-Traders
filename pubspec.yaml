@@ -71,6 +71,7 @@ dependencies:
   fl_chart: ^1.2.0
   firebase_storage: ^12.2.0
   image_picker: ^1.2.3
+  firebase_messaging: ^15.1.0
 
 dev_dependencies:
   flutter_test:

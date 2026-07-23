@@ -31,6 +31,7 @@ class RouteNames {
   static const String checkout = '/checkout';
   static const String orderSuccess = '/order-success/:orderId';
   static const String orderDetail = '/order/:orderId';
+  static const String notifications = '/notifications';
 
   static String adminEditProductPath(String productId) => '/admin/products/$productId/edit';
   static String adminEditCategoryPath(String categoryId) => '/admin/categories/$categoryId/edit';

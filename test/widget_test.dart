@@ -9,6 +9,7 @@ void main() {
     Hive.init('temp_hive');
     await Hive.openBox('settings_cache');
     await Hive.openBox('user_cache');
+    await Hive.openBox('notifications_cache');
   });
 
   tearDown(() async {

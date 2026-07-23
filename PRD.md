@@ -252,12 +252,12 @@ Admin Dashboard
 - [x] Category Management (Admin) — full CRUD with icon upload, active/inactive toggle, and drag-to-reorder
 - [x] Order Management (Admin) — filterable order list + status update dropdown (Pending → Confirmed → Out for Delivery → Delivered)
 - [x] Retailer Management (Admin) — retailer list with total spend/order count, tap-through to full order history — **Phase 4 (Admin Panel) now fully complete**
+- [x] Push Notifications (FCM) — permission request, token save on login/refresh, foreground message handling, background handler, and a local (Hive) `NotificationsScreen` with an unread-count bell badge on both the retailer and admin home screens. Actual server-side sending (a Cloud Function) is still out of scope — this is the client-side plumbing only.
 
 ### 📅 Phase 3 — Delivery & Payments
 
 - Delivery charge calculation (per km)
 - UPI QR code payment flow
-- FCM push notifications (including order-status-change notifications to retailers)
 
 ### 📅 Phase 4 — Polish & Launch
 

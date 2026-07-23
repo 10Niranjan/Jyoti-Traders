@@ -9,12 +9,15 @@ import 'package:traders_retailer/data/repositories/cart_repository_impl.dart';
 import 'package:traders_retailer/data/repositories/category_repository_impl.dart';
 import 'package:traders_retailer/data/repositories/firebase_auth_repository.dart';
 import 'package:traders_retailer/data/repositories/order_repository_impl.dart';
+import 'package:traders_retailer/data/repositories/notification_repository_impl.dart';
 import 'package:traders_retailer/data/repositories/product_repository_impl.dart';
 import 'package:traders_retailer/data/repositories/user_repository_impl.dart';
+import 'package:traders_retailer/data/datasources/local/notification_local_datasource.dart';
 import 'package:traders_retailer/data/datasources/local/product_local_datasource.dart';
 import 'package:traders_retailer/domain/entities/address_entity.dart';
 import 'package:traders_retailer/domain/entities/cart_item_entity.dart';
 import 'package:traders_retailer/domain/entities/category_entity.dart';
+import 'package:traders_retailer/domain/entities/notification_entity.dart';
 import 'package:traders_retailer/domain/entities/order_entity.dart';
 import 'package:traders_retailer/domain/entities/order_item_entity.dart';
 import 'package:traders_retailer/domain/entities/product_entity.dart';
@@ -32,6 +35,7 @@ void main() {
   late Box catalogBox;
   late Box ordersBox;
   late Box cartBox;
+  late Box notificationsBox;
 
   setUp(() async {
     // Unique per-test-run directory — a fixed shared path can be left behind
@@ -43,6 +47,7 @@ void main() {
     catalogBox = await Hive.openBox('catalog_cache');
     ordersBox = await Hive.openBox('orders_cache');
     cartBox = await Hive.openBox('cart_box');
+    notificationsBox = await Hive.openBox('notifications_cache');
   });
 
   tearDown(() async {
@@ -206,5 +211,38 @@ void main() {
     final allOrders = await orderRepo.watchAllOrders().first;
     final updated = allOrders.firstWhere((o) => o.id == 'order_test_1');
     expect(updated.orderStatus, OrderStatus.confirmed);
+  });
+
+  test('notifications round-trip through Hive, newest first, mark-as-read persists', () async {
+    final notificationRepo = NotificationRepositoryImpl(NotificationLocalDatasource(box: notificationsBox));
+
+    await notificationRepo.addNotification(NotificationEntity(
+      id: 'n1',
+      title: 'Order confirmed',
+      body: 'Your order #ORDER_TE is now Confirmed.',
+      orderId: 'order_test_1',
+      receivedAt: DateTime(2026, 7, 20),
+      isRead: false,
+    ));
+    await notificationRepo.addNotification(NotificationEntity(
+      id: 'n2',
+      title: 'Order delivered',
+      body: 'Your order #ORDER_TE is now Delivered.',
+      orderId: 'order_test_1',
+      receivedAt: DateTime(2026, 7, 21),
+      isRead: false,
+    ));
+
+    var notifications = await notificationRepo.watchNotifications().first;
+    expect(notifications.map((n) => n.id).toList(), ['n2', 'n1']); // newest first
+
+    await notificationRepo.markAsRead('n1');
+    notifications = await notificationRepo.watchNotifications().first;
+    expect(notifications.firstWhere((n) => n.id == 'n1').isRead, isTrue);
+    expect(notifications.firstWhere((n) => n.id == 'n2').isRead, isFalse);
+
+    await notificationRepo.markAllAsRead();
+    notifications = await notificationRepo.watchNotifications().first;
+    expect(notifications.every((n) => n.isRead), isTrue);
   });
 }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
+import '../../../shared/widgets/notification_bell_button.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../controllers/admin_dashboard_controller.dart';
 import '../widgets/admin_stat_card.dart';
@@ -27,6 +28,7 @@ class AdminDashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text('Jyoti Kirana Admin', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
         actions: [
+          const NotificationBellButton(),
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: AppColors.error),
             onPressed: () => ref.read(authControllerProvider.notifier).signOut(),

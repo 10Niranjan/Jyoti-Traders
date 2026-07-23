@@ -7,6 +7,7 @@ class HiveBoxes {
   static const String catalogCache = 'catalog_cache';
   static const String ordersCache = 'orders_cache';
   static const String cartBox = 'cart_box';
+  static const String notificationsCache = 'notifications_cache';
 }
 
 class HiveKeys {
@@ -32,4 +33,7 @@ class HiveKeys {
 
   // cart_box
   static const String cartItems = 'cart_items';
+
+  // notifications_cache
+  static const String notificationItems = 'notification_items';
 }

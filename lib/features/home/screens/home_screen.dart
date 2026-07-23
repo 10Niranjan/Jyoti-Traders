@@ -9,6 +9,7 @@ import '../../../domain/entities/category_entity.dart';
 import '../../../shared/widgets/category_card.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/error_state_widget.dart';
+import '../../../shared/widgets/notification_bell_button.dart';
 import '../../../shared/widgets/promo_banner_carousel.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
 import '../../auth/controllers/auth_controller.dart';
@@ -47,6 +48,7 @@ class HomeScreen extends ConsumerWidget {
           ],
         ),
         actions: [
+          const NotificationBellButton(),
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: AppColors.error),
             onPressed: () => ref.read(authControllerProvider.notifier).signOut(),

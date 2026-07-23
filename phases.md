@@ -16,7 +16,7 @@
 | Phase 2 | Domain Layer & Data Models | ✅ Complete (Auth use cases deliberately deferred — see note) | 8/12 |
 | Phase 3 | Core Commerce — Retailer Side | ✅ Complete (delivery charge stubbed, UPI/FCM deferred — see note) | 12/14 |
 | Phase 4 | Admin Panel — Full Implementation | ✅ Complete | 21/21 |
-| Phase 5 | Delivery, Payments & Notifications | ⬜ Not Started | 0/10 |
+| Phase 5 | Delivery, Payments & Notifications | 🔄 In Progress | 4/10 |
 | Phase 6 | Polish, Animations & UX Refinement | ⬜ Not Started | 0/9 |
 | Phase 7 | Testing & Quality Assurance | ⬜ Not Started | 0/10 |
 | Phase 8 | Launch Preparation & Play Store | ⬜ Not Started | 0/8 |
@@ -227,14 +227,17 @@
 
 ---
 
-## ⬜ Phase 5 — Delivery, Payments & Notifications
-> **Status**: NOT STARTED ⬜  
+## 🔄 Phase 5 — Delivery, Payments & Notifications
+> **Status**: IN PROGRESS 🔄 (push notifications complete 2026-07-23)  
 > **Goal**: Complete delivery charge logic, finalize payment flows, and implement push notifications end-to-end.
 
-- [ ] Set up Firebase Cloud Messaging (FCM) — `FirebaseMessaging.onMessage` + background handler
-- [ ] Request notification permission on app startup
-- [ ] Save FCM token to Firestore on login/refresh
-- [ ] Build `NotificationsScreen` — list of received FCM notifications stored locally in Hive
+- [x] Set up Firebase Cloud Messaging (FCM) — `FirebaseMessaging.onMessage` + background handler
+- [x] Request notification permission on app startup
+- [x] Save FCM token to Firestore on login/refresh
+- [x] Build `NotificationsScreen` — list of received FCM notifications stored locally in Hive
+
+> **Scope notes**: (1) `firebase_messaging` added (pre-approved, rules.md §1). Every `FirebaseMessaging` call is wrapped in its own try/catch and degrades to a no-op (`null` token / empty stream) rather than throwing — there's no meaningful "simulation mode" substitute for FCM the way Firestore/Auth have one, so this is the defensive fallback for unconfigured credentials, an unsupported platform, or a test environment with no platform channel registered. Confirmed working: the widget-test smoke test logs `FcmService: permission/token request unavailable, skipping` and continues normally rather than crashing. (2) `AuthRepository.updateFcmToken(uid, fcmToken)` — new method (mirrors `updateProfile`'s mock/Firestore branches) — persists the token on login and again on every `onTokenRefresh` event, via `fcmInitializerProvider`, a plain `Provider<void>` watched once from the app root (`JyotiKiranaApp.build()`) so it initializes exactly once per app lifetime regardless of auth state. (3) `firebaseMessagingBackgroundHandler` is a top-level function (required — Firebase launches it in a separate isolate) that only re-initializes Firebase and otherwise no-ops: the OS renders the notification natively from the message's `notification` payload with zero app code needed, and a background isolate can't safely touch the main isolate's already-open Hive boxes. (4) `NotificationsScreen` + `NotificationRepository` are local-only (Hive, no Firestore) per the checklist wording, following the exact same local-only pattern `CartRepository` already established (datasource → repository → controller, no use-case layer, since it's simple CRUD over one Hive box). New `notifications_cache` Hive box. (5) Added a shared `NotificationBellButton` (bell icon + unread-count badge, reusing the `badges` package already used for the cart badge) to both `HomeScreen` (retailer) and `AdminDashboardScreen` — notification history is per-device, not per-role, so both point at the same `/notifications` route. (6) Deliberately did **not** add tap-to-open-order-detail navigation from a notification tile, or a `flutter_local_notifications`-based foreground tray notification (that package isn't on rules.md's approved list) — neither was asked for by this checklist, and the in-app list + bell badge already satisfies it. (7) No Cloud Function actually *sends* these yet (out of scope — this phase only wires the client side), so in practice the notification list will stay empty until a backend sender exists; the plumbing is fully in place for when it does. (8) Tests: `notifications_screen_test.dart` (5), `notification_bell_button_test.dart` (2), plus a new Hive round-trip case in `simulation_backend_test.dart` (add → newest-first ordering → mark-as-read → mark-all-read). 78/78 passing, `flutter analyze` zero issues.
+
 - [ ] Implement delivery charge calculation — use `geolocator` to get retailer GPS, calculate distance from warehouse coordinates, multiply by per-km rate set by admin
 - [ ] Build admin setting for per-km rate in `AdminDashboardScreen`
 - [ ] Store warehouse lat/long as a Firestore config document
@@ -304,7 +307,7 @@
 
 ### Current Active Phase: **Phase 5 — Delivery, Payments & Notifications**
 ### Next Immediate Task:
-> ✅ Phase 4 (Admin Panel) is fully complete — 21/21. Phase 5 starts with Firebase Cloud Messaging setup: `FirebaseMessaging.onMessage` + background handler, request notification permission on app startup, and save the FCM token to Firestore on login/refresh. This unblocks every FCM item deferred from Phases 3–4 (order-placed-to-admin, approval/rejection-to-retailer, status-change-to-retailer).
+> ✅ Push notifications (FCM + `NotificationsScreen`) are done — 4/10. Next: **delivery charge calculation** — use `geolocator` (already pre-approved, not yet a dependency) to get the retailer's GPS from their saved address, calculate distance from a warehouse-coordinates config document, and multiply by an admin-settable per-km rate. This replaces `AppConstants.kStubDeliveryCharge`, the flat placeholder checkout has used since Phase 3. Needs: a Firestore config doc for warehouse lat/long + per-km rate (with Hive-simulation fallback, same dual-mode pattern every other repository here uses), an admin settings UI to edit the rate (phases.md's own checklist puts this "in `AdminDashboardScreen`"), and wiring the real calculation into `CheckoutController` in place of the stub.
 
 ---
 

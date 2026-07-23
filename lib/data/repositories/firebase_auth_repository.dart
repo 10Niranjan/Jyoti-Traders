@@ -367,6 +367,31 @@ class FirebaseAuthRepository implements AuthRepository {
     return _getUserFromFirestore(uid);
   }
 
+  @override
+  Future<void> updateFcmToken({required String uid, required String fcmToken}) async {
+    if (_useMock) {
+      final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+      final userMapList = List<Map<String, dynamic>>.from(
+        users.map((e) => Map<String, dynamic>.from(e as Map)),
+      );
+      for (int i = 0; i < userMapList.length; i++) {
+        if (userMapList[i]['uid'] == uid) {
+          userMapList[i] = UserModel.fromJson(userMapList[i]).copyWith(fcmToken: fcmToken).toJson();
+        }
+      }
+      await _userCacheBox.put('simulated_users', userMapList);
+
+      if (_mockCurrentUser?.uid == uid) {
+        _mockCurrentUser = _mockCurrentUser!.copyWith(fcmToken: fcmToken);
+        await _userCacheBox.put('current_user', _mockCurrentUser!.toJson());
+        _mockStreamController.add(_mockCurrentUser);
+      }
+      return;
+    }
+
+    await _firestore!.collection('users').doc(uid).update({'fcmToken': fcmToken});
+  }
+
   // Simulation-only helper to toggle approval status of a user (useful for admin testing screen)
   Future<void> simulateToggleApproval(String uid, bool approve) async {
     final status = approve ? UserStatus.approved : UserStatus.pending;

@@ -31,4 +31,8 @@ abstract class AuthRepository {
     AddressEntity? address,
     String? gstNumber,
   });
+
+  /// Persists this device's current FCM token on the user's profile, called
+  /// on login and again whenever the token rotates (phases.md §5).
+  Future<void> updateFcmToken({required String uid, required String fcmToken});
 }

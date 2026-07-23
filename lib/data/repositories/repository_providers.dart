@@ -6,7 +6,9 @@ import '../../domain/repositories/category_repository.dart';
 import '../../domain/repositories/order_repository.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../../domain/repositories/user_repository.dart';
+import '../../domain/repositories/notification_repository.dart';
 import '../datasources/local/cart_local_datasource.dart';
+import '../datasources/local/notification_local_datasource.dart';
 import '../datasources/local/product_local_datasource.dart';
 import '../datasources/remote/category_remote_datasource.dart';
 import '../datasources/remote/order_remote_datasource.dart';
@@ -14,6 +16,7 @@ import '../datasources/remote/product_remote_datasource.dart';
 import '../datasources/remote/user_remote_datasource.dart';
 import 'category_repository_impl.dart';
 import 'cart_repository_impl.dart';
+import 'notification_repository_impl.dart';
 import 'order_repository_impl.dart';
 import 'product_repository_impl.dart';
 import 'user_repository_impl.dart';
@@ -44,4 +47,9 @@ final userRepositoryProvider = Provider<UserRepository>((ref) {
 final cartRepositoryProvider = Provider<CartRepository>((ref) {
   final cartBox = Hive.box(HiveBoxes.cartBox);
   return CartRepositoryImpl(CartLocalDatasource(cartBox: cartBox));
+});
+
+final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
+  final box = Hive.box(HiveBoxes.notificationsCache);
+  return NotificationRepositoryImpl(NotificationLocalDatasource(box: box));
 });
