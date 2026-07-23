@@ -364,7 +364,13 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 - Real find: `ProductCard` only lays out correctly at a constrained width (always a `GridView` cell in production) — the first test attempt without that constraint blew the image's `AspectRatio` out to the full test-surface height and overflowed; fixed by constraining the test the same way real usage does.
 - Tests added (8 new, 113 total): `product_card_test.dart` (4), `category_card_test.dart` (4). `flutter analyze` zero issues.
 - **Not yet visually verified on a live device/emulator** — no Android device/emulator was attached in this environment, so 6.1 and 6.2 are covered by widget tests only so far. Flagged as a to-do before shipping, not silently skipped.
-3. `phases.md` progress denominator changed from `/9` to `/11` — 6.2 and 6.3 (floating cart bar) are net-new scope from the approved mockup, not part of the original 9-item checklist, so tracking against the smaller number would have understated real progress. Next up: **6.3 — Floating cart bar**.
+3. `phases.md` progress denominator changed from `/9` to `/11` — 6.2 and 6.3 (floating cart bar) are net-new scope from the approved mockup, not part of the original 9-item checklist, so tracking against the smaller number would have understated real progress.
+
+**6.3 — Floating cart bar, done (same session):**
+- New `FloatingCartBar` (`shared/widgets/`) — dark pill with item count/subtotal/"View Cart →", animated in/out on `cart.isEmpty`, wrapped in `IgnorePointer` while hidden so its fade-out state can't eat taps meant for what's underneath.
+- Wired into `app_router.dart`'s `_RetailerShell` (`StatelessWidget` → `ConsumerWidget`): a `Stack` over the shell body, hidden specifically on the Cart tab, tapping calls `navigationShell.goBranch(2)` since Cart is a shell branch, not a push route.
+- Tests added (4 new, 117 total): `floating_cart_bar_test.dart`. The shell-integration wiring itself isn't unit-tested — no GoRouter test harness exists in this project for push/branch navigation, consistent with every other GoRouter-dependent tap so far.
+- `flutter analyze` zero issues. Next up: **6.4 — Motion & transitions** (GoRouter fade+slide, product-image `Hero`, animated cart badge bounce).
 
 ---
 

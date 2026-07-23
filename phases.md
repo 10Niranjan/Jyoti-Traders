@@ -17,7 +17,7 @@
 | Phase 3 | Core Commerce — Retailer Side | ✅ Complete (delivery charge stubbed, UPI/FCM deferred — see note) | 12/14 |
 | Phase 4 | Admin Panel — Full Implementation | ✅ Complete | 21/21 |
 | Phase 5 | Delivery, Payments & Notifications | ✅ Complete | 10/10 |
-| Phase 6 | Polish, Animations & UX Refinement (scope expanded — see note) | 🔄 In Progress | 2/11 |
+| Phase 6 | Polish, Animations & UX Refinement (scope expanded — see note) | 🔄 In Progress | 3/11 |
 | Phase 7 | Testing & Quality Assurance | ⬜ Not Started | 0/10 |
 | Phase 8 | Launch Preparation & Play Store | ⬜ Not Started | 0/8 |
 
@@ -254,7 +254,7 @@
 ---
 
 ## 🔄 Phase 6 — Polish, Animations & UX Refinement
-> **Status**: IN PROGRESS 🔄 (6.1, 6.2 complete 2026-07-23)  
+> **Status**: IN PROGRESS 🔄 (6.1–6.3 complete 2026-07-23)  
 > **Goal**: Elevate the app from functional to premium — plus a Blinkit/Zepto-style
 > quick-commerce visual pass the client approved from a mockup. Broken into 6.1–6.5
 > sub-phases (this project's own convention, mirroring Phases 4–5) even though the
@@ -275,8 +275,10 @@
 
 > **Scope notes**: (1) `AppColors.categoryPalette` — 6 rotating accents (reuses `primary`/`accent` plus 4 new hues); `CategoryCard` picks its ring color via `category.displayOrder % palette.length` rather than a passed-in index, so reordering categories in admin also reshuffles ring colors with zero call-site changes needed. (2) `CategoryCard` now renders `category.iconUrl` when non-empty (via the exact local-path-vs-URL check already established in `AdminCategoryTile._Thumbnail`), falling back to the existing name-matched Material icon — this is the first time an admin-uploaded category icon (Phase 4.4) actually reaches the retailer UI; it was dead data until now. (3) `ProductCard` converted from `StatelessWidget` to `ConsumerWidget` — it now reads/writes `cartControllerProvider` directly (`CartEntity.qtyFor()`, a new small getter) instead of taking an `onAddToCart` callback, so every grid using it gets the add→stepper transition for free with no caller wiring. The existing `QtyStepper` widget doesn't fit a 2-column card's width (it's sized for the full-width Product Detail/Cart row) — added a private `_CompactQtyStepper` in the same file rather than force-fitting the wrong size tier. Dropped the "added to cart" snackbar on the quick-add path — the card visually turning into a stepper is the feedback now (matches how Blinkit/Zepto actually behave); `ProductDetailScreen`'s explicit "Add to Cart" button + snackbar is untouched. (4) Only one call site (`category_products_screen.dart`) needed updating — `search_screen.dart`'s results use a different `ListTile` row layout, not `ProductCard`, left as-is. (5) **Test-infra note**: `ProductCard` only renders correctly at a constrained width (it's always inside a `GridView` cell in production); the first test attempt without that constraint blew the `AspectRatio(1.1)` image out to the full test-surface height and overflowed — fixed by wrapping the card in a `SizedBox(width: 170)` in the test, matching its real usage. (6) Not yet visually verified on a live build (no Android emulator/device attached in this environment) — covered thoroughly by widget tests instead; recommend a manual check on a device/emulator before shipping. (7) Tests: `product_card_test.dart` (4 — add button when absent, add transitions to stepper, stepper increments/decrements/removes at zero, out-of-stock disables it), `category_card_test.dart` (4 — fallback icon, tap callback, uploaded-icon path attempted, ring color matches palette index). 113/113 passing, `flutter analyze` zero issues.
 
-### 6.3 — Floating cart bar
-- [ ] Persistent "N items · ₹total · View Cart" bar docked above the bottom nav on Home/Search/Category screens
+### 6.3 — Floating cart bar ✅
+- [x] Persistent "N items · ₹total · View Cart" bar docked above the bottom nav on Home/Search/Category screens
+
+> **Scope notes**: (1) New `FloatingCartBar` (`shared/widgets/`) — dark pill, item count + subtotal + "View Cart →", `AnimatedSlide`+`AnimatedOpacity` in/out keyed on `cart.isEmpty`, wrapped in `IgnorePointer` while empty so it can't intercept taps meant for whatever's underneath during its fade. (2) Wired into `app_router.dart`'s `_RetailerShell`, converted `StatelessWidget` → `ConsumerWidget`: `Stack` over `navigationShell` + a `Positioned` bar above `BottomNavBar`, hidden specifically on the Cart tab (`navigationShell.currentIndex == _cartBranchIndex`) so it's never redundant with the screen it's a shortcut to. Tapping it calls `navigationShell.goBranch(2)` — Cart is a `StatefulShellBranch`, not a push route, so this is the correct navigation call rather than `context.push`. (3) Tests: `floating_cart_bar_test.dart` (4 — item count text incl. singular "1 item", subtotal, empty-cart hit-testing is truly inert not just invisible, tap fires when non-empty). The shell-integration wiring itself (branch-index hiding, actual tap navigation) isn't unit-tested — no GoRouter test harness exists anywhere in this project to test push/branch navigation, consistent with how every other GoRouter-dependent interaction has been handled so far. 117/117 passing, `flutter analyze` zero issues.
 
 ### 6.4 — Motion & transitions
 - [ ] Add smooth page transitions in GoRouter (fade + slide)
@@ -335,7 +337,7 @@
 
 ### Current Active Phase: **Phase 6 — Polish, Animations & UX Refinement**
 ### Next Immediate Task:
-> ✅ 6.1 (dark mode) and 6.2 (product/category card redesign) are done — 2/11. Next: **6.3 — Floating cart bar**, a persistent "N items · ₹total · View Cart" pill docked above the bottom nav on Home/Search/Category screens, wired into `app_router.dart`'s `_RetailerShell`. See `C:\Users\niran\.claude\plans\async-beaming-heron.md` for the full 6.1–6.5 breakdown and audit findings this was planned against. Note: 6.1/6.2 haven't been visually verified on a live device/emulator yet (none was attached in this environment) — worth a manual check before shipping.
+> ✅ 6.1 (dark mode), 6.2 (card redesign), and 6.3 (floating cart bar) are done — 3/11. Next: **6.4 — Motion & transitions**: GoRouter fade+slide page transitions (`GoRoute.pageBuilder` + `CustomTransitionPage`, currently zero custom transitions exist anywhere), a `Hero` on the product image (card → detail, zero `Hero` usage exists yet either), and an animated cart badge bounce in `bottom_nav_bar.dart` keyed on `cartItemCount`. See `C:\Users\niran\.claude\plans\async-beaming-heron.md` for the full 6.1–6.5 breakdown. Note: none of 6.1–6.3 have been visually verified on a live device/emulator yet (none was attached in this environment) — worth a manual check before shipping.
 
 ---
 

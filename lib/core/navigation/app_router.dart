@@ -19,6 +19,7 @@ import '../../features/admin/screens/manage_products_screen.dart';
 import '../../features/admin/screens/order_management_screen.dart';
 import '../../features/admin/screens/retailer_list_screen.dart';
 import '../../features/auth/screens/pending_approval_screen.dart';
+import '../../features/cart/controllers/cart_controller.dart';
 import '../../features/cart/screens/cart_screen.dart';
 import '../../features/checkout/screens/checkout_screen.dart';
 import '../../features/checkout/screens/order_success_screen.dart';
@@ -32,6 +33,7 @@ import '../../features/products/screens/product_detail_screen.dart';
 import '../../features/products/screens/search_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 import '../../shared/widgets/bottom_nav_bar.dart';
+import '../../shared/widgets/floating_cart_bar.dart';
 import '../constants/app_colors.dart';
 import '../constants/route_names.dart';
 
@@ -214,15 +216,37 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-class _RetailerShell extends StatelessWidget {
+/// Index of the Cart tab within the shell's branches — the floating cart
+/// bar hides on this one tab, since showing it on top of the cart itself
+/// would be redundant.
+const _cartBranchIndex = 2;
+
+class _RetailerShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
   const _RetailerShell({required this.navigationShell});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final cart = ref.watch(cartControllerProvider);
+    final onCartTab = navigationShell.currentIndex == _cartBranchIndex;
+
     return Scaffold(
-      body: navigationShell,
+      body: Stack(
+        children: [
+          navigationShell,
+          if (!onCartTab)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 12,
+              child: FloatingCartBar(
+                cart: cart,
+                onTap: () => navigationShell.goBranch(_cartBranchIndex),
+              ),
+            ),
+        ],
+      ),
       bottomNavigationBar: BottomNavBar(navigationShell: navigationShell),
     );
   }
