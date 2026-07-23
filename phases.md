@@ -337,7 +337,17 @@
 
 ### Current Active Phase: **Phase 6 — Polish, Animations & UX Refinement**
 ### Next Immediate Task:
-> ✅ 6.1 (dark mode), 6.2 (card redesign), and 6.3 (floating cart bar) are done — 3/11. Next: **6.4 — Motion & transitions**: GoRouter fade+slide page transitions (`GoRoute.pageBuilder` + `CustomTransitionPage`, currently zero custom transitions exist anywhere), a `Hero` on the product image (card → detail, zero `Hero` usage exists yet either), and an animated cart badge bounce in `bottom_nav_bar.dart` keyed on `cartItemCount`. See `C:\Users\niran\.claude\plans\async-beaming-heron.md` for the full 6.1–6.5 breakdown. Note: none of 6.1–6.3 have been visually verified on a live device/emulator yet (none was attached in this environment) — worth a manual check before shipping.
+> ✅ 6.1 (dark mode), 6.2 (card redesign), and 6.3 (floating cart bar) are done — 3/11, all committed and pushed (up through commit `425d05d`). Session paused before any 6.4 code was written (research-only: had just re-read `app_router.dart`'s route list, nothing edited) — safe to resume directly.
+>
+> Next: **6.4 — Motion & transitions**, concretely:
+> 1. Add one shared transition helper (e.g. `_fadeSlidePage(Widget child, GoRouterState state) → CustomTransitionPage`) near the top of `lib/core/navigation/app_router.dart`, above `appRouterProvider`.
+> 2. Convert these 7 retailer-facing push routes from `builder:` to `pageBuilder: (context, state) => _fadeSlidePage(..., state)` — `productCategory`, `productDetail`, `checkout`, `upiPayment`, `orderSuccess`, `orderDetail`, `notifications` (all currently plain `GoRoute(path:, builder:)` around lines 187–214). Leave admin routes and the bottom-nav shell branches untouched — out of scope, no transition needed between tabs.
+> 3. Wrap the product image in `Hero(tag: 'product-image-${product.id}')` in both `ProductCard` (`shared/widgets/product_card.dart`, the `AspectRatio` block) and `ProductDetailScreen` (`features/products/screens/product_detail_screen.dart`, the `AspectRatio` block) — zero `Hero` usage exists anywhere in the codebase yet.
+> 4. Animated cart badge bounce in `lib/shared/widgets/bottom_nav_bar.dart` — key the `badges.Badge`/count on `cartItemCount` and apply a `flutter_animate` `.scale()` (matches the existing `.animate()` idiom already used in `order_success_screen.dart`).
+> 5. `OrderSuccessScreen` needs **no code change** — its existing `flutter_animate` `.scale()` already satisfies the "success animation" checklist item; no Lottie asset exists to add (documented scope note, not a new gap).
+> 6. None of these 4 sub-items are meaningfully unit-testable (transition curves, Hero, keyed animation triggers) — verify by running the app instead.
+>
+> Full plan (all 5 sub-phases, audit findings) still lives at `C:\Users\niran\.claude\plans\async-beaming-heron.md`. Also still open: **none of 6.1–6.3 have been visually verified on a live device/emulator** (none was attached in this environment) — worth a manual check before shipping, alongside 6.4 once it's done.
 
 ---
 

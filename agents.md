@@ -372,6 +372,8 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 - Tests added (4 new, 117 total): `floating_cart_bar_test.dart`. The shell-integration wiring itself isn't unit-tested — no GoRouter test harness exists in this project for push/branch navigation, consistent with every other GoRouter-dependent tap so far.
 - `flutter analyze` zero issues. Next up: **6.4 — Motion & transitions** (GoRouter fade+slide, product-image `Hero`, animated cart badge bounce).
 
+**Session paused here at the user's request (approaching their model usage limit) before any 6.4 code was written** — only research (re-reading `app_router.dart`'s route list) had happened, nothing edited. Working tree was already clean; 6.1–6.3 are all committed and pushed through `425d05d`. `phases.md`'s "Next Immediate Task" note was expanded with the exact concrete 6.4 steps (file names, route list, line-number ranges) precisely so a future session can resume without re-deriving anything from the plan file. Nothing outstanding to save.
+
 ---
 
 ## 📈 Future Action Items & Checklist
