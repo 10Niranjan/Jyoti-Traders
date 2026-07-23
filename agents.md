@@ -341,6 +341,25 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-07-23 (continued) — Phase 6 begins: Dark Mode Toggle + Visual Redesign Plan
+
+### 📋 Tasks completed:
+
+- User reviewed a Blinkit/Zepto-style visual-direction mockup (published as an Artifact, not app code — tinted category rings, product cards with an inline qty stepper, a floating cart bar, a 4-palette comparison) and approved it as-is ("what u showed was beautiful and perfect, go for it"), landing on the existing Wholesale Blue brand palette rather than one of the three alternates shown.
+- Entered plan mode to scope how that visual direction plus Phase 6's existing 9-item checklist fit together, running two parallel research audits first (theme/animation infrastructure; per-screen shimmer/refresh/empty/error coverage) rather than guessing what already existed. Findings written into the plan file (`C:\Users\niran\.claude\plans\async-beaming-heron.md`) — key ones: `LocalStorageService` already had dormant theme-persistence methods nothing called; `QtyStepper` exists but is sized for a full-width row, not a 2-column card; zero `Hero`/custom-transition infrastructure exists anywhere; `CategoryEntity.iconUrl` (added in Phase 4.4 for admin icon upload) is never read by `CategoryCard` — admin-uploaded icons currently go nowhere; `search_controller.dart`'s `SearchState` has no error field at all, silently treating failures as "no results."
+- Plan approved: 5 sub-phases (6.1 dark mode, 6.2 card redesign, 6.3 floating cart bar, 6.4 motion/transitions, 6.5 list-screen gap fixes), each committed independently, matching this project's existing 4.1–4.6/5.x convention even though Phase 6's original checklist in `phases.md` was a flat list — restructured it into the same sub-numbered format for consistency.
+- **6.1 — Dark mode toggle, done**: `ThemeModeController`/`themeModeProvider` (`core/theme/theme_controller.dart`) wired to the pre-existing (but previously unused) `LocalStorageService.saveThemePreference`/`getThemePreference`, plus a new `clearThemePreference()` for the "System" option. `main.dart` now watches it instead of hardcoding `ThemeMode.system`. `ProfileScreen` gained an "Appearance" section with a `SegmentedButton<ThemeMode>`.
+- **Test-infra bug found and fixed**: writing `ProfileScreen`'s first-ever test coverage surfaced that `find.text()` — not just `tester.tap()`, which `flutter_test_config.dart` already makes fatal on a miss — silently fails to find widgets built below the default 800×600 test surface's fold, because `SliverList` only inflates Elements within its viewport+cache extent even when the parent `ListView(children:)` eagerly constructed all the child *widgets*. Root-caused by dumping the actual mounted `Text` widget list mid-test rather than guessing. Fixed with the existing `useTallTestViewport()` helper.
+- **Tests added** (8 new, 105 total): `theme_controller_test.dart` (6), `profile_screen_test.dart` (2, new file — first `ProfileScreen` coverage in this project).
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 105/105 passing.
+
+### 💬 Latest Discussion Summary:
+
+1. `phases.md` restructured: Phase 6 now has 6.1–6.5 sub-headers (was a flat 9-item list); 6.1 marked ✅ with scope notes (1/9). Current active phase remains **Phase 6**, next up: **6.2 — Product card & category card redesign** (the qty-stepper `ProductCard` and tinted-ring `CategoryCard` from the approved mockup).
+2. Full plan detail (all 5 sub-phases, audit findings, file-level decisions) lives in `C:\Users\niran\.claude\plans\async-beaming-heron.md` — reference it directly for 6.2–6.5 rather than re-deriving scope.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

@@ -17,7 +17,7 @@
 | Phase 3 | Core Commerce — Retailer Side | ✅ Complete (delivery charge stubbed, UPI/FCM deferred — see note) | 12/14 |
 | Phase 4 | Admin Panel — Full Implementation | ✅ Complete | 21/21 |
 | Phase 5 | Delivery, Payments & Notifications | ✅ Complete | 10/10 |
-| Phase 6 | Polish, Animations & UX Refinement | ⬜ Not Started | 0/9 |
+| Phase 6 | Polish, Animations & UX Refinement | 🔄 In Progress | 1/9 |
 | Phase 7 | Testing & Quality Assurance | ⬜ Not Started | 0/10 |
 | Phase 8 | Launch Preparation & Play Store | ⬜ Not Started | 0/8 |
 
@@ -253,19 +253,35 @@
 
 ---
 
-## ⬜ Phase 6 — Polish, Animations & UX Refinement
-> **Status**: NOT STARTED ⬜  
-> **Goal**: Elevate the app from functional to premium. Every screen must feel smooth and polished.
+## 🔄 Phase 6 — Polish, Animations & UX Refinement
+> **Status**: IN PROGRESS 🔄 (6.1 complete 2026-07-23)  
+> **Goal**: Elevate the app from functional to premium — plus a Blinkit/Zepto-style
+> quick-commerce visual pass the client approved from a mockup. Broken into 6.1–6.5
+> sub-phases (this project's own convention, mirroring Phases 4–5) even though the
+> original checklist below was a flat list.
 
-- [ ] Add `shimmer` loading skeletons to ALL list screens (products, orders, categories, approvals)
-- [ ] Add `EmptyStateWidget` (Lottie animation + message) to all empty list screens
-- [ ] Add `ErrorStateWidget` (Lottie animation + retry button) to all error states
+### 6.1 — Dark mode toggle ✅
+- [x] Implement dark mode toggle in Profile screen (saved to Hive via `themeProvider`)
+
+> **Scope notes**: (1) `LocalStorageService.saveThemePreference`/`getThemePreference` already existed (Phase 1-era scaffolding) and already round-tripped a nullable bool through `HiveKeys.themeMode` — just never called by anything. Reused as-is; only added `clearThemePreference()` (mirrors the existing `clearAuthToken()` pattern) so "System" has a way to reset to no-preference. (2) New `ThemeModeController` (`core/theme/theme_controller.dart`) + `themeModeProvider`; `main.dart`'s hardcoded `themeMode: ThemeMode.system` now reads `ref.watch(themeModeProvider)`. (3) `ProfileScreen` gained an "Appearance" section (same header+row pattern as the existing "Support" section) with a Material 3 `SegmentedButton<ThemeMode>` (System/Light/Dark). (4) **Test-infra note**: the new `ProfileScreen` widget tests were the first to exercise content below "Support" in that screen's `ListView` — discovered that `find.text()` (not just `tester.tap()`, which `flutter_test_config.dart` already guards) silently fails to find content beyond the default 800×600 test surface, because `SliverList` only inflates Elements within its viewport+cache extent even for eagerly-built `ListView(children:)` children. Fixed with the existing `useTallTestViewport()` helper — same fix, newly-confirmed to also matter for pure assertions, not just taps. (5) Tests: `theme_controller_test.dart` (6 — defaults to system, loads dark/light from a stored bool, all three `setThemeMode` transitions persist correctly), `profile_screen_test.dart` (2 — new file, first ProfileScreen test coverage; renders the three segments, tapping Dark updates state). 105/105 passing, `flutter analyze` zero issues.
+
+### 6.2 — Product card & category card redesign
+- [ ] Blinkit/Zepto-style `ProductCard` — inline qty stepper once in cart, replacing the current one-shot add button
+- [ ] `CategoryCard` — tinted circular rings (rotating palette) + render admin-uploaded `iconUrl` when present, falling back to the existing name-matched icon
+
+### 6.3 — Floating cart bar
+- [ ] Persistent "N items · ₹total · View Cart" bar docked above the bottom nav on Home/Search/Category screens
+
+### 6.4 — Motion & transitions
 - [ ] Add smooth page transitions in GoRouter (fade + slide)
 - [ ] Add hero animation on product image tap → product detail
 - [ ] Add animated cart badge counter (bounce on add)
-- [ ] Add Lottie success animation on `OrderSuccessScreen`
-- [ ] Add pull-to-refresh on all list screens
-- [ ] Implement dark mode toggle in Profile screen (saved to Hive via `themeProvider`)
+- [ ] Add Lottie success animation on `OrderSuccessScreen` — no Lottie asset exists in the project (same gap noted since Phase 3); satisfied via the existing `flutter_animate` icon animation instead, per established precedent
+
+### 6.5 — List-screen gap fixes
+- [ ] Add `shimmer` loading skeletons to ALL list screens — audit already found most screens have this; fill the specific gaps only
+- [ ] Add pull-to-refresh on all list screens — missing on `category_products_screen`, `search_screen`, `order_history_screen`
+- [ ] Add `EmptyStateWidget`/`ErrorStateWidget` to remaining gaps — `approval_queue_screen` + `admin_dashboard_screen`'s queue preview use inline text instead of the shared `ErrorStateWidget`; `search_screen` has no error state at all (a real bug, not just polish — failures silently look like "no results")
 
 ---
 
@@ -313,7 +329,7 @@
 
 ### Current Active Phase: **Phase 6 — Polish, Animations & UX Refinement**
 ### Next Immediate Task:
-> ✅ Phase 5 (Delivery, Payments & Notifications) is fully complete — 10/10. Phase 6 is UX polish across screens already built, not new features: shimmer loading skeletons and pull-to-refresh already exist on *most* list screens from when they were originally built (audit which ones still lack it rather than assuming none do), so start there — `EmptyStateWidget`/`ErrorStateWidget` already exist as shared widgets (rules.md §9/§7) but don't yet use Lottie animations (no Lottie asset files exist in the project yet, same gap noted back in Phase 3 for the promo banner and order-success icon — sourcing/approving actual `.json` Lottie files with the user is a prerequisite for those two checklist items specifically, not just an implementation detail).
+> ✅ 6.1 (dark mode toggle) is done — 1/9. Next: **6.2 — Product card & category card redesign**, the Blinkit/Zepto-style visual pass the client approved from a mockup: an inline qty stepper on `ProductCard` (reading `cartControllerProvider` directly, replacing the current one-shot add button) and tinted circular `CategoryCard` rings that render admin-uploaded `iconUrl` when present. See `C:\Users\niran\.claude\plans\async-beaming-heron.md` for the full 6.1–6.5 breakdown and audit findings this was planned against.
 
 ---
 

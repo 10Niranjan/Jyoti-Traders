@@ -46,6 +46,11 @@ class LocalStorageService {
     return _settingsBox.get(HiveKeys.themeMode) as bool?;
   }
 
+  /// Resets to following the OS theme (used when the user picks "System").
+  Future<void> clearThemePreference() async {
+    await _settingsBox.delete(HiveKeys.themeMode);
+  }
+
   /// Checks if the app is launched for the first time (to show onboarding)
   bool isFirstLaunch() {
     return _settingsBox.get(HiveKeys.isFirstLaunch, defaultValue: true) as bool;

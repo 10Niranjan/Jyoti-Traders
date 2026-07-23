@@ -7,6 +7,7 @@ import 'core/constants/hive_keys.dart';
 import 'core/navigation/app_router.dart';
 import 'core/services/fcm_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_controller.dart';
 import 'data/datasources/seed/demo_catalog_seeder.dart';
 import 'features/notifications/controllers/fcm_controller.dart';
 import 'firebase_options.dart';
@@ -67,7 +68,7 @@ class JyotiKiranaApp extends ConsumerWidget {
       // Theme settings using custom app design tokens
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system, // Responsive to OS preferences
+      themeMode: ref.watch(themeModeProvider),
 
       // Navigation router
       routerConfig: router,

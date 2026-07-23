@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/location_service.dart';
+import '../../../core/theme/theme_controller.dart';
 import '../../../core/utils/validators.dart';
 import '../../../domain/entities/address_entity.dart';
 import '../../../shared/widgets/address_form_fields.dart';
@@ -162,6 +163,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               title: const Text('Email Support'),
               subtitle: const Text(AppConstants.kSupportEmail),
               onTap: () => launchUrl(Uri(scheme: 'mailto', path: AppConstants.kSupportEmail)),
+            ),
+            const SizedBox(height: 32),
+            Text('Appearance', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 12),
+            SegmentedButton<ThemeMode>(
+              segments: const [
+                ButtonSegment(
+                  value: ThemeMode.system,
+                  label: Text('System'),
+                  icon: Icon(Icons.brightness_auto_outlined),
+                ),
+                ButtonSegment(
+                  value: ThemeMode.light,
+                  label: Text('Light'),
+                  icon: Icon(Icons.light_mode_outlined),
+                ),
+                ButtonSegment(
+                  value: ThemeMode.dark,
+                  label: Text('Dark'),
+                  icon: Icon(Icons.dark_mode_outlined),
+                ),
+              ],
+              selected: {ref.watch(themeModeProvider)},
+              onSelectionChanged: (selection) =>
+                  ref.read(themeModeProvider.notifier).setThemeMode(selection.first),
             ),
           ],
         ),
