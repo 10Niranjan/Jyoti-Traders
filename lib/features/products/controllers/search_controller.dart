@@ -9,12 +9,14 @@ class SearchState {
   final String query;
   final List<ProductEntity> results;
   final bool isLoading;
+  final bool hasError;
   final List<String> recentSearches;
 
   const SearchState({
     this.query = '',
     this.results = const [],
     this.isLoading = false,
+    this.hasError = false,
     this.recentSearches = const [],
   });
 
@@ -22,12 +24,14 @@ class SearchState {
     String? query,
     List<ProductEntity>? results,
     bool? isLoading,
+    bool? hasError,
     List<String>? recentSearches,
   }) {
     return SearchState(
       query: query ?? this.query,
       results: results ?? this.results,
       isLoading: isLoading ?? this.isLoading,
+      hasError: hasError ?? this.hasError,
       recentSearches: recentSearches ?? this.recentSearches,
     );
   }
@@ -41,7 +45,7 @@ class SearchController extends StateNotifier<SearchState> {
   static const int _maxRecentSearches = 5;
 
   SearchController(this._searchUseCase, this._localStorage)
-      : super(SearchState(recentSearches: _recentSearches(_localStorage)));
+    : super(SearchState(recentSearches: _recentSearches(_localStorage)));
 
   static List<String> _recentSearches(LocalStorageService storage) {
     return storage.getRecentSearches().take(_maxRecentSearches).toList();
@@ -52,19 +56,32 @@ class SearchController extends StateNotifier<SearchState> {
     _debounce?.cancel();
 
     if (query.trim().isEmpty) {
-      state = state.copyWith(results: [], isLoading: false);
+      state = state.copyWith(results: [], isLoading: false, hasError: false);
       return;
     }
     _debounce = Timer(const Duration(milliseconds: 400), () => _search(query));
   }
 
+  /// Re-runs the last search — used by the error state's retry action and by
+  /// pull-to-refresh, since search results aren't backed by a Riverpod
+  /// provider that `ref.invalidate` could restart. Returns the in-flight
+  /// future so `RefreshIndicator` keeps its spinner up until it resolves.
+  Future<void> retry() {
+    if (state.query.trim().isEmpty) return Future.value();
+    return _search(state.query);
+  }
+
   Future<void> _search(String query) async {
-    state = state.copyWith(isLoading: true);
+    state = state.copyWith(isLoading: true, hasError: false);
     try {
       final results = await _searchUseCase(query);
-      state = state.copyWith(results: results, isLoading: false);
+      state = state.copyWith(
+        results: results,
+        isLoading: false,
+        hasError: false,
+      );
     } catch (e) {
-      state = state.copyWith(isLoading: false, results: []);
+      state = state.copyWith(isLoading: false, hasError: true, results: []);
     }
   }
 
@@ -86,8 +103,11 @@ class SearchController extends StateNotifier<SearchState> {
   }
 }
 
-final searchControllerProvider = StateNotifierProvider.autoDispose<SearchController, SearchState>((ref) {
-  final useCase = SearchProductsUseCase(ref.watch(productRepositoryProvider));
-  final localStorage = ref.watch(localStorageProvider);
-  return SearchController(useCase, localStorage);
-});
+final searchControllerProvider =
+    StateNotifierProvider.autoDispose<SearchController, SearchState>((ref) {
+      final useCase = SearchProductsUseCase(
+        ref.watch(productRepositoryProvider),
+      );
+      final localStorage = ref.watch(localStorageProvider);
+      return SearchController(useCase, localStorage);
+    });

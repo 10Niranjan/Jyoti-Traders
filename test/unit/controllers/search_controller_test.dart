@@ -14,7 +14,10 @@ void main() {
   late MockLocalStorageService localStorage;
 
   SearchController buildController() {
-    return SearchController(SearchProductsUseCase(productRepository), localStorage);
+    return SearchController(
+      SearchProductsUseCase(productRepository),
+      localStorage,
+    );
   }
 
   setUp(() {
@@ -25,25 +28,42 @@ void main() {
   });
 
   test('caps the initial recent searches at 5, most recent first', () {
-    when(() => localStorage.getRecentSearches())
-        .thenReturn(['rice', 'oil', 'salt', 'sugar', 'tea', 'ghee']);
+    when(
+      () => localStorage.getRecentSearches(),
+    ).thenReturn(['rice', 'oil', 'salt', 'sugar', 'tea', 'ghee']);
 
     final controller = buildController();
 
-    expect(controller.state.recentSearches, ['rice', 'oil', 'salt', 'sugar', 'tea']);
+    expect(controller.state.recentSearches, [
+      'rice',
+      'oil',
+      'salt',
+      'sugar',
+      'tea',
+    ]);
   });
 
-  test('commitToRecentSearches saves the term and refreshes state from storage', () async {
-    when(() => localStorage.getRecentSearches()).thenReturn(['rice']);
-    final controller = buildController();
-    when(() => localStorage.getRecentSearches())
-        .thenReturn(['basmati', 'rice', 'oil', 'salt', 'sugar', 'tea']);
+  test(
+    'commitToRecentSearches saves the term and refreshes state from storage',
+    () async {
+      when(() => localStorage.getRecentSearches()).thenReturn(['rice']);
+      final controller = buildController();
+      when(
+        () => localStorage.getRecentSearches(),
+      ).thenReturn(['basmati', 'rice', 'oil', 'salt', 'sugar', 'tea']);
 
-    await controller.commitToRecentSearches('basmati');
+      await controller.commitToRecentSearches('basmati');
 
-    verify(() => localStorage.addRecentSearch('basmati')).called(1);
-    expect(controller.state.recentSearches, ['basmati', 'rice', 'oil', 'salt', 'sugar']);
-  });
+      verify(() => localStorage.addRecentSearch('basmati')).called(1);
+      expect(controller.state.recentSearches, [
+        'basmati',
+        'rice',
+        'oil',
+        'salt',
+        'sugar',
+      ]);
+    },
+  );
 
   test('commitToRecentSearches ignores a blank/whitespace-only term', () async {
     when(() => localStorage.getRecentSearches()).thenReturn([]);
@@ -54,24 +74,80 @@ void main() {
     verifyNever(() => localStorage.addRecentSearch(any()));
   });
 
-  test('clearRecentSearches empties state and calls through to storage', () async {
-    when(() => localStorage.getRecentSearches()).thenReturn(['rice', 'oil']);
-    final controller = buildController();
+  test(
+    'clearRecentSearches empties state and calls through to storage',
+    () async {
+      when(() => localStorage.getRecentSearches()).thenReturn(['rice', 'oil']);
+      final controller = buildController();
 
-    await controller.clearRecentSearches();
+      await controller.clearRecentSearches();
 
-    verify(() => localStorage.clearRecentSearches()).called(1);
-    expect(controller.state.recentSearches, isEmpty);
-  });
+      verify(() => localStorage.clearRecentSearches()).called(1);
+      expect(controller.state.recentSearches, isEmpty);
+    },
+  );
 
-  test('a blank query clears results immediately without hitting the repository', () {
+  test(
+    'a blank query clears results immediately without hitting the repository',
+    () {
+      when(() => localStorage.getRecentSearches()).thenReturn([]);
+      final controller = buildController();
+
+      controller.onQueryChanged('   ');
+
+      expect(controller.state.results, isEmpty);
+      expect(controller.state.isLoading, isFalse);
+      verifyNever(() => productRepository.searchProducts(any()));
+    },
+  );
+
+  test(
+    'a repository failure sets hasError instead of silently looking like "no results"',
+    () async {
+      when(() => localStorage.getRecentSearches()).thenReturn([]);
+      when(
+        () => productRepository.searchProducts(any()),
+      ).thenThrow(Exception('offline'));
+      final controller = buildController();
+
+      controller.onQueryChanged('rice');
+      await Future.delayed(const Duration(milliseconds: 450));
+
+      expect(controller.state.hasError, isTrue);
+      expect(controller.state.isLoading, isFalse);
+      expect(controller.state.results, isEmpty);
+    },
+  );
+
+  test(
+    'retry() re-runs the last query and clears the error on success',
+    () async {
+      when(() => localStorage.getRecentSearches()).thenReturn([]);
+      when(
+        () => productRepository.searchProducts(any()),
+      ).thenThrow(Exception('offline'));
+      final controller = buildController();
+
+      controller.onQueryChanged('rice');
+      await Future.delayed(const Duration(milliseconds: 450));
+      expect(controller.state.hasError, isTrue);
+
+      when(
+        () => productRepository.searchProducts(any()),
+      ).thenAnswer((_) async => []);
+      await controller.retry();
+
+      expect(controller.state.hasError, isFalse);
+      verify(() => productRepository.searchProducts('rice')).called(2);
+    },
+  );
+
+  test('retry() is a no-op when there is no active query', () async {
     when(() => localStorage.getRecentSearches()).thenReturn([]);
     final controller = buildController();
 
-    controller.onQueryChanged('   ');
+    await controller.retry();
 
-    expect(controller.state.results, isEmpty);
-    expect(controller.state.isLoading, isFalse);
     verifyNever(() => productRepository.searchProducts(any()));
   });
 }

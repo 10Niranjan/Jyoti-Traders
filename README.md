@@ -9,7 +9,10 @@ See [`PRD.md`](PRD.md) for the product spec, [`ARCHITECTURE.md`](ARCHITECTURE.md
 - **Phase 1 — Foundation**: ✅ Complete
 - **Phase 2 — Domain Layer & Data Models**: ✅ Complete
 - **Phase 3 — Core Commerce (Retailer Side)**: ✅ Complete
-- **Phase 4 onward**: see [`phases.md`](phases.md)
+- **Phase 4 — Admin Panel**: ✅ Complete
+- **Phase 5 — Delivery, Payments & Notifications**: ✅ Complete
+- **Phase 6 — Polish, Animations & UX Refinement**: ✅ Complete
+- **Phase 7 onward**: see [`phases.md`](phases.md)
 
 ## Getting Started
 

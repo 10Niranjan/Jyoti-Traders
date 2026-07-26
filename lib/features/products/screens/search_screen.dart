@@ -7,6 +7,7 @@ import '../../../core/constants/route_names.dart';
 import '../../../domain/entities/cart_item_entity.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
+import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
 import '../../cart/controllers/cart_controller.dart';
 import '../controllers/search_controller.dart';
@@ -58,7 +59,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               )
             : _SearchResults(
                 isLoading: state.isLoading,
+                hasError: state.hasError,
                 results: state.results,
+                onRetry: notifier.retry,
                 onResultTap: (product) {
                   notifier.commitToRecentSearches(state.query);
                   context.push(RouteNames.productDetailPath(product.id));
@@ -74,7 +77,11 @@ class _RecentSearches extends StatelessWidget {
   final ValueChanged<String> onTapTerm;
   final VoidCallback onClear;
 
-  const _RecentSearches({required this.terms, required this.onTapTerm, required this.onClear});
+  const _RecentSearches({
+    required this.terms,
+    required this.onTapTerm,
+    required this.onClear,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -91,7 +98,10 @@ class _RecentSearches extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text('Recent Searches', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+            Text(
+              'Recent Searches',
+              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+            ),
             TextButton(onPressed: onClear, child: const Text('Clear')),
           ],
         ),
@@ -99,10 +109,12 @@ class _RecentSearches extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           children: terms
-              .map((term) => ActionChip(
-                    label: Text(term),
-                    onPressed: () => onTapTerm(term),
-                  ))
+              .map(
+                (term) => ActionChip(
+                  label: Text(term),
+                  onPressed: () => onTapTerm(term),
+                ),
+              )
               .toList(),
         ),
       ],
@@ -112,48 +124,72 @@ class _RecentSearches extends StatelessWidget {
 
 class _SearchResults extends StatelessWidget {
   final bool isLoading;
+  final bool hasError;
   final List<ProductEntity> results;
+  final Future<void> Function() onRetry;
   final ValueChanged<ProductEntity> onResultTap;
 
-  const _SearchResults({required this.isLoading, required this.results, required this.onResultTap});
+  const _SearchResults({
+    required this.isLoading,
+    required this.hasError,
+    required this.results,
+    required this.onRetry,
+    required this.onResultTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     if (isLoading) return const ListShimmerLoader(itemCount: 5);
-    if (results.isEmpty) {
-      return const EmptyStateWidget(icon: Icons.search_off_rounded, title: 'No products found');
-    }
-    return Consumer(
-      builder: (context, ref, _) => ListView.separated(
-        itemCount: results.length,
-        separatorBuilder: (_, _) => const Divider(height: 1),
-        itemBuilder: (context, index) {
-          final product = results[index];
-          return ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: CircleAvatar(
-              backgroundColor: AppColors.primary.withOpacity(0.1),
-              child: const Icon(Icons.inventory_2_outlined, color: AppColors.primary),
-            ),
-            title: Text(product.name),
-            subtitle: Text(product.price.formatted),
-            trailing: IconButton(
-              icon: const Icon(Icons.add_shopping_cart_outlined),
-              onPressed: () => ref.read(cartControllerProvider.notifier).addItem(
-                    CartItemEntity(
-                      productId: product.id,
-                      name: product.name,
-                      imageUrl: product.imageUrl,
-                      unitPrice: product.price,
-                      unit: product.unit,
-                      qty: 1,
+    return RefreshIndicator(
+      onRefresh: onRetry,
+      child: hasError
+          ? ListView(children: [ErrorStateWidget(onRetry: onRetry)])
+          : results.isEmpty
+          ? ListView(
+              children: const [
+                EmptyStateWidget(
+                  icon: Icons.search_off_rounded,
+                  title: 'No products found',
+                ),
+              ],
+            )
+          : Consumer(
+              builder: (context, ref, _) => ListView.separated(
+                itemCount: results.length,
+                separatorBuilder: (_, _) => const Divider(height: 1),
+                itemBuilder: (context, index) {
+                  final product = results[index];
+                  return ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: CircleAvatar(
+                      backgroundColor: AppColors.primary.withOpacity(0.1),
+                      child: const Icon(
+                        Icons.inventory_2_outlined,
+                        color: AppColors.primary,
+                      ),
                     ),
-                  ),
+                    title: Text(product.name),
+                    subtitle: Text(product.price.formatted),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.add_shopping_cart_outlined),
+                      onPressed: () => ref
+                          .read(cartControllerProvider.notifier)
+                          .addItem(
+                            CartItemEntity(
+                              productId: product.id,
+                              name: product.name,
+                              imageUrl: product.imageUrl,
+                              unitPrice: product.price,
+                              unit: product.unit,
+                              qty: 1,
+                            ),
+                          ),
+                    ),
+                    onTap: () => onResultTap(product),
+                  );
+                },
+              ),
             ),
-            onTap: () => onResultTap(product),
-          );
-        },
-      ),
     );
   }
 }

@@ -30,14 +30,23 @@ class CategoryProductsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(categoryName ?? 'Products')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: productsAsync.when(
-          loading: () => const GridShimmerLoader(),
-          error: (error, stack) => ErrorStateWidget(
-            onRetry: () => ref.invalidate(productsByCategoryProvider(categoryId)),
+      body: RefreshIndicator(
+        onRefresh: () async =>
+            ref.invalidate(productsByCategoryProvider(categoryId)),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: productsAsync.when(
+            loading: () => const GridShimmerLoader(),
+            error: (error, stack) => ListView(
+              children: [
+                ErrorStateWidget(
+                  onRetry: () =>
+                      ref.invalidate(productsByCategoryProvider(categoryId)),
+                ),
+              ],
+            ),
+            data: (products) => _ProductGrid(products: products),
           ),
-          data: (products) => _ProductGrid(products: products),
         ),
       ),
     );
@@ -52,9 +61,13 @@ class _ProductGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (products.isEmpty) {
-      return const EmptyStateWidget(
-        icon: Icons.inventory_2_outlined,
-        title: 'No products in this category yet',
+      return ListView(
+        children: const [
+          EmptyStateWidget(
+            icon: Icons.inventory_2_outlined,
+            title: 'No products in this category yet',
+          ),
+        ],
       );
     }
 

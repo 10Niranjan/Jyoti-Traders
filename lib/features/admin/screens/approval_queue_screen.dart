@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
 import '../controllers/admin_dashboard_controller.dart';
 import '../widgets/empty_approval_queue_card.dart';
@@ -18,7 +19,10 @@ class ApprovalQueueScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Retailer Approval Queue', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Retailer Approval Queue',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
             onPressed: () => ref.invalidate(pendingUsersProvider),
@@ -36,11 +40,9 @@ class ApprovalQueueScreen extends ConsumerWidget {
           error: (e, _) => ListView(
             padding: const EdgeInsets.all(18.0),
             children: [
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 40.0),
-                  child: Text('Couldn\'t load approval queue: $e', style: GoogleFonts.inter(color: AppColors.error)),
-                ),
+              ErrorStateWidget(
+                message: 'Couldn\'t load approval queue: $e',
+                onRetry: () => ref.invalidate(pendingUsersProvider),
               ),
             ],
           ),
@@ -52,7 +54,8 @@ class ApprovalQueueScreen extends ConsumerWidget {
               : ListView.builder(
                   padding: const EdgeInsets.all(18.0),
                   itemCount: users.length,
-                  itemBuilder: (context, idx) => RetailerApprovalCard(user: users[idx], index: idx),
+                  itemBuilder: (context, idx) =>
+                      RetailerApprovalCard(user: users[idx], index: idx),
                 ),
         ),
       ),

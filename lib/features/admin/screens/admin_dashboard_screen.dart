@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
+import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/notification_bell_button.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../controllers/admin_dashboard_controller.dart';
@@ -26,12 +27,16 @@ class AdminDashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Jyoti Kirana Admin', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Jyoti Kirana Admin',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
         actions: [
           const NotificationBellButton(),
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: AppColors.error),
-            onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
+            onPressed: () =>
+                ref.read(authControllerProvider.notifier).signOut(),
           ),
         ],
       ),
@@ -82,7 +87,9 @@ class AdminDashboardScreen extends ConsumerWidget {
                       onPressed: () => context.push(RouteNames.adminProducts),
                       icon: const Icon(Icons.inventory_2_outlined, size: 18),
                       label: const Text('Manage Products'),
-                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -91,7 +98,9 @@ class AdminDashboardScreen extends ConsumerWidget {
                       onPressed: () => context.push(RouteNames.adminCategories),
                       icon: const Icon(Icons.category_outlined, size: 18),
                       label: const Text('Manage Categories'),
-                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
                     ),
                   ),
                 ],
@@ -104,7 +113,9 @@ class AdminDashboardScreen extends ConsumerWidget {
                       onPressed: () => context.push(RouteNames.adminOrders),
                       icon: const Icon(Icons.receipt_long_outlined, size: 18),
                       label: const Text('All Orders'),
-                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -113,7 +124,9 @@ class AdminDashboardScreen extends ConsumerWidget {
                       onPressed: () => context.push(RouteNames.adminRetailers),
                       icon: const Icon(Icons.storefront_outlined, size: 18),
                       label: const Text('Retailers'),
-                      style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
                     ),
                   ),
                 ],
@@ -122,10 +135,13 @@ class AdminDashboardScreen extends ConsumerWidget {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
-                  onPressed: () => context.push(RouteNames.adminDeliverySettings),
+                  onPressed: () =>
+                      context.push(RouteNames.adminDeliverySettings),
                   icon: const Icon(Icons.local_shipping_outlined, size: 18),
                   label: const Text('Delivery Settings'),
-                  style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
                 ),
               ),
 
@@ -139,11 +155,14 @@ class AdminDashboardScreen extends ConsumerWidget {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.textPrimaryLight,
                     ),
                   ),
                   TextButton(
-                    onPressed: () => context.push(RouteNames.adminApprovalQueue),
+                    onPressed: () =>
+                        context.push(RouteNames.adminApprovalQueue),
                     child: const Text('View All'),
                   ),
                 ],
@@ -152,19 +171,24 @@ class AdminDashboardScreen extends ConsumerWidget {
 
               pendingUsers.when(
                 loading: () => const Center(
-                  child: Padding(padding: EdgeInsets.symmetric(vertical: 40.0), child: CircularProgressIndicator()),
-                ),
-                error: (e, _) => Center(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 40.0),
-                    child: Text('Couldn\'t load approval queue: $e', style: GoogleFonts.inter(color: AppColors.error)),
+                    padding: EdgeInsets.symmetric(vertical: 40.0),
+                    child: CircularProgressIndicator(),
                   ),
+                ),
+                error: (e, _) => ErrorStateWidget(
+                  message: 'Couldn\'t load approval queue: $e',
+                  onRetry: () => ref.invalidate(pendingUsersProvider),
                 ),
                 data: (users) => users.isEmpty
                     ? const EmptyApprovalQueueCard()
                     : Column(
                         children: [
-                          for (var i = 0; i < users.length && i < _queuePreviewLimit; i++)
+                          for (
+                            var i = 0;
+                            i < users.length && i < _queuePreviewLimit;
+                            i++
+                          )
                             RetailerApprovalCard(user: users[i], index: i),
                           if (users.length > _queuePreviewLimit)
                             Padding(
@@ -173,7 +197,9 @@ class AdminDashboardScreen extends ConsumerWidget {
                                 '+${users.length - _queuePreviewLimit} more waiting — tap "View All"',
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
-                                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                                  color: isDark
+                                      ? AppColors.textSecondaryDark
+                                      : AppColors.textSecondaryLight,
                                 ),
                               ),
                             ),

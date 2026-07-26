@@ -264,7 +264,7 @@ Admin Dashboard
 
 ### 📅 Phase 4 — Polish & Launch
 
-- UI animations and micro-interactions polish
+- [x] UI animations and micro-interactions polish — ✅ Implemented (`phases.md` Phase 6, 2026-07-23–26): dark mode, Blinkit/Zepto-style product/category cards, floating cart bar, GoRouter page transitions, product-image Hero animation, animated cart badge, and shimmer/pull-to-refresh/error-state coverage across every list screen
 - Multilingual support (Marathi/Hindi)
 - Performance optimization & crash analytics (Firebase Crashlytics)
 - Google Play Store submission
