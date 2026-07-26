@@ -14,14 +14,12 @@ class ProductCard extends ConsumerWidget {
   final ProductEntity product;
   final VoidCallback onTap;
 
-  const ProductCard({
-    super.key,
-    required this.product,
-    required this.onTap,
-  });
+  const ProductCard({super.key, required this.product, required this.onTap});
 
   void _add(WidgetRef ref) {
-    ref.read(cartControllerProvider.notifier).addItem(
+    ref
+        .read(cartControllerProvider.notifier)
+        .addItem(
           CartItemEntity(
             productId: product.id,
             name: product.name,
@@ -40,7 +38,9 @@ class ProductCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final qtyInCart = ref.watch(cartControllerProvider.select((cart) => cart.qtyFor(product.id)));
+    final qtyInCart = ref.watch(
+      cartControllerProvider.select((cart) => cart.qtyFor(product.id)),
+    );
 
     return InkWell(
       onTap: onTap,
@@ -55,9 +55,15 @@ class ProductCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            AspectRatio(
-              aspectRatio: 1.1,
-              child: _ProductImage(imageUrl: product.imageUrl, isDark: isDark),
+            Hero(
+              tag: 'product-image-${product.id}',
+              child: AspectRatio(
+                aspectRatio: 1.1,
+                child: _ProductImage(
+                  imageUrl: product.imageUrl,
+                  isDark: isDark,
+                ),
+              ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
@@ -68,14 +74,19 @@ class ProductCard extends ConsumerWidget {
                     product.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.inter(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     'per ${product.unit.value}',
                     style: GoogleFonts.inter(
                       fontSize: 10.5,
-                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -96,11 +107,18 @@ class ProductCard extends ConsumerWidget {
                         Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight)
-                                .withOpacity(0.3),
+                            color:
+                                (isDark
+                                        ? AppColors.textSecondaryDark
+                                        : AppColors.textSecondaryLight)
+                                    .withOpacity(0.3),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                          child: const Icon(
+                            Icons.add_rounded,
+                            size: 16,
+                            color: Colors.white,
+                          ),
                         )
                       else if (qtyInCart == 0)
                         InkWell(
@@ -112,7 +130,11 @@ class ProductCard extends ConsumerWidget {
                               color: AppColors.primary,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                            child: const Icon(
+                              Icons.add_rounded,
+                              size: 16,
+                              color: Colors.white,
+                            ),
                           ),
                         )
                       else
@@ -127,7 +149,10 @@ class ProductCard extends ConsumerWidget {
                     const SizedBox(height: 4),
                     Text(
                       'Out of stock',
-                      style: GoogleFonts.inter(fontSize: 10, color: AppColors.error),
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        color: AppColors.error,
+                      ),
                     ),
                   ],
                 ],
@@ -149,25 +174,42 @@ class _CompactQtyStepper extends StatelessWidget {
   final int max;
   final ValueChanged<int> onChanged;
 
-  const _CompactQtyStepper({required this.qty, required this.max, required this.onChanged});
+  const _CompactQtyStepper({
+    required this.qty,
+    required this.max,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          _StepperButton(icon: Icons.remove_rounded, onTap: () => onChanged(qty - 1)),
+          _StepperButton(
+            icon: Icons.remove_rounded,
+            onTap: () => onChanged(qty - 1),
+          ),
           SizedBox(
             width: 18,
             child: Text(
               '$qty',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
             ),
           ),
-          _StepperButton(icon: Icons.add_rounded, onTap: qty < max ? () => onChanged(qty + 1) : null),
+          _StepperButton(
+            icon: Icons.add_rounded,
+            onTap: qty < max ? () => onChanged(qty + 1) : null,
+          ),
         ],
       ),
     );
@@ -186,7 +228,11 @@ class _StepperButton extends StatelessWidget {
       onTap: onTap,
       child: Padding(
         padding: const EdgeInsets.all(5),
-        child: Icon(icon, size: 13, color: onTap == null ? Colors.white38 : Colors.white),
+        child: Icon(
+          icon,
+          size: 13,
+          color: onTap == null ? Colors.white38 : Colors.white,
+        ),
       ),
     );
   }

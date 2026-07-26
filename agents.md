@@ -395,6 +395,26 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-07-26 — Phase 6.4: Motion & Transitions
+
+### 📋 Tasks completed:
+
+- **6.4 — Motion & transitions, done**: Shared `_fadeSlidePage()` `CustomTransitionPage` helper added to `app_router.dart` (fade + subtle upward slide, 300ms) and applied to the 7 retailer-facing push routes (product category, product detail, checkout, UPI payment, order success, order detail, notifications) via `pageBuilder:` instead of `builder:`. Admin routes and shell tab switches intentionally untouched.
+- `Hero(tag: 'product-image-${product.id}')` added to `ProductCard` and `ProductDetailScreen`. Caught a real timing bug before it shipped: `ProductDetailScreen`'s image lived inside the `data` branch of a `FutureProvider`-backed `.when()`, so the Hero wouldn't exist yet when GoRouter's push-transition Hero scan runs on the first frame — the flight would have silently never fired for any product that wasn't already cached. Fixed by hoisting the Hero above the `.when()` switch, keyed on the route's `productId` (known synchronously) with a placeholder shown during loading/error/not-found, so it's mounted from frame one regardless of async timing.
+- Cart badge bounce: `bottom_nav_bar.dart`'s `badges.Badge` now does a two-step `flutter_animate` scale (1→1.3→1) keyed on `ValueKey(cartItemCount)`, so the bounce replays only when the count actually changes.
+- `OrderSuccessScreen` needed no code change — its existing `flutter_animate` `.scale()` already covers the "success animation" checklist item (still no Lottie asset in the project, same documented gap since Phase 3).
+- **Real pre-existing bug found and fixed while visually verifying on a physical device**: `category_products_screen.dart`'s grid used `childAspectRatio: 0.68`, too tight for any 2-line product name (e.g. the seeded "Basmati Rice Premium 25kg") — a genuine `RenderFlex` overflow, visible as the yellow/black debug banner. This predates 6.4 (introduced by 6.2's card redesign) and had gone unnoticed because no test constrains `ProductCard` inside the real grid's aspect ratio. Fixed by loosening the ratio to `0.62`.
+- **First physical-device verification this project** (a real Android 13 phone, connected and driven via `adb`) rather than widget tests alone — every prior Phase 6 sub-phase (6.1–6.3) had only been checked via `flutter test`, with a live-device check explicitly left as an open item. Walked the actual retailer flow: login → Home → Category → Product Detail → Add to Cart → Cart → Checkout, confirming the fade+slide transition, the Hero flight, the cart badge, and the floating cart bar all behave correctly with no crashes; separately opened Notifications from the Home bell to confirm a second wrapped route. Rebuilt and re-verified after the grid-ratio fix to confirm the overflow was actually gone.
+- Also fixed one incidental `curly_braces_in_flow_control_structures` lint in `app_router.dart`'s `SplashScreen` — a pre-existing single-line `if (...) return;` that `dart format` wrapped onto its own line once the surrounding animation chain in the same file got reformatted, which then tripped the lint.
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 117/117 passing (no new tests added; page transitions, Hero flights, and keyed animation restarts aren't meaningfully unit-testable in this codebase's existing harness — consistent with how every prior GoRouter-dependent interaction has been handled).
+
+### 💬 Latest Discussion Summary:
+
+1. `phases.md` updated: 6.4 marked ✅ with full scope notes (4/11), "Next Immediate Task" now points at **6.5 — List-screen gap fixes** (shimmer/pull-to-refresh/error-state gaps, including the one real bug already flagged: `search_screen` has no error state at all).
+2. `PRD.md` and `README.md` left unchanged for this sub-phase — neither was touched for 6.1–6.3 either; both get updated once Phase 6 closes out fully (6.5 still remaining), consistent with precedent.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

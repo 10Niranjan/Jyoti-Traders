@@ -49,6 +49,35 @@ class _AuthRefreshNotifier extends ChangeNotifier {
   }
 }
 
+/// Shared fade+slide transition for retailer-facing push routes (Product
+/// Detail, Checkout, etc.) — replaces GoRouter's default platform transition
+/// with a single consistent, subtle motion used everywhere it's applied.
+/// Admin routes and the bottom-nav shell's own tab switches intentionally
+/// keep their existing (instant/native) transitions — out of 6.4's scope.
+CustomTransitionPage<void> _fadeSlidePage(Widget child, GoRouterState state) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 300),
+    reverseTransitionDuration: const Duration(milliseconds: 250),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return FadeTransition(
+        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
+        child: SlideTransition(
+          position:
+              Tween<Offset>(
+                begin: const Offset(0, 0.04),
+                end: Offset.zero,
+              ).animate(
+                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+              ),
+          child: child,
+        ),
+      );
+    },
+  );
+}
+
 // Router Provider — built exactly once; reacts to auth state via
 // refreshListenable instead of rebuilding the whole GoRouter.
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -73,12 +102,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       // If user is pending manual admin approval, restrict to Pending Screen
       if (authState is PendingApproval) {
-        return location == RouteNames.pendingApproval ? null : RouteNames.pendingApproval;
+        return location == RouteNames.pendingApproval
+            ? null
+            : RouteNames.pendingApproval;
       }
 
       // If user is Admin, route to Admin Panel
       if (authState is AuthenticatedAdmin) {
-        final target = (location == RouteNames.splash || location == RouteNames.login || location == RouteNames.home || location == RouteNames.pendingApproval)
+        final target =
+            (location == RouteNames.splash ||
+                location == RouteNames.login ||
+                location == RouteNames.home ||
+                location == RouteNames.pendingApproval)
             ? RouteNames.admin
             : null;
         return target;
@@ -86,7 +121,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
       // If user is verified Customer/Retailer, route to Marketplace
       if (authState is AuthenticatedCustomer) {
-        final target = (location == RouteNames.splash || location == RouteNames.login || location == RouteNames.admin || location == RouteNames.pendingApproval)
+        final target =
+            (location == RouteNames.splash ||
+                location == RouteNames.login ||
+                location == RouteNames.admin ||
+                location == RouteNames.pendingApproval)
             ? RouteNames.home
             : null;
         return target;
@@ -125,7 +164,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RouteNames.adminEditProduct,
-        builder: (context, state) => AddEditProductScreen(productId: state.pathParameters['productId']!),
+        builder: (context, state) =>
+            AddEditProductScreen(productId: state.pathParameters['productId']!),
       ),
       GoRoute(
         path: RouteNames.adminCategories,
@@ -137,7 +177,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RouteNames.adminEditCategory,
-        builder: (context, state) => AddEditCategoryScreen(categoryId: state.pathParameters['categoryId']!),
+        builder: (context, state) => AddEditCategoryScreen(
+          categoryId: state.pathParameters['categoryId']!,
+        ),
       ),
       GoRoute(
         path: RouteNames.adminDeliverySettings,
@@ -149,7 +191,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RouteNames.adminOrderManagement,
-        builder: (context, state) => OrderManagementScreen(orderId: state.pathParameters['orderId']!),
+        builder: (context, state) =>
+            OrderManagementScreen(orderId: state.pathParameters['orderId']!),
       ),
       GoRoute(
         path: RouteNames.adminRetailers,
@@ -157,60 +200,108 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RouteNames.adminRetailerOrders,
-        builder: (context, state) => AllOrdersScreen(retailerId: state.pathParameters['retailerId']!),
+        builder: (context, state) =>
+            AllOrdersScreen(retailerId: state.pathParameters['retailerId']!),
       ),
 
       // Retailer bottom-nav shell — Home/Search/Cart/Orders/Profile keep
       // independent navigation state across tab switches.
       StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) => _RetailerShell(navigationShell: navigationShell),
+        builder: (context, state, navigationShell) =>
+            _RetailerShell(navigationShell: navigationShell),
         branches: [
-          StatefulShellBranch(routes: [
-            GoRoute(path: RouteNames.home, builder: (context, state) => const HomeScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: RouteNames.search, builder: (context, state) => const SearchScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: RouteNames.cart, builder: (context, state) => const CartScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: RouteNames.orders, builder: (context, state) => const OrderHistoryScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            GoRoute(path: RouteNames.profile, builder: (context, state) => const ProfileScreen()),
-          ]),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.home,
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.search,
+                builder: (context, state) => const SearchScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.cart,
+                builder: (context, state) => const CartScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.orders,
+                builder: (context, state) => const OrderHistoryScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.profile,
+                builder: (context, state) => const ProfileScreen(),
+              ),
+            ],
+          ),
         ],
       ),
 
       // Full-screen push routes on top of the shell (no bottom nav visible).
+      // These use pageBuilder + _fadeSlidePage for a consistent transition
+      // (see 6.4) instead of GoRouter's default builder: platform transition.
       GoRoute(
         path: RouteNames.productCategory,
-        builder: (context, state) => CategoryProductsScreen(categoryId: state.pathParameters['categoryId']!),
+        pageBuilder: (context, state) => _fadeSlidePage(
+          CategoryProductsScreen(
+            categoryId: state.pathParameters['categoryId']!,
+          ),
+          state,
+        ),
       ),
       GoRoute(
         path: RouteNames.productDetail,
-        builder: (context, state) => ProductDetailScreen(productId: state.pathParameters['productId']!),
+        pageBuilder: (context, state) => _fadeSlidePage(
+          ProductDetailScreen(productId: state.pathParameters['productId']!),
+          state,
+        ),
       ),
       GoRoute(
         path: RouteNames.checkout,
-        builder: (context, state) => const CheckoutScreen(),
+        pageBuilder: (context, state) =>
+            _fadeSlidePage(const CheckoutScreen(), state),
       ),
       GoRoute(
         path: RouteNames.upiPayment,
-        builder: (context, state) => UpiPaymentScreen(orderId: state.pathParameters['orderId']!),
+        pageBuilder: (context, state) => _fadeSlidePage(
+          UpiPaymentScreen(orderId: state.pathParameters['orderId']!),
+          state,
+        ),
       ),
       GoRoute(
         path: RouteNames.orderSuccess,
-        builder: (context, state) => OrderSuccessScreen(orderId: state.pathParameters['orderId']!),
+        pageBuilder: (context, state) => _fadeSlidePage(
+          OrderSuccessScreen(orderId: state.pathParameters['orderId']!),
+          state,
+        ),
       ),
       GoRoute(
         path: RouteNames.orderDetail,
-        builder: (context, state) => OrderDetailScreen(orderId: state.pathParameters['orderId']!),
+        pageBuilder: (context, state) => _fadeSlidePage(
+          OrderDetailScreen(orderId: state.pathParameters['orderId']!),
+          state,
+        ),
       ),
       GoRoute(
         path: RouteNames.notifications,
-        builder: (context, state) => const NotificationsScreen(),
+        pageBuilder: (context, state) =>
+            _fadeSlidePage(const NotificationsScreen(), state),
       ),
     ],
   );
@@ -275,20 +366,32 @@ class SplashScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.12),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.storefront_rounded,
-                  size: 80,
-                  color: AppColors.primary,
-                ),
-              ).animate(onPlay: (controller) {
-                if (!kIsWeb && Platform.environment.containsKey('FLUTTER_TEST')) return;
-                controller.repeat(reverse: true);
-              }).scale(begin: const Offset(0.9, 0.9), end: const Offset(1.1, 1.1), duration: 1200.ms, curve: Curves.easeInOut),
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withOpacity(0.12),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.storefront_rounded,
+                      size: 80,
+                      color: AppColors.primary,
+                    ),
+                  )
+                  .animate(
+                    onPlay: (controller) {
+                      if (!kIsWeb &&
+                          Platform.environment.containsKey('FLUTTER_TEST')) {
+                        return;
+                      }
+                      controller.repeat(reverse: true);
+                    },
+                  )
+                  .scale(
+                    begin: const Offset(0.9, 0.9),
+                    end: const Offset(1.1, 1.1),
+                    duration: 1200.ms,
+                    curve: Curves.easeInOut,
+                  ),
 
               const SizedBox(height: 24),
 
@@ -308,7 +411,9 @@ class SplashScreen extends ConsumerWidget {
                 'Wholesale Market Store',
                 style: GoogleFonts.inter(
                   fontSize: 14,
-                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                  color: isDark
+                      ? AppColors.textSecondaryDark
+                      : AppColors.textSecondaryLight,
                 ),
               ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
 

@@ -17,7 +17,8 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
   const ProductDetailScreen({super.key, required this.productId});
 
   @override
-  ConsumerState<ProductDetailScreen> createState() => _ProductDetailScreenState();
+  ConsumerState<ProductDetailScreen> createState() =>
+      _ProductDetailScreenState();
 }
 
 class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
@@ -26,24 +27,60 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final productAsync = ref.watch(productByIdProvider(widget.productId));
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Product Details')),
-      body: productAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => ErrorStateWidget(
-          onRetry: () => ref.invalidate(productByIdProvider(widget.productId)),
-        ),
-        data: (product) {
-          if (product == null) {
-            return const ErrorStateWidget(message: 'This product is no longer available.');
-          }
-          return _ProductDetailBody(
-            product: product,
-            qty: _qty,
-            onQtyChanged: (qty) => setState(() => _qty = qty),
-          );
-        },
+      // The Hero sits outside `productAsync.when()`, keyed on the route's
+      // `productId` (known synchronously), so it's mounted on frame one —
+      // `productByIdProvider` is a FutureProvider, and a Hero nested only
+      // inside its `data` branch wouldn't exist yet when GoRouter's push
+      // transition starts its Hero scan, so the flight would silently never
+      // fire. This guarantees the flight from `ProductCard` always triggers.
+      body: Column(
+        children: [
+          Hero(
+            tag: 'product-image-${widget.productId}',
+            child: AspectRatio(
+              aspectRatio: 1.2,
+              child: productAsync.maybeWhen(
+                data: (product) =>
+                    product != null && product.imageUrl.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: product.imageUrl,
+                        fit: BoxFit.cover,
+                      )
+                    : Container(
+                        color: isDark ? Colors.white12 : Colors.black12,
+                        child: const Icon(Icons.image_outlined, size: 64),
+                      ),
+                orElse: () =>
+                    Container(color: isDark ? Colors.white12 : Colors.black12),
+              ),
+            ),
+          ),
+          Expanded(
+            child: productAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => ErrorStateWidget(
+                onRetry: () =>
+                    ref.invalidate(productByIdProvider(widget.productId)),
+              ),
+              data: (product) {
+                if (product == null) {
+                  return const ErrorStateWidget(
+                    message: 'This product is no longer available.',
+                  );
+                }
+                return _ProductDetailBody(
+                  product: product,
+                  qty: _qty,
+                  onQtyChanged: (qty) => setState(() => _qty = qty),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -54,7 +91,11 @@ class _ProductDetailBody extends ConsumerWidget {
   final int qty;
   final ValueChanged<int> onQtyChanged;
 
-  const _ProductDetailBody({required this.product, required this.qty, required this.onQtyChanged});
+  const _ProductDetailBody({
+    required this.product,
+    required this.qty,
+    required this.onQtyChanged,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -67,15 +108,6 @@ class _ProductDetailBody extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AspectRatio(
-                  aspectRatio: 1.2,
-                  child: product.imageUrl.isEmpty
-                      ? Container(
-                          color: isDark ? Colors.white12 : Colors.black12,
-                          child: const Icon(Icons.image_outlined, size: 64),
-                        )
-                      : CachedNetworkImage(imageUrl: product.imageUrl, fit: BoxFit.cover),
-                ),
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: Column(
@@ -83,14 +115,19 @@ class _ProductDetailBody extends ConsumerWidget {
                     children: [
                       Text(
                         product.name,
-                        style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold),
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 6),
                       Text(
                         'Sold per ${product.unit.value}',
                         style: GoogleFonts.inter(
                           fontSize: 13,
-                          color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondaryLight,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -104,18 +141,31 @@ class _ProductDetailBody extends ConsumerWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        product.isInStock ? '${product.stock} in stock' : 'Out of stock',
+                        product.isInStock
+                            ? '${product.stock} in stock'
+                            : 'Out of stock',
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
-                          color: product.isInStock ? AppColors.success : AppColors.error,
+                          color: product.isInStock
+                              ? AppColors.success
+                              : AppColors.error,
                         ),
                       ),
-                      if (product.description != null && product.description!.isNotEmpty) ...[
+                      if (product.description != null &&
+                          product.description!.isNotEmpty) ...[
                         const SizedBox(height: 20),
-                        Text('Description', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                        Text(
+                          'Description',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                         const SizedBox(height: 6),
-                        Text(product.description!, style: GoogleFonts.inter(fontSize: 13, height: 1.5)),
+                        Text(
+                          product.description!,
+                          style: GoogleFonts.inter(fontSize: 13, height: 1.5),
+                        ),
                       ],
                     ],
                   ),
@@ -130,7 +180,13 @@ class _ProductDetailBody extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
             child: Row(
               children: [
-                if (product.isInStock) QtyStepper(qty: qty, onChanged: onQtyChanged, min: 1, max: product.stock),
+                if (product.isInStock)
+                  QtyStepper(
+                    qty: qty,
+                    onChanged: onQtyChanged,
+                    min: 1,
+                    max: product.stock,
+                  ),
                 const SizedBox(width: 14),
                 Expanded(
                   child: PrimaryButton(
@@ -138,7 +194,9 @@ class _ProductDetailBody extends ConsumerWidget {
                     icon: Icons.shopping_cart_outlined,
                     onPressed: product.isInStock
                         ? () {
-                            ref.read(cartControllerProvider.notifier).addItem(
+                            ref
+                                .read(cartControllerProvider.notifier)
+                                .addItem(
                                   CartItemEntity(
                                     productId: product.id,
                                     name: product.name,
@@ -149,7 +207,9 @@ class _ProductDetailBody extends ConsumerWidget {
                                   ),
                                 );
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('${product.name} added to cart')),
+                              SnackBar(
+                                content: Text('${product.name} added to cart'),
+                              ),
                             );
                           }
                         : null,

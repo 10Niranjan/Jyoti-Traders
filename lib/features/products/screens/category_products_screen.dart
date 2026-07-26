@@ -62,7 +62,11 @@ class _ProductGrid extends StatelessWidget {
       itemCount: products.length,
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.68,
+        // 0.68 was too tight for 2-line product names (e.g. "Basmati Rice
+        // Premium 25kg") — the text block clipped the card's fixed height by
+        // a few px (a real RenderFlex overflow, not just a debug-banner
+        // annoyance). 0.62 gives enough headroom for a full 2-line name.
+        childAspectRatio: 0.62,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
