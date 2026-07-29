@@ -312,6 +312,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 /// would be redundant.
 const _cartBranchIndex = 2;
 
+// ponytail: fixed estimate of the pill's rendered height (padding + two text
+// rows) plus its 12px bottom margin; swap for a measured height via a
+// GlobalKey if the pill's content ever grows enough to under/over-reserve.
+const _kFloatingCartBarReservedHeight = 74.0;
+
 class _RetailerShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
@@ -321,11 +326,17 @@ class _RetailerShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartControllerProvider);
     final onCartTab = navigationShell.currentIndex == _cartBranchIndex;
+    final barVisible = !onCartTab && !cart.isEmpty;
 
     return Scaffold(
       body: Stack(
         children: [
-          navigationShell,
+          AnimatedPadding(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeOut,
+            padding: EdgeInsets.only(bottom: barVisible ? _kFloatingCartBarReservedHeight : 0),
+            child: navigationShell,
+          ),
           if (!onCartTab)
             Positioned(
               left: 16,
