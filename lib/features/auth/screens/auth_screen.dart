@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -6,6 +7,7 @@ import '../controllers/auth_controller.dart';
 import '../controllers/auth_state.dart';
 import '../../../data/models/user_model.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/validators.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -28,13 +30,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _businessNameController = TextEditingController();
   
   UserRole _selectedRole = UserRole.customer;
-
-  @override
-  void initState() {
-    super.initState();
-    _emailController.text = 'admin@jyoti.com';
-    _passwordController.text = 'admin123';
-  }
 
   @override
   void dispose() {
@@ -210,7 +205,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                 controller: _nameController,
                                 label: 'Full Name',
                                 icon: Icons.person_outline,
-                                validator: (val) => val == null || val.trim().isEmpty ? 'Enter your name' : null,
+                                validator: Validators.name,
+                                inputFormatters: [FilteringTextInputFormatter.allow(RegExp("[a-zA-Z' -]"))],
                               ),
                               const SizedBox(height: 16),
 
@@ -482,11 +478,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
       style: TextStyle(color: isDark ? Colors.white : AppColors.textPrimaryLight),
       decoration: InputDecoration(
         labelText: label,

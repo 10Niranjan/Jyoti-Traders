@@ -7,6 +7,9 @@ import 'auth_repository.dart';
 import '../models/user_model.dart';
 import '../../core/network/firebase_mode.dart';
 import '../../domain/entities/address_entity.dart';
+import '../../domain/entities/bank_details_entity.dart';
+import '../../domain/entities/business_hours_entity.dart';
+import '../../domain/entities/notification_preferences_entity.dart';
 
 class FirebaseAuthRepository implements AuthRepository {
   fb.FirebaseAuth? _firebaseAuth;
@@ -323,6 +326,9 @@ class FirebaseAuthRepository implements AuthRepository {
     required String uid,
     AddressEntity? address,
     String? gstNumber,
+    BankDetailsEntity? bankDetails,
+    BusinessHoursEntity? businessHours,
+    NotificationPreferencesEntity? notificationPreferences,
   }) async {
     if (_useMock) {
       final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
@@ -334,7 +340,13 @@ class FirebaseAuthRepository implements AuthRepository {
       for (int i = 0; i < userMapList.length; i++) {
         if (userMapList[i]['uid'] == uid) {
           final current = UserModel.fromJson(userMapList[i]);
-          updated = current.copyWith(address: address, gstNumber: gstNumber);
+          updated = current.copyWith(
+            address: address,
+            gstNumber: gstNumber,
+            bankDetails: bankDetails,
+            businessHours: businessHours,
+            notificationPreferences: notificationPreferences,
+          );
           userMapList[i] = updated.toJson();
         }
       }
@@ -354,10 +366,36 @@ class FirebaseAuthRepository implements AuthRepository {
         'street': address.street,
         'city': address.city,
         'pincode': address.pincode,
+        'latitude': address.latitude,
+        'longitude': address.longitude,
+        'formattedAddress': address.formattedAddress,
       };
     }
     if (gstNumber != null) {
       updateData['gstNumber'] = gstNumber;
+    }
+    if (bankDetails != null) {
+      updateData['bankDetails'] = {
+        'accountHolderName': bankDetails.accountHolderName,
+        'accountNumber': bankDetails.accountNumber,
+        'ifscCode': bankDetails.ifscCode,
+        'bankName': bankDetails.bankName,
+        'upiId': bankDetails.upiId,
+      };
+    }
+    if (businessHours != null) {
+      updateData['businessHours'] = {
+        'openTime': businessHours.openTime,
+        'closeTime': businessHours.closeTime,
+        'is24x7': businessHours.is24x7,
+      };
+    }
+    if (notificationPreferences != null) {
+      updateData['notificationPreferences'] = {
+        'orderUpdates': notificationPreferences.orderUpdates,
+        'promotions': notificationPreferences.promotions,
+        'lowStockAlerts': notificationPreferences.lowStockAlerts,
+      };
     }
     if (updateData.isEmpty) {
       return getCurrentUser();

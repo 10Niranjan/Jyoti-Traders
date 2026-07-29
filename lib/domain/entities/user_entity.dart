@@ -1,5 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'address_entity.dart';
+import 'bank_details_entity.dart';
+import 'business_hours_entity.dart';
+import 'notification_preferences_entity.dart';
 
 enum UserRole {
   admin,
@@ -45,6 +48,9 @@ class UserEntity extends Equatable {
   final String? gstNumber;
   final String? fcmToken;
   final DateTime createdAt;
+  final BankDetailsEntity? bankDetails;
+  final BusinessHoursEntity? businessHours;
+  final NotificationPreferencesEntity notificationPreferences;
 
   const UserEntity({
     required this.uid,
@@ -58,6 +64,9 @@ class UserEntity extends Equatable {
     this.gstNumber,
     this.fcmToken,
     required this.createdAt,
+    this.bankDetails,
+    this.businessHours,
+    this.notificationPreferences = NotificationPreferencesEntity.defaults,
   });
 
   bool get isApproved => status == UserStatus.approved;
@@ -75,5 +84,8 @@ class UserEntity extends Equatable {
         gstNumber,
         fcmToken,
         createdAt,
+        bankDetails,
+        businessHours,
+        notificationPreferences,
       ];
 }

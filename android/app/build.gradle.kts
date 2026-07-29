@@ -7,7 +7,10 @@ plugins {
 
 android {
     namespace = "com.traders.retailer.traders_retailer"
-    compileSdk = flutter.compileSdkVersion
+    // Pinned above Flutter's own default (33) — the `geocoding` plugin's
+    // Android dependencies (androidx.core 1.13.1, androidx.activity 1.8.1,
+    // etc.) require compiling against API 34+.
+    compileSdk = 36
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

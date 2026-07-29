@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/route_names.dart';
+import '../../../core/services/geocoding_service.dart';
 import '../../../core/services/location_service.dart';
 import '../../../data/repositories/auth_repository_provider.dart';
 import '../../../domain/entities/address_entity.dart';
@@ -37,6 +38,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   bool _prefilled = false;
   double? _latitude;
   double? _longitude;
+  String? _resolvedAddress;
   bool _isLocating = false;
   PaymentMethod _paymentMethod = PaymentMethod.cod;
 
@@ -55,6 +57,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     _pincodeController.text = address.pincode;
     _latitude = address.latitude;
     _longitude = address.longitude;
+    _resolvedAddress = address.formattedAddress;
     _prefilled = true;
   }
 
@@ -62,21 +65,41 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     setState(() => _isLocating = true);
     final position = await ref.read(locationServiceProvider).getCurrentPosition();
     if (!mounted) return;
+    if (position == null) {
+      setState(() => _isLocating = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Couldn\'t get your location. Check location permission and try again.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return;
+    }
+
+    final resolved = await ref.read(geocodingServiceProvider).reverseGeocode(
+          latitude: position.latitude,
+          longitude: position.longitude,
+        );
+    if (!mounted) return;
     setState(() {
       _isLocating = false;
-      if (position != null) {
-        _latitude = position.latitude;
-        _longitude = position.longitude;
+      _latitude = position.latitude;
+      _longitude = position.longitude;
+      if (resolved != null) {
+        _resolvedAddress = resolved.formattedAddress;
+        if (_streetController.text.trim().isEmpty && resolved.street != null) {
+          _streetController.text = resolved.street!;
+        }
+        if (_cityController.text.trim().isEmpty && resolved.city != null) {
+          _cityController.text = resolved.city!;
+        }
+        if (_pincodeController.text.trim().isEmpty && resolved.pincode != null) {
+          _pincodeController.text = resolved.pincode!;
+        }
       }
     });
-    if (position == null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Couldn\'t get your location. Check location permission and try again.'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
   }
 
   AddressEntity _currentAddress() => AddressEntity(
@@ -85,6 +108,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         pincode: _pincodeController.text.trim(),
         latitude: _latitude,
         longitude: _longitude,
+        formattedAddress: _resolvedAddress,
       );
 
   /// Real per-km charge once the address has coordinates and the delivery
@@ -180,7 +204,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 streetController: _streetController,
                 cityController: _cityController,
                 pincodeController: _pincodeController,
-                hasCoordinates: _latitude != null && _longitude != null,
+                resolvedAddress: _resolvedAddress,
                 isLocating: _isLocating,
                 onUseCurrentLocation: _useCurrentLocation,
               ),

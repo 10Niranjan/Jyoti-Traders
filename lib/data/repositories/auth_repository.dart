@@ -1,4 +1,7 @@
 import '../../domain/entities/address_entity.dart';
+import '../../domain/entities/bank_details_entity.dart';
+import '../../domain/entities/business_hours_entity.dart';
+import '../../domain/entities/notification_preferences_entity.dart';
 import '../models/user_model.dart';
 
 abstract class AuthRepository {
@@ -24,12 +27,16 @@ abstract class AuthRepository {
 
   Future<UserModel?> refreshUserStatus(String uid);
 
-  /// Self-service profile update (shop address, GST number) — distinct from
-  /// admin approval/rejection, which lives on `UserRepository` in `domain/`.
+  /// Self-service profile update (shop address, GST number, payout/business
+  /// details, notification preferences) — distinct from admin
+  /// approval/rejection, which lives on `UserRepository` in `domain/`.
   Future<UserModel?> updateProfile({
     required String uid,
     AddressEntity? address,
     String? gstNumber,
+    BankDetailsEntity? bankDetails,
+    BusinessHoursEntity? businessHours,
+    NotificationPreferencesEntity? notificationPreferences,
   });
 
   /// Persists this device's current FCM token on the user's profile, called

@@ -8,6 +8,8 @@ import '../../domain/repositories/order_repository.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../domain/repositories/notification_repository.dart';
+import '../../features/auth/controllers/auth_controller.dart';
+import '../../features/auth/controllers/auth_state.dart';
 import '../datasources/local/cart_local_datasource.dart';
 import '../datasources/local/notification_local_datasource.dart';
 import '../datasources/local/product_local_datasource.dart';
@@ -47,9 +49,19 @@ final userRepositoryProvider = Provider<UserRepository>((ref) {
   return UserRepositoryImpl(UserRemoteDatasource(userCacheBox: userCacheBox));
 });
 
+/// Watches auth state so a different account signing in on the same device
+/// gets a fresh [CartLocalDatasource] keyed to its own uid, instead of
+/// inheriting whatever the previous account left in the shared cart box.
 final cartRepositoryProvider = Provider<CartRepository>((ref) {
+  final authState = ref.watch(authControllerProvider);
+  final uid = switch (authState) {
+    AuthenticatedAdmin(user: final u) => u.uid,
+    AuthenticatedCustomer(user: final u) => u.uid,
+    PendingApproval(user: final u) => u.uid,
+    _ => 'signed_out',
+  };
   final cartBox = Hive.box(HiveBoxes.cartBox);
-  return CartRepositoryImpl(CartLocalDatasource(cartBox: cartBox));
+  return CartRepositoryImpl(CartLocalDatasource(cartBox: cartBox, uid: uid));
 });
 
 final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {

@@ -5,11 +5,20 @@ import '../../models/cart_item_model.dart';
 
 /// Pure Hive — the cart never touches Firestore (cleared locally on
 /// successful order placement, per ARCHITECTURE.md §4.2).
+///
+/// Keyed by [uid] so switching accounts on the same device (sign out, sign
+/// up, sign back in as someone else) never carries a previous account's
+/// cart over — each user reads/writes their own slot in the shared box.
 class CartLocalDatasource {
   final Box _cartBox;
+  final String _uid;
   final _controller = StreamController<List<CartItemModel>>.broadcast();
 
-  CartLocalDatasource({required Box cartBox}) : _cartBox = cartBox;
+  CartLocalDatasource({required Box cartBox, required String uid})
+      : _cartBox = cartBox,
+        _uid = uid;
+
+  String get _key => '${HiveKeys.cartItems}_$_uid';
 
   Stream<List<CartItemModel>> watchCart() async* {
     yield _read();
@@ -65,12 +74,12 @@ class CartLocalDatasource {
   }
 
   List<CartItemModel> _read() {
-    final List<dynamic> raw = _cartBox.get(HiveKeys.cartItems, defaultValue: []);
+    final List<dynamic> raw = _cartBox.get(_key, defaultValue: []);
     return raw.map((e) => CartItemModel.fromJson(Map<String, dynamic>.from(e as Map))).toList();
   }
 
   Future<void> _save(List<CartItemModel> items) async {
-    await _cartBox.put(HiveKeys.cartItems, items.map((i) => i.toJson()).toList());
+    await _cartBox.put(_key, items.map((i) => i.toJson()).toList());
     _controller.add(items);
   }
 }

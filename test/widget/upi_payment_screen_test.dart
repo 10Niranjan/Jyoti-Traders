@@ -6,6 +6,9 @@ import 'package:traders_retailer/data/repositories/auth_repository.dart';
 import 'package:traders_retailer/data/repositories/auth_repository_provider.dart';
 import 'package:traders_retailer/data/repositories/repository_providers.dart';
 import 'package:traders_retailer/domain/entities/address_entity.dart';
+import 'package:traders_retailer/domain/entities/bank_details_entity.dart';
+import 'package:traders_retailer/domain/entities/business_hours_entity.dart';
+import 'package:traders_retailer/domain/entities/notification_preferences_entity.dart';
 import 'package:traders_retailer/domain/entities/order_entity.dart';
 import 'package:traders_retailer/domain/entities/order_item_entity.dart';
 import 'package:traders_retailer/domain/repositories/order_repository.dart';
@@ -47,7 +50,15 @@ class FakeAuthRepository implements AuthRepository {
   Future<UserModel?> refreshUserStatus(String uid) async => user;
 
   @override
-  Future<UserModel?> updateProfile({required String uid, AddressEntity? address, String? gstNumber}) async => user;
+  Future<UserModel?> updateProfile({
+    required String uid,
+    AddressEntity? address,
+    String? gstNumber,
+    BankDetailsEntity? bankDetails,
+    BusinessHoursEntity? businessHours,
+    NotificationPreferencesEntity? notificationPreferences,
+  }) async =>
+      user;
 
   @override
   Future<void> updateFcmToken({required String uid, required String fcmToken}) async {}

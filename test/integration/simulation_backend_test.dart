@@ -173,7 +173,7 @@ void main() {
   });
 
   test('cart add/update/clear round-trips through Hive', () async {
-    final cartRepo = CartRepositoryImpl(CartLocalDatasource(cartBox: cartBox));
+    final cartRepo = CartRepositoryImpl(CartLocalDatasource(cartBox: cartBox, uid: 'test_uid'));
 
     await cartRepo.addItem(CartItemEntity(
       productId: 'prod_rice_25kg',

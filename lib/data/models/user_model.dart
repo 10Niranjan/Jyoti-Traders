@@ -1,5 +1,8 @@
 import '../../core/utils/firestore_date_parser.dart';
 import '../../domain/entities/address_entity.dart';
+import '../../domain/entities/bank_details_entity.dart';
+import '../../domain/entities/business_hours_entity.dart';
+import '../../domain/entities/notification_preferences_entity.dart';
 import '../../domain/entities/user_entity.dart';
 
 export '../../domain/entities/user_entity.dart' show UserRole, UserStatus;
@@ -16,6 +19,9 @@ class UserModel {
   final String? gstNumber;
   final String? fcmToken;
   final DateTime createdAt;
+  final BankDetailsEntity? bankDetails;
+  final BusinessHoursEntity? businessHours;
+  final NotificationPreferencesEntity notificationPreferences;
 
   UserModel({
     required this.uid,
@@ -29,6 +35,9 @@ class UserModel {
     this.gstNumber,
     this.fcmToken,
     required this.createdAt,
+    this.bankDetails,
+    this.businessHours,
+    this.notificationPreferences = NotificationPreferencesEntity.defaults,
   });
 
   /// Backward-compatible view of [status] for existing call sites
@@ -48,6 +57,9 @@ class UserModel {
       gstNumber: json['gstNumber'] as String?,
       fcmToken: json['fcmToken'] as String?,
       createdAt: parseFirestoreDate(json['createdAt']),
+      bankDetails: _bankDetailsFromJson(json['bankDetails']),
+      businessHours: _businessHoursFromJson(json['businessHours']),
+      notificationPreferences: _notificationPreferencesFromJson(json['notificationPreferences']),
     );
   }
 
@@ -69,6 +81,42 @@ class UserModel {
       pincode: map['pincode'] as String? ?? '',
       latitude: (map['latitude'] as num?)?.toDouble(),
       longitude: (map['longitude'] as num?)?.toDouble(),
+      formattedAddress: map['formattedAddress'] as String?,
+    );
+  }
+
+  static BankDetailsEntity? _bankDetailsFromJson(dynamic value) {
+    if (value == null) return null;
+    final map = Map<String, dynamic>.from(value as Map);
+    return BankDetailsEntity(
+      accountHolderName: map['accountHolderName'] as String? ?? '',
+      accountNumber: map['accountNumber'] as String? ?? '',
+      ifscCode: map['ifscCode'] as String? ?? '',
+      bankName: map['bankName'] as String? ?? '',
+      upiId: map['upiId'] as String?,
+    );
+  }
+
+  static BusinessHoursEntity? _businessHoursFromJson(dynamic value) {
+    if (value == null) return null;
+    final map = Map<String, dynamic>.from(value as Map);
+    return BusinessHoursEntity(
+      openTime: map['openTime'] as String? ?? BusinessHoursEntity.defaults.openTime,
+      closeTime: map['closeTime'] as String? ?? BusinessHoursEntity.defaults.closeTime,
+      is24x7: map['is24x7'] as bool? ?? false,
+    );
+  }
+
+  /// Missing/partial map = every flag defaults to `true` (see
+  /// [NotificationPreferencesEntity] doc) so accounts created before this
+  /// feature existed keep receiving everything they already got.
+  static NotificationPreferencesEntity _notificationPreferencesFromJson(dynamic value) {
+    if (value == null) return NotificationPreferencesEntity.defaults;
+    final map = Map<String, dynamic>.from(value as Map);
+    return NotificationPreferencesEntity(
+      orderUpdates: map['orderUpdates'] as bool? ?? true,
+      promotions: map['promotions'] as bool? ?? true,
+      lowStockAlerts: map['lowStockAlerts'] as bool? ?? true,
     );
   }
 
@@ -89,6 +137,7 @@ class UserModel {
           'pincode': address!.pincode,
           'latitude': address!.latitude,
           'longitude': address!.longitude,
+          'formattedAddress': address!.formattedAddress,
         },
       'gstNumber': gstNumber,
       'fcmToken': fcmToken,
@@ -97,6 +146,25 @@ class UserModel {
       // write) and to Hive for simulation mode, which cannot serialize
       // Timestamp directly.
       'createdAt': createdAt,
+      if (bankDetails != null)
+        'bankDetails': {
+          'accountHolderName': bankDetails!.accountHolderName,
+          'accountNumber': bankDetails!.accountNumber,
+          'ifscCode': bankDetails!.ifscCode,
+          'bankName': bankDetails!.bankName,
+          'upiId': bankDetails!.upiId,
+        },
+      if (businessHours != null)
+        'businessHours': {
+          'openTime': businessHours!.openTime,
+          'closeTime': businessHours!.closeTime,
+          'is24x7': businessHours!.is24x7,
+        },
+      'notificationPreferences': {
+        'orderUpdates': notificationPreferences.orderUpdates,
+        'promotions': notificationPreferences.promotions,
+        'lowStockAlerts': notificationPreferences.lowStockAlerts,
+      },
     };
   }
 
@@ -113,6 +181,9 @@ class UserModel {
       gstNumber: gstNumber,
       fcmToken: fcmToken,
       createdAt: createdAt,
+      bankDetails: bankDetails,
+      businessHours: businessHours,
+      notificationPreferences: notificationPreferences,
     );
   }
 
@@ -128,6 +199,9 @@ class UserModel {
     String? gstNumber,
     String? fcmToken,
     DateTime? createdAt,
+    BankDetailsEntity? bankDetails,
+    BusinessHoursEntity? businessHours,
+    NotificationPreferencesEntity? notificationPreferences,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
@@ -141,6 +215,9 @@ class UserModel {
       gstNumber: gstNumber ?? this.gstNumber,
       fcmToken: fcmToken ?? this.fcmToken,
       createdAt: createdAt ?? this.createdAt,
+      bankDetails: bankDetails ?? this.bankDetails,
+      businessHours: businessHours ?? this.businessHours,
+      notificationPreferences: notificationPreferences ?? this.notificationPreferences,
     );
   }
 }

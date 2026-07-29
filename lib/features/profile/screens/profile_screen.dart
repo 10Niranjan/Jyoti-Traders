@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/services/geocoding_service.dart';
 import '../../../core/services/location_service.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../core/utils/validators.dart';
@@ -30,6 +31,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _prefilled = false;
   double? _latitude;
   double? _longitude;
+  String? _resolvedAddress;
   bool _isLocating = false;
 
   @override
@@ -50,6 +52,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       _pincodeController.text = address.pincode;
       _latitude = address.latitude;
       _longitude = address.longitude;
+      _resolvedAddress = address.formattedAddress;
     }
     _gstController.text = state.user.gstNumber ?? '';
     _prefilled = true;
@@ -58,22 +61,39 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Future<void> _useCurrentLocation() async {
     setState(() => _isLocating = true);
     final position = await ref.read(locationServiceProvider).getCurrentPosition();
+    if (position == null) {
+      if (mounted) {
+        setState(() => _isLocating = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Couldn\'t get your location. Check location permission and try again.'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+      return;
+    }
+    final resolved = await ref
+        .read(geocodingServiceProvider)
+        .reverseGeocode(latitude: position.latitude, longitude: position.longitude);
     if (!mounted) return;
     setState(() {
       _isLocating = false;
-      if (position != null) {
-        _latitude = position.latitude;
-        _longitude = position.longitude;
+      _latitude = position.latitude;
+      _longitude = position.longitude;
+      if (resolved != null) {
+        _resolvedAddress = resolved.formattedAddress;
+        if (_streetController.text.trim().isEmpty && resolved.street != null) {
+          _streetController.text = resolved.street!;
+        }
+        if (_cityController.text.trim().isEmpty && resolved.city != null) {
+          _cityController.text = resolved.city!;
+        }
+        if (_pincodeController.text.trim().isEmpty && resolved.pincode != null) {
+          _pincodeController.text = resolved.pincode!;
+        }
       }
     });
-    if (position == null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Couldn\'t get your location. Check location permission and try again.'),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    }
   }
 
   Future<void> _save(String uid) async {
@@ -86,11 +106,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             pincode: _pincodeController.text.trim(),
             latitude: _latitude,
             longitude: _longitude,
+            formattedAddress: _resolvedAddress,
           ),
           gstNumber: _gstController.text.trim().isEmpty ? null : _gstController.text.trim(),
         );
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated')));
+    }
+  }
+
+  Future<void> _confirmLogout() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Log out?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17)),
+        content: Text(
+          'You\'ll need to sign in again to access your account.',
+          style: GoogleFonts.inter(fontSize: 13),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Log Out', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      ref.read(authControllerProvider.notifier).signOut();
     }
   }
 
@@ -111,7 +155,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: AppColors.error),
-            onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
+            onPressed: _confirmLogout,
           ),
         ],
       ),
@@ -130,7 +174,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               streetController: _streetController,
               cityController: _cityController,
               pincodeController: _pincodeController,
-              hasCoordinates: _latitude != null && _longitude != null,
+              resolvedAddress: _resolvedAddress,
               isLocating: _isLocating,
               onUseCurrentLocation: _useCurrentLocation,
             ),
