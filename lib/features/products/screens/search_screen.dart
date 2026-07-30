@@ -1,9 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
+import '../../../core/utils/weight_formatter.dart';
 import '../../../domain/entities/cart_item_entity.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
@@ -156,40 +158,123 @@ class _SearchResults extends StatelessWidget {
           : Consumer(
               builder: (context, ref, _) => ListView.separated(
                 itemCount: results.length,
-                separatorBuilder: (_, _) => const Divider(height: 1),
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final product = results[index];
-                  return ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: CircleAvatar(
-                      backgroundColor: AppColors.primary.withOpacity(0.1),
-                      child: const Icon(
-                        Icons.inventory_2_outlined,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    title: Text(product.name),
-                    subtitle: Text(product.price.formatted),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.add_shopping_cart_outlined),
-                      onPressed: () => ref
-                          .read(cartControllerProvider.notifier)
-                          .addItem(
-                            CartItemEntity(
-                              productId: product.id,
-                              name: product.name,
-                              imageUrl: product.imageUrl,
-                              unitPrice: product.price,
-                              unit: product.unit,
-                              qty: 1,
-                            ),
-                          ),
-                    ),
+                  return _SearchResultTile(
+                    product: product,
                     onTap: () => onResultTap(product),
+                    onAdd: () => ref
+                        .read(cartControllerProvider.notifier)
+                        .addItem(
+                          CartItemEntity(
+                            productId: product.id,
+                            name: product.name,
+                            imageUrl: product.imageUrl,
+                            unitPrice: product.price,
+                            unit: product.unit,
+                            qty: product.isWeighed ? defaultAddGrams(product.maxQty) : 1,
+                            rateSlabs: product.rateSlabs,
+                          ),
+                        ),
                   );
                 },
               ),
             ),
+    );
+  }
+}
+
+/// A search result row — same card language as `_CartItemTile`/`ProductCard`
+/// (rounded surface, real thumbnail, price in `AppColors.primary`) instead
+/// of a bare default `ListTile`, so results don't look like a different app
+/// from the rest of the catalog.
+class _SearchResultTile extends StatelessWidget {
+  final ProductEntity product;
+  final VoidCallback onTap;
+  final VoidCallback onAdd;
+
+  const _SearchResultTile({required this.product, required this.onTap, required this.onAdd});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.primary.withOpacity(0.08)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white12 : Colors.black12,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: product.imageUrl.isEmpty
+                  ? const Icon(Icons.image_outlined)
+                  : CachedNetworkImage(
+                      imageUrl: product.imageUrl,
+                      fit: BoxFit.cover,
+                      errorWidget: (context, url, error) => const Icon(Icons.image_outlined),
+                    ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    product.name,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    // A weighed product's `price` is only its small-quantity
+                    // band rate, not a real per-unit price — showing it flat
+                    // (e.g. "₹260") reads as the product costing ₹260, not
+                    // ₹260/kg. Same "from ₹x/kg" treatment as ProductCard.
+                    product.isWeighed
+                        ? 'from ₹${product.rateSlabs!.bestRatePerKg.toStringAsFixed(0)}/kg'
+                        : product.price.formatted,
+                    style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (!product.isInStock)
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight).withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+              )
+            else
+              InkWell(
+                onTap: onAdd,
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(8)),
+                  child: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

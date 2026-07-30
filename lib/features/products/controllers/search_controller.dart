@@ -80,6 +80,12 @@ class SearchController extends StateNotifier<SearchState> {
         isLoading: false,
         hasError: false,
       );
+      // Previously only saved on pressing Enter or tapping a result — so
+      // typing a query, reading the auto-search results, then just going
+      // back never left a trace in Recent Searches. Saving here, once the
+      // debounce has already settled on a query the retailer paused on,
+      // covers every exit path.
+      await commitToRecentSearches(query);
     } catch (e) {
       state = state.copyWith(isLoading: false, hasError: true, results: []);
     }

@@ -142,6 +142,25 @@ void main() {
     },
   );
 
+  test(
+    'a successful search commits its query to recent searches automatically',
+    () async {
+      when(() => localStorage.getRecentSearches()).thenReturn([]);
+      when(
+        () => productRepository.searchProducts(any()),
+      ).thenAnswer((_) async => []);
+      final controller = buildController();
+
+      // Covers the exit path where a retailer types, reads the debounced
+      // auto-search results, then just navigates away without pressing
+      // Enter or tapping a result — previously nothing would be saved.
+      controller.onQueryChanged('rice');
+      await Future.delayed(const Duration(milliseconds: 450));
+
+      verify(() => localStorage.addRecentSearch('rice')).called(1);
+    },
+  );
+
   test('retry() is a no-op when there is no active query', () async {
     when(() => localStorage.getRecentSearches()).thenReturn([]);
     final controller = buildController();

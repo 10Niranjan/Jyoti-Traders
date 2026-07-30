@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -98,7 +99,14 @@ class _CartItemTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
+    return InkWell(
+      // The delete button and QtyStepper below are their own InkWells
+      // nested inside this one — Flutter routes a tap to the innermost
+      // hit-testable widget first, so they still work independently and
+      // never also trigger this row's navigation.
+      onTap: () => context.push(RouteNames.productDetailPath(item.productId)),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
@@ -114,7 +122,14 @@ class _CartItemTile extends ConsumerWidget {
               color: isDark ? Colors.white12 : Colors.black12,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(Icons.image_outlined),
+            clipBehavior: Clip.antiAlias,
+            child: item.imageUrl.isEmpty
+                ? const Icon(Icons.image_outlined)
+                : CachedNetworkImage(
+                    imageUrl: item.imageUrl,
+                    fit: BoxFit.cover,
+                    errorWidget: (context, url, error) => const Icon(Icons.image_outlined),
+                  ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -154,6 +169,7 @@ class _CartItemTile extends ConsumerWidget {
             ],
           ),
         ],
+      ),
       ),
     );
   }
