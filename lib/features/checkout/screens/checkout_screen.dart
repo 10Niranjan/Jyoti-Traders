@@ -140,7 +140,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       userId: user.uid,
       shopName: user.businessName,
       items: cart.items
-          .map((i) => OrderItemEntity(productId: i.productId, name: i.name, qty: i.qty, unitPrice: i.unitPrice))
+          .map((i) => OrderItemEntity(
+                productId: i.productId,
+                name: i.name,
+                qty: i.qty,
+                // For a weighed line this is the ₹/kg its band earned, so the
+                // invoice shows the rate actually charged.
+                unitPrice: i.isWeighed ? Money(i.ratePerKg!) : i.unitPrice,
+                unit: i.unit,
+                lineTotal: i.totalPrice,
+              ))
           .toList(),
       subtotal: cart.subtotal,
       deliveryCharge: _deliveryChargeFor(address, config),

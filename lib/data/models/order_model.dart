@@ -3,6 +3,7 @@ import '../../core/utils/firestore_date_parser.dart';
 import '../../domain/entities/address_entity.dart';
 import '../../domain/entities/order_entity.dart';
 import '../../domain/entities/order_item_entity.dart';
+import '../../domain/entities/product_entity.dart';
 import '../../domain/value_objects/money.dart';
 
 class OrderItemModel {
@@ -11,11 +12,17 @@ class OrderItemModel {
   final int qty;
   final double unitPrice;
 
+  /// Absent on orders placed before slab pricing shipped.
+  final String? unit;
+  final double? totalPrice;
+
   OrderItemModel({
     required this.productId,
     required this.name,
     required this.qty,
     required this.unitPrice,
+    this.unit,
+    this.totalPrice,
   });
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) {
@@ -24,6 +31,8 @@ class OrderItemModel {
       name: json['name'] as String? ?? '',
       qty: json['qty'] as int? ?? 0,
       unitPrice: (json['unitPrice'] as num?)?.toDouble() ?? 0,
+      unit: json['unit'] as String?,
+      totalPrice: (json['totalPrice'] as num?)?.toDouble(),
     );
   }
 
@@ -33,12 +42,22 @@ class OrderItemModel {
       'name': name,
       'qty': qty,
       'unitPrice': unitPrice,
-      'totalPrice': unitPrice * qty,
+      'unit': unit,
+      // Written, never recomputed on read — a weighed line was billed off a
+      // rate ladder the admin may edit later, and the invoice must not move.
+      'totalPrice': totalPrice ?? unitPrice * qty,
     };
   }
 
   OrderItemEntity toEntity() {
-    return OrderItemEntity(productId: productId, name: name, qty: qty, unitPrice: Money(unitPrice));
+    return OrderItemEntity(
+      productId: productId,
+      name: name,
+      qty: qty,
+      unitPrice: Money(unitPrice),
+      unit: unit == null ? null : ProductUnit.fromString(unit!),
+      lineTotal: totalPrice == null ? null : Money(totalPrice!),
+    );
   }
 
   factory OrderItemModel.fromEntity(OrderItemEntity entity) {
@@ -47,6 +66,8 @@ class OrderItemModel {
       name: entity.name,
       qty: entity.qty,
       unitPrice: entity.unitPrice.amount,
+      unit: entity.unit?.value,
+      totalPrice: entity.lineTotal?.amount,
     );
   }
 }

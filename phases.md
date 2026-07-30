@@ -363,7 +363,13 @@
 > 1. Grep `test/` for each named target below (`Money`, `PhoneNumber`, `CartController`, `CurrencyFormatter`, `ProductCard`, `CartScreen`, `PendingApprovalScreen`) to see what's already covered vs. genuinely missing, the same way 6.5 started by re-verifying the old plan against current code rather than trusting it blindly.
 > 2. Fill only the real gaps found, matching this project's existing test conventions (`mocktail` for mocks, `flutter_test_config.dart`'s tall-viewport helper for widget tests that scroll).
 > 3. The one item that's definitely new work: an integration test for the full order placement flow (browse → cart → checkout → success) — nothing like it exists yet.
-> 4. Finish with `flutter analyze` (zero issues) and `flutter test` (currently 120/120 passing — must stay green) as the phase's own closing checklist items.
+> 4. Finish with `flutter analyze` (zero issues) and `flutter test` (currently 136/136 passing — must stay green) as the phase's own closing checklist items.
+>
+> ⚠️ **Two client-requested work items have landed since Phase 6 closed, neither of them phase-checklist items** — Phase 7 is still the active phase and none of its tasks below are done:
+> 1. *2026-07-29* — 6 retailer-facing bug fixes (nav, auth, cart isolation) found via manual on-device testing.
+> 2. *2026-07-30* — **Quantity-based (slab) pricing** for per-kg products (`PRD.md` §4.5): per-product 4-band ₹/kg rate cards, gram-level quantity selection, frozen order line totals. Added `weight_rate_slabs_test.dart` (16 cases) and fixed a real `CartEntity.itemCount` bug that would have shown "1000 items" for 1 kg. Test count rose 120 → 136, which is why the number above moved.
+>
+> Point 1 of the audit above still holds — grep `test/` before assuming a gap, and note that `Money`/`CurrencyFormatter` coverage has already grown as a side effect of the slab-pricing work.
 
 ---
 

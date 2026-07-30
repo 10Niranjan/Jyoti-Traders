@@ -447,12 +447,37 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-07-30 — Quantity-based (slab) pricing for per-kg products
+
+### 📋 Tasks completed:
+
+- **Audit first — the feature did not exist in any form.** User asked to check whether quantity-based rate slabs were implemented before building. They were not, and the schema couldn't express them: `ProductEntity` had a single flat `Money price`, and every total was a hard `unitPrice × qty` (`cart_item_entity.dart`, `order_item_entity.dart`). Critically, `qty` was an `int` of *whole units* with a ±1 stepper — **grams could not be represented at all**, so a kg product was only buyable in whole kilos. The admin form had one "Price (₹)" field, no rate table.
+- **Two ambiguities resolved with the user before writing code** (both changed the data model, so neither was guessed): (a) the client's spec listed ₹40 twice, for 240 g–999 g *and* 999 g–2.4 kg — confirmed a typo; (b) whether ₹44/40/38 was one shop-wide table or per-product — user chose **per-product rates with shop-wide boundaries**, since rice/sugar/dal can't share a rate card. The replacement rate for the 1 kg–2.4 kg band was never supplied, so **₹39 was defaulted** — low-stakes because it's now only a form prefill on an admin-editable field. Still open for client confirmation.
+- **`WeightRateSlabs` value object** (`domain/value_objects/weight_rate_slabs.dart`) — four rates, three fixed gram boundaries (240 / 999 / 2400), band lookup, and price calculation. The whole weight bills at the single rate its band earns (3 kg = 3 × ₹38), explicitly **not** tax-bracket style marginal pricing. Rounds to whole paise so a multi-line cart subtotal can't accumulate floating-point dust. A partially-written rate map deserializes to `null` rather than silently pricing at ₹0/kg.
+- **Grams without a migration.** For a slab-priced line `qty` now means grams. Rather than a version field or a converting migration, the **nullable `rateSlabs` is itself the marker**: any cart line, product or order saved before this change has none, so it takes the old flat code path unchanged — no risk of reading a legacy "5 kg" as 5 grams. `isWeighed` (`unit == kg && rateSlabs != null`) gates every new path, so per-piece/box/litre products are untouched throughout.
+- **Orders now freeze their line totals.** `OrderItemEntity` gained `unit` + `lineTotal` (both nullable for pre-slab orders), and `OrderItemModel.toJson` writes `totalPrice` rather than recomputing it on read — a weighed line was billed off a ladder the admin may later edit, and a historical invoice must never re-price itself.
+- **Selection UI** (`shared/widgets/weight_selector.dart`) — quick-pick chips (100 g / 250 g / 500 g / 1 kg / 2.5 kg / 5 kg, deliberately straddling every boundary so each rate is one tap away) plus a ± stepper whose step coarsens with weight (100 g → 500 g → 1 kg), with the live rate and band shown beneath. A `RateSlabTable` renders the full rate card on Product Detail with the active band highlighted, so the retailer sees the next discount before buying. `QtyStepper` and the product card's compact stepper both gained `step`/`label` params instead of being duplicated.
+- **Admin form** — four `₹/kg` fields appear when Unit = kg (prefilled ₹44/40/39/38, each independently editable); the flat Price field is *removed* rather than disabled in that mode, so its validator can't block the save. `price` is kept populated with the small-quantity rate so anything still reading it shows a sane figure. Stock field gained an "In kilograms" helper.
+- **Bug found while wiring, fixed at the root**: `CartEntity.itemCount` summed raw `qty`, so a single kilo of sugar would have displayed as **"1000 items"** in both the bottom-nav badge and the floating cart bar. Fixed once in the shared getter (a weighed line counts as one item), covering both call sites.
+- **`formatRupees` now shows paise only when non-zero** — it was hardcoded to `decimalDigits: 0`, which would have rendered a 100 g line at ₹44/kg as "₹4" instead of ₹4.40. Whole amounts still format clean ("₹2,500"), so no call site changed.
+- **Verification**: `flutter analyze` — zero issues project-wide. `flutter test` — 136/136 passing, including a new 16-case `weight_rate_slabs_test.dart` covering every band boundary (239/240/999/1000/2400/2401), whole-weight-not-marginal billing, the "more weight costs less" discount property, paise rounding, per-piece products being unaffected, legacy kg products keeping flat pricing, and the itemCount fix. All 120 pre-existing tests pass untouched — including the product-card and add-edit-product widget tests, which is the direct evidence that per-piece logic didn't break.
+
+### 💬 Latest Discussion Summary:
+
+1. User asked to **check whether the logic existed before implementing** — the audit was the deliverable as much as the code, so the finding ("none of it exists, and the schema can't express grams") was reported explicitly rather than silently fixed.
+2. Client's stated rate card is a **business rule** and now lives in `PRD.md` §4.5 alongside the ₹2,500 minimum and the per-km delivery formula. The ₹39 band is flagged there as a default pending client confirmation.
+3. Deliberately skipped: free-text gram entry (chips + stepper already reach every band) and per-product editable *boundaries* (the user picked shared boundaries). Add either when a product needs a weight the presets can't hit.
+4. This is a client-requested feature landing between Phase 6 (complete) and Phase 7 (not started) — `phases.md`'s Phase 7 section and "Next Immediate Task" are unchanged. `PRD.md` *was* updated this time, unlike the 2026-07-29 bug-fix session, because this adds a documented business rule rather than fixing existing behaviour.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
 - [x] Set up Firebase Project / backend config.
 - [x] Implement onboarding & authentication flows (with role-based routing and manual admin approval status check).
-- [x] Enforce business rules in code (Minimum order of ₹2,500, delivery charge calculation per km).
+- [x] Enforce business rules in code (Minimum order of ₹2,500, delivery charge calculation per km, quantity-based slab pricing for per-kg products — `PRD.md` §4.5).
+- [ ] Confirm the 1 kg – 2.4 kg slab rate with the client (₹39 assumed as a default prefill).
 - [x] Implement initial theme & design system screens (Home, Category, Detail).
 
 ---

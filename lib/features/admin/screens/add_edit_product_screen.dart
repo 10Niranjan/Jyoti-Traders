@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../domain/value_objects/money.dart';
+import '../../../domain/value_objects/weight_rate_slabs.dart';
 import '../controllers/admin_category_controller.dart';
 import '../controllers/admin_product_controller.dart';
 import '../../../shared/widgets/image_picker_field.dart';
@@ -30,6 +31,14 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
   final _stockController = TextEditingController();
   final _descriptionController = TextEditingController();
 
+  /// The four per-kg rates, in band order, shown only for kg products.
+  late final List<TextEditingController> _rateControllers = [
+    TextEditingController(text: WeightRateSlabs.defaults.below240g.toStringAsFixed(0)),
+    TextEditingController(text: WeightRateSlabs.defaults.upto999g.toStringAsFixed(0)),
+    TextEditingController(text: WeightRateSlabs.defaults.upto2400g.toStringAsFixed(0)),
+    TextEditingController(text: WeightRateSlabs.defaults.above2400g.toStringAsFixed(0)),
+  ];
+
   String? _categoryId;
   ProductUnit _unit = ProductUnit.piece;
   bool _isActive = true;
@@ -46,6 +55,9 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
     _priceController.dispose();
     _stockController.dispose();
     _descriptionController.dispose();
+    for (final c in _rateControllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -58,7 +70,31 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
     _unit = product.unit;
     _isActive = product.isActive;
     _existingImageUrl = product.imageUrl;
+    final slabs = product.rateSlabs;
+    if (slabs != null) {
+      final rates = [slabs.below240g, slabs.upto999g, slabs.upto2400g, slabs.above2400g];
+      for (var i = 0; i < rates.length; i++) {
+        _rateControllers[i].text = rates[i].toStringAsFixed(
+          rates[i] == rates[i].roundToDouble() ? 0 : 2,
+        );
+      }
+    }
     _seeded = true;
+  }
+
+  /// Null unless this is a kg product with four valid rates entered.
+  WeightRateSlabs? _slabsFromForm() {
+    if (_unit != ProductUnit.kg) return null;
+    final rates = _rateControllers
+        .map((c) => double.tryParse(c.text.trim()))
+        .toList();
+    if (rates.any((r) => r == null || r <= 0)) return null;
+    return WeightRateSlabs(
+      below240g: rates[0]!,
+      upto999g: rates[1]!,
+      upto2400g: rates[2]!,
+      above2400g: rates[3]!,
+    );
   }
 
   Future<void> _pickImage() async {
@@ -88,16 +124,22 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
       return;
     }
 
+    final slabs = _slabsFromForm();
     final product = ProductEntity(
       id: widget.productId ?? const Uuid().v4(),
       name: _nameController.text.trim(),
       categoryId: _categoryId!,
       imageUrl: _existingImageUrl ?? '',
-      price: Money(double.parse(_priceController.text.trim())),
+      // A slab-priced product has no single price; keep the small-quantity
+      // rate in `price` so anything still reading it shows a sane figure.
+      price: slabs != null
+          ? Money(slabs.below240g)
+          : Money(double.parse(_priceController.text.trim())),
       unit: _unit,
       stock: int.parse(_stockController.text.trim()),
       description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
       isActive: _isActive,
+      rateSlabs: slabs,
     );
 
     final controller = ref.read(adminProductControllerProvider.notifier);
@@ -187,22 +229,27 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _priceController,
-                      enabled: !isSaving,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
-                      decoration: const InputDecoration(labelText: 'Price (₹)', prefixText: '₹ '),
-                      validator: (v) {
-                        final parsed = double.tryParse(v?.trim() ?? '');
-                        if (parsed == null) return 'Enter a valid price';
-                        if (parsed <= 0) return 'Price must be above ₹0';
-                        return null;
-                      },
+                  // A kg product is priced by the slab table below instead —
+                  // removing the field (rather than disabling it) also takes
+                  // its validator out of the form.
+                  if (_unit != ProductUnit.kg) ...[
+                    Expanded(
+                      child: TextFormField(
+                        controller: _priceController,
+                        enabled: !isSaving,
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+                        decoration: const InputDecoration(labelText: 'Price (₹)', prefixText: '₹ '),
+                        validator: (v) {
+                          final parsed = double.tryParse(v?.trim() ?? '');
+                          if (parsed == null) return 'Enter a valid price';
+                          if (parsed <= 0) return 'Price must be above ₹0';
+                          return null;
+                        },
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 12),
+                    const SizedBox(width: 12),
+                  ],
                   Expanded(
                     child: DropdownButtonFormField<ProductUnit>(
                       initialValue: _unit,
@@ -217,12 +264,55 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
               ),
               const SizedBox(height: 16),
 
+              if (_unit == ProductUnit.kg) ...[
+                Text(
+                  'Rate by quantity (₹ per kg)',
+                  style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'The whole weight is billed at the one rate its band earns.',
+                  style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.textSecondaryLight),
+                ),
+                const SizedBox(height: 10),
+                for (final (i, label) in const [
+                  'Below 240 g',
+                  '240 g – 999 g',
+                  '1 kg – 2.4 kg',
+                  'Above 2.4 kg',
+                ].indexed) ...[
+                  TextFormField(
+                    controller: _rateControllers[i],
+                    enabled: !isSaving,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+                    decoration: InputDecoration(
+                      labelText: label,
+                      prefixText: '₹ ',
+                      suffixText: '/kg',
+                      isDense: true,
+                    ),
+                    validator: (v) {
+                      final parsed = double.tryParse(v?.trim() ?? '');
+                      if (parsed == null) return 'Enter a rate for $label';
+                      if (parsed <= 0) return 'Rate must be above ₹0';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                ],
+                const SizedBox(height: 6),
+              ],
+
               TextFormField(
                 controller: _stockController,
                 enabled: !isSaving,
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                decoration: const InputDecoration(labelText: 'Stock quantity'),
+                decoration: InputDecoration(
+                  labelText: 'Stock quantity',
+                  helperText: _unit == ProductUnit.kg ? 'In kilograms' : null,
+                ),
                 validator: (v) {
                   final parsed = int.tryParse(v?.trim() ?? '');
                   if (parsed == null) return 'Enter a valid stock quantity';

@@ -86,7 +86,7 @@ These are **hard requirements** enforced in the app at all times:
 | --------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | **Dashboard Overview**      | Total orders today, pending orders, total retailers, low-stock alerts                                           |
 | **Retailer Approval Queue** | List of pending sign-ups with shop details; one-tap Approve / Reject                                            |
-| **Product Management**      | Add / Edit / Delete products with name, image, price (wholesale), unit (kg/piece/box), stock quantity, category |
+| **Product Management**      | Add / Edit / Delete products with name, image, price (wholesale), unit (kg/piece/box), stock quantity, category. Per-kg products take a 4-band rate card instead of a flat price (§4.5) |
 | **Category Management**     | Create and manage 6–10 product categories (e.g., Spices, Oils, Pulses, Snacks, Beverages, Cleaning)             |
 | **Order Management**        | View all incoming orders sorted by date. Update status: `Pending → Confirmed → Out for Delivery → Delivered`    |
 | **Delivery Assignment**     | Assign orders to delivery personnel and mark dispatch                                                           |
@@ -100,7 +100,7 @@ These are **hard requirements** enforced in the app at all times:
 | ---------------------- | ------------------------------------------------------------------------------------------------------ |
 | **Home Screen**        | Category-wise product grid with promotional banners                                                    |
 | **Product Browsing**   | Browse by category, search by name, filter by price/availability                                       |
-| **Product Detail**     | Product image, name, wholesale price, available stock, unit info                                       |
+| **Product Detail**     | Product image, name, wholesale price, available stock, unit info. Per-kg products show the quantity rate card and a weight picker (§4.5) |
 | **Cart**               | Add/remove items, see real-time cart total, minimum order warning if below ₹2,500                      |
 | **Checkout**           | Review order summary, select payment method (COD / UPI), confirm delivery address, see delivery charge |
 | **Order Confirmation** | Order ID, summary, and estimated delivery info shown post-checkout                                     |
@@ -115,6 +115,31 @@ These are **hard requirements** enforced in the app at all times:
 - Admin sets a **per-km rate** (e.g., ₹10/km) and the warehouse's coordinates via `DeliverySettingsScreen`
 - At checkout, the app calculates straight-line (Haversine) distance from the retailer's GPS-captured address to the warehouse — no Google Maps API dependency, avoiding an API key/billing requirement
 - Delivery charge is shown transparently before order confirmation; falls back to a flat placeholder if the retailer hasn't captured their GPS location yet
+
+---
+
+### 4.5 Quantity-Based (Slab) Pricing ✅ Implemented
+
+Products sold **per kg** are priced on a quantity ladder — the more weight bought in one line, the cheaper the kilo. Per-piece / per-box / per-litre products are unaffected and keep flat unit pricing.
+
+| Quantity bought | Rate      |
+| --------------- | --------- |
+| Below 240 g     | ₹44 / kg  |
+| 240 g – 999 g   | ₹40 / kg  |
+| 1 kg – 2.4 kg   | ₹39 / kg  |
+| Above 2.4 kg    | ₹38 / kg  |
+
+Rules:
+
+- The **whole weight is billed at the single rate its band earns** — 3 kg costs 3 × ₹38, *not* the first 240 g at ₹44 with the remainder cheaper. This is not tax-bracket style marginal pricing.
+- The three gram boundaries (240 g / 999 g / 2.4 kg) are **fixed shop-wide**. The four rates are set **per product** by the Admin on Add/Edit Product — rice, sugar and dal don't share a rate card. The table above is the default prefill.
+- Retailers pick weight via quick-pick chips (100 g / 250 g / 500 g / 1 kg / 2.5 kg / 5 kg) plus a ± stepper. The product page shows the full rate card with the active band highlighted, so the next discount is visible before buying.
+- Stock for a kg product is counted in **kilograms**.
+- Line totals round to whole paise. Amounts display paise only when non-zero (a 100 g line at ₹44/kg is ₹4.40, not ₹4).
+- A placed order **freezes** its line totals — editing a product's rates later never re-prices a historical invoice.
+- Products saved before this feature carry no rate card and keep flat per-kilo pricing, so no data migration was required.
+
+> **Rate values are client-set business rules.** The ₹39 rate for the 1 kg – 2.4 kg band is a default pending final client confirmation.
 
 ---
 

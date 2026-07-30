@@ -34,9 +34,12 @@ class CartLocalDatasource {
         productId: existing.productId,
         name: existing.name,
         imageUrl: existing.imageUrl,
-        unitPrice: existing.unitPrice,
-        unit: existing.unit,
+        unitPrice: item.unitPrice,
+        unit: item.unit,
         qty: existing.qty + item.qty,
+        // The incoming item's rate card wins — it was just read from the
+        // catalog, so it reflects any rate the admin has since edited.
+        rateSlabs: item.rateSlabs,
       );
     } else {
       items.add(item);
@@ -64,6 +67,7 @@ class CartLocalDatasource {
         unitPrice: existing.unitPrice,
         unit: existing.unit,
         qty: qty,
+        rateSlabs: existing.rateSlabs,
       );
     }
     await _save(items);

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/weight_formatter.dart';
 import '../../domain/entities/cart_item_entity.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../features/cart/controllers/cart_controller.dart';
@@ -26,7 +27,8 @@ class ProductCard extends ConsumerWidget {
             imageUrl: product.imageUrl,
             unitPrice: product.price,
             unit: product.unit,
-            qty: 1,
+            qty: product.isWeighed ? defaultAddGrams(product.maxQty) : 1,
+            rateSlabs: product.rateSlabs,
           ),
         );
   }
@@ -95,7 +97,11 @@ class ProductCard extends ConsumerWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          product.price.formatted,
+                          product.isWeighed
+                              ? 'from ₹${product.rateSlabs!.bestRatePerKg.toStringAsFixed(0)}/kg'
+                              : product.price.formatted,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
@@ -140,7 +146,13 @@ class ProductCard extends ConsumerWidget {
                       else
                         _CompactQtyStepper(
                           qty: qtyInCart,
-                          max: product.stock,
+                          max: product.maxQty,
+                          step: product.isWeighed
+                              ? weightStepFor(qtyInCart)
+                              : 1,
+                          label: product.isWeighed
+                              ? formatGrams(qtyInCart)
+                              : '$qtyInCart',
                           onChanged: (qty) => _updateQty(ref, qty),
                         ),
                     ],
@@ -172,11 +184,19 @@ class ProductCard extends ConsumerWidget {
 class _CompactQtyStepper extends StatelessWidget {
   final int qty;
   final int max;
+
+  /// How much one tap moves [qty] — 1 unit, or a weight step in grams.
+  final int step;
+
+  /// Pre-formatted, because grams read as `250 g` / `1 kg`, not a bare count.
+  final String label;
   final ValueChanged<int> onChanged;
 
   const _CompactQtyStepper({
     required this.qty,
     required this.max,
+    required this.step,
+    required this.label,
     required this.onChanged,
   });
 
@@ -192,12 +212,13 @@ class _CompactQtyStepper extends StatelessWidget {
         children: [
           _StepperButton(
             icon: Icons.remove_rounded,
-            onTap: () => onChanged(qty - 1),
+            onTap: () => onChanged(qty - step),
           ),
-          SizedBox(
-            width: 18,
+          Container(
+            constraints: const BoxConstraints(minWidth: 18),
+            padding: const EdgeInsets.symmetric(horizontal: 2),
             child: Text(
-              '$qty',
+              label,
               textAlign: TextAlign.center,
               style: const TextStyle(
                 color: Colors.white,
@@ -208,7 +229,7 @@ class _CompactQtyStepper extends StatelessWidget {
           ),
           _StepperButton(
             icon: Icons.add_rounded,
-            onTap: qty < max ? () => onChanged(qty + 1) : null,
+            onTap: qty < max ? () => onChanged((qty + step).clamp(0, max)) : null,
           ),
         ],
       ),

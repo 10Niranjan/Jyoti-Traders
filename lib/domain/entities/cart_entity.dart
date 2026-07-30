@@ -12,7 +12,11 @@ class CartEntity extends Equatable {
   Money get subtotal =>
       items.fold(Money.zero, (sum, item) => sum + item.totalPrice);
 
-  int get itemCount => items.fold(0, (sum, item) => sum + item.qty);
+  /// Badge count for the nav bar and floating cart bar. A weighed line counts
+  /// as one item — its `qty` is in grams, so summing it raw would report
+  /// "1,000 items" for a single kilo of sugar.
+  int get itemCount =>
+      items.fold(0, (sum, item) => sum + (item.isWeighed ? 1 : item.qty));
 
   bool get isEmpty => items.isEmpty;
 

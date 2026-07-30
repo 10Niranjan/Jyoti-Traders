@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/constants/hive_keys.dart';
 import '../../../core/network/firebase_mode.dart';
+import '../../../domain/value_objects/weight_rate_slabs.dart';
 import '../../models/category_model.dart';
 import '../../models/product_model.dart';
 
@@ -54,6 +55,16 @@ Future<void> seedDemoCatalogIfEmpty(Box catalogBox) async {
 }
 
 ProductModel _product(String id, String name, String categoryId, double price, String unit, int stock) {
+  // kg products demo the slab ladder; their rates are scaled off the flat
+  // price so each seeded item still looks like its own commodity.
+  final slabs = unit == 'kg'
+      ? WeightRateSlabs(
+          below240g: price * 1.10,
+          upto999g: price,
+          upto2400g: price * 0.975,
+          above2400g: price * 0.95,
+        )
+      : null;
   return ProductModel(
     id: id,
     name: name,
@@ -63,6 +74,7 @@ ProductModel _product(String id, String name, String categoryId, double price, S
     unit: unit,
     stock: stock,
     isActive: true,
+    rateSlabs: slabs,
   );
 }
 

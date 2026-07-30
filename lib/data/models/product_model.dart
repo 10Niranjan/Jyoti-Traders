@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../domain/value_objects/money.dart';
+import '../../domain/value_objects/weight_rate_slabs.dart';
 
 class ProductModel {
   final String id;
@@ -12,6 +13,7 @@ class ProductModel {
   final int stock;
   final String? description;
   final bool isActive;
+  final WeightRateSlabs? rateSlabs;
 
   ProductModel({
     required this.id,
@@ -23,7 +25,15 @@ class ProductModel {
     required this.stock,
     this.description,
     required this.isActive,
+    this.rateSlabs,
   });
+
+  /// Absent on every product saved before slab pricing shipped — those keep
+  /// their flat price-per-unit behaviour with no migration needed.
+  static WeightRateSlabs? _slabsFrom(Map<String, dynamic> json) {
+    final raw = json['rateSlabs'];
+    return raw is Map ? WeightRateSlabs.fromJson(Map<String, dynamic>.from(raw)) : null;
+  }
 
   factory ProductModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final json = doc.data() ?? {};
@@ -37,6 +47,7 @@ class ProductModel {
       stock: json['stock'] as int? ?? 0,
       description: json['description'] as String?,
       isActive: json['isActive'] as bool? ?? true,
+      rateSlabs: _slabsFrom(json),
     );
   }
 
@@ -51,6 +62,7 @@ class ProductModel {
       stock: json['stock'] as int? ?? 0,
       description: json['description'] as String?,
       isActive: json['isActive'] as bool? ?? true,
+      rateSlabs: _slabsFrom(json),
     );
   }
 
@@ -64,6 +76,7 @@ class ProductModel {
       'stock': stock,
       'description': description,
       'isActive': isActive,
+      'rateSlabs': rateSlabs?.toJson(),
       // Plain DateTime, not Timestamp.now() — this map is also written to
       // Hive in simulation mode, which cannot serialize Timestamp directly.
       // Firestore auto-converts DateTime -> Timestamp on write.
@@ -84,6 +97,7 @@ class ProductModel {
       stock: stock,
       description: description,
       isActive: isActive,
+      rateSlabs: rateSlabs,
     );
   }
 
@@ -98,6 +112,7 @@ class ProductModel {
       stock: entity.stock,
       description: entity.description,
       isActive: entity.isActive,
+      rateSlabs: entity.rateSlabs,
     );
   }
 }

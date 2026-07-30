@@ -2,11 +2,20 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 
 /// +/- quantity control used on Product Detail and Cart.
+///
+/// Counts whole units by default; pass [step]/[label] to drive it in grams
+/// for a weight-priced line.
 class QtyStepper extends StatelessWidget {
   final int qty;
   final ValueChanged<int> onChanged;
   final int min;
   final int max;
+
+  /// How much one tap moves [qty].
+  final int step;
+
+  /// Overrides the bare number, e.g. `2.5 kg`.
+  final String? label;
 
   const QtyStepper({
     super.key,
@@ -14,6 +23,8 @@ class QtyStepper extends StatelessWidget {
     required this.onChanged,
     this.min = 0,
     this.max = 999,
+    this.step = 1,
+    this.label,
   });
 
   @override
@@ -28,19 +39,20 @@ class QtyStepper extends StatelessWidget {
         children: [
           _StepperButton(
             icon: Icons.remove_rounded,
-            onTap: qty > min ? () => onChanged(qty - 1) : null,
+            onTap: qty > min ? () => onChanged(qty - step) : null,
           ),
-          SizedBox(
-            width: 32,
+          Container(
+            constraints: const BoxConstraints(minWidth: 32),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Text(
-              '$qty',
+              label ?? '$qty',
               textAlign: TextAlign.center,
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
             ),
           ),
           _StepperButton(
             icon: Icons.add_rounded,
-            onTap: qty < max ? () => onChanged(qty + 1) : null,
+            onTap: qty < max ? () => onChanged((qty + step).clamp(min, max)) : null,
           ),
         ],
       ),

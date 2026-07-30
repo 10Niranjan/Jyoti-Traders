@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/date_formatter.dart';
 import '../../core/utils/extensions.dart';
+import '../../core/utils/weight_formatter.dart';
 import '../../domain/entities/order_entity.dart';
 import 'order_status_badge.dart';
 
@@ -68,7 +69,14 @@ class OrderDetailBody extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(child: Text('${item.name} × ${item.qty}', style: GoogleFonts.inter(fontSize: 13))),
+                Expanded(
+                  child: Text(
+                    item.isWeighed
+                        ? '${item.name} · ${formatGrams(item.qty)} @ ₹${item.unitPrice.amount.toStringAsFixed(0)}/kg'
+                        : '${item.name} × ${item.qty}',
+                    style: GoogleFonts.inter(fontSize: 13),
+                  ),
+                ),
                 Text(item.totalPrice.formatted, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
               ],
             ),

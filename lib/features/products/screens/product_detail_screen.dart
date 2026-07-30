@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/weight_formatter.dart';
 import '../../../domain/entities/cart_item_entity.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/qty_stepper.dart';
+import '../../../shared/widgets/weight_selector.dart';
 import '../../cart/controllers/cart_controller.dart';
 import '../controllers/product_controller.dart';
 
@@ -22,7 +24,10 @@ class ProductDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
-  int _qty = 1;
+  /// Grams for a weighed product, whole units otherwise. Seeded from the
+  /// product itself the first time it loads, since 1 is a sane starting
+  /// count but a nonsense starting weight.
+  int? _qty;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +79,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                 }
                 return _ProductDetailBody(
                   product: product,
-                  qty: _qty,
+                  qty: _qty ?? product.minQty,
                   onQtyChanged: (qty) => setState(() => _qty = qty),
                 );
               },
@@ -132,7 +137,9 @@ class _ProductDetailBody extends ConsumerWidget {
                       ),
                       const SizedBox(height: 12),
                       Text(
-                        product.price.formatted,
+                        product.isWeighed
+                            ? 'from ₹${product.rateSlabs!.bestRatePerKg.toStringAsFixed(0)}/kg'
+                            : product.price.formatted,
                         style: GoogleFonts.poppins(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
@@ -142,7 +149,7 @@ class _ProductDetailBody extends ConsumerWidget {
                       const SizedBox(height: 8),
                       Text(
                         product.isInStock
-                            ? '${product.stock} in stock'
+                            ? '${product.stock} ${product.unit.value} in stock'
                             : 'Out of stock',
                         style: GoogleFonts.inter(
                           fontSize: 13,
@@ -152,6 +159,20 @@ class _ProductDetailBody extends ConsumerWidget {
                               : AppColors.error,
                         ),
                       ),
+                      if (product.isWeighed) ...[
+                        const SizedBox(height: 20),
+                        RateSlabTable(
+                          slabs: product.rateSlabs!,
+                          activeGrams: qty,
+                        ),
+                        const SizedBox(height: 20),
+                        WeightSelector(
+                          grams: qty,
+                          onChanged: onQtyChanged,
+                          slabs: product.rateSlabs!,
+                          maxGrams: product.maxQty,
+                        ),
+                      ],
                       if (product.description != null &&
                           product.description!.isNotEmpty) ...[
                         const SizedBox(height: 20),
@@ -180,17 +201,25 @@ class _ProductDetailBody extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
             child: Row(
               children: [
-                if (product.isInStock)
+                // Weighed products get their picker inline in the body next
+                // to the rate card, where the band highlight makes sense —
+                // so the bottom bar is just the add button.
+                if (product.isInStock && !product.isWeighed) ...[
                   QtyStepper(
                     qty: qty,
                     onChanged: onQtyChanged,
                     min: 1,
                     max: product.stock,
                   ),
-                const SizedBox(width: 14),
+                  const SizedBox(width: 14),
+                ],
                 Expanded(
                   child: PrimaryButton(
-                    label: product.isInStock ? 'Add to Cart' : 'Out of Stock',
+                    label: product.isInStock
+                        ? (product.isWeighed
+                              ? 'Add ${formatGrams(qty)} · ${product.priceForQty(qty).formatted}'
+                              : 'Add to Cart')
+                        : 'Out of Stock',
                     icon: Icons.shopping_cart_outlined,
                     onPressed: product.isInStock
                         ? () {
@@ -204,6 +233,7 @@ class _ProductDetailBody extends ConsumerWidget {
                                     unitPrice: product.price,
                                     unit: product.unit,
                                     qty: qty,
+                                    rateSlabs: product.rateSlabs,
                                   ),
                                 );
                             ScaffoldMessenger.of(context).showSnackBar(

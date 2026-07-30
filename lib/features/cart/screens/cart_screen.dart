@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/route_names.dart';
+import '../../../core/utils/weight_formatter.dart';
 import '../../../domain/entities/cart_item_entity.dart';
 import '../../../domain/value_objects/money.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
@@ -85,6 +86,10 @@ class CartScreen extends ConsumerWidget {
   }
 }
 
+/// 500 kg — a sanity ceiling for one cart line. The cart line doesn't carry
+/// the product's live stock, so real stock is enforced on the product page.
+const int _kMaxLineGrams = 500000;
+
 class _CartItemTile extends ConsumerWidget {
   final CartItemEntity item;
 
@@ -119,6 +124,11 @@ class _CartItemTile extends ConsumerWidget {
                 Text(item.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13)),
                 const SizedBox(height: 4),
                 Text(item.totalPrice.formatted, style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 14)),
+                if (item.isWeighed)
+                  Text(
+                    '${formatGrams(item.qty)} @ ₹${item.ratePerKg!.toStringAsFixed(0)}/kg',
+                    style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight),
+                  ),
               ],
             ),
           ),
@@ -134,6 +144,11 @@ class _CartItemTile extends ConsumerWidget {
               const SizedBox(height: 8),
               QtyStepper(
                 qty: item.qty,
+                // The default 999 ceiling counts units; in grams it would cap
+                // a line at under a kilo. Weighed lines get a weight ceiling.
+                max: item.isWeighed ? _kMaxLineGrams : 999,
+                step: item.isWeighed ? weightStepFor(item.qty) : 1,
+                label: item.isWeighed ? formatGrams(item.qty) : '${item.qty}',
                 onChanged: (qty) => ref.read(cartControllerProvider.notifier).updateQty(item.productId, qty),
               ),
             ],
