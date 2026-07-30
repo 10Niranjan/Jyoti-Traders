@@ -145,18 +145,25 @@ Rules:
 
 ## 5. 🗂️ Product Categories (Initial)
 
-The following 8 categories are planned for launch:
+The following 15 stock groups are the client's actual inventory taxonomy (replaces the earlier 8-category placeholder list, 2026-07-30):
 
-1. 🌾 Atta, Rice & Grains
-2. 🫙 Oils & Ghee
-3. 🌶️ Spices & Masalas
-4. 🫘 Pulses & Lentils
-5. 🍬 Snacks & Biscuits
-6. 🧴 Soaps & Cleaning Products
-7. 🥤 Beverages & Drinks
-8. 🛒 Daily Staples (Sugar, Salt, Tea)
+1. 🌿 Ayurvedic Medicine
+2. 🛒 Other Grocery
+3. 💡 Electricals
+4. 🧴 Cosmetics & Soaps
+5. 🚿 Shampoos
+6. 🍵 Tea
+7. 🍚 Rice
+8. 🫙 Oil & Oil Seeds
+9. 🫘 Lentils & Whole Pulses
+10. 🍃 Paan Patti Sahitya
+11. 🎆 Firecrackers
+12. 🌾 Cereal Grains & Foodstuff
+13. 🔧 Suut & Hardware
+14. Suhana
+15. Suavda
 
-> Categories can be managed and updated by the Admin at any time via the Admin Panel.
+> Categories can be managed and updated by the Admin at any time via the Admin Panel. Categories 14–15 are the client's own terms, carried through as given — meaning unconfirmed (possibly a stocked brand line for #14, given "Suhana" is a known masala/spice-mix brand).
 
 ---
 

@@ -16,6 +16,10 @@ class CategoryCard extends StatelessWidget {
   /// Material icon from the category name so the grid isn't blank boxes.
   static IconData _iconFor(String name) {
     final lower = name.toLowerCase();
+    if (lower.contains('ayurved') || lower.contains('medicine')) return Icons.local_pharmacy_outlined;
+    if (lower.contains('electrical')) return Icons.electrical_services_outlined;
+    if (lower.contains('shampoo')) return Icons.shower_outlined;
+    if (lower.contains('tea')) return Icons.emoji_food_beverage_outlined;
     if (lower.contains('atta') || lower.contains('rice') || lower.contains('grain')) {
       return Icons.agriculture_outlined;
     }
@@ -23,9 +27,14 @@ class CategoryCard extends StatelessWidget {
     if (lower.contains('spice') || lower.contains('masala')) return Icons.outdoor_grill_outlined;
     if (lower.contains('pulse') || lower.contains('lentil')) return Icons.grain_outlined;
     if (lower.contains('snack') || lower.contains('biscuit')) return Icons.cookie_outlined;
-    if (lower.contains('soap') || lower.contains('clean')) return Icons.soap_outlined;
+    if (lower.contains('soap') || lower.contains('cosmetic') || lower.contains('clean')) {
+      return Icons.soap_outlined;
+    }
     if (lower.contains('beverage') || lower.contains('drink')) return Icons.local_cafe_outlined;
-    if (lower.contains('staple') || lower.contains('sugar') || lower.contains('tea')) {
+    if (lower.contains('paan')) return Icons.eco_outlined;
+    if (lower.contains('firecracker')) return Icons.celebration_outlined;
+    if (lower.contains('hardware')) return Icons.hardware_outlined;
+    if (lower.contains('grocery') || lower.contains('staple') || lower.contains('sugar')) {
       return Icons.shopping_basket_outlined;
     }
     return Icons.category_outlined;

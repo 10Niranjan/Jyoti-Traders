@@ -28,6 +28,7 @@ class HiveKeys {
   static const String simulatedCategories = 'simulated_categories';
   static const String simulatedProducts = 'simulated_products';
   static const String cachedProductCatalog = 'cached_product_catalog';
+  static const String catalogSeedVersion = 'catalog_seed_version';
 
   // orders_cache
   static const String simulatedOrders = 'simulated_orders';
