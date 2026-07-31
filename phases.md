@@ -18,7 +18,7 @@
 | Phase 4 | Admin Panel — Full Implementation | ✅ Complete | 21/21 |
 | Phase 5 | Delivery, Payments & Notifications | ✅ Complete | 10/10 |
 | Phase 6 | Polish, Animations & UX Refinement | ✅ Complete | 11/11 |
-| Phase 7 | Testing & Quality Assurance | ⬜ Not Started | 0/12 |
+| Phase 7 | Testing & Quality Assurance | ✅ Complete | 12/12 |
 | Phase 8 | Launch Preparation & Play Store | ⬜ Not Started | 0/8 |
 
 ---
@@ -313,22 +313,25 @@
 
 ---
 
-## ⬜ Phase 7 — Testing & Quality Assurance
-> **Status**: NOT STARTED ⬜  
+## ✅ Phase 7 — Testing & Quality Assurance
+> **Status**: COMPLETE ✅ (2026-07-31)  
 > **Goal**: Ensure the app is rock-solid before any user gets access.
 
-- [ ] Unit test: `PlaceOrderUseCase` — must assert `MinimumOrderException` when total < ₹2,500
-- [ ] Unit test: `ApproveUserUseCase` — verify Firestore status update called correctly
-- [ ] Unit test: `Money` value object — validate ₹ formatting and comparison
-- [ ] Unit test: `PhoneNumber` value object — validate 10-digit Indian number rule
-- [ ] Unit test: `CartController` — add, remove, update quantity, clear cart
-- [ ] Unit test: `CurrencyFormatter` — edge cases (zero, large numbers)
-- [ ] Widget test: `ProductCard` — renders correctly with all states
-- [ ] Widget test: `CartScreen` — shows warning when total < ₹2,500, disables checkout CTA
-- [ ] Widget test: `PendingApprovalScreen` — support phone and email rendered and tappable
-- [ ] Integration test: Full order placement flow — browse → cart → checkout → success
-- [ ] Run `flutter analyze` — zero issues
-- [ ] Run `flutter test` — zero failures, all assertions passing
+- [x] Unit test: `PlaceOrderUseCase` — must assert `MinimumOrderException` when total < ₹2,500 — already existed (`test/unit/usecases/place_order_usecase_test.dart`, from Phase 3's own bug-fix habit)
+- [x] Unit test: `ApproveUserUseCase` — verify Firestore status update called correctly — already existed (`test/unit/usecases/approve_user_usecase_test.dart`)
+- [x] Unit test: `Money` value object — validate ₹ formatting and comparison — already existed (`test/unit/value_objects/money_test.dart`)
+- [x] Unit test: `PhoneNumber` value object — validate 10-digit Indian number rule — already existed (`test/unit/value_objects/phone_number_test.dart`)
+- [x] Unit test: `CartController` — add, remove, update quantity, clear cart, stream-driven state (`test/unit/controllers/cart_controller_test.dart`)
+- [x] Unit test: `CurrencyFormatter` — zero, Indian digit grouping on large numbers, paise rounding for slab-priced part-kilos (`test/unit/utils/currency_formatter_test.dart`)
+- [x] Widget test: `ProductCard` — renders correctly with all states — already existed (`test/widget/product_card_test.dart`)
+- [x] Widget test: `CartScreen` — empty state, ₹2,500-minimum warning/checkout-gating, delete, qty stepper (`test/widget/cart_screen_test.dart`)
+- [x] Widget test: `PendingApprovalScreen` — support phone/email rendered and tappable, sign-out action (`test/widget/pending_approval_screen_test.dart`)
+- [x] Integration test: Full order placement flow — browse → cart → checkout → success, plus the below-minimum rejection path — driven through the real repositories/controllers against the Hive simulation backend, not mocks (`test/integration/order_placement_flow_test.dart`)
+- [x] Run `flutter analyze` — zero issues
+- [x] Run `flutter test` — zero failures, 163/163 passing
+
+> **Scope note**: An audit against the actual `test/` tree (not just this checklist) found 6 of the 12 items already covered as a side effect of earlier phases' "found a bug, added a regression test" habit — only `CartController`, `CurrencyFormatter`, `CartScreen`, `PendingApprovalScreen`, and the integration test were genuinely missing. All five added this session, matching this codebase's existing conventions (`mocktail` for repository mocks, `FakeCartRepository`/`test_viewport.dart` helpers reused rather than re-created, the Hive-temp-dir pattern from `simulation_backend_test.dart` for the integration test).
+> **Phase 7 complete.** All 12 tasks done.
 
 ---
 
@@ -355,21 +358,11 @@
 
 > **When you ask "what's next?" or "what should we do now?" — the answer is always the first unchecked `[ ]` task inside the current active phase.**
 
-### Current Active Phase: **Phase 7 — Testing & Quality Assurance**
+### Current Active Phase: **Phase 8 — Launch Preparation & Play Store**
 ### Next Immediate Task:
-> ✅ **Phase 6 (Polish, Animations & UX Refinement) is fully complete — 11/11**, all committed and pushed. Every sub-phase (6.1–6.5) has now been visually verified on a real physical Android device, not just widget tests.
+> ✅ **Phase 7 (Testing & Quality Assurance) is fully complete — 12/12** (2026-07-31). `flutter analyze` zero issues, `flutter test` 163/163 passing.
 >
-> Next: **Phase 7 — Testing & Quality Assurance.** Start with a fresh audit before assuming the checklist below is a blank slate — this codebase has already accumulated real test coverage as a side effect of nearly every phase's "found a bug, added a regression test" habit (e.g. `test/unit/usecases/place_order_usecase_test.dart` and `approve_user_usecase_test.dart` already exist). Concretely:
-> 1. Grep `test/` for each named target below (`Money`, `PhoneNumber`, `CartController`, `CurrencyFormatter`, `ProductCard`, `CartScreen`, `PendingApprovalScreen`) to see what's already covered vs. genuinely missing, the same way 6.5 started by re-verifying the old plan against current code rather than trusting it blindly.
-> 2. Fill only the real gaps found, matching this project's existing test conventions (`mocktail` for mocks, `flutter_test_config.dart`'s tall-viewport helper for widget tests that scroll).
-> 3. The one item that's definitely new work: an integration test for the full order placement flow (browse → cart → checkout → success) — nothing like it exists yet.
-> 4. Finish with `flutter analyze` (zero issues) and `flutter test` (currently 136/136 passing — must stay green) as the phase's own closing checklist items.
->
-> ⚠️ **Two client-requested work items have landed since Phase 6 closed, neither of them phase-checklist items** — Phase 7 is still the active phase and none of its tasks below are done:
-> 1. *2026-07-29* — 6 retailer-facing bug fixes (nav, auth, cart isolation) found via manual on-device testing.
-> 2. *2026-07-30* — **Quantity-based (slab) pricing** for per-kg products (`PRD.md` §4.5): per-product 4-band ₹/kg rate cards, gram-level quantity selection, frozen order line totals. Added `weight_rate_slabs_test.dart` (16 cases) and fixed a real `CartEntity.itemCount` bug that would have shown "1000 items" for 1 kg. Test count rose 120 → 136, which is why the number above moved.
->
-> Point 1 of the audit above still holds — grep `test/` before assuming a gap, and note that `Money`/`CurrencyFormatter` coverage has already grown as a side effect of the slab-pricing work.
+> Next: **Phase 8 — Launch Preparation & Play Store.** First unchecked task: configure `firebase_crashlytics` to auto-capture uncaught exceptions in release builds.
 
 ---
 

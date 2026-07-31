@@ -12,7 +12,8 @@ See [`PRD.md`](PRD.md) for the product spec, [`ARCHITECTURE.md`](ARCHITECTURE.md
 - **Phase 4 — Admin Panel**: ✅ Complete
 - **Phase 5 — Delivery, Payments & Notifications**: ✅ Complete
 - **Phase 6 — Polish, Animations & UX Refinement**: ✅ Complete
-- **Phase 7 onward**: see [`phases.md`](phases.md)
+- **Phase 7 — Testing & Quality Assurance**: ✅ Complete
+- **Phase 8 onward**: see [`phases.md`](phases.md)
 
 ## Getting Started
 
