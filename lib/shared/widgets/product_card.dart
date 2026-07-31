@@ -1,11 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/weight_formatter.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../features/cart/controllers/cart_controller.dart';
+import 'add_to_cart_pill.dart';
 import 'quantity_sheet.dart';
 
 /// Cart-aware on its own — reads/writes `cartControllerProvider` directly
@@ -94,41 +96,12 @@ class ProductCard extends ConsumerWidget {
                         ),
                       ),
                       if (!product.isInStock)
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color:
-                                (isDark
-                                        ? AppColors.textSecondaryDark
-                                        : AppColors.textSecondaryLight)
-                                    .withOpacity(0.3),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Icon(
-                            Icons.add_rounded,
-                            size: 16,
-                            color: Colors.white,
-                          ),
-                        )
+                        OutOfStockPill(isDark: isDark)
                       else if (qtyInCart == 0)
-                        InkWell(
-                          onTap: () => showQuantitySheet(context, product),
-                          borderRadius: BorderRadius.circular(8),
-                          child: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: AppColors.primary,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Icon(
-                              Icons.add_rounded,
-                              size: 16,
-                              color: Colors.white,
-                            ),
-                          ),
-                        )
+                        AddToCartPill(onTap: () => showQuantitySheet(context, product))
                       else
                         _CompactQtyStepper(
+                          key: ValueKey(qtyInCart),
                           qty: qtyInCart,
                           max: product.maxQty,
                           step: product.isWeighed
@@ -165,6 +138,11 @@ class ProductCard extends ConsumerWidget {
 /// alongside price text. `QtyStepper` (shared/widgets/qty_stepper.dart) is
 /// too wide for this — it's built for the full-width row on Product Detail
 /// / Cart, a genuinely different size tier, not a duplicate of this one.
+///
+/// `key: ValueKey(qty)` at the call site replays the entrance scale-bounce
+/// on every quantity change (add/±), the same "restart via changing key"
+/// pattern `BottomNavBar`'s cart badge already uses — a tap should feel like
+/// it landed, not just silently update a number.
 class _CompactQtyStepper extends StatelessWidget {
   final int qty;
   final int max;
@@ -177,6 +155,7 @@ class _CompactQtyStepper extends StatelessWidget {
   final ValueChanged<int> onChanged;
 
   const _CompactQtyStepper({
+    super.key,
     required this.qty,
     required this.max,
     required this.step,
@@ -217,7 +196,15 @@ class _CompactQtyStepper extends StatelessWidget {
           ),
         ],
       ),
-    );
+    )
+        .animate()
+        .scale(
+          begin: const Offset(0.85, 0.85),
+          end: const Offset(1, 1),
+          duration: 160.ms,
+          curve: Curves.easeOutBack,
+        )
+        .fadeIn(duration: 120.ms);
   }
 }
 

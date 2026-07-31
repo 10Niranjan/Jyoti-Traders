@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
@@ -199,12 +200,19 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
                         label: Text(_label(preset)),
                         labelStyle: GoogleFonts.inter(
                           fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: preset == _qty ? Colors.white : null,
+                          fontWeight: FontWeight.w700,
+                          color: preset == _qty ? Colors.white : AppColors.primary,
                         ),
                         selected: preset == _qty,
                         selectedColor: AppColors.primary,
+                        backgroundColor: Colors.transparent,
                         showCheckmark: false,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: BorderSide(
+                            color: preset == _qty ? AppColors.primary : AppColors.primary.withOpacity(0.4),
+                          ),
+                        ),
                         onSelected: (_) => _pick(preset),
                       ),
                   ],
@@ -231,7 +239,18 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
                       ),
-                    ),
+                    )
+                        // A quantity change re-prices the line — a quick pop
+                        // is the same "it moved" feedback the preset chips'
+                        // own selected-color transition already gives, so the
+                        // total doesn't just silently jump to a new number.
+                        .animate(key: ValueKey(_qty))
+                        .scale(
+                          begin: const Offset(1.15, 1.15),
+                          end: const Offset(1, 1),
+                          duration: 150.ms,
+                          curve: Curves.easeOut,
+                        ),
                   ],
                 ),
                 const SizedBox(height: 14),

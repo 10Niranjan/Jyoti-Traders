@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../domain/entities/cart_entity.dart';
@@ -32,7 +33,12 @@ class FloatingCartBar extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
-                  color: AppColors.textPrimaryLight,
+                  // Deliberately a fixed dark pill in both themes (this app's
+                  // white/light text on it is hardcoded, not theme-aware) —
+                  // `surfaceDark`, not `textPrimaryLight`, which is the exact
+                  // same hex as `backgroundDark` and so was invisible against
+                  // a dark-mode screen.
+                  color: AppColors.surfaceDark,
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(color: Colors.black.withOpacity(0.25), blurRadius: 16, offset: const Offset(0, 6)),
@@ -42,6 +48,7 @@ class FloatingCartBar extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Column(
+                      mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
@@ -54,17 +61,34 @@ class FloatingCartBar extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'View Cart',
-                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.accentLight),
+                    // A filled pill, not link-style text — reads as a tappable
+                    // button in its own right rather than a caption next to
+                    // the price, matching how Zepto's own cart/checkout CTAs
+                    // are always a solid, self-contained button.
+                    Container(
+                      key: ValueKey(cart.itemCount),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'View Cart',
+                            style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700, color: Colors.white),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.arrow_forward_rounded, size: 15, color: Colors.white),
+                        ],
+                      ),
+                    ).animate().scale(
+                          begin: const Offset(0.9, 0.9),
+                          end: const Offset(1, 1),
+                          duration: 180.ms,
+                          curve: Curves.easeOutBack,
                         ),
-                        const SizedBox(width: 4),
-                        Icon(Icons.arrow_forward_rounded, size: 16, color: AppColors.accentLight),
-                      ],
-                    ),
                   ],
                 ),
               ),

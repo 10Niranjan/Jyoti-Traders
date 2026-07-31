@@ -34,20 +34,20 @@ Widget _wrap(FakeCartRepository repo, ProductEntity product) => ProviderScope(
     );
 
 void main() {
-  testWidgets('shows an add button when the product is not in the cart', (tester) async {
+  testWidgets('shows an ADD pill when the product is not in the cart', (tester) async {
     await tester.pumpWidget(_wrap(FakeCartRepository(), _product()));
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(Icons.add_rounded), findsOneWidget);
+    expect(find.text('ADD'), findsOneWidget);
     expect(find.byIcon(Icons.remove_rounded), findsNothing);
   });
 
-  testWidgets('tapping add opens the quantity sheet, and confirming it switches to a stepper', (tester) async {
+  testWidgets('tapping ADD opens the quantity sheet, and confirming it switches to a stepper', (tester) async {
     final repo = FakeCartRepository();
     await tester.pumpWidget(_wrap(repo, _product()));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.tap(find.text('ADD'));
     await tester.pumpAndSettle();
 
     // Nothing lands in the cart until the sheet is confirmed.
@@ -86,7 +86,7 @@ void main() {
 
     expect(repo.items, isEmpty);
     expect(find.byIcon(Icons.remove_rounded), findsNothing);
-    expect(find.byIcon(Icons.add_rounded), findsOneWidget); // back to the add button
+    expect(find.text('ADD'), findsOneWidget); // back to the add pill
   });
 
   testWidgets('out-of-stock products show a disabled control and no add happens', (tester) async {
@@ -96,7 +96,7 @@ void main() {
 
     expect(find.text('Out of stock'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.add_rounded), warnIfMissed: false);
+    await tester.tap(find.text('ADD'), warnIfMissed: false);
     await tester.pumpAndSettle();
 
     expect(repo.items, isEmpty);

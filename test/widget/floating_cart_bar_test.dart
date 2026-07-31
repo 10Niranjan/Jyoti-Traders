@@ -58,4 +58,22 @@ void main() {
 
     expect(tapped, isTrue);
   });
+
+  // Regression: the "N items / subtotal" Column had no `mainAxisSize.min`,
+  // which is invisible inside a Stack's `Positioned(left, right, bottom)`
+  // (an unbounded height constraint can't be "filled"), but the same Column
+  // inflates to swallow the whole screen the moment it's hosted anywhere
+  // that hands down a *finite* loose constraint — Scaffold.body,
+  // Scaffold.bottomNavigationBar, a ListView footer, etc. Asserting a real
+  // pixel height (not just that the text exists) is what would have caught
+  // this the first time.
+  testWidgets('hugs its content height instead of filling the available space', (tester) async {
+    final cart = CartEntity(items: [
+      CartItemEntity(productId: 'p1', name: 'Rice', imageUrl: '', unitPrice: Money(1800), unit: ProductUnit.box, qty: 1),
+    ]);
+    await tester.pumpWidget(_wrap(cart)); // Scaffold.body — a finite loose constraint
+    await tester.pumpAndSettle();
+
+    expect(tester.getSize(find.byType(FloatingCartBar)).height, lessThan(100));
+  });
 }

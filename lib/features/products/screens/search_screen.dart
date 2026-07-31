@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
 import '../../../domain/entities/product_entity.dart';
+import '../../../shared/widgets/add_to_cart_pill.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/quantity_sheet.dart';
@@ -238,24 +239,9 @@ class _SearchResultTile extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             if (!product.isInStock)
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight).withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
-              )
+              OutOfStockPill(isDark: isDark)
             else
-              InkWell(
-                onTap: onAdd,
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(8)),
-                  child: const Icon(Icons.add_rounded, size: 16, color: Colors.white),
-                ),
-              ),
+              AddToCartPill(onTap: onAdd),
           ],
         ),
       ),
