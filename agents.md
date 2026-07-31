@@ -513,6 +513,21 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-07-31 (continued) — "View Cart" was destroying the retailer's place in the app
+
+### 📋 Tasks completed:
+
+- **User report**: tapping "View Cart" (the category screen's floating bar, or the Product Detail add-confirmation snackbar) dropped the retailer straight onto the Cart *tab*, with no way back to the category grid or product page they'd been on except re-navigating from Home.
+- **Root cause**: both of those "View Cart" actions — both added earlier this same session — called `context.go(RouteNames.cart)`. `RouteNames.cart` is a `StatefulShellBranch` route inside `_RetailerShell`'s tab shell, and `go` (as opposed to `push`) replaces the current location outright rather than stacking on top of it — so it silently discarded whatever pushed route (`CategoryProductsScreen`, `ProductDetailScreen`) the retailer had actually been looking at. `grep`-ing every `RouteNames.cart` / `goBranch(_cartBranchIndex)` call site in `lib/` turned up exactly three: the shell's own persistent cart bar (`goBranch`, correct — that one *is* meant to be a normal tab switch, unaffected) and these same two `context.go` call sites this session had introduced.
+- **Fix**: added a second route to the same `CartScreen` widget — `RouteNames.viewCart` (`/view-cart`), a genuine top-level pushed `GoRoute` alongside Product Detail/Checkout, distinct from `RouteNames.cart` (the tab). `CategoryProductsScreen`'s `FloatingCartBar` and `ProductDetailScreen`'s snackbar action now `context.push` this instead of `context.go`-ing to the tab. No changes needed inside `CartScreen` itself — its `AppBar`'s `automaticallyImplyLeading` (the default) already infers the back arrow from `Navigator.canPop`, which is true when genuinely pushed and false at the tab's branch root, so the same widget correctly gets a back button in one context and none in the other with zero conditional logic.
+- **Verification**: `flutter analyze` clean, 142/142 tests passing. This is exactly the class of bug widget tests can't catch — this project has no GoRouter push/pop test harness — so verified live on an Android emulator instead: added an item from the Rice category page, tapped View Cart, confirmed a back arrow now appears, tapped it, landed back on the Rice category page with the same item still in its stepper. Repeated for the Product Detail snackbar path (added a further unit, cart correctly summed to 2, back arrow returned to the same product's detail page). Both previously-broken paths now round-trip correctly.
+
+### 💬 Latest Discussion Summary:
+
+1. No scope creep here — the shell's own bottom-tab Cart button is untouched, since normal tab-switch behavior (no back arrow, bottom nav always visible) was never what was reported broken.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

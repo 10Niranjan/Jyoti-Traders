@@ -29,6 +29,12 @@ class RouteNames {
   // Retailer push routes (Phase 3)
   static const String productCategory = '/product-category/:categoryId';
   static const String productDetail = '/product/:productId';
+
+  /// A *pushed* Cart with a back button, for "View Cart" tapped from
+  /// somewhere else (category grid, product detail) — distinct from [cart],
+  /// the bottom-nav tab, which has no back button and switches the whole
+  /// shell instead of returning to wherever the retailer was.
+  static const String viewCart = '/view-cart';
   static const String checkout = '/checkout';
   static const String upiPayment = '/upi-payment/:orderId';
   static const String orderSuccess = '/order-success/:orderId';

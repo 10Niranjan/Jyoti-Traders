@@ -45,7 +45,10 @@ class CategoryProductsScreen extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                 child: FloatingCartBar(
                   cart: cart,
-                  onTap: () => context.go(RouteNames.cart),
+                  // Pushed, not `go` — this screen is itself a pushed route,
+                  // and `go`-ing to the Cart tab would discard it, leaving no
+                  // way back to this category except re-navigating from Home.
+                  onTap: () => context.push(RouteNames.viewCart),
                 ),
               ),
             ),

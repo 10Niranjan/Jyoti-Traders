@@ -273,6 +273,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state,
         ),
       ),
+      // A *pushed* Cart, distinct from the Cart tab (`RouteNames.cart`,
+      // inside the shell below). "View Cart" from a pushed screen (category
+      // grid, product detail's add snackbar) used to `context.go` straight
+      // to the Cart tab, which discards whatever was pushed — so tapping it
+      // while browsing a category threw the retailer out of that category
+      // with no way back except re-navigating from Home. Same `CartScreen`
+      // widget either way; pushing it here instead gives GoRouter something
+      // to pop, which is what makes `AppBar`'s automatic back arrow appear.
+      GoRoute(
+        path: RouteNames.viewCart,
+        pageBuilder: (context, state) => _fadeSlidePage(const CartScreen(), state),
+      ),
       GoRoute(
         path: RouteNames.checkout,
         pageBuilder: (context, state) =>

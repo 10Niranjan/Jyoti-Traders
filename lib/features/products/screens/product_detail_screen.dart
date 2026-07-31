@@ -244,9 +244,13 @@ class _ProductDetailBody extends ConsumerWidget {
                                 // This screen sits above the shell, so its
                                 // floating cart bar isn't here to tap — the
                                 // snackbar carries the route to the cart.
+                                // Pushed, not `go`, for the same reason as
+                                // the category screen's cart bar: `go`-ing to
+                                // the Cart tab would discard this pushed
+                                // product page, leaving no way back to it.
                                 action: SnackBarAction(
                                   label: 'VIEW CART',
-                                  onPressed: () => context.go(RouteNames.cart),
+                                  onPressed: () => context.push(RouteNames.viewCart),
                                 ),
                               ),
                             );
