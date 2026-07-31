@@ -1,62 +1,13 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:traders_retailer/data/repositories/repository_providers.dart';
-import 'package:traders_retailer/domain/entities/cart_entity.dart';
 import 'package:traders_retailer/domain/entities/cart_item_entity.dart';
 import 'package:traders_retailer/domain/entities/product_entity.dart';
-import 'package:traders_retailer/domain/repositories/cart_repository.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/shared/widgets/product_card.dart';
 
-class FakeCartRepository implements CartRepository {
-  List<CartItemEntity> items;
-  final _controller = StreamController<CartEntity>.broadcast();
-
-  FakeCartRepository([this.items = const []]);
-
-  @override
-  Stream<CartEntity> watchCart() async* {
-    yield CartEntity(items: items);
-    yield* _controller.stream;
-  }
-
-  @override
-  Future<void> addItem(CartItemEntity item) async {
-    final idx = items.indexWhere((i) => i.productId == item.productId);
-    if (idx == -1) {
-      items = [...items, item];
-    } else {
-      items = [...items]..[idx] = items[idx].copyWith(qty: items[idx].qty + item.qty);
-    }
-    _controller.add(CartEntity(items: items));
-  }
-
-  @override
-  Future<void> removeItem(String productId) async {
-    items = items.where((i) => i.productId != productId).toList();
-    _controller.add(CartEntity(items: items));
-  }
-
-  @override
-  Future<void> updateQty(String productId, int qty) async {
-    if (qty <= 0) {
-      items = items.where((i) => i.productId != productId).toList();
-    } else {
-      final idx = items.indexWhere((i) => i.productId == productId);
-      if (idx != -1) items = [...items]..[idx] = items[idx].copyWith(qty: qty);
-    }
-    _controller.add(CartEntity(items: items));
-  }
-
-  @override
-  Future<void> clearCart() async {
-    items = [];
-    _controller.add(CartEntity(items: items));
-  }
-}
+import '../helpers/fake_cart_repository.dart';
 
 ProductEntity _product({int stock = 20, bool isActive = true}) => ProductEntity(
       id: 'p1',
@@ -91,7 +42,7 @@ void main() {
     expect(find.byIcon(Icons.remove_rounded), findsNothing);
   });
 
-  testWidgets('tapping add puts the product in the cart and switches to a stepper', (tester) async {
+  testWidgets('tapping add opens the quantity sheet, and confirming it switches to a stepper', (tester) async {
     final repo = FakeCartRepository();
     await tester.pumpWidget(_wrap(repo, _product()));
     await tester.pumpAndSettle();
@@ -99,9 +50,17 @@ void main() {
     await tester.tap(find.byIcon(Icons.add_rounded));
     await tester.pumpAndSettle();
 
+    // Nothing lands in the cart until the sheet is confirmed.
+    expect(repo.items, isEmpty);
+
+    await tester.tap(find.text('5 box')); // preset chip
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add 5 box to Cart'));
+    await tester.pumpAndSettle();
+
     expect(repo.items, hasLength(1));
-    expect(repo.items.single.qty, 1);
-    expect(find.text('1'), findsOneWidget);
+    expect(repo.items.single.qty, 5);
+    expect(find.text('5'), findsOneWidget);
     expect(find.byIcon(Icons.remove_rounded), findsOneWidget);
   });
 

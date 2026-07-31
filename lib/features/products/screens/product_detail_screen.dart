@@ -1,8 +1,10 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/route_names.dart';
 import '../../../core/utils/weight_formatter.dart';
 import '../../../domain/entities/cart_item_entity.dart';
 import '../../../domain/entities/product_entity.dart';
@@ -239,6 +241,13 @@ class _ProductDetailBody extends ConsumerWidget {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('${product.name} added to cart'),
+                                // This screen sits above the shell, so its
+                                // floating cart bar isn't here to tap — the
+                                // snackbar carries the route to the cart.
+                                action: SnackBarAction(
+                                  label: 'VIEW CART',
+                                  onPressed: () => context.go(RouteNames.cart),
+                                ),
                               ),
                             );
                           }

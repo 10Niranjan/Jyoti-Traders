@@ -471,6 +471,27 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-07-31 — Quantity sheet on "+", and a cart bar that reaches the category grid
+
+### 📋 Tasks completed:
+
+- **`+` no longer guesses the quantity.** Every product-card / search-result `+` used to drop a silent default straight into the cart (`defaultAddGrams(maxQty)` = 1 kg, or 1 unit) — the retailer's actual amount was never asked for. It now opens `showQuantitySheet(...)` (`shared/widgets/quantity_sheet.dart`): quick-pick chips, a **typed** quantity field, the live rate/band and line total, and a confirm button that spells out exactly what will be ordered ("Add 2.5 kg to Cart"). This closes the free-text gram entry deliberately deferred on 2026-07-30 (item 3 of that session's summary) — the trigger it named, "a product needs a weight the presets can't hit", turned out to be the very next thing the user asked for.
+- **Fixed at the one place both call sites route through**, not per screen: `ProductCard` and `search_screen.dart`'s `_SearchResultTile` each dropped their own inline `addItem(...)` body and now call the same function, so the two `+` buttons can't drift apart again. `ProductCard._add()` is gone entirely.
+- **The sheet sets a quantity, it does not sum one.** `CartLocalDatasource.addItem` *adds* to an existing line — right for a bare `+` tap, wrong for a picker seeded with what's already in the cart, where picking "2 kg" on a line already holding 2 kg would silently make 4. The sheet reads the current line, seeds its field from it, and routes an already-present product through `updateQty` instead, relabelling its button "Update to 2 kg". Covered by a test.
+- **Weight is typed in kilos, not grams** (`2.5`, not `2500`), converted at the boundary and clamped to stock. Typing is deliberately *not* clamped mid-keystroke — that fights the cursor — so the confirm button's label carries the contract instead: it always states the amount that will actually be ordered, even while the field still reads "99". Below the 100 g minimum the button disables and the field shows "Minimum 100 g".
+- **The cart bar was invisible on the one screen where `+` lives.** `CategoryProductsScreen` and `ProductDetailScreen` are top-level `GoRoute`s pushed *above* `_RetailerShell`, so the shell's `FloatingCartBar` (6.3) never reached them — adding from a category grid showed no running total and offered no way to the cart without a back-tap. Fixed by hosting the existing `FloatingCartBar` as the category screen's `bottomNavigationBar`: Scaffold reserves the space itself, so unlike the shell's `Stack` version it structurally cannot overlap the last grid row and needs no reserved-height constant. Product Detail already owns a full-width Add CTA at the bottom, so it got a `SnackBarAction('VIEW CART')` on its existing add-confirmation snackbar rather than a second stacked bar.
+- **Test infra**: `FakeCartRepository` lifted out of `product_card_test.dart` into `test/helpers/fake_cart_repository.dart` and shared, rather than copied for the new suite. Its `addItem`-sums / `updateQty`-sets asymmetry is exactly the production behaviour the sheet depends on, so both suites now assert against one copy of it.
+- **Real find while testing**: `cartControllerProvider` fills from a stream, so its very first reader sees an empty cart for one microtask — a sheet opened *as* that first reader would seed a default instead of the line's real quantity. Harmless in the app (the shell's nav bar has been watching the provider since launch), so no production code was changed for it; the test wrapper watches the provider the same way the shell does, with a comment saying why instead of an unexplained `Consumer`.
+- **Verification**: `flutter analyze` — zero issues project-wide. `flutter test` — 141/141 passing (4 new in `quantity_sheet_test.dart`, 1 rewritten in `product_card_test.dart`). Release APK rebuilt at `build/app/outputs/flutter-apk/app-release.apk` (57.4 MB).
+
+### 💬 Latest Discussion Summary:
+
+1. Deliberately skipped: a g/kg unit toggle on the typed field. The confirm button already spells the amount out in full before it's tapped — add the toggle if someone actually mistypes grams as kilos.
+2. Still ad hoc client-requested UX work sitting between Phase 6 (complete) and Phase 7 (not started) — `phases.md`, `PRD.md` and `README.md` are unchanged, consistent with the 2026-07-29 precedent that those move only on a full phase close-out or a new documented business rule. Nothing here changes a business rule.
+3. **Not yet verified on a physical device this session** — the APK was rebuilt and handed over, but the sheet and the category-screen cart bar are covered by widget tests only so far.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

@@ -4,34 +4,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/weight_formatter.dart';
-import '../../domain/entities/cart_item_entity.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../features/cart/controllers/cart_controller.dart';
+import 'quantity_sheet.dart';
 
 /// Cart-aware on its own — reads/writes `cartControllerProvider` directly
 /// rather than taking an `onAddToCart` callback, so every grid using this
-/// card gets the same "+" → inline stepper behavior for free.
+/// card gets the same "+" → quantity sheet → inline stepper behavior for free.
 class ProductCard extends ConsumerWidget {
   final ProductEntity product;
   final VoidCallback onTap;
 
   const ProductCard({super.key, required this.product, required this.onTap});
-
-  void _add(WidgetRef ref) {
-    ref
-        .read(cartControllerProvider.notifier)
-        .addItem(
-          CartItemEntity(
-            productId: product.id,
-            name: product.name,
-            imageUrl: product.imageUrl,
-            unitPrice: product.price,
-            unit: product.unit,
-            qty: product.isWeighed ? defaultAddGrams(product.maxQty) : 1,
-            rateSlabs: product.rateSlabs,
-          ),
-        );
-  }
 
   void _updateQty(WidgetRef ref, int qty) {
     ref.read(cartControllerProvider.notifier).updateQty(product.id, qty);
@@ -128,7 +112,7 @@ class ProductCard extends ConsumerWidget {
                         )
                       else if (qtyInCart == 0)
                         InkWell(
-                          onTap: () => _add(ref),
+                          onTap: () => showQuantitySheet(context, product),
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
                             padding: const EdgeInsets.all(6),

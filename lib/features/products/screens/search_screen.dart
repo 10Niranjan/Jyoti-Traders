@@ -5,13 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
-import '../../../core/utils/weight_formatter.dart';
-import '../../../domain/entities/cart_item_entity.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/error_state_widget.dart';
+import '../../../shared/widgets/quantity_sheet.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
-import '../../cart/controllers/cart_controller.dart';
 import '../controllers/search_controller.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -155,31 +153,17 @@ class _SearchResults extends StatelessWidget {
                 ),
               ],
             )
-          : Consumer(
-              builder: (context, ref, _) => ListView.separated(
-                itemCount: results.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final product = results[index];
-                  return _SearchResultTile(
-                    product: product,
-                    onTap: () => onResultTap(product),
-                    onAdd: () => ref
-                        .read(cartControllerProvider.notifier)
-                        .addItem(
-                          CartItemEntity(
-                            productId: product.id,
-                            name: product.name,
-                            imageUrl: product.imageUrl,
-                            unitPrice: product.price,
-                            unit: product.unit,
-                            qty: product.isWeighed ? defaultAddGrams(product.maxQty) : 1,
-                            rateSlabs: product.rateSlabs,
-                          ),
-                        ),
-                  );
-                },
-              ),
+          : ListView.separated(
+              itemCount: results.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final product = results[index];
+                return _SearchResultTile(
+                  product: product,
+                  onTap: () => onResultTap(product),
+                  onAdd: () => showQuantitySheet(context, product),
+                );
+              },
             ),
     );
   }

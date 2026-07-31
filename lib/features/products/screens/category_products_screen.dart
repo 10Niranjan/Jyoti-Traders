@@ -5,8 +5,10 @@ import '../../../core/constants/route_names.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/error_state_widget.dart';
+import '../../../shared/widgets/floating_cart_bar.dart';
 import '../../../shared/widgets/product_card.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
+import '../../cart/controllers/cart_controller.dart';
 import '../../home/controllers/home_controller.dart';
 import '../controllers/product_controller.dart';
 
@@ -19,6 +21,7 @@ class CategoryProductsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final productsAsync = ref.watch(productsByCategoryProvider(categoryId));
     final categoriesAsync = ref.watch(categoriesProvider);
+    final cart = ref.watch(cartControllerProvider);
 
     final categoryName = categoriesAsync.maybeWhen(
       data: (categories) {
@@ -30,6 +33,22 @@ class CategoryProductsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(categoryName ?? 'Products')),
+      // This screen is pushed *on top of* the retailer shell, so the shell's
+      // own floating cart bar isn't on screen here — and this is the one
+      // screen where "+" lives. Hosting it as `bottomNavigationBar` lets
+      // Scaffold reserve the space, so it can't overlap the last grid row.
+      bottomNavigationBar: cart.isEmpty
+          ? null
+          : SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                child: FloatingCartBar(
+                  cart: cart,
+                  onTap: () => context.go(RouteNames.cart),
+                ),
+              ),
+            ),
       body: RefreshIndicator(
         onRefresh: () async =>
             ref.invalidate(productsByCategoryProvider(categoryId)),
