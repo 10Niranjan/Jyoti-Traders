@@ -6,7 +6,6 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/notification_bell_button.dart';
-import '../../auth/controllers/auth_controller.dart';
 import '../controllers/admin_dashboard_controller.dart';
 import '../widgets/admin_stat_card.dart';
 import '../widgets/empty_approval_queue_card.dart';
@@ -34,9 +33,9 @@ class AdminDashboardScreen extends ConsumerWidget {
         actions: [
           const NotificationBellButton(),
           IconButton(
-            icon: const Icon(Icons.logout_rounded, color: AppColors.error),
-            onPressed: () =>
-                ref.read(authControllerProvider.notifier).signOut(),
+            icon: const Icon(Icons.account_circle_outlined, color: AppColors.primary),
+            tooltip: 'Profile',
+            onPressed: () => context.push(RouteNames.adminProfile),
           ),
         ],
       ),

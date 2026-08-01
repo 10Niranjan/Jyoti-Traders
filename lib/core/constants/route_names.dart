@@ -7,6 +7,7 @@ class RouteNames {
   static const String pendingApproval = '/pending-approval';
   static const String home = '/home';
   static const String admin = '/admin';
+  static const String adminProfile = '/admin/profile';
   static const String adminApprovalQueue = '/admin/approval-queue';
   static const String adminRetailerDetail = '/admin/approval-queue/:uid';
   static const String adminProducts = '/admin/products';

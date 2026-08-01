@@ -12,6 +12,7 @@ import '../../features/auth/screens/auth_screen.dart';
 import '../../features/admin/screens/add_edit_category_screen.dart';
 import '../../features/admin/screens/add_edit_product_screen.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
+import '../../features/admin/screens/admin_profile_screen.dart';
 import '../../features/admin/screens/approval_queue_screen.dart';
 import '../../features/admin/screens/retailer_detail_screen.dart';
 import '../../domain/entities/user_entity.dart';
@@ -152,6 +153,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.admin,
         builder: (context, state) => const AdminDashboardScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminProfile,
+        builder: (context, state) => const AdminProfileScreen(),
       ),
       GoRoute(
         path: RouteNames.adminApprovalQueue,
