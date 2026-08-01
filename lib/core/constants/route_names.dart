@@ -8,6 +8,7 @@ class RouteNames {
   static const String home = '/home';
   static const String admin = '/admin';
   static const String adminApprovalQueue = '/admin/approval-queue';
+  static const String adminRetailerDetail = '/admin/approval-queue/:uid';
   static const String adminProducts = '/admin/products';
   static const String adminAddProduct = '/admin/products/new';
   static const String adminEditProduct = '/admin/products/:productId/edit';
@@ -45,6 +46,7 @@ class RouteNames {
   static String adminEditCategoryPath(String categoryId) => '/admin/categories/$categoryId/edit';
   static String adminOrderManagementPath(String orderId) => '/admin/orders/$orderId';
   static String adminRetailerOrdersPath(String retailerId) => '/admin/retailers/$retailerId/orders';
+  static String adminRetailerDetailPath(String uid) => '/admin/approval-queue/$uid';
 
   static String upiPaymentPath(String orderId) => '/upi-payment/$orderId';
 
