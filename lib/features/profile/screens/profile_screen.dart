@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
@@ -9,13 +10,15 @@ import '../../../core/services/geocoding_service.dart';
 import '../../../core/services/location_service.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../core/utils/validators.dart';
-import '../../../data/models/user_model.dart';
 import '../../../domain/entities/address_entity.dart';
 import '../../../domain/entities/bank_details_entity.dart';
 import '../../../domain/entities/business_hours_entity.dart';
 import '../../../domain/entities/notification_preferences_entity.dart';
 import '../../../shared/widgets/address_form_fields.dart';
+import '../../../shared/widgets/edit_basic_info_sheet.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../../shared/widgets/profile_header_card.dart';
+import '../../../shared/widgets/section_card.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/controllers/auth_state.dart';
 import '../controllers/profile_controller.dart';
@@ -139,6 +142,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     });
   }
 
+  Future<void> _pickProfilePhoto(String uid) async {
+    try {
+      final picked = await ImagePicker().pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 800,
+        imageQuality: 85,
+      );
+      if (picked == null || !mounted) return;
+      await ref.read(profileControllerProvider.notifier).updatePhoto(uid: uid, localFilePath: picked.path);
+      if (!mounted) return;
+      final result = ref.read(profileControllerProvider);
+      if (result.hasError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Couldn\'t update photo: ${result.error}'), backgroundColor: AppColors.error),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Couldn\'t open the gallery: $e'), backgroundColor: AppColors.error),
+      );
+    }
+  }
+
   TimeOfDay _parseTime(String hhmm) {
     final parts = hhmm.split(':');
     return TimeOfDay(hour: int.parse(parts[0]), minute: int.parse(parts[1]));
@@ -237,20 +264,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
-  void _showEditBasicInfoSheet(UserModel user) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (_) => _EditBasicInfoSheet(user: user),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
     final profileState = ref.watch(profileControllerProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (authState is! AuthenticatedCustomer) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -265,12 +282,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _ProfileHeaderCard(user: user, onEdit: () => _showEditBasicInfoSheet(user)),
+            ProfileHeaderCard(
+              title: user.businessName,
+              subtitleLines: [user.name, user.phone],
+              photoUrl: user.photoUrl,
+              isUploadingPhoto: profileState.isLoading,
+              onEdit: () => showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                builder: (_) => EditBasicInfoSheet(user: user),
+              ),
+              onTapPhoto: () => _pickProfilePhoto(user.uid),
+            ),
             const SizedBox(height: 20),
-            _SectionCard(
+            SectionCard(
               title: 'Delivery Address',
               icon: Icons.location_on_outlined,
-              isDark: isDark,
               child: AddressFormFields(
                 streetController: _streetController,
                 cityController: _cityController,
@@ -280,10 +308,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 onUseCurrentLocation: _useCurrentLocation,
               ),
             ),
-            _SectionCard(
+            SectionCard(
               title: 'Business Details',
               icon: Icons.storefront_outlined,
-              isDark: isDark,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -323,10 +350,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ],
               ),
             ),
-            _SectionCard(
+            SectionCard(
               title: 'Payout Details',
               icon: Icons.account_balance_outlined,
-              isDark: isDark,
               child: Column(
                 children: [
                   TextFormField(
@@ -361,10 +387,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ],
               ),
             ),
-            _SectionCard(
+            SectionCard(
               title: 'Notifications',
               icon: Icons.notifications_outlined,
-              isDark: isDark,
               child: Column(
                 children: [
                   SwitchListTile(
@@ -397,10 +422,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               onPressed: () => _save(user.uid),
             ),
             const SizedBox(height: 24),
-            _SectionCard(
+            SectionCard(
               title: 'Support',
               icon: Icons.support_agent_outlined,
-              isDark: isDark,
               child: Column(
                 children: [
                   ListTile(
@@ -420,10 +444,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ],
               ),
             ),
-            _SectionCard(
+            SectionCard(
               title: 'Appearance',
               icon: Icons.palette_outlined,
-              isDark: isDark,
               child: SegmentedButton<ThemeMode>(
                 segments: const [
                   ButtonSegment(
@@ -463,232 +486,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// Gradient identity card up top — shop name, owner, phone at a glance, with
-/// a single edit affordance instead of every field being separately
-/// editable inline (matches how most ecommerce apps gate identity edits
-/// behind one sheet, separate from the address/payout form below).
-class _ProfileHeaderCard extends StatelessWidget {
-  final UserModel user;
-  final VoidCallback onEdit;
-
-  const _ProfileHeaderCard({required this.user, required this.onEdit});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 22, 12, 22),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.primary, AppColors.primaryDark],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: Colors.white.withOpacity(0.16),
-            child: Text(
-              user.businessName.isNotEmpty ? user.businessName[0].toUpperCase() : 'U',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 22),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  user.businessName,
-                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  user.name,
-                  style: GoogleFonts.inter(color: Colors.white.withOpacity(0.85), fontSize: 13),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  user.phone,
-                  style: GoogleFonts.inter(color: Colors.white.withOpacity(0.85), fontSize: 13),
-                ),
-              ],
-            ),
-          ),
-          IconButton(
-            onPressed: onEdit,
-            icon: const Icon(Icons.edit_outlined, color: Colors.white),
-            tooltip: 'Edit profile',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Grouped, card-style section — the visual language a settings/account
-/// screen needs so it reads as sectioned rather than one long scroll of
-/// bare fields.
-class _SectionCard extends StatelessWidget {
-  final String title;
-  final IconData icon;
-  final Widget child;
-  final bool isDark;
-
-  const _SectionCard({required this.title, required this.icon, required this.child, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    // `Card` (not a plain `Container`/`BoxDecoration`) so it provides a
-    // `Material` ancestor — a colored `Container` alone hides `ListTile`'s
-    // ink splashes/background (the Support section's tappable rows).
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      elevation: 0,
-      color: isDark ? AppColors.surfaceDark : Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: isDark ? Colors.white.withOpacity(0.06) : Colors.black.withOpacity(0.05)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: 18, color: AppColors.primary),
-                const SizedBox(width: 8),
-                Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 14)),
-              ],
-            ),
-            const SizedBox(height: 14),
-            child,
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Bottom sheet for the identity fields (name/phone/shop name) — reuses the
-/// exact validators and input formatters the sign-up form enforces, so
-/// "letters only", "10 digits", etc. stay consistent everywhere a retailer
-/// can type this data, not just at sign-up.
-class _EditBasicInfoSheet extends StatefulWidget {
-  final UserModel user;
-  const _EditBasicInfoSheet({required this.user});
-
-  @override
-  State<_EditBasicInfoSheet> createState() => _EditBasicInfoSheetState();
-}
-
-class _EditBasicInfoSheetState extends State<_EditBasicInfoSheet> {
-  final _formKey = GlobalKey<FormState>();
-  late final _nameController = TextEditingController(text: widget.user.name);
-  late final _phoneController = TextEditingController(text: widget.user.phone);
-  late final _shopController = TextEditingController(text: widget.user.businessName);
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _phoneController.dispose();
-    _shopController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save(WidgetRef ref) async {
-    if (!_formKey.currentState!.validate()) return;
-    await ref.read(profileControllerProvider.notifier).updateProfile(
-          uid: widget.user.uid,
-          name: _nameController.text.trim(),
-          phone: _phoneController.text.trim(),
-          businessName: _shopController.text.trim(),
-        );
-    if (!mounted) return;
-    final result = ref.read(profileControllerProvider);
-    if (result.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Update failed: ${result.error}'), backgroundColor: AppColors.error),
-      );
-      return;
-    }
-    Navigator.of(context).pop();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, ref, _) {
-        final isSaving = ref.watch(profileControllerProvider).isLoading;
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text('Edit Profile', style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Full Name', helperText: 'Letters and spaces only'),
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: Validators.name,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp("[a-zA-Z' -]")),
-                    LengthLimitingTextInputFormatter(50),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _phoneController,
-                  decoration: const InputDecoration(labelText: 'Phone Number', helperText: '10-digit mobile number'),
-                  keyboardType: TextInputType.phone,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: Validators.phone,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(10),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                TextFormField(
-                  controller: _shopController,
-                  decoration: const InputDecoration(labelText: 'Business / Shop Name'),
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: Validators.businessName,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9 &.-]')),
-                    LengthLimitingTextInputFormatter(100),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                PrimaryButton(
-                  label: 'Save',
-                  isLoading: isSaving,
-                  onPressed: () => _save(ref),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }

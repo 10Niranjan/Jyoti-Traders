@@ -327,6 +327,7 @@ class FirebaseAuthRepository implements AuthRepository {
     String? name,
     String? phone,
     String? businessName,
+    String? photoUrl,
     AddressEntity? address,
     String? gstNumber,
     BankDetailsEntity? bankDetails,
@@ -347,6 +348,7 @@ class FirebaseAuthRepository implements AuthRepository {
             name: name,
             phone: phone,
             businessName: businessName,
+            photoUrl: photoUrl,
             address: address,
             gstNumber: gstNumber,
             bankDetails: bankDetails,
@@ -375,6 +377,9 @@ class FirebaseAuthRepository implements AuthRepository {
     }
     if (businessName != null) {
       updateData['businessName'] = businessName;
+    }
+    if (photoUrl != null) {
+      updateData['photoUrl'] = photoUrl;
     }
     if (address != null) {
       updateData['address'] = {

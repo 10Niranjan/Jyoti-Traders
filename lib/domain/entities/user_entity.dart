@@ -47,6 +47,7 @@ class UserEntity extends Equatable {
   final AddressEntity? address;
   final String? gstNumber;
   final String? fcmToken;
+  final String? photoUrl;
   final DateTime createdAt;
   final BankDetailsEntity? bankDetails;
   final BusinessHoursEntity? businessHours;
@@ -63,6 +64,7 @@ class UserEntity extends Equatable {
     this.address,
     this.gstNumber,
     this.fcmToken,
+    this.photoUrl,
     required this.createdAt,
     this.bankDetails,
     this.businessHours,
@@ -83,6 +85,7 @@ class UserEntity extends Equatable {
         address,
         gstNumber,
         fcmToken,
+        photoUrl,
         createdAt,
         bankDetails,
         businessHours,

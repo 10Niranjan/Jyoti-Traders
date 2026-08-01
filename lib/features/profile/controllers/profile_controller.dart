@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/image_upload_service.dart';
 import '../../../data/repositories/auth_repository_provider.dart';
 import '../../../domain/entities/address_entity.dart';
 import '../../../domain/entities/bank_details_entity.dart';
@@ -36,6 +37,22 @@ class ProfileController extends StateNotifier<AsyncValue<void>> {
             businessHours: businessHours,
             notificationPreferences: notificationPreferences,
           );
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// Uploads the freshly-picked photo first so the resulting URL (or, in
+  /// simulation mode, local path) is what gets persisted — same pattern as
+  /// `AdminProductController.create`'s image handling.
+  Future<void> updatePhoto({required String uid, required String localFilePath}) async {
+    state = const AsyncValue.loading();
+    try {
+      final photoUrl = await _ref
+          .read(imageUploadServiceProvider)
+          .uploadProfilePhoto(uid: uid, localFilePath: localFilePath);
+      await _ref.read(authRepositoryProvider).updateProfile(uid: uid, photoUrl: photoUrl);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);

@@ -52,6 +52,7 @@ class FakeAuthRepository implements AuthRepository {
     String? name,
     String? phone,
     String? businessName,
+    String? photoUrl,
     AddressEntity? address,
     String? gstNumber,
     BankDetailsEntity? bankDetails,

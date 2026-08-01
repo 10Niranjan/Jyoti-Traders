@@ -87,6 +87,17 @@ class ImageUploadService {
     await ref.putFile(File(localFilePath));
     return ref.getDownloadURL();
   }
+
+  /// Same upload/simulation-fallback behavior as [uploadProductImage], for
+  /// a retailer or admin's profile photo.
+  Future<String> uploadProfilePhoto({required String uid, required String localFilePath}) async {
+    if (_useMock || _storage == null) {
+      return localFilePath;
+    }
+    final ref = _storage.ref(StoragePaths.profilePhoto(uid));
+    await ref.putFile(File(localFilePath));
+    return ref.getDownloadURL();
+  }
 }
 
 final imageUploadServiceProvider = Provider<ImageUploadService>((ref) => ImageUploadService());

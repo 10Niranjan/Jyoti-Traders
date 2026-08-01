@@ -53,6 +53,7 @@ class FakeAuthRepository implements AuthRepository {
     String? name,
     String? phone,
     String? businessName,
+    String? photoUrl,
     AddressEntity? address,
     String? gstNumber,
     BankDetailsEntity? bankDetails,
@@ -64,6 +65,7 @@ class FakeAuthRepository implements AuthRepository {
       'name': name,
       'phone': phone,
       'businessName': businessName,
+      'photoUrl': photoUrl,
       'address': address,
       'gstNumber': gstNumber,
       'bankDetails': bankDetails,
@@ -209,5 +211,20 @@ void main() {
 
     expect(find.text('Enter a valid 11-character IFSC code'), findsOneWidget);
     expect(repo.lastUpdate, isNull);
+  });
+
+  testWidgets('tapping the avatar opens the image picker without crashing', (tester) async {
+    // No real platform binding in a widget test — image_picker's test
+    // channel just returns null (no file picked) — this confirms the tap
+    // is wired up and the screen survives the round-trip either way.
+    final repo = FakeAuthRepository(_retailer);
+    await tester.pumpWidget(_wrap(repo));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.camera_alt_rounded));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(repo.lastUpdate, isNull); // no file picked -> no upload attempted
   });
 }

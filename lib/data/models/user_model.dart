@@ -18,6 +18,7 @@ class UserModel {
   final AddressEntity? address;
   final String? gstNumber;
   final String? fcmToken;
+  final String? photoUrl;
   final DateTime createdAt;
   final BankDetailsEntity? bankDetails;
   final BusinessHoursEntity? businessHours;
@@ -34,6 +35,7 @@ class UserModel {
     this.address,
     this.gstNumber,
     this.fcmToken,
+    this.photoUrl,
     required this.createdAt,
     this.bankDetails,
     this.businessHours,
@@ -56,6 +58,7 @@ class UserModel {
       address: _addressFromJson(json['address']),
       gstNumber: json['gstNumber'] as String?,
       fcmToken: json['fcmToken'] as String?,
+      photoUrl: json['photoUrl'] as String?,
       createdAt: parseFirestoreDate(json['createdAt']),
       bankDetails: _bankDetailsFromJson(json['bankDetails']),
       businessHours: _businessHoursFromJson(json['businessHours']),
@@ -141,6 +144,7 @@ class UserModel {
         },
       'gstNumber': gstNumber,
       'fcmToken': fcmToken,
+      'photoUrl': photoUrl,
       // Plain DateTime, not Timestamp.fromDate() — this map is written to
       // both real Firestore (which auto-converts DateTime -> Timestamp on
       // write) and to Hive for simulation mode, which cannot serialize
@@ -180,6 +184,7 @@ class UserModel {
       address: address,
       gstNumber: gstNumber,
       fcmToken: fcmToken,
+      photoUrl: photoUrl,
       createdAt: createdAt,
       bankDetails: bankDetails,
       businessHours: businessHours,
@@ -198,6 +203,7 @@ class UserModel {
     AddressEntity? address,
     String? gstNumber,
     String? fcmToken,
+    String? photoUrl,
     DateTime? createdAt,
     BankDetailsEntity? bankDetails,
     BusinessHoursEntity? businessHours,
@@ -214,6 +220,7 @@ class UserModel {
       address: address ?? this.address,
       gstNumber: gstNumber ?? this.gstNumber,
       fcmToken: fcmToken ?? this.fcmToken,
+      photoUrl: photoUrl ?? this.photoUrl,
       createdAt: createdAt ?? this.createdAt,
       bankDetails: bankDetails ?? this.bankDetails,
       businessHours: businessHours ?? this.businessHours,
