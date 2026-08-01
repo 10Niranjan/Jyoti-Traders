@@ -205,8 +205,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                 controller: _nameController,
                                 label: 'Full Name',
                                 icon: Icons.person_outline,
+                                helperText: 'Letters and spaces only',
                                 validator: Validators.name,
-                                inputFormatters: [FilteringTextInputFormatter.allow(RegExp("[a-zA-Z' -]"))],
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(RegExp("[a-zA-Z' -]")),
+                                  LengthLimitingTextInputFormatter(50),
+                                ],
                               ),
                               const SizedBox(height: 16),
 
@@ -216,11 +220,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                 label: 'Phone Number',
                                 icon: Icons.phone_outlined,
                                 keyboardType: TextInputType.phone,
-                                validator: (val) {
-                                  if (val == null || val.trim().isEmpty) return 'Enter phone number';
-                                  if (val.trim().length < 10) return 'Enter a valid 10-digit number';
-                                  return null;
-                                },
+                                helperText: '10-digit mobile number',
+                                validator: Validators.phone,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(10),
+                                ],
                               ),
                               const SizedBox(height: 16),
 
@@ -230,7 +235,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                   controller: _businessNameController,
                                   label: 'Business / Shop Name',
                                   icon: Icons.store_outlined,
-                                  validator: (val) => val == null || val.trim().isEmpty ? 'Enter your shop name' : null,
+                                  helperText: 'Letters, numbers, spaces, & - . allowed',
+                                  validator: Validators.businessName,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9 &.-]')),
+                                    LengthLimitingTextInputFormatter(100),
+                                  ],
                                 ),
                                 const SizedBox(height: 16),
                               ],
@@ -242,13 +252,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                               label: 'Email Address',
                               icon: Icons.mail_outline,
                               keyboardType: TextInputType.emailAddress,
-                              validator: (val) {
-                                if (val == null || val.trim().isEmpty) return 'Enter email';
-                                if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val.trim())) {
-                                  return 'Enter a valid email';
-                                }
-                                return null;
-                              },
+                              validator: Validators.email,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.deny(RegExp(r'\s')),
+                                LengthLimitingTextInputFormatter(254),
+                              ],
                             ),
                             const SizedBox(height: 16),
 
@@ -256,12 +264,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                             TextFormField(
                               controller: _passwordController,
                               obscureText: _obscurePassword,
+                              autovalidateMode: AutovalidateMode.onUserInteraction,
                               style: TextStyle(color: isDark ? Colors.white : AppColors.textPrimaryLight),
                               decoration: InputDecoration(
                                 labelText: 'Password',
                                 labelStyle: TextStyle(
                                   color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                                 ),
+                                helperText: _isLogin ? null : '8+ chars with upper, lower, number & symbol',
+                                helperMaxLines: 2,
                                 prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary),
                                 suffixIcon: IconButton(
                                   icon: Icon(
@@ -288,9 +299,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                 ),
                               ),
                               validator: (val) {
-                                if (val == null || val.isEmpty) return 'Enter password';
-                                if (val.length < 6) return 'Password must be at least 6 characters';
-                                return null;
+                                if (_isLogin) {
+                                  return (val == null || val.isEmpty) ? 'Enter password' : null;
+                                }
+                                return Validators.password(val);
                               },
                             ),
                             const SizedBox(height: 24),
@@ -477,6 +489,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     required String label,
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
+    String? helperText,
     String? Function(String?)? validator,
     List<TextInputFormatter>? inputFormatters,
   }) {
@@ -485,12 +498,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       controller: controller,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       style: TextStyle(color: isDark ? Colors.white : AppColors.textPrimaryLight),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
           color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
         ),
+        helperText: helperText,
         prefixIcon: Icon(icon, color: AppColors.primary),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16.0),
