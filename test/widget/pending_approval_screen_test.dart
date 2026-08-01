@@ -49,6 +49,9 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<UserModel?> updateProfile({
     required String uid,
+    String? name,
+    String? phone,
+    String? businessName,
     AddressEntity? address,
     String? gstNumber,
     BankDetailsEntity? bankDetails,

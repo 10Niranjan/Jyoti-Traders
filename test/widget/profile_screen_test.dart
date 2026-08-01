@@ -18,6 +18,7 @@ import '../helpers/test_viewport.dart';
 /// `upi_payment_screen_test.dart`, which introduced this pattern first.
 class FakeAuthRepository implements AuthRepository {
   final UserModel user;
+  Map<String, dynamic>? lastUpdate;
   FakeAuthRepository(this.user);
 
   @override
@@ -49,13 +50,28 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<UserModel?> updateProfile({
     required String uid,
+    String? name,
+    String? phone,
+    String? businessName,
     AddressEntity? address,
     String? gstNumber,
     BankDetailsEntity? bankDetails,
     BusinessHoursEntity? businessHours,
     NotificationPreferencesEntity? notificationPreferences,
-  }) async =>
-      user;
+  }) async {
+    lastUpdate = {
+      'uid': uid,
+      'name': name,
+      'phone': phone,
+      'businessName': businessName,
+      'address': address,
+      'gstNumber': gstNumber,
+      'bankDetails': bankDetails,
+      'businessHours': businessHours,
+      'notificationPreferences': notificationPreferences,
+    };
+    return user;
+  }
 
   @override
   Future<void> updateFcmToken({required String uid, required String fcmToken}) async {}
@@ -86,9 +102,9 @@ final _retailer = UserModel(
   createdAt: DateTime(2026, 1, 1),
 );
 
-Widget _wrap({ThemeMode initial = ThemeMode.system}) => ProviderScope(
+Widget _wrap(FakeAuthRepository repository, {ThemeMode initial = ThemeMode.system}) => ProviderScope(
       overrides: [
-        authRepositoryProvider.overrideWithValue(FakeAuthRepository(_retailer)),
+        authRepositoryProvider.overrideWithValue(repository),
         themeModeProvider.overrideWith((ref) => ThemeModeController(FakeLocalStorageService(
               initial == ThemeMode.system ? null : initial == ThemeMode.dark,
             ))),
@@ -100,7 +116,7 @@ void main() {
   useTallTestViewport();
 
   testWidgets('shows an Appearance section with System/Light/Dark segments', (tester) async {
-    await tester.pumpWidget(_wrap());
+    await tester.pumpWidget(_wrap(FakeAuthRepository(_retailer)));
     await tester.pumpAndSettle();
 
     expect(find.text('Appearance'), findsOneWidget);
@@ -110,7 +126,7 @@ void main() {
   });
 
   testWidgets('tapping Dark switches the app theme mode', (tester) async {
-    await tester.pumpWidget(_wrap());
+    await tester.pumpWidget(_wrap(FakeAuthRepository(_retailer)));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Dark'));
@@ -118,5 +134,80 @@ void main() {
 
     final segmentedButton = tester.widget<SegmentedButton<ThemeMode>>(find.byType(SegmentedButton<ThemeMode>));
     expect(segmentedButton.selected, {ThemeMode.dark});
+  });
+
+  testWidgets('header card shows shop name, owner name and phone', (tester) async {
+    await tester.pumpWidget(_wrap(FakeAuthRepository(_retailer)));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ramesh Kirana Store'), findsOneWidget);
+    expect(find.text('Ramesh'), findsOneWidget);
+    expect(find.text('9876543210'), findsOneWidget);
+  });
+
+  testWidgets('edit profile sheet rejects a digit in the name field and does not save', (tester) async {
+    final repo = FakeAuthRepository(_retailer);
+    await tester.pumpWidget(_wrap(repo));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.edit_outlined));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.widgetWithText(TextFormField, 'Full Name'), 'A');
+    await tester.pump();
+    expect(find.text('Name must be at least 2 characters'), findsOneWidget);
+
+    await tester.tap(find.text('Save'));
+    await tester.pump();
+
+    expect(repo.lastUpdate, isNull);
+    expect(find.text('Edit Profile'), findsOneWidget); // sheet stays open
+  });
+
+  testWidgets('editing name/phone/shop name in the sheet saves and closes it', (tester) async {
+    final repo = FakeAuthRepository(_retailer);
+    await tester.pumpWidget(_wrap(repo));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.edit_outlined));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.widgetWithText(TextFormField, 'Full Name'), 'Suresh Patil');
+    await tester.enterText(find.widgetWithText(TextFormField, 'Phone Number'), '9988776655');
+    await tester.enterText(find.widgetWithText(TextFormField, 'Business / Shop Name'), 'Suresh Kirana');
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Edit Profile'), findsNothing); // sheet closed
+    expect(repo.lastUpdate?['name'], 'Suresh Patil');
+    expect(repo.lastUpdate?['phone'], '9988776655');
+    expect(repo.lastUpdate?['businessName'], 'Suresh Kirana');
+  });
+
+  testWidgets('toggling Open 24x7 hides the open/close time pickers', (tester) async {
+    await tester.pumpWidget(_wrap(FakeAuthRepository(_retailer)));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Opens:'), findsOneWidget);
+    expect(find.textContaining('Closes:'), findsOneWidget);
+
+    await tester.tap(find.text('Open 24x7'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Opens:'), findsNothing);
+    expect(find.textContaining('Closes:'), findsNothing);
+  });
+
+  testWidgets('an invalid IFSC code blocks Save Changes with an inline error', (tester) async {
+    final repo = FakeAuthRepository(_retailer);
+    await tester.pumpWidget(_wrap(repo));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.widgetWithText(TextFormField, 'IFSC Code'), 'NOTVALID');
+    await tester.tap(find.text('Save Changes'));
+    await tester.pump();
+
+    expect(find.text('Enter a valid 11-character IFSC code'), findsOneWidget);
+    expect(repo.lastUpdate, isNull);
   });
 }

@@ -14,6 +14,9 @@ class ProfileController extends StateNotifier<AsyncValue<void>> {
 
   Future<void> updateProfile({
     required String uid,
+    String? name,
+    String? phone,
+    String? businessName,
     AddressEntity? address,
     String? gstNumber,
     BankDetailsEntity? bankDetails,
@@ -24,6 +27,9 @@ class ProfileController extends StateNotifier<AsyncValue<void>> {
     try {
       await _ref.read(authRepositoryProvider).updateProfile(
             uid: uid,
+            name: name,
+            phone: phone,
+            businessName: businessName,
             address: address,
             gstNumber: gstNumber,
             bankDetails: bankDetails,

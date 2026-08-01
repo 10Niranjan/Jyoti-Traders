@@ -27,11 +27,14 @@ abstract class AuthRepository {
 
   Future<UserModel?> refreshUserStatus(String uid);
 
-  /// Self-service profile update (shop address, GST number, payout/business
-  /// details, notification preferences) — distinct from admin
+  /// Self-service profile update (basic info, shop address, GST number,
+  /// payout/business details, notification preferences) — distinct from admin
   /// approval/rejection, which lives on `UserRepository` in `domain/`.
   Future<UserModel?> updateProfile({
     required String uid,
+    String? name,
+    String? phone,
+    String? businessName,
     AddressEntity? address,
     String? gstNumber,
     BankDetailsEntity? bankDetails,

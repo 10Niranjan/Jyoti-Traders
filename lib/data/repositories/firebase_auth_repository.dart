@@ -324,6 +324,9 @@ class FirebaseAuthRepository implements AuthRepository {
   @override
   Future<UserModel?> updateProfile({
     required String uid,
+    String? name,
+    String? phone,
+    String? businessName,
     AddressEntity? address,
     String? gstNumber,
     BankDetailsEntity? bankDetails,
@@ -341,6 +344,9 @@ class FirebaseAuthRepository implements AuthRepository {
         if (userMapList[i]['uid'] == uid) {
           final current = UserModel.fromJson(userMapList[i]);
           updated = current.copyWith(
+            name: name,
+            phone: phone,
+            businessName: businessName,
             address: address,
             gstNumber: gstNumber,
             bankDetails: bankDetails,
@@ -361,6 +367,15 @@ class FirebaseAuthRepository implements AuthRepository {
     }
 
     final updateData = <String, dynamic>{};
+    if (name != null) {
+      updateData['name'] = name;
+    }
+    if (phone != null) {
+      updateData['phone'] = phone;
+    }
+    if (businessName != null) {
+      updateData['businessName'] = businessName;
+    }
     if (address != null) {
       updateData['address'] = {
         'street': address.street,
