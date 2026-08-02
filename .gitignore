@@ -47,6 +47,3 @@ app.*.map.json
 
 # Hive test scratch directories (test/integration tests create these)
 temp_hive*/
-
-# Stray flutter test run output
-test_output.txt
