@@ -36,5 +36,5 @@ flutter analyze
 flutter test
 ```
 
-<!-- Maintenance check status: verified (2026-08-02) -->
+<!-- Maintenance check status: verified (2026-07-22) -->
 
