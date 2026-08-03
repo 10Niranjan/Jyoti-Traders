@@ -548,6 +548,25 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-08-03 — Unit Test Coverage Expansion for Core Utilities
+
+### 📋 Tasks completed:
+
+- **Added Unit Test Coverage for 4 core utility modules**:
+  - [date_formatter_test.dart](file:///e:/Jyoti%20Kirana/test/unit/utils/date_formatter_test.dart): Verifies both `formatOrderDate` (d MMM yyyy) and `formatOrderDateTime` (d MMM yyyy, h:mm a) formats.
+  - [weight_formatter_test.dart](file:///e:/Jyoti%20Kirana/test/unit/utils/weight_formatter_test.dart): Verifies `weightStepFor` (step dynamically based on current weight in grams), `defaultAddGrams` (bounds check for max stock below 1 kg), and `formatGrams` (gram and kilogram representations, including trailing zero cleanup).
+  - [extensions_test.dart](file:///e:/Jyoti%20Kirana/test/unit/utils/extensions_test.dart): Verifies `capitalize`, `isBlank`, `shortId` on `String`, `timeAgo` relative time formats on `DateTime`, human-readable status labels on `OrderStatus`/`PaymentStatus`, and `chunked` batching logic on `List`.
+  - [firestore_date_parser_test.dart](file:///e:/Jyoti%20Kirana/test/unit/utils/firestore_date_parser_test.dart): Verifies dual-mode parser converting Firestore `Timestamp` objects or plain Dart `DateTime` instances to valid `DateTime` objects, with robust error fallback.
+- **Verification**: Executed `flutter test` showing 223/223 tests passing with 100% success rate across widget, unit, and integration tests.
+- **Git Contribution Streak**: Pushed 4 separate clean, modular commits corresponding to each utility test file to the remote GitHub repository.
+
+### 💬 Latest Discussion Summary:
+
+1. User requested 3-4 GitHub contributions to keep their daily streak alive.
+2. Implemented 4 high-quality unit tests covering core helper methods that lacked tests, providing actual value and increasing overall code coverage instead of making empty dummy commits.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
