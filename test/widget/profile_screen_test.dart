@@ -19,6 +19,7 @@ import '../helpers/test_viewport.dart';
 class FakeAuthRepository implements AuthRepository {
   final UserModel user;
   Map<String, dynamic>? lastUpdate;
+  String? passwordResetSentTo;
   FakeAuthRepository(this.user);
 
   @override
@@ -77,6 +78,11 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> updateFcmToken({required String uid, required String fcmToken}) async {}
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    passwordResetSentTo = email;
+  }
 }
 
 class FakeLocalStorageService extends LocalStorageService {
@@ -120,6 +126,8 @@ void main() {
   testWidgets('shows an Appearance section with System/Light/Dark segments', (tester) async {
     await tester.pumpWidget(_wrap(FakeAuthRepository(_retailer)));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
 
     expect(find.text('Appearance'), findsOneWidget);
     expect(find.text('System'), findsOneWidget);
@@ -129,6 +137,8 @@ void main() {
 
   testWidgets('tapping Dark switches the app theme mode', (tester) async {
     await tester.pumpWidget(_wrap(FakeAuthRepository(_retailer)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Dark'));
@@ -211,6 +221,22 @@ void main() {
 
     expect(find.text('Enter a valid 11-character IFSC code'), findsOneWidget);
     expect(repo.lastUpdate, isNull);
+  });
+
+  testWidgets('Change Password sends a reset link to the account email', (tester) async {
+    final repo = FakeAuthRepository(_retailer);
+    await tester.pumpWidget(_wrap(repo));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Change Password'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Send Link'));
+    await tester.pumpAndSettle();
+
+    expect(repo.passwordResetSentTo, 'ramesh@test.com');
+    expect(find.text('Password reset link sent to ramesh@test.com'), findsOneWidget);
   });
 
   testWidgets('tapping the avatar opens the image picker without crashing', (tester) async {

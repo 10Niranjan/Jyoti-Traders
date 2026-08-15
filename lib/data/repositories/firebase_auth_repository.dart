@@ -450,6 +450,16 @@ class FirebaseAuthRepository implements AuthRepository {
     await _firestore!.collection('users').doc(uid).update({'fcmToken': fcmToken});
   }
 
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    if (_useMock) {
+      await Future.delayed(const Duration(milliseconds: 600));
+      return;
+    }
+
+    await _firebaseAuth!.sendPasswordResetEmail(email: email);
+  }
+
   // Simulation-only helper to toggle approval status of a user (useful for admin testing screen)
   Future<void> simulateToggleApproval(String uid, bool approve) async {
     final status = approve ? UserStatus.approved : UserStatus.pending;

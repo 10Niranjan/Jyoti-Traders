@@ -66,6 +66,9 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> updateFcmToken({required String uid, required String fcmToken}) async {}
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {}
 }
 
 class FakeOrderRepository implements OrderRepository {

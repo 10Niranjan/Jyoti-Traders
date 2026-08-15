@@ -28,8 +28,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _businessNameController = TextEditingController();
-  
-  UserRole _selectedRole = UserRole.customer;
 
   @override
   void dispose() {
@@ -57,10 +55,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text,
         phone: _phoneController.text.trim(),
-        role: _selectedRole,
-        businessName: _selectedRole == UserRole.admin 
-            ? 'Jyoti Kirana Administration' 
-            : _businessNameController.text.trim(),
+        role: UserRole.customer,
+        businessName: _businessNameController.text.trim(),
       );
     }
   }
@@ -133,7 +129,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     Text(
                       _isLogin
                           ? 'Wholesale & Retail Market Hub'
-                          : 'Create Retailer or Admin Account',
+                          : 'Create Your Retailer Account',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 14,
@@ -169,37 +165,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           children: [
                             // Sign Up Specific Fields
                             if (!_isLogin) ...[
-                              // Role Selection Selector
-                              Text(
-                                'Select Account Role',
-                                style: GoogleFonts.inter(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildRoleButton(
-                                      title: 'Retailer / Customer',
-                                      role: UserRole.customer,
-                                      isSelected: _selectedRole == UserRole.customer,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _buildRoleButton(
-                                      title: 'Admin / Owner',
-                                      role: UserRole.admin,
-                                      isSelected: _selectedRole == UserRole.admin,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-
                               // Name Field
                               _buildTextField(
                                 controller: _nameController,
@@ -229,21 +194,19 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                               ),
                               const SizedBox(height: 16),
 
-                              // Business Name (only if customer/retailer)
-                              if (_selectedRole == UserRole.customer) ...[
-                                _buildTextField(
-                                  controller: _businessNameController,
-                                  label: 'Business / Shop Name',
-                                  icon: Icons.store_outlined,
-                                  helperText: 'Letters, numbers, spaces, & - . allowed',
-                                  validator: Validators.businessName,
-                                  inputFormatters: [
-                                    FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9 &.-]')),
-                                    LengthLimitingTextInputFormatter(100),
-                                  ],
-                                ),
-                                const SizedBox(height: 16),
-                              ],
+                              // Business Name
+                              _buildTextField(
+                                controller: _businessNameController,
+                                label: 'Business / Shop Name',
+                                icon: Icons.store_outlined,
+                                helperText: 'Letters, numbers, spaces, & - . allowed',
+                                validator: Validators.businessName,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9 &.-]')),
+                                  LengthLimitingTextInputFormatter(100),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
                             ],
 
                             // Email Field
@@ -443,41 +406,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 ),
               ),
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildRoleButton({
-    required String title,
-    required UserRole role,
-    required bool isSelected,
-  }) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedRole = role),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        decoration: BoxDecoration(
-          color: isSelected 
-              ? AppColors.primary.withOpacity(0.1) 
-              : (isDark ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.02)),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : Colors.transparent,
-            width: 1.5,
-          ),
-        ),
-        child: Text(
-          title,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            color: isSelected 
-                ? AppColors.primary 
-                : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
           ),
         ),
       ),

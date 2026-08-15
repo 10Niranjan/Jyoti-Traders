@@ -43,6 +43,16 @@ class ProfileController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  Future<void> sendPasswordReset(String email) async {
+    state = const AsyncValue.loading();
+    try {
+      await _ref.read(authRepositoryProvider).sendPasswordResetEmail(email);
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
   /// Uploads the freshly-picked photo first so the resulting URL (or, in
   /// simulation mode, local path) is what gets persisted — same pattern as
   /// `AdminProductController.create`'s image handling.

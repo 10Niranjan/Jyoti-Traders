@@ -64,6 +64,9 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> updateFcmToken({required String uid, required String fcmToken}) async {}
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {}
 }
 
 class FakeLocalStorageService extends LocalStorageService {
@@ -102,14 +105,25 @@ Widget _wrap(FakeAuthRepository repository) => ProviderScope(
 void main() {
   useTallTestViewport();
 
-  testWidgets('shows the admin\'s name, email and phone, and an Appearance section', (tester) async {
+  testWidgets('shows the admin\'s name, email and phone', (tester) async {
     await tester.pumpWidget(_wrap(FakeAuthRepository(_admin)));
     await tester.pumpAndSettle();
 
     expect(find.text('Admin Owner'), findsOneWidget);
     expect(find.text('admin@jyoti.com'), findsOneWidget);
     expect(find.text('9860460325'), findsOneWidget);
+  });
+
+  testWidgets('Settings tab shows Appearance, account and support, and Log Out', (tester) async {
+    await tester.pumpWidget(_wrap(FakeAuthRepository(_admin)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+
     expect(find.text('Appearance'), findsOneWidget);
+    expect(find.text('Delivery Settings'), findsOneWidget);
+    expect(find.text('Change Password'), findsOneWidget);
+    expect(find.text('Call Support'), findsOneWidget);
     expect(find.text('Log Out'), findsOneWidget);
   });
 
@@ -146,6 +160,8 @@ void main() {
 
   testWidgets('tapping Log Out shows the confirmation dialog', (tester) async {
     await tester.pumpWidget(_wrap(FakeAuthRepository(_admin)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Log Out'));

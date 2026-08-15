@@ -30,7 +30,9 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
   final _formKey = GlobalKey<FormState>();
   final _streetController = TextEditingController();
   final _cityController = TextEditingController();
@@ -56,7 +58,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _lowStockAlerts = true;
 
   @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
   void dispose() {
+    _tabController.dispose();
     _streetController.dispose();
     _cityController.dispose();
     _pincodeController.dispose();
@@ -224,11 +233,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 )
               : null,
           businessHours: BusinessHoursEntity(openTime: _openTime, closeTime: _closeTime, is24x7: _is24x7),
-          notificationPreferences: NotificationPreferencesEntity(
-            orderUpdates: _orderUpdates,
-            promotions: _promotions,
-            lowStockAlerts: _lowStockAlerts,
-          ),
         );
     if (!mounted) return;
     final result = ref.read(profileControllerProvider);
@@ -239,6 +243,54 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       return;
     }
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated')));
+  }
+
+  Future<void> _saveNotificationPreferences(String uid) async {
+    await ref.read(profileControllerProvider.notifier).updateProfile(
+          uid: uid,
+          notificationPreferences: NotificationPreferencesEntity(
+            orderUpdates: _orderUpdates,
+            promotions: _promotions,
+            lowStockAlerts: _lowStockAlerts,
+          ),
+        );
+    if (!mounted) return;
+    final result = ref.read(profileControllerProvider);
+    if (result.hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Couldn\'t save: ${result.error}'), backgroundColor: AppColors.error),
+      );
+    }
+  }
+
+  Future<void> _confirmChangePassword(String email) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text('Change Password?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17)),
+        content: Text(
+          'We\'ll send a password reset link to $email.',
+          style: GoogleFonts.inter(fontSize: 13),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: const Text('Send Link')),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await ref.read(profileControllerProvider.notifier).sendPasswordReset(email);
+    if (!mounted) return;
+    final result = ref.read(profileControllerProvider);
+    if (result.hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Couldn\'t send reset link: ${result.error}'), backgroundColor: AppColors.error),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Password reset link sent to $email')),
+      );
+    }
   }
 
   Future<void> _confirmLogout() async {
@@ -274,218 +326,271 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
     _prefill(authState);
     final user = authState.user;
+    final unselectedColor = Theme.of(context).colorScheme.onSurface.withOpacity(0.6);
 
     return Scaffold(
-      appBar: AppBar(title: Text('Profile', style: GoogleFonts.poppins(fontWeight: FontWeight.bold))),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            ProfileHeaderCard(
-              title: user.businessName,
-              subtitleLines: [user.name, user.phone],
-              photoUrl: user.photoUrl,
-              isUploadingPhoto: profileState.isLoading,
-              onEdit: () => showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-                builder: (_) => EditBasicInfoSheet(user: user),
-              ),
-              onTapPhoto: () => _pickProfilePhoto(user.uid),
-            ),
-            const SizedBox(height: 20),
-            SectionCard(
-              title: 'Delivery Address',
-              icon: Icons.location_on_outlined,
-              child: AddressFormFields(
-                streetController: _streetController,
-                cityController: _cityController,
-                pincodeController: _pincodeController,
-                resolvedAddress: _resolvedAddress,
-                isLocating: _isLocating,
-                onUseCurrentLocation: _useCurrentLocation,
-              ),
-            ),
-            SectionCard(
-              title: 'Business Details',
-              icon: Icons.storefront_outlined,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  TextFormField(
-                    controller: _gstController,
-                    decoration: const InputDecoration(labelText: 'GST Number (optional)'),
-                    textCapitalization: TextCapitalization.characters,
-                    validator: Validators.gstNumber,
-                  ),
-                  const SizedBox(height: 16),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Open 24x7'),
-                    value: _is24x7,
-                    onChanged: (v) => setState(() => _is24x7 = v),
-                  ),
-                  if (!_is24x7) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => _pickTime(true),
-                            child: Text('Opens: ${_formatTimeOfDay(_openTime)}'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => _pickTime(false),
-                            child: Text('Closes: ${_formatTimeOfDay(_closeTime)}'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ],
-              ),
-            ),
-            SectionCard(
-              title: 'Payout Details',
-              icon: Icons.account_balance_outlined,
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: _accountHolderController,
-                    decoration: const InputDecoration(labelText: 'Account Holder Name'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _accountNumberController,
-                    decoration: const InputDecoration(labelText: 'Account Number'),
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    validator: Validators.bankAccountNumber,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _ifscController,
-                    decoration: const InputDecoration(labelText: 'IFSC Code'),
-                    textCapitalization: TextCapitalization.characters,
-                    validator: Validators.ifscCode,
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _bankNameController,
-                    decoration: const InputDecoration(labelText: 'Bank Name'),
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _upiController,
-                    decoration: const InputDecoration(labelText: 'UPI ID (optional)'),
-                  ),
-                ],
-              ),
-            ),
-            SectionCard(
-              title: 'Notifications',
-              icon: Icons.notifications_outlined,
-              child: Column(
-                children: [
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Order Updates'),
-                    subtitle: const Text('Status changes for your orders'),
-                    value: _orderUpdates,
-                    onChanged: (v) => setState(() => _orderUpdates = v),
-                  ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Promotions'),
-                    subtitle: const Text('Offers and discounts'),
-                    value: _promotions,
-                    onChanged: (v) => setState(() => _promotions = v),
-                  ),
-                  SwitchListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text('Low Stock Alerts'),
-                    subtitle: const Text('When items you buy often are running low'),
-                    value: _lowStockAlerts,
-                    onChanged: (v) => setState(() => _lowStockAlerts = v),
-                  ),
-                ],
-              ),
-            ),
-            PrimaryButton(
-              label: 'Save Changes',
-              isLoading: profileState.isLoading,
-              onPressed: () => _save(user.uid),
-            ),
-            const SizedBox(height: 24),
-            SectionCard(
-              title: 'Support',
-              icon: Icons.support_agent_outlined,
-              child: Column(
-                children: [
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.call_outlined, color: AppColors.primary),
-                    title: const Text('Call Support'),
-                    subtitle: const Text(AppConstants.kSupportPhone),
-                    onTap: () => launchUrl(Uri(scheme: 'tel', path: AppConstants.kSupportPhone)),
-                  ),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: const Icon(Icons.email_outlined, color: AppColors.primary),
-                    title: const Text('Email Support'),
-                    subtitle: const Text(AppConstants.kSupportEmail),
-                    onTap: () => launchUrl(Uri(scheme: 'mailto', path: AppConstants.kSupportEmail)),
-                  ),
-                ],
-              ),
-            ),
-            SectionCard(
-              title: 'Appearance',
-              icon: Icons.palette_outlined,
-              child: SegmentedButton<ThemeMode>(
-                segments: const [
-                  ButtonSegment(
-                    value: ThemeMode.system,
-                    label: Text('System'),
-                    icon: Icon(Icons.brightness_auto_outlined),
-                  ),
-                  ButtonSegment(
-                    value: ThemeMode.light,
-                    label: Text('Light'),
-                    icon: Icon(Icons.light_mode_outlined),
-                  ),
-                  ButtonSegment(
-                    value: ThemeMode.dark,
-                    label: Text('Dark'),
-                    icon: Icon(Icons.dark_mode_outlined),
-                  ),
-                ],
-                selected: {ref.watch(themeModeProvider)},
-                onSelectionChanged: (selection) =>
-                    ref.read(themeModeProvider.notifier).setThemeMode(selection.first),
-              ),
-            ),
-            const SizedBox(height: 8),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: _confirmLogout,
-                icon: const Icon(Icons.logout_rounded, color: AppColors.error),
-                label: const Text('Log Out', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: AppColors.error),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-              ),
-            ),
+      appBar: AppBar(
+        title: Text('Profile', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: AppColors.primary,
+          unselectedLabelColor: unselectedColor,
+          indicatorColor: AppColors.primary,
+          tabs: const [
+            Tab(icon: Icon(Icons.storefront_outlined), text: 'Profile'),
+            Tab(icon: Icon(Icons.settings_outlined), text: 'Settings'),
           ],
         ),
       ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildProfileTab(user, profileState),
+          _buildSettingsTab(user),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProfileTab(dynamic user, AsyncValue<void> profileState) {
+    return Form(
+      key: _formKey,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          ProfileHeaderCard(
+            title: user.businessName,
+            subtitleLines: [user.name, user.phone],
+            photoUrl: user.photoUrl,
+            isUploadingPhoto: profileState.isLoading,
+            onEdit: () => showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+              builder: (_) => EditBasicInfoSheet(user: user),
+            ),
+            onTapPhoto: () => _pickProfilePhoto(user.uid),
+          ),
+          const SizedBox(height: 20),
+          SectionCard(
+            title: 'Delivery Address',
+            icon: Icons.location_on_outlined,
+            child: AddressFormFields(
+              streetController: _streetController,
+              cityController: _cityController,
+              pincodeController: _pincodeController,
+              resolvedAddress: _resolvedAddress,
+              isLocating: _isLocating,
+              onUseCurrentLocation: _useCurrentLocation,
+            ),
+          ),
+          SectionCard(
+            title: 'Business Details',
+            icon: Icons.storefront_outlined,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextFormField(
+                  controller: _gstController,
+                  decoration: const InputDecoration(labelText: 'GST Number (optional)'),
+                  textCapitalization: TextCapitalization.characters,
+                  validator: Validators.gstNumber,
+                ),
+                const SizedBox(height: 16),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text('Open 24x7'),
+                  value: _is24x7,
+                  onChanged: (v) => setState(() => _is24x7 = v),
+                ),
+                if (!_is24x7) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => _pickTime(true),
+                          child: Text('Opens: ${_formatTimeOfDay(_openTime)}'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => _pickTime(false),
+                          child: Text('Closes: ${_formatTimeOfDay(_closeTime)}'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+          SectionCard(
+            title: 'Payout Details',
+            icon: Icons.account_balance_outlined,
+            child: Column(
+              children: [
+                TextFormField(
+                  controller: _accountHolderController,
+                  decoration: const InputDecoration(labelText: 'Account Holder Name'),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _accountNumberController,
+                  decoration: const InputDecoration(labelText: 'Account Number'),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  validator: Validators.bankAccountNumber,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _ifscController,
+                  decoration: const InputDecoration(labelText: 'IFSC Code'),
+                  textCapitalization: TextCapitalization.characters,
+                  validator: Validators.ifscCode,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _bankNameController,
+                  decoration: const InputDecoration(labelText: 'Bank Name'),
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _upiController,
+                  decoration: const InputDecoration(labelText: 'UPI ID (optional)'),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 4),
+          PrimaryButton(
+            label: 'Save Changes',
+            isLoading: profileState.isLoading,
+            onPressed: () => _save(user.uid),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSettingsTab(dynamic user) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        SectionCard(
+          title: 'Notifications',
+          icon: Icons.notifications_outlined,
+          child: Column(
+            children: [
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Order Updates'),
+                subtitle: const Text('Status changes for your orders'),
+                value: _orderUpdates,
+                onChanged: (v) {
+                  setState(() => _orderUpdates = v);
+                  _saveNotificationPreferences(user.uid);
+                },
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Promotions'),
+                subtitle: const Text('Offers and discounts'),
+                value: _promotions,
+                onChanged: (v) {
+                  setState(() => _promotions = v);
+                  _saveNotificationPreferences(user.uid);
+                },
+              ),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Low Stock Alerts'),
+                subtitle: const Text('When items you buy often are running low'),
+                value: _lowStockAlerts,
+                onChanged: (v) {
+                  setState(() => _lowStockAlerts = v);
+                  _saveNotificationPreferences(user.uid);
+                },
+              ),
+            ],
+          ),
+        ),
+        SectionCard(
+          title: 'Appearance',
+          icon: Icons.palette_outlined,
+          child: SegmentedButton<ThemeMode>(
+            segments: const [
+              ButtonSegment(
+                value: ThemeMode.system,
+                label: Text('System'),
+                icon: Icon(Icons.brightness_auto_outlined),
+              ),
+              ButtonSegment(
+                value: ThemeMode.light,
+                label: Text('Light'),
+                icon: Icon(Icons.light_mode_outlined),
+              ),
+              ButtonSegment(
+                value: ThemeMode.dark,
+                label: Text('Dark'),
+                icon: Icon(Icons.dark_mode_outlined),
+              ),
+            ],
+            selected: {ref.watch(themeModeProvider)},
+            onSelectionChanged: (selection) =>
+                ref.read(themeModeProvider.notifier).setThemeMode(selection.first),
+          ),
+        ),
+        SectionCard(
+          title: 'Account',
+          icon: Icons.lock_outline,
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.password_outlined, color: AppColors.primary),
+            title: const Text('Change Password'),
+            subtitle: Text(user.email),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _confirmChangePassword(user.email),
+          ),
+        ),
+        SectionCard(
+          title: 'Support',
+          icon: Icons.support_agent_outlined,
+          child: Column(
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.call_outlined, color: AppColors.primary),
+                title: const Text('Call Support'),
+                subtitle: const Text(AppConstants.kSupportPhone),
+                onTap: () => launchUrl(Uri(scheme: 'tel', path: AppConstants.kSupportPhone)),
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.email_outlined, color: AppColors.primary),
+                title: const Text('Email Support'),
+                subtitle: const Text(AppConstants.kSupportEmail),
+                onTap: () => launchUrl(Uri(scheme: 'mailto', path: AppConstants.kSupportEmail)),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _confirmLogout,
+            icon: const Icon(Icons.logout_rounded, color: AppColors.error),
+            label: const Text('Log Out', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: AppColors.error),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -567,6 +567,22 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 
 ---
 
+## 📅 Session Log: 2026-08-09 — Build and Install APK on Device
+
+### 📋 Tasks completed:
+
+- **Built Release APK**: Successfully compiled the latest codebase to a release APK using `flutter build apk` (which automatically uses the debug signing config as configured).
+- **Installed APK on Phone**: Installed the built APK onto the connected Redmi device `M2101K6I` (ID `4523b0eb`) using `flutter install`. Guide prompt instructions were provided to help bypass Xiaomi's "Install via USB" restriction.
+- **Verification**: Code analysis (`flutter analyze`) confirmed zero compilation/static analysis issues, and the app was successfully installed and launched on the physical device.
+
+### 💬 Latest Discussion Summary:
+
+1. User requested building the latest app version and installing it onto their connected mobile phone.
+2. Verified device connection (`M2101K6I`) and ran static analysis first to guarantee a clean build.
+3. Addressed the `INSTALL_FAILED_USER_RESTRICTED` security warning common on Xiaomi/Redmi devices by prompting the user to allow the USB installation popup on their phone, completing the task successfully.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
