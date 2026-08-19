@@ -7,16 +7,42 @@ import '../../../domain/entities/delivery_config_entity.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../controllers/admin_delivery_config_controller.dart';
 
-/// Lets the admin set the warehouse's coordinates (every delivery charge is
-/// measured from this point) and the per-km rate — phases.md §5.
-class DeliverySettingsScreen extends ConsumerStatefulWidget {
+/// Standalone screen at `/admin/delivery-settings` — no longer linked to
+/// from anywhere in-app since the Profile tab (Phase 9.6) embeds
+/// [DeliveryConfigFormView] directly, but left in place (route + screen) as
+/// a working direct link.
+class DeliverySettingsScreen extends StatelessWidget {
   const DeliverySettingsScreen({super.key});
 
   @override
-  ConsumerState<DeliverySettingsScreen> createState() => _DeliverySettingsScreenState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Delivery Settings',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: const DeliveryConfigFormView(),
+    );
+  }
 }
 
-class _DeliverySettingsScreenState extends ConsumerState<DeliverySettingsScreen> {
+/// Lets the admin set the warehouse's coordinates (every delivery charge is
+/// measured from this point) and the per-km rate — phases.md §5. No
+/// `Scaffold`/`AppBar` of its own, so it can be embedded either inside
+/// [DeliverySettingsScreen] or, since Phase 9.6, as a section of the admin
+/// Profile tab.
+class DeliveryConfigFormView extends ConsumerStatefulWidget {
+  const DeliveryConfigFormView({super.key});
+
+  @override
+  ConsumerState<DeliveryConfigFormView> createState() =>
+      _DeliveryConfigFormViewState();
+}
+
+class _DeliveryConfigFormViewState
+    extends ConsumerState<DeliveryConfigFormView> {
   final _formKey = GlobalKey<FormState>();
   final _latController = TextEditingController();
   final _lngController = TextEditingController();
@@ -41,7 +67,9 @@ class _DeliverySettingsScreenState extends ConsumerState<DeliverySettingsScreen>
 
   Future<void> _useCurrentLocation() async {
     setState(() => _isLocating = true);
-    final position = await ref.read(locationServiceProvider).getCurrentPosition();
+    final position = await ref
+        .read(locationServiceProvider)
+        .getCurrentPosition();
     if (!mounted) return;
     setState(() {
       _isLocating = false;
@@ -53,7 +81,9 @@ class _DeliverySettingsScreenState extends ConsumerState<DeliverySettingsScreen>
     if (position == null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Couldn\'t get your location. Check location permission and try again.'),
+          content: Text(
+            'Couldn\'t get your location. Check location permission and try again.',
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -61,7 +91,9 @@ class _DeliverySettingsScreenState extends ConsumerState<DeliverySettingsScreen>
   }
 
   String? _validateCoordinate(String? v) {
-    return double.tryParse(v?.trim() ?? '') == null ? 'Enter a valid coordinate' : null;
+    return double.tryParse(v?.trim() ?? '') == null
+        ? 'Enter a valid coordinate'
+        : null;
   }
 
   Future<void> _save() async {
@@ -73,13 +105,17 @@ class _DeliverySettingsScreenState extends ConsumerState<DeliverySettingsScreen>
       perKmRate: double.parse(_rateController.text.trim()),
     );
 
-    final success = await ref.read(adminDeliveryConfigControllerProvider.notifier).updateConfig(config);
+    final success = await ref
+        .read(adminDeliveryConfigControllerProvider.notifier)
+        .updateConfig(config);
     if (!mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success ? 'Delivery settings updated.' : 'Save failed: ${ref.read(adminDeliveryConfigControllerProvider).error}',
+          success
+              ? 'Delivery settings updated.'
+              : 'Save failed: ${ref.read(adminDeliveryConfigControllerProvider).error}',
         ),
         backgroundColor: success ? AppColors.success : AppColors.error,
         behavior: SnackBarBehavior.floating,
@@ -97,97 +133,130 @@ class _DeliverySettingsScreenState extends ConsumerState<DeliverySettingsScreen>
       if (config != null) _seedFrom(config);
     }
 
-    return Scaffold(
-      appBar: AppBar(title: Text('Delivery Settings', style: GoogleFonts.poppins(fontWeight: FontWeight.bold))),
-      body: configAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Padding(
-          padding: const EdgeInsets.all(18.0),
-          child: ErrorStateWidget(
-            message: 'Couldn\'t load delivery settings: $e',
-            onRetry: () => ref.invalidate(deliveryConfigProvider),
-          ),
+    return configAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Padding(
+        padding: const EdgeInsets.all(18.0),
+        child: ErrorStateWidget(
+          message: 'Couldn\'t load delivery settings: $e',
+          onRetry: () => ref.invalidate(deliveryConfigProvider),
         ),
-        data: (_) => SingleChildScrollView(
-          padding: const EdgeInsets.all(18.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Warehouse Location', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 4),
-                Text(
-                  'Every delivery charge is calculated as straight-line distance from this point.',
-                  style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.textSecondaryLight),
+      ),
+      data: (_) => SingleChildScrollView(
+        padding: const EdgeInsets.all(18.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Warehouse Location',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Every delivery charge is calculated as straight-line distance from this point.',
+                style: GoogleFonts.inter(
+                  fontSize: 11.5,
+                  color: AppColors.textSecondaryLight,
                 ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextFormField(
-                        controller: _latController,
-                        enabled: !isSaving,
-                        decoration: const InputDecoration(labelText: 'Latitude'),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                        validator: _validateCoordinate,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _latController,
+                      enabled: !isSaving,
+                      decoration: const InputDecoration(labelText: 'Latitude'),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                        signed: true,
                       ),
+                      validator: _validateCoordinate,
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: TextFormField(
-                        controller: _lngController,
-                        enabled: !isSaving,
-                        decoration: const InputDecoration(labelText: 'Longitude'),
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: true),
-                        validator: _validateCoordinate,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: TextFormField(
+                      controller: _lngController,
+                      enabled: !isSaving,
+                      decoration: const InputDecoration(labelText: 'Longitude'),
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                        signed: true,
                       ),
+                      validator: _validateCoordinate,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: (isSaving || _isLocating) ? null : _useCurrentLocation,
-                    icon: _isLocating
-                        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.my_location_rounded, size: 16),
-                    label: const Text('Use current location'),
                   ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: (isSaving || _isLocating)
+                      ? null
+                      : _useCurrentLocation,
+                  icon: _isLocating
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.my_location_rounded, size: 16),
+                  label: const Text('Use current location'),
                 ),
-                const SizedBox(height: 20),
-                Text('Per-km Rate', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _rateController,
-                  enabled: !isSaving,
-                  decoration: const InputDecoration(labelText: 'Rate (₹ per km)', prefixText: '₹ '),
-                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                  validator: (v) {
-                    final parsed = double.tryParse(v?.trim() ?? '');
-                    if (parsed == null) return 'Enter a valid rate';
-                    if (parsed <= 0) return 'Rate must be above ₹0';
-                    return null;
-                  },
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Per-km Rate',
+                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _rateController,
+                enabled: !isSaving,
+                decoration: const InputDecoration(
+                  labelText: 'Rate (₹ per km)',
+                  prefixText: '₹ ',
                 ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: isSaving ? null : _save,
-                    style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 15)),
-                    child: isSaving
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                          )
-                        : Text('Save Changes', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                validator: (v) {
+                  final parsed = double.tryParse(v?.trim() ?? '');
+                  if (parsed == null) return 'Enter a valid rate';
+                  if (parsed <= 0) return 'Rate must be above ₹0';
+                  return null;
+                },
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isSaving ? null : _save,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
+                  child: isSaving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          'Save Changes',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

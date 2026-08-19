@@ -1,4 +1,4 @@
-# Jyoti Kirana
+# Jyoti Traders
 
 A closed, invite-only B2B wholesale ordering app for a local Kirana (grocery/FMCG) distributor and their network of ~30 verified retailers — built with Flutter, Clean Architecture, Riverpod, and Firebase (Auth + Firestore), with a Hive-backed simulation mode that runs the full app before a real Firebase project is configured.
 
@@ -13,7 +13,9 @@ See [`PRD.md`](PRD.md) for the product spec, [`ARCHITECTURE.md`](ARCHITECTURE.md
 - **Phase 5 — Delivery, Payments & Notifications**: ✅ Complete
 - **Phase 6 — Polish, Animations & UX Refinement**: ✅ Complete
 - **Phase 7 — Testing & Quality Assurance**: ✅ Complete
-- **Phase 8 onward**: see [`phases.md`](phases.md)
+- **Phase 8 — Launch Preparation & Play Store**: 🔶 In progress
+- **Phase 9 — Navigation Redesign**: ✅ Complete (admin shell restructured into persistent tabs; retailer Home/Orders got reorder, low-stock, filter, and tracking content)
+- Plus a set of post-launch feature additions (order cancellation, "Buy Again", low-stock alerts, admin CSV export, order-confirmation sharing) — see [`phases.md`](phases.md)
 
 ## Getting Started
 
@@ -36,5 +38,13 @@ flutter analyze
 flutter test
 ```
 
-<!-- Maintenance check status: verified (2026-07-22) -->
+## Building a Release APK
+
+```bash
+flutter build apk --release
+```
+
+Output: `build/app/outputs/flutter-apk/app-release.apk`.
+
+<!-- Maintenance check status: verified (2026-08-19) — Phase 9 complete -->
 

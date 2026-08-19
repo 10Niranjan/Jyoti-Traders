@@ -35,7 +35,7 @@ enum UserStatus {
   }
 }
 
-/// Business object for a Jyoti Kirana user — Admin or Retailer.
+/// Business object for a Jyoti Traders user — Admin or Retailer.
 class UserEntity extends Equatable {
   final String uid;
   final String fullName;
@@ -75,20 +75,20 @@ class UserEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        uid,
-        fullName,
-        shopName,
-        email,
-        phone,
-        role,
-        status,
-        address,
-        gstNumber,
-        fcmToken,
-        photoUrl,
-        createdAt,
-        bankDetails,
-        businessHours,
-        notificationPreferences,
-      ];
+    uid,
+    fullName,
+    shopName,
+    email,
+    phone,
+    role,
+    status,
+    address,
+    gstNumber,
+    fcmToken,
+    photoUrl,
+    createdAt,
+    bankDetails,
+    businessHours,
+    notificationPreferences,
+  ];
 }

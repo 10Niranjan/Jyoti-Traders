@@ -6,8 +6,20 @@ class RouteNames {
   static const String login = '/login';
   static const String pendingApproval = '/pending-approval';
   static const String home = '/home';
+
+  // Admin bottom-nav tabs (Phase 9.1) — Dashboard/Orders/Catalog/Retailers/
+  // Profile keep independent navigation state across tab switches, same
+  // `StatefulShellRoute.indexedStack` pattern as the retailer tabs below.
   static const String admin = '/admin';
+  static const String adminOrders = '/admin/orders';
+
+  /// Hosts `ManageProductsScreen` for now; becomes a Products/Categories
+  /// segmented host in 9.4.
+  static const String adminCatalog = '/admin/catalog';
+  static const String adminRetailers = '/admin/retailers';
   static const String adminProfile = '/admin/profile';
+
+  // Admin push routes (Phase 4)
   static const String adminApprovalQueue = '/admin/approval-queue';
   static const String adminRetailerDetail = '/admin/approval-queue/:uid';
   static const String adminProducts = '/admin/products';
@@ -17,10 +29,9 @@ class RouteNames {
   static const String adminAddCategory = '/admin/categories/new';
   static const String adminEditCategory = '/admin/categories/:categoryId/edit';
   static const String adminDeliverySettings = '/admin/delivery-settings';
-  static const String adminOrders = '/admin/orders';
   static const String adminOrderManagement = '/admin/orders/:orderId';
-  static const String adminRetailers = '/admin/retailers';
-  static const String adminRetailerOrders = '/admin/retailers/:retailerId/orders';
+  static const String adminRetailerOrders =
+      '/admin/retailers/:retailerId/orders';
 
   // Retailer bottom-nav tabs (Phase 3)
   static const String search = '/search';
@@ -43,15 +54,21 @@ class RouteNames {
   static const String orderDetail = '/order/:orderId';
   static const String notifications = '/notifications';
 
-  static String adminEditProductPath(String productId) => '/admin/products/$productId/edit';
-  static String adminEditCategoryPath(String categoryId) => '/admin/categories/$categoryId/edit';
-  static String adminOrderManagementPath(String orderId) => '/admin/orders/$orderId';
-  static String adminRetailerOrdersPath(String retailerId) => '/admin/retailers/$retailerId/orders';
-  static String adminRetailerDetailPath(String uid) => '/admin/approval-queue/$uid';
+  static String adminEditProductPath(String productId) =>
+      '/admin/products/$productId/edit';
+  static String adminEditCategoryPath(String categoryId) =>
+      '/admin/categories/$categoryId/edit';
+  static String adminOrderManagementPath(String orderId) =>
+      '/admin/orders/$orderId';
+  static String adminRetailerOrdersPath(String retailerId) =>
+      '/admin/retailers/$retailerId/orders';
+  static String adminRetailerDetailPath(String uid) =>
+      '/admin/approval-queue/$uid';
 
   static String upiPaymentPath(String orderId) => '/upi-payment/$orderId';
 
-  static String productCategoryPath(String categoryId) => '/product-category/$categoryId';
+  static String productCategoryPath(String categoryId) =>
+      '/product-category/$categoryId';
   static String productDetailPath(String productId) => '/product/$productId';
   static String orderSuccessPath(String orderId) => '/order-success/$orderId';
   static String orderDetailPath(String orderId) => '/order/$orderId';

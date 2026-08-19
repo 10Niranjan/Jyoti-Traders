@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
-import '../../../core/constants/route_names.dart';
 import '../../../core/theme/theme_controller.dart';
 import '../../../shared/widgets/edit_basic_info_sheet.dart';
 import '../../../shared/widgets/profile_header_card.dart';
@@ -14,6 +12,7 @@ import '../../../shared/widgets/section_card.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/controllers/auth_state.dart';
 import '../../profile/controllers/profile_controller.dart';
+import 'delivery_settings_screen.dart';
 
 /// The admin/wholesaler's own account screen — identity in the "Profile" tab,
 /// app-wide preferences and account actions in "Settings". Everything else
@@ -26,7 +25,8 @@ class AdminProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<AdminProfileScreen> createState() => _AdminProfileScreenState();
 }
 
-class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> with SingleTickerProviderStateMixin {
+class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
   @override
@@ -49,34 +49,84 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> with Si
         imageQuality: 85,
       );
       if (picked == null || !mounted) return;
-      await ref.read(profileControllerProvider.notifier).updatePhoto(uid: uid, localFilePath: picked.path);
+      await ref
+          .read(profileControllerProvider.notifier)
+          .updatePhoto(uid: uid, localFilePath: picked.path);
       if (!mounted) return;
       final result = ref.read(profileControllerProvider);
       if (result.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Couldn\'t update photo: ${result.error}'), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text('Couldn\'t update photo: ${result.error}'),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Couldn\'t open the gallery: $e'), backgroundColor: AppColors.error),
+        SnackBar(
+          content: Text('Couldn\'t open the gallery: $e'),
+          backgroundColor: AppColors.error,
+        ),
       );
     }
+  }
+
+  /// Delivery settings used to be its own pushed screen; Phase 9.6 folds it
+  /// in here as a sheet instead, reusing [DeliveryConfigFormView] (which
+  /// already handles its own scrolling/keyboard-avoidance) unchanged — same
+  /// `showModalBottomSheet` pattern this screen already uses for editing
+  /// basic info.
+  void _openDeliverySettings(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => SizedBox(
+        height: MediaQuery.of(sheetContext).size.height * 0.85,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+              child: Text(
+                'Delivery Settings',
+                style: GoogleFonts.poppins(
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            const Expanded(child: DeliveryConfigFormView()),
+          ],
+        ),
+      ),
+    );
   }
 
   Future<void> _confirmChangePassword(String email) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text('Change Password?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17)),
+        title: Text(
+          'Change Password?',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17),
+        ),
         content: Text(
           'We\'ll send a password reset link to $email.',
           style: GoogleFonts.inter(fontSize: 13),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: const Text('Send Link')),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Send Link'),
+          ),
         ],
       ),
     );
@@ -86,7 +136,10 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> with Si
     final result = ref.read(profileControllerProvider);
     if (result.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Couldn\'t send reset link: ${result.error}'), backgroundColor: AppColors.error),
+        SnackBar(
+          content: Text('Couldn\'t send reset link: ${result.error}'),
+          backgroundColor: AppColors.error,
+        ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -99,16 +152,25 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> with Si
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text('Log out?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17)),
+        title: Text(
+          'Log out?',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17),
+        ),
         content: Text(
           'You\'ll need to sign in again to access the admin panel.',
           style: GoogleFonts.inter(fontSize: 13),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Log Out', style: TextStyle(color: AppColors.error)),
+            child: const Text(
+              'Log Out',
+              style: TextStyle(color: AppColors.error),
+            ),
           ),
         ],
       ),
@@ -127,11 +189,16 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> with Si
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final user = authState.user;
-    final unselectedColor = Theme.of(context).colorScheme.onSurface.withOpacity(0.6);
+    final unselectedColor = Theme.of(
+      context,
+    ).colorScheme.onSurface.withOpacity(0.6);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Admin Profile', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Admin Profile',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+        ),
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColors.primary,
@@ -157,9 +224,13 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> with Si
                 onEdit: () => showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
-                  shape:
-                      const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-                  builder: (_) => EditBasicInfoSheet(user: user, showShopName: false),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
+                  ),
+                  builder: (_) =>
+                      EditBasicInfoSheet(user: user, showShopName: false),
                 ),
                 onTapPhoto: () => _pickProfilePhoto(user.uid),
               ),
@@ -190,8 +261,9 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> with Si
                     ),
                   ],
                   selected: {ref.watch(themeModeProvider)},
-                  onSelectionChanged: (selection) =>
-                      ref.read(themeModeProvider.notifier).setThemeMode(selection.first),
+                  onSelectionChanged: (selection) => ref
+                      .read(themeModeProvider.notifier)
+                      .setThemeMode(selection.first),
                 ),
               ),
               SectionCard(
@@ -199,11 +271,16 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> with Si
                 icon: Icons.storefront_outlined,
                 child: ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.local_shipping_outlined, color: AppColors.primary),
+                  leading: const Icon(
+                    Icons.local_shipping_outlined,
+                    color: AppColors.primary,
+                  ),
                   title: const Text('Delivery Settings'),
-                  subtitle: const Text('Delivery radius, fees, and minimum order value'),
+                  subtitle: const Text(
+                    'Delivery radius, fees, and minimum order value',
+                  ),
                   trailing: const Icon(Icons.chevron_right),
-                  onTap: () => context.push(RouteNames.adminDeliverySettings),
+                  onTap: () => _openDeliverySettings(context),
                 ),
               ),
               SectionCard(
@@ -211,7 +288,10 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> with Si
                 icon: Icons.lock_outline,
                 child: ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.password_outlined, color: AppColors.primary),
+                  leading: const Icon(
+                    Icons.password_outlined,
+                    color: AppColors.primary,
+                  ),
                   title: const Text('Change Password'),
                   subtitle: Text(user.email),
                   trailing: const Icon(Icons.chevron_right),
@@ -225,17 +305,27 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> with Si
                   children: [
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.call_outlined, color: AppColors.primary),
+                      leading: const Icon(
+                        Icons.call_outlined,
+                        color: AppColors.primary,
+                      ),
                       title: const Text('Call Support'),
                       subtitle: const Text(AppConstants.kSupportPhone),
-                      onTap: () => launchUrl(Uri(scheme: 'tel', path: AppConstants.kSupportPhone)),
+                      onTap: () => launchUrl(
+                        Uri(scheme: 'tel', path: AppConstants.kSupportPhone),
+                      ),
                     ),
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.email_outlined, color: AppColors.primary),
+                      leading: const Icon(
+                        Icons.email_outlined,
+                        color: AppColors.primary,
+                      ),
                       title: const Text('Email Support'),
                       subtitle: const Text(AppConstants.kSupportEmail),
-                      onTap: () => launchUrl(Uri(scheme: 'mailto', path: AppConstants.kSupportEmail)),
+                      onTap: () => launchUrl(
+                        Uri(scheme: 'mailto', path: AppConstants.kSupportEmail),
+                      ),
                     ),
                   ],
                 ),
@@ -245,9 +335,17 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen> with Si
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: _confirmLogout,
-                  icon: const Icon(Icons.logout_rounded, color: AppColors.error),
-                  label:
-                      const Text('Log Out', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
+                  icon: const Icon(
+                    Icons.logout_rounded,
+                    color: AppColors.error,
+                  ),
+                  label: const Text(
+                    'Log Out',
+                    style: TextStyle(
+                      color: AppColors.error,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: AppColors.error),
                     padding: const EdgeInsets.symmetric(vertical: 14),

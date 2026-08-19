@@ -1,5 +1,5 @@
 # 🏗️ ARCHITECTURE.md
-## Jyoti Kirana — Enterprise Flutter Application Architecture
+## Jyoti Traders — Enterprise Flutter Application Architecture
 
 > **Author Perspective**: Designed as a 17-year senior Android/Flutter engineer  
 > **Version**: 1.0.0 | **Last Updated**: 2026-07-15  
@@ -102,6 +102,7 @@ This application is built on **Clean Architecture** principles, popularized by R
 | `permission_handler` | Runtime permissions (notifications, location) |
 | `geolocator` | Retailer GPS location for delivery km calculation |
 | `qr_flutter` | Renders the UPI payment QR code client-side from the UPI ID (Phase 5) |
+| `share_plus` | OS share sheet — order confirmation text, admin CSV order export |
 
 ### 2.8 Dev & Quality
 
@@ -344,7 +345,7 @@ main()
   ├─► Initialize Hive boxes (users, cart, settings)
   ├─► Initialize FlutterSecureStorage
   │
-  └─► runApp(ProviderScope(child: JyotiKiranaApp()))
+  └─► runApp(ProviderScope(child: JyotiTradersApp()))
             │
             └─► GoRouter reads authStateProvider (StreamProvider)
                       │
@@ -406,6 +407,9 @@ Admin → AllOrdersScreen
   └─► Tap Order → OrderManagementScreen
         └─► Update Status: pending → confirmed → out_for_delivery → delivered
               └─► Firestore write + FCM to Retailer at each status change
+
+Retailer → OrderDetailScreen (self-service, within 10 min of a still-`pending` order)
+  └─► Cancel Order → orderStatus: cancelled
 ```
 
 ---
@@ -469,7 +473,7 @@ orders/{orderId}
   ├── grandTotal: double
   ├── paymentMethod: String    // "cod" | "upi"
   ├── paymentStatus: String    // "pending" | "paid"
-  ├── orderStatus: String      // "pending" | "confirmed" | "out_for_delivery" | "delivered"
+  ├── orderStatus: String      // "pending" | "confirmed" | "out_for_delivery" | "delivered" | "cancelled"
   ├── deliveryAddress: Map
   ├── notes: String?
   └── createdAt: Timestamp

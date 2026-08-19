@@ -33,7 +33,7 @@ class PendingApprovalScreen extends ConsumerWidget {
       scheme: 'mailto',
       path: 'vishvatejkatkar007@gmail.com',
       queryParameters: {
-        'subject': 'Jyoti Kirana Account Verification Request',
+        'subject': 'Jyoti Traders Account Verification Request',
       },
     );
     try {
@@ -44,7 +44,10 @@ class PendingApprovalScreen extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        _showErrorSnackBar(context, 'Unable to open email client: vishvatejkatkar007@gmail.com');
+        _showErrorSnackBar(
+          context,
+          'Unable to open email client: vishvatejkatkar007@gmail.com',
+        );
       }
     }
   }
@@ -71,12 +74,18 @@ class PendingApprovalScreen extends ConsumerWidget {
             end: Alignment.bottomCenter,
             colors: isDark
                 ? [AppColors.backgroundDark, const Color(0xFF070B19)]
-                : [const Color(0xFFFFF7ED), AppColors.backgroundLight], // soft amber to white
+                : [
+                    const Color(0xFFFFF7ED),
+                    AppColors.backgroundLight,
+                  ], // soft amber to white
           ),
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 24.0,
+              vertical: 32.0,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -89,17 +98,31 @@ class PendingApprovalScreen extends ConsumerWidget {
                     alignment: Alignment.center,
                     children: [
                       Container(
-                        width: 140,
-                        height: 140,
-                        decoration: BoxDecoration(
-                          color: AppColors.warning.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                      ).animate(onPlay: (controller) {
-                        if (!kIsWeb && Platform.environment.containsKey('FLUTTER_TEST')) return;
-                        controller.repeat(reverse: true);
-                      }).scale(begin: const Offset(0.9, 0.9), end: const Offset(1.1, 1.1), duration: 1500.ms, curve: Curves.easeInOut),
-                      
+                            width: 140,
+                            height: 140,
+                            decoration: BoxDecoration(
+                              color: AppColors.warning.withOpacity(0.1),
+                              shape: BoxShape.circle,
+                            ),
+                          )
+                          .animate(
+                            onPlay: (controller) {
+                              if (!kIsWeb &&
+                                  Platform.environment.containsKey(
+                                    'FLUTTER_TEST',
+                                  )) {
+                                return;
+                              }
+                              controller.repeat(reverse: true);
+                            },
+                          )
+                          .scale(
+                            begin: const Offset(0.9, 0.9),
+                            end: const Offset(1.1, 1.1),
+                            duration: 1500.ms,
+                            curve: Curves.easeInOut,
+                          ),
+
                       Container(
                         width: 100,
                         height: 100,
@@ -108,7 +131,7 @@ class PendingApprovalScreen extends ConsumerWidget {
                           shape: BoxShape.circle,
                         ),
                       ),
-                      
+
                       const Icon(
                         Icons.pending_actions_rounded,
                         size: 56,
@@ -117,7 +140,7 @@ class PendingApprovalScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
 
                 // Main message
@@ -127,20 +150,24 @@ class PendingApprovalScreen extends ConsumerWidget {
                   style: GoogleFonts.poppins(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                    color: isDark
+                        ? AppColors.textPrimaryDark
+                        : AppColors.textPrimaryLight,
                   ),
                 ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1),
-                
+
                 const SizedBox(height: 12),
-                
+
                 Text(
-                  'Your retailer application is currently being reviewed by the owner of Jyoti Kirana. '
+                  'Your retailer application is currently being reviewed by the owner of Jyoti Traders. '
                   'Once approved, you will gain full access to wholesale product purchasing.',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     height: 1.5,
-                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondaryLight,
                   ),
                 ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
 
@@ -155,7 +182,9 @@ class PendingApprovalScreen extends ConsumerWidget {
                         duration: Duration(seconds: 1),
                       ),
                     );
-                    await ref.read(authControllerProvider.notifier).checkApprovalStatus();
+                    await ref
+                        .read(authControllerProvider.notifier)
+                        .checkApprovalStatus();
                   },
                   icon: const Icon(Icons.refresh_rounded),
                   label: const Text('Check Status Again'),
@@ -198,18 +227,26 @@ class PendingApprovalScreen extends ConsumerWidget {
                         style: GoogleFonts.inter(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                          color: isDark
+                              ? AppColors.textPrimaryDark
+                              : AppColors.textPrimaryLight,
                         ),
                       ),
                       const SizedBox(height: 16),
-                      
+
                       // Call Button
                       OutlinedButton.icon(
                         onPressed: () => _makeCall(context),
-                        icon: const Icon(Icons.phone_rounded, color: AppColors.success),
+                        icon: const Icon(
+                          Icons.phone_rounded,
+                          color: AppColors.success,
+                        ),
                         label: Text(
                           'Call Owner: +91 98604 60325',
-                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: AppColors.success),
@@ -221,14 +258,20 @@ class PendingApprovalScreen extends ConsumerWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      
+
                       // Email Button
                       OutlinedButton.icon(
                         onPressed: () => _sendEmail(context),
-                        icon: const Icon(Icons.email_outlined, color: AppColors.primary),
+                        icon: const Icon(
+                          Icons.email_outlined,
+                          color: AppColors.primary,
+                        ),
                         label: Text(
                           'Email: vishvatejkatkar007@gmail.com',
-                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: AppColors.primary),
@@ -247,11 +290,18 @@ class PendingApprovalScreen extends ConsumerWidget {
 
                 // Log out / Exit Button
                 TextButton.icon(
-                  onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
-                  icon: const Icon(Icons.logout_rounded, color: AppColors.error),
+                  onPressed: () =>
+                      ref.read(authControllerProvider.notifier).signOut(),
+                  icon: const Icon(
+                    Icons.logout_rounded,
+                    color: AppColors.error,
+                  ),
                   label: Text(
                     'Sign Out & Try Another Account',
-                    style: GoogleFonts.inter(color: AppColors.error, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.inter(
+                      color: AppColors.error,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ).animate().fadeIn(delay: 600.ms),
               ],

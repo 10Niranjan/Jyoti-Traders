@@ -27,17 +27,10 @@ class AdminDashboardScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Jyoti Kirana Admin',
+          'Jyoti Traders Admin',
           style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
-        actions: [
-          const NotificationBellButton(),
-          IconButton(
-            icon: const Icon(Icons.account_circle_outlined, color: AppColors.primary),
-            tooltip: 'Profile',
-            onPressed: () => context.push(RouteNames.adminProfile),
-          ),
-        ],
+        actions: [const NotificationBellButton()],
       ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
@@ -79,58 +72,10 @@ class AdminDashboardScreen extends ConsumerWidget {
               const OrdersBarChart(),
 
               const SizedBox(height: 20),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => context.push(RouteNames.adminProducts),
-                      icon: const Icon(Icons.inventory_2_outlined, size: 18),
-                      label: const Text('Manage Products'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => context.push(RouteNames.adminCategories),
-                      icon: const Icon(Icons.category_outlined, size: 18),
-                      label: const Text('Manage Categories'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => context.push(RouteNames.adminOrders),
-                      icon: const Icon(Icons.receipt_long_outlined, size: 18),
-                      label: const Text('All Orders'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      onPressed: () => context.push(RouteNames.adminRetailers),
-                      icon: const Icon(Icons.storefront_outlined, size: 18),
-                      label: const Text('Retailers'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
+              // "Manage Products", "Manage Categories", "All Orders" and
+              // "Retailers" dropped here (Phase 9.2/9.4) — the Catalog/
+              // Orders/Retailers bottom-nav tabs reach the same screens now.
+              // Delivery Settings stays until 9.6 gives it a tab home.
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(

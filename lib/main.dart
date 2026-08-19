@@ -12,6 +12,7 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_controller.dart';
 import 'data/datasources/seed/demo_catalog_seeder.dart';
 import 'features/notifications/controllers/fcm_controller.dart';
+import 'features/notifications/controllers/stock_alert_controller.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -62,27 +63,26 @@ void main() async {
 
   await seedDemoCatalogIfEmpty(catalogBox);
 
-  runApp(
-    const ProviderScope(
-      child: JyotiKiranaApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: JyotiTradersApp()));
 }
 
-class JyotiKiranaApp extends ConsumerWidget {
-  const JyotiKiranaApp({super.key});
+class JyotiTradersApp extends ConsumerWidget {
+  const JyotiTradersApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Watched once here so push notifications initialize exactly once per
     // app lifetime, regardless of auth state (see fcmInitializerProvider).
     ref.watch(fcmInitializerProvider);
+    // Same one-per-app-lifetime pattern — watches the retailer's order
+    // history + live product stock and raises a local low-stock heads-up.
+    ref.watch(stockAlertInitializerProvider);
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(
-      title: 'Jyoti Kirana',
+      title: 'Jyoti Traders',
       debugShowCheckedModeBanner: false,
-      
+
       // Theme settings using custom app design tokens
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

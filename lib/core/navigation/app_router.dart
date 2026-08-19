@@ -14,6 +14,7 @@ import '../../features/admin/screens/add_edit_product_screen.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
 import '../../features/admin/screens/admin_profile_screen.dart';
 import '../../features/admin/screens/approval_queue_screen.dart';
+import '../../features/admin/screens/catalog_screen.dart';
 import '../../features/admin/screens/retailer_detail_screen.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../features/admin/screens/all_orders_screen.dart';
@@ -21,7 +22,7 @@ import '../../features/admin/screens/delivery_settings_screen.dart';
 import '../../features/admin/screens/manage_categories_screen.dart';
 import '../../features/admin/screens/manage_products_screen.dart';
 import '../../features/admin/screens/order_management_screen.dart';
-import '../../features/admin/screens/retailer_list_screen.dart';
+import '../../features/admin/screens/retailers_screen.dart';
 import '../../features/auth/screens/pending_approval_screen.dart';
 import '../../features/cart/controllers/cart_controller.dart';
 import '../../features/cart/screens/cart_screen.dart';
@@ -36,6 +37,7 @@ import '../../features/products/screens/category_products_screen.dart';
 import '../../features/products/screens/product_detail_screen.dart';
 import '../../features/products/screens/search_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
+import '../../shared/widgets/admin_bottom_nav_bar.dart';
 import '../../shared/widgets/bottom_nav_bar.dart';
 import '../../shared/widgets/floating_cart_bar.dart';
 import '../constants/app_colors.dart';
@@ -151,20 +153,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const PendingApprovalScreen(),
       ),
       GoRoute(
-        path: RouteNames.admin,
-        builder: (context, state) => const AdminDashboardScreen(),
-      ),
-      GoRoute(
-        path: RouteNames.adminProfile,
-        builder: (context, state) => const AdminProfileScreen(),
-      ),
-      GoRoute(
         path: RouteNames.adminApprovalQueue,
         builder: (context, state) => const ApprovalQueueScreen(),
       ),
       GoRoute(
         path: RouteNames.adminRetailerDetail,
-        builder: (context, state) => RetailerDetailScreen(user: state.extra as UserEntity),
+        builder: (context, state) =>
+            RetailerDetailScreen(user: state.extra as UserEntity),
       ),
       GoRoute(
         path: RouteNames.adminProducts,
@@ -198,22 +193,66 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const DeliverySettingsScreen(),
       ),
       GoRoute(
-        path: RouteNames.adminOrders,
-        builder: (context, state) => const AllOrdersScreen(),
-      ),
-      GoRoute(
         path: RouteNames.adminOrderManagement,
         builder: (context, state) =>
             OrderManagementScreen(orderId: state.pathParameters['orderId']!),
       ),
       GoRoute(
-        path: RouteNames.adminRetailers,
-        builder: (context, state) => const RetailerListScreen(),
-      ),
-      GoRoute(
         path: RouteNames.adminRetailerOrders,
         builder: (context, state) =>
             AllOrdersScreen(retailerId: state.pathParameters['retailerId']!),
+      ),
+
+      // Admin bottom-nav shell (Phase 9.1) — Dashboard/Orders/Catalog/
+      // Retailers/Profile keep independent navigation state across tab
+      // switches, same pattern as the retailer shell below. Catalog and
+      // Retailers are placeholder single-screen tabs for now — 9.4/9.5 turn
+      // them into Products|Categories and Approved|Pending segmented hosts.
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            _AdminShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.admin,
+                builder: (context, state) => const AdminDashboardScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.adminOrders,
+                builder: (context, state) => const AllOrdersScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.adminCatalog,
+                builder: (context, state) => const CatalogScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.adminRetailers,
+                builder: (context, state) => const RetailersScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.adminProfile,
+                builder: (context, state) => const AdminProfileScreen(),
+              ),
+            ],
+          ),
+        ],
       ),
 
       // Retailer bottom-nav shell — Home/Search/Cart/Orders/Profile keep
@@ -294,7 +333,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // to pop, which is what makes `AppBar`'s automatic back arrow appear.
       GoRoute(
         path: RouteNames.viewCart,
-        pageBuilder: (context, state) => _fadeSlidePage(const CartScreen(), state),
+        pageBuilder: (context, state) =>
+            _fadeSlidePage(const CartScreen(), state),
       ),
       GoRoute(
         path: RouteNames.checkout,
@@ -341,6 +381,38 @@ const _cartBranchIndex = 2;
 // GlobalKey if the pill's content ever grows enough to under/over-reserve.
 const _kFloatingCartBarReservedHeight = 74.0;
 
+/// Shared "Exit app?" confirmation, used by both bottom-nav shells' root
+/// `PopScope` so the Android back button never silently kills the app from
+/// a tab root.
+Future<void> _confirmExitApp(BuildContext context) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(
+        'Exit app?',
+        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17),
+      ),
+      content: Text(
+        'Are you sure you want to close the app?',
+        style: GoogleFonts.inter(fontSize: 13),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('Exit', style: TextStyle(color: AppColors.error)),
+        ),
+      ],
+    ),
+  );
+  if (confirmed == true) {
+    SystemNavigator.pop();
+  }
+}
+
 class _RetailerShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
@@ -356,26 +428,7 @@ class _RetailerShell extends ConsumerWidget {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: Text('Exit app?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17)),
-            content: Text(
-              'Are you sure you want to close the app?',
-              style: GoogleFonts.inter(fontSize: 13),
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancel')),
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(true),
-                child: const Text('Exit', style: TextStyle(color: AppColors.error)),
-              ),
-            ],
-          ),
-        );
-        if (confirmed == true) {
-          SystemNavigator.pop();
-        }
+        await _confirmExitApp(context);
       },
       child: Scaffold(
         body: Stack(
@@ -383,7 +436,9 @@ class _RetailerShell extends ConsumerWidget {
             AnimatedPadding(
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeOut,
-              padding: EdgeInsets.only(bottom: barVisible ? _kFloatingCartBarReservedHeight : 0),
+              padding: EdgeInsets.only(
+                bottom: barVisible ? _kFloatingCartBarReservedHeight : 0,
+              ),
               child: navigationShell,
             ),
             if (!onCartTab)
@@ -399,6 +454,32 @@ class _RetailerShell extends ConsumerWidget {
           ],
         ),
         bottomNavigationBar: BottomNavBar(navigationShell: navigationShell),
+      ),
+    );
+  }
+}
+
+/// Admin bottom-nav shell (Phase 9.1) — same `StatefulShellRoute` +
+/// `PopScope` exit-confirmation pattern as `_RetailerShell`, minus the
+/// retailer-only cart bar.
+class _AdminShell extends StatelessWidget {
+  final StatefulNavigationShell navigationShell;
+
+  const _AdminShell({required this.navigationShell});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await _confirmExitApp(context);
+      },
+      child: Scaffold(
+        body: navigationShell,
+        bottomNavigationBar: AdminBottomNavBar(
+          navigationShell: navigationShell,
+        ),
       ),
     );
   }
@@ -457,7 +538,7 @@ class SplashScreen extends ConsumerWidget {
               const SizedBox(height: 24),
 
               Text(
-                'Jyoti Kirana',
+                'Jyoti Traders',
                 style: GoogleFonts.poppins(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,

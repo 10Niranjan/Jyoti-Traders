@@ -15,6 +15,7 @@ class OrderStatusBadge extends StatelessWidget {
       OrderStatus.confirmed => AppColors.info,
       OrderStatus.outForDelivery => AppColors.primary,
       OrderStatus.delivered => AppColors.success,
+      OrderStatus.cancelled => AppColors.error,
     };
     final label = status.label;
 
@@ -26,7 +27,11 @@ class OrderStatusBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          color: color,
+          fontSize: 11,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }

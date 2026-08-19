@@ -36,7 +36,7 @@ void main() {
     group('timeAgo', () {
       test('should return correct ago format', () {
         final now = DateTime.now();
-        
+
         final justNow = now.subtract(const Duration(seconds: 30));
         expect(justNow.timeAgo, equals('just now'));
 
@@ -61,13 +61,17 @@ void main() {
       expect(OrderStatus.confirmed.label, equals('Confirmed'));
       expect(OrderStatus.outForDelivery.label, equals('Out for Delivery'));
       expect(OrderStatus.delivered.label, equals('Delivered'));
+      expect(OrderStatus.cancelled.label, equals('Cancelled'));
     });
   });
 
   group('PaymentStatus Extensions', () {
     test('should return correct readable labels', () {
       expect(PaymentStatus.pending.label, equals('Awaiting payment'));
-      expect(PaymentStatus.paymentClaimed.label, equals('Payment claimed — awaiting confirmation'));
+      expect(
+        PaymentStatus.paymentClaimed.label,
+        equals('Payment claimed — awaiting confirmation'),
+      );
       expect(PaymentStatus.paid.label, equals('Paid'));
     });
   });
@@ -76,8 +80,20 @@ void main() {
     group('chunked', () {
       test('should split list into chunks of specified size', () {
         final list = [1, 2, 3, 4, 5, 6, 7, 8];
-        expect(list.chunked(3), equals([[1, 2, 3], [4, 5, 6], [7, 8]]));
-        expect(list.chunked(10), equals([[1, 2, 3, 4, 5, 6, 7, 8]]));
+        expect(
+          list.chunked(3),
+          equals([
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8],
+          ]),
+        );
+        expect(
+          list.chunked(10),
+          equals([
+            [1, 2, 3, 4, 5, 6, 7, 8],
+          ]),
+        );
         expect(<int>[].chunked(5), equals(<List<int>>[]));
       });
     });

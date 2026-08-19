@@ -31,11 +31,12 @@ extension DateTimeAgoExtension on DateTime {
 /// admin status-update dropdown so both read the exact same wording.
 extension OrderStatusLabelExtension on OrderStatus {
   String get label => switch (this) {
-        OrderStatus.pending => 'Pending',
-        OrderStatus.confirmed => 'Confirmed',
-        OrderStatus.outForDelivery => 'Out for Delivery',
-        OrderStatus.delivered => 'Delivered',
-      };
+    OrderStatus.pending => 'Pending',
+    OrderStatus.confirmed => 'Confirmed',
+    OrderStatus.outForDelivery => 'Out for Delivery',
+    OrderStatus.delivered => 'Delivered',
+    OrderStatus.cancelled => 'Cancelled',
+  };
 }
 
 /// Human-readable payment-status labels, shown on the order detail view for
@@ -43,10 +44,10 @@ extension OrderStatusLabelExtension on OrderStatus {
 /// for them — see `OrderDetailBody`).
 extension PaymentStatusLabelExtension on PaymentStatus {
   String get label => switch (this) {
-        PaymentStatus.pending => 'Awaiting payment',
-        PaymentStatus.paymentClaimed => 'Payment claimed — awaiting confirmation',
-        PaymentStatus.paid => 'Paid',
-      };
+    PaymentStatus.pending => 'Awaiting payment',
+    PaymentStatus.paymentClaimed => 'Payment claimed — awaiting confirmation',
+    PaymentStatus.paid => 'Paid',
+  };
 }
 
 extension ListChunkExtension<T> on List<T> {

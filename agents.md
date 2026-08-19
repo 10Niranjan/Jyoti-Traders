@@ -4,11 +4,11 @@ This file serves as a persistent record of the development progress, decisions, 
 
 ---
 
-## 📋 Client Specifications: Jyoti Kirana
+## 📋 Client Specifications: Jyoti Traders
 
 These are the official requirements provided by the client:
 
-- **Application Name**: `Jyoti Kirana`
+- **Application Name**: `Jyoti Traders`
 - **Contact Details**: Phone: `9860460325` | Email: `vishvatejkatkar007@gmail.com`
 - **Business Model**: Hybrid Wholesale & Retail.
 - **Access Control**: **Manual Approval Required** for normal users. The system supports **two user roles**: `Admin` (owner) for product & order management, and `Normal User` (retailer/customer).
@@ -92,7 +92,7 @@ These are the official requirements provided by the client:
 - **Created Product Requirements Document (PRD.md)**: Outlined app purpose, target users (~30 retailers), business rules (min ₹2,500 checkout, manual admin approval), features for admin & retailers, payment flow (COD + UPI QR), and phased rollout plan.
 - **Created Architecture Guide (ARCHITECTURE.md)**: Documented 3-layer Clean Architecture (Presentation, Domain, Data), defined full tech stack, mapped exact directory structure, detailed communication flows, database schema (Firestore schemas for users, categories, products, orders), security rules strategy, and performance/testing plans.
 - **Created Development Rules (rules.md)**: Codified strict coding and engineering practices, whitelisted approved libraries, banned anti-patterns (e.g., GetX, setState in Riverpod, direct data calls in UI), established file size & method length constraints, error handling patterns, naming conventions, and AI boundaries.
-- **Fixed App Name & Title**: Renamed `TradersRetailerApp` to `JyotiKiranaApp` in `lib/main.dart` and `test/widget_test.dart`, and corrected the `MaterialApp` title parameter to `'Jyoti Kirana'` to match the actual client specs.
+- **Fixed App Name & Title**: Renamed `TradersRetailerApp` to `JyotiTradersApp` in `lib/main.dart` and `test/widget_test.dart`, and corrected the `MaterialApp` title parameter to `'Jyoti Traders'` to match the actual client specs.
 
 ### 💬 Latest Discussion Summary:
 
@@ -280,7 +280,7 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 - **Phase 5, first slice — push notifications end to end**, the first 4 of Phase 5's 10 checklist items:
   - Added `firebase_messaging` (pre-approved, rules.md §1). `FcmService` (`core/services/`) wraps every call (`requestPermission`, `getToken`, `onTokenRefresh`, `onMessage`) in its own try/catch, degrading to `null`/an empty stream on failure — there's no Firestore/Auth-style "simulation mode" substitute for FCM, so this defensive wrapping is the fallback for unconfigured credentials, an unsupported platform, or a test environment with no platform channel. Confirmed working live: the widget-test smoke test logs `FcmService: permission/token request unavailable, skipping` and continues rather than crashing.
   - `firebaseMessagingBackgroundHandler` — a required top-level function (Firebase runs it in a separate isolate), registered in `main.dart` via `FirebaseMessaging.onBackgroundMessage` before `runApp`. It only re-initializes Firebase and otherwise no-ops: the OS renders the notification natively from the message's `notification` payload, and a background isolate can't safely touch the main isolate's already-open Hive boxes.
-  - `AuthRepository.updateFcmToken(uid, fcmToken)` — new method (mirrors `updateProfile`'s mock/Firestore branches) — called on login and again on every `onTokenRefresh`, via `fcmInitializerProvider`: a plain (non-autoDispose) `Provider<void>` watched once from `JyotiKiranaApp.build()` so it initializes exactly once per app lifetime regardless of auth state.
+  - `AuthRepository.updateFcmToken(uid, fcmToken)` — new method (mirrors `updateProfile`'s mock/Firestore branches) — called on login and again on every `onTokenRefresh`, via `fcmInitializerProvider`: a plain (non-autoDispose) `Provider<void>` watched once from `JyotiTradersApp.build()` so it initializes exactly once per app lifetime regardless of auth state.
   - `NotificationsScreen` + `NotificationRepository` — local-only (Hive `notifications_cache` box, no Firestore), following the exact pattern `CartRepository` already established: datasource → repository → controller, no use-case layer, since it's simple CRUD over one box.
   - `NotificationBellButton` (shared widget, bell + unread-count badge via the existing `badges` package) added to both `HomeScreen` and `AdminDashboardScreen` app bars — notification history is per-device, not per-role, so both point at the shared `/notifications` route.
   - Deliberately out of scope: tap-to-open-order-detail from a notification, and native foreground tray notifications (`flutter_local_notifications` isn't on rules.md's approved package list) — neither was asked for by the checklist. Also out of scope: an actual Cloud Function to *send* these — this phase only wires the client side, so the notification list will stay empty in practice until a backend sender exists.
@@ -327,7 +327,7 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
   - Extended `PaymentStatus` with `paymentClaimed` (retailer tapped "I have paid") between `pending` and `paid`, so the admin can distinguish "never touched" from "claims they paid." New `OrderRepository.recordPaymentClaim()` (retailer) and `.updatePaymentStatus()` (admin-only "Mark as Paid", wired into `OrderManagementScreen` via `OrderDetailBody`'s new `paymentExtra` slot — mirrors the `header` slot pattern from 4.5).
   - `OrderEntity.paymentScreenshotUrl` — the uploaded screenshot renders back in `OrderDetailBody`'s Payment section for both roles, not just written to Storage and forgotten (an upload nobody can view would be a half-finished feature). Reused `ImageUploadService` with a new `uploadPaymentScreenshot()` method.
   - **Refactored while here**: moved `imageUploadServiceProvider` from `admin_product_controller.dart` into `core/services/image_upload_service.dart` (mirrors the `locationServiceProvider` precedent from the delivery-charge session) since checkout — a retailer feature — needed it too, and importing a provider from an admin controller file was the wrong coupling direction. Also relocated `features/admin/widgets/product_image_picker_field.dart` → `shared/widgets/image_picker_field.dart` (`ProductImagePickerField` → `ImagePickerField`), since it was already fully generic and is now used by product photos, category icons, *and* payment screenshots.
-  - **No real UPI ID exists** — checked agents.md's own client-spec notes and found only "COD & Online UPI" as a payment method, no actual ID/QR. `AppConstants.kUpiId`/`kUpiPayeeName` are explicit placeholders (`jyotikirana@upi`) to swap before launch.
+  - **No real UPI ID exists** — checked agents.md's own client-spec notes and found only "COD & Online UPI" as a payment method, no actual ID/QR. `AppConstants.kUpiId`/`kUpiPayeeName` are explicit placeholders (`jyotitraders@upi`) to swap before launch.
 - **Real bug found and fixed immediately**: `OrderSuccessScreen` had the exact same unguarded `order.id.substring(0, 8)` crash risk fixed everywhere else in Phase 4.5 — just in a file that phase never touched. Fixed via the existing `String.shortId` extension the moment it was spotted.
 - **Tests added** (9 new, 97 total): `record_payment_claim_usecase_test.dart` (2), `update_payment_status_usecase_test.dart` (1), 3 new cases in `order_management_screen_test.dart` (COD hides payment UI; UPI shows status + a working Mark-as-Paid; already-paid hides the button), `upi_payment_screen_test.dart` (3 — this codebase's first widget test backed by a signed-in `authControllerProvider`, via overriding `authRepositoryProvider` with a fake that emits an already-authenticated retailer).
 - **Verification**: `flutter analyze` — zero issues. `flutter test` — 97/97 passing.
@@ -580,6 +580,89 @@ All 20 tests pass (`flutter test`), `flutter analyze` is clean. Also note: `.git
 1. User requested building the latest app version and installing it onto their connected mobile phone.
 2. Verified device connection (`M2101K6I`) and ran static analysis first to guarantee a clean build.
 3. Addressed the `INSTALL_FAILED_USER_RESTRICTED` security warning common on Xiaomi/Redmi devices by prompting the user to allow the USB installation popup on their phone, completing the task successfully.
+
+---
+
+## 📅 Session Log: 2026-08-19 — Phase 8 begins: Crashlytics
+
+### 📋 Tasks completed:
+
+- **`firebase_crashlytics` wired up** — the first Phase 8 (Launch Preparation) task. The package was already pre-approved in `rules.md`/`ARCHITECTURE.md`'s tables from an earlier session but never actually added to `pubspec.yaml` or called anywhere.
+- `main.dart` now sets `FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError` and `PlatformDispatcher.instance.onError` (recording as fatal), right after the existing Firebase/FCM init block. `setCrashlyticsCollectionEnabled(kReleaseMode)` gates collection to release builds only, so local debug runs and the test suite's expected simulation-mode fallbacks never get reported as crashes.
+- Wrapped in the same defensive try/catch every other Firebase-touching call in this file already uses — setup failure degrades to a debug print, never a crash, consistent with `FcmService`/`LocationService`/`ImageUploadService`'s established pattern.
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 225/225 passing (unchanged; a separate Change Password/Settings branch had already pushed the count from 163 to 225 before this session started).
+
+### 💬 Latest Discussion Summary:
+
+1. User asked "what's next" — answered from `phases.md`'s own convention (first unchecked item in the current active phase) rather than guessing: Phase 7 was already complete, so Phase 8's first item, Crashlytics, was the correct next step.
+2. `phases.md` updated: Phase 8 marked 🔶 In Progress, 1/12, with a scope note. `README.md`/`PRD.md` left untouched — this is launch-infra plumbing, not a product-spec change, consistent with precedent that PRD only moves for documented business rules.
+
+---
+
+## 📅 Session Log: 2026-08-19 (continued) — Five low-effort retailer/admin features
+
+### 📋 Tasks completed:
+
+User asked what else could be added to the app, got a categorized list (low/medium/high effort), picked the five "low-effort, high-value" items and asked for all five implemented carefully, one at a time, verifying after each — no batch-and-hope.
+
+- **Buy Again** — `OrderDetailScreen` (converted `ConsumerWidget` → `ConsumerStatefulWidget`) gained a bottom action row. Re-adds every line from a past order via `ProductRepository.getProductById` and the *live* product's price/stock/rate slabs — deliberately never the order's frozen price, since a reorder is a new cart line, not a copy of an old invoice. Missing/inactive/out-of-stock products are skipped and counted; quantity is capped at the product's current `maxQty`. Snackbar reports "N added / M no longer available" with a View Cart shortcut.
+- **Order cancellation** — new `OrderStatus.cancelled`, added as a genuine enum case so the compiler's exhaustiveness check forced updates into `extensions.dart`'s label switch and `OrderStatusBadge`'s color switch (missing either would have failed to compile, not silently rendered wrong). `OrderEntity.isCancellable` gates on `orderStatus == pending` plus a `DateTime.now()`-based 10-minute window (`AppConstants.kOrderCancellationWindowMinutes`), the same impure-getter style the existing `DateTimeAgoExtension.timeAgo` already uses. New `RetailerOrderController.cancelOrder` reuses the existing `UpdateOrderStatusUseCase` — no new repository method needed, since `updateOrderStatus` was already generic over any status. Confirmation dialog before cancelling.
+- **Low-stock alerts for frequently-bought products** — no Cloud Function sender exists in this project (a gap Phase 5 itself already documented), so this is a local/in-app notification, not a real OS push. New `stockAlertInitializerProvider` (`features/notifications/controllers/stock_alert_controller.dart`), watched once from the app root alongside the existing `fcmInitializerProvider`. Computes each retailer's own "frequently bought" product ids (≥2 past orders) from `orderHistoryProvider`, intersects with live stock ≤ the existing low-stock threshold, and writes into the existing local `NotificationRepository` (Phase 5's Hive-only notification history) — surfaces in the existing `NotificationsScreen`/bell badge with zero changes needed there. Dedupe against re-notifying for the same stock level is an in-memory `Set`, explicitly marked as a `ponytail:`-style known ceiling (resets every app session) rather than over-built with Hive persistence for a first cut.
+- **CSV export (admin)** — hand-rolled `encodeCsv()` (`core/utils/csv_encoder.dart`, RFC 4180 quoting) rather than adding a `csv` package for what's a few lines. Export button on `AllOrdersScreen`'s app bar exports whatever the current retailer-scope + status filter shows, via `Share.shareXFiles([XFile.fromData(...)])` — no `path_provider` or file write needed, `XFile.fromData` builds the attachment in memory.
+- **Order confirmation share** — `buildOrderShareText()` (`core/utils/order_share_formatter.dart`) builds a receipt-style plain-text summary; a share icon in `OrderDetailScreen`'s app bar calls `Share.share()`.
+- **`share_plus` had been sitting unused in `pubspec.yaml`** — same situation as `firebase_crashlytics` earlier this session — now actually wired up (CSV export + order share) and documented in `ARCHITECTURE.md`/`rules.md`'s package tables. Every platform-plugin call (`Share.share`/`shareXFiles`) wrapped in the same defensive try/catch as everything else.
+- **Tests**: `csv_encoder_test.dart` (5), `order_share_formatter_test.dart` (1), `order_entity_test.dart` (3, new `test/unit/entities/` folder — first entity-level unit tests in this project), `stock_alert_controller_test.dart` (6, `ProviderContainer`-based — required a `_settle()` helper pumping multiple event-loop turns, since a single `Future.delayed(Duration.zero)` only drains microtasks queued *so far*, not ones a later microtask goes on to schedule, and this provider chain is 4–5 hops deep through nested streams), `order_detail_screen_test.dart` (8, new file — first test coverage for this screen), plus new cases in `all_orders_screen_test.dart` (2) and `extensions_test.dart` (1).
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 250/250 passing (up from 225).
+
+### 💬 Latest Discussion Summary:
+
+1. User interrupted a build step mid-session to ask that four external "Flutter component library" sites be checked for usable code. Investigated all four: two were paid subscription products (copying their code without a license would be a real problem), one was just an app-showcase directory with zero code, one was a broken/redirect-looping domain. Reported this honestly rather than pretending to use them, and proceeded using them as visual/UX inspiration only (consistent with how the app's own Zepto/Blinkit references have always been handled — shapes and motion, not literal assets).
+2. `phases.md` updated with a new "✅ Post-Launch Feature Additions" section (not a numbered phase — these were requested ad hoc, same treatment as the 2026-07-29 through 2026-07-31 bug-fix/UX sessions that also sit outside the phase checklist).
+3. A release APK was built and installed onto the user's connected phone (Redmi `M2101K6I`) for live verification, same `flutter install -d <device>` flow as the 2026-08-09 session.
+
+---
+
+## 📅 Session Log: 2026-08-19 (continued) — Navigation Redesign plan (Phase 9) scoped and published
+
+### 📋 Tasks completed:
+
+- User asked for a "deep and whole structure" of the app's user flows, benchmarked against Zepto/Blinkit, specifically flagging that admin "only has a single screen for the functions" and wanting more usability on both sides.
+- Ran an `Explore` agent first to map the *actual current* navigation structure (every route, every screen, shell vs. pushed) rather than guessing from memory — confirmed the retailer side already uses a `StatefulShellRoute.indexedStack` 5-tab shell (Home/Search/Cart/Orders/Profile), while every admin route was a flat `GoRoute` reached by pushing from one dashboard hub screen, with no persistent nav at all.
+- Published the plan as a Claude Artifact ("Navigation Redesign") rather than a plain chat answer, since it's inherently a visual/structural document — three hand-authored inline-SVG diagrams (not decorative; each depicts a real mechanism): the retailer shell's IndexedStack-plus-escape-hatch pattern, the admin hub-and-spoke's actual cost (a highlighted path showing "approving one retailer = 4 taps"), and the proposed admin shell mirroring the retailer's own proven pattern. An old→new screen mapping table and a numbered **Phase 9** roadmap (9.1–9.9) were included so it could slot directly into `phases.md`'s existing convention.
+- User then asked, separately and unrelated to the app, for an offline-AI-on-a-USB-drive field guide (from an Instagram reel) — built as its own Artifact ("Pocket AI Rig") plus a PDF and later a Word doc when PDF delivery failed for the user, and later deleted at the user's request. Not part of this project's own scope; noted here only because it happened in the same session and touched files were cleaned up afterward.
+
+### 💬 Latest Discussion Summary:
+
+1. User approved the plan and asked to proceed with 9.1 specifically, "be careful" — flagged as the structural (higher-risk) half of the roadmap, versus 9.7–9.8's purely additive retailer-content half.
+2. `phases.md` updated: new **Phase 9 — Navigation Redesign** section added (running alongside Phase 8, not blocking it), goal and full roadmap recorded before any code was touched.
+
+---
+
+## 📅 Session Log: 2026-08-19 (continued) — Phase 9 complete: Admin shell restructure + retailer content (9.1–9.9)
+
+### 📋 Tasks completed:
+
+**Admin shell restructure (9.1–9.6)** — replaced the dashboard-hub-and-eleven-pushed-screens pattern with a real persistent 5-tab shell (Dashboard/Orders/Catalog/Retailers/Profile), reusing the retailer app's own proven `StatefulShellRoute.indexedStack` mechanism rather than inventing a second navigation pattern:
+
+- **9.1 — shell scaffold**: new `_AdminShell` + `AdminBottomNavBar`. Reused the *exact same* existing route paths (`/admin`, `/admin/orders`, `/admin/retailers`, `/admin/profile`) as the new tab roots — `route_names.dart`'s own "routes are contractual" comment made this the deciding factor over inventing new ones. Grepped every call site pushing to those paths first: all three were only ever pushed from `AdminDashboardScreen`'s own buttons, and `context.push()` onto a path that's now a shell-branch root (called from inside that same shell) doesn't switch tabs correctly — GoRouter pushes onto the current branch's own stack instead — so those 3 call sites became `context.go()`, which does perform a correct branch switch. Extracted the "Exit app?" `PopScope` confirmation (previously only on the retailer shell) into a shared `_confirmExitApp()` helper.
+- **9.2 — trim the Dashboard tab**: re-audited each of the original 6 nav buttons individually rather than removing them all as first sketched — only 3 were actually safe (now covered 1:1 by a tab); the other 3 (Manage Categories, Delivery Settings, Approval Queue's View All) were *kept*, since removing them before their real tab home existed (9.4/9.5/9.6) would have stranded working features with zero way to reach them, not just tidied up a redundancy.
+- **9.3 — Orders tab verification**: pure verification, zero code changes — `AllOrdersScreen` was already written with no back-arrow assumption.
+- **9.4 — Catalog tab (Products/Categories segmented)**: the risk here was breaking two screens with solid existing test coverage while merging them. Avoided by extracting each screen's list body into a standalone widget (`ProductsListView`, `CategoriesListView`) with no `Scaffold`/`AppBar` of its own, leaving `ManageProductsScreen`/`ManageCategoriesScreen` as thin wrappers rendering an *identical* widget tree to before — every existing test passed unmodified, zero rewrites. New `CatalogScreen` owns one `TabBar`/`TabBarView`, mirroring `AdminProfileScreen`'s own existing internal-tabs pattern; its FAB swaps between "Add Product"/"Add Category" by listening to the `TabController`.
+- **9.5 — Retailers tab (Approved/Pending segmented)**: same extraction discipline, but with one real structural difference caught by reasoning it through rather than assuming symmetry with 9.4 — Catalog's two source screens each had their own separate pre-existing route, so both stayed alive standalone; `/admin/retailers` was *already* `RetailerListScreen`'s only route (claimed by the shell back in 9.1), so its wrapper had nothing left to do once extracted. Deleted it outright rather than inventing a route just to keep dead code reachable, renamed the file to `approved_retailers_list_view.dart` to match what it actually contains, migrated its test. The Pending tab shows a live `(N)` count badge.
+- **9.6 — Delivery Settings folded into Profile**: a different shape again, on purpose — Delivery Settings only ever had one home screen, no sibling to segment against, so a `TabBar` didn't fit. Instead embedded in a `showModalBottomSheet` from the Profile tab's existing "Delivery Settings" list tile, reusing the exact sheet pattern its neighbor ("Edit Profile") already uses. Removing the old `context.push` call left the `go_router` and `route_names.dart` imports unused — caught by `flutter analyze`, not missed.
+
+**Retailer content (9.7–9.8)**:
+
+- **9.7 — Home content**: a "Buy Again" rail (frequently-bought products, one-tap add) and a low-stock banner. The roadmap originally sketched *two* rails ("Buy Again" and "Frequently Bought") that would have pulled from the exact same signal — collapsed to one, named to match the reference apps. Zero new product-tile widget: `ProductCard` was already built to work at any width, so the rail just constrains it with `SizedBox(width: 150)`. New `allActiveProductsProvider` (made public) + `frequentlyBoughtProductsProvider` sit alongside the existing `lowStockFrequentProductsProvider` from the stock-alert work, sharing its two dependencies. Two real things the test suite caught: a fixed rail height overflowed `ProductCard` by 1.5px (invisible on a quick look, `flutter test` failed loudly), and `ProductCard` needs the cart provider overridden with the project's existing `FakeCartRepository` in tests or it throws trying to open a real Hive box.
+- **9.8 — Orders content**: status filter chips on `OrderHistoryScreen` (promoted `AllOrdersScreen`'s private `_FilterChip` to a shared `StatusFilterChip` used by both, rather than duplicating it into a second file) and a new `OrderTrackingStepper` (vertical timeline, Placed → Confirmed → Out for Delivery → Delivered, with Cancelled as its own distinct row) added into the *shared* `OrderDetailBody` so both admin and retailer see it, same as the existing status badge already did. Adding the stepper pushed content further down past the default 800×600 test surface, breaking `order_management_screen_test.dart`'s ability to find text still on-screen on a real device — fixed with this codebase's own already-documented `useTallTestViewport()` helper from Phase 6.1, the exact same gotcha recurring.
+- **9.9 — final regression pass**: `flutter analyze`/`flutter test` re-verified clean across the whole accumulated diff (`dart format` was run only on files this phase actually touched, deliberately not the whole tree — that would have reformatted 142 completely unrelated files from a pre-existing formatter-version drift and buried this phase's real diff in noise). Reformatting one already-dirty file exposed one more pre-existing `curly_braces_in_flow_control_structures` lint, fixed the same way Phase 6.4 already documented handling that exact class of issue once before. `README.md`/`PRD.md`/`ARCHITECTURE.md` updated for the phase close-out.
+- **Final tally**: 270/270 tests passing (up from 250 at the start of Phase 9), `flutter analyze` zero issues throughout every sub-phase, not just at the end.
+
+### 💬 Latest Discussion Summary:
+
+1. User asked for each sub-phase to be implemented "very carefully" given the app is headed for a live Play Store release — reflected in reading each screen's actual current code (and its existing tests) before touching it, rather than assuming symmetry between similar-looking sub-phases, and in treating any test failure as a real regression to root-cause rather than a viewport number to bump without understanding why.
+2. `phases.md` updated throughout, one sub-phase at a time, each with its own scope note — Phase 9 marked ✅ Complete (9/9) in both its section header and the "Current Active Phase" pointer, which now points back to Phase 8 as the sole remaining active phase.
+3. `PRD.md` §3/§4.2/§4.3/§6 updated: the cancellation window as a new business-rule row, CSV export and status filtering added to the admin Order Management feature row, Buy Again/tracking/reorder added to the retailer feature rows, and the §6 navigation diagram redrawn to show the real persistent-tab structure on both sides instead of the old admin hub-and-spoke.
 
 ---
 

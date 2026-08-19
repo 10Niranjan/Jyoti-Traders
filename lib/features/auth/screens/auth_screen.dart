@@ -18,7 +18,7 @@ class AuthScreen extends ConsumerStatefulWidget {
 
 class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   bool _isLogin = true;
   bool _obscurePassword = true;
 
@@ -45,10 +45,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final controller = ref.read(authControllerProvider.notifier);
 
     if (_isLogin) {
-      controller.signIn(
-        _emailController.text.trim(),
-        _passwordController.text,
-      );
+      controller.signIn(_emailController.text.trim(), _passwordController.text);
     } else {
       controller.signUp(
         name: _nameController.text.trim(),
@@ -93,7 +90,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16.0,
+              ),
               child: Form(
                 key: _formKey,
                 child: Column(
@@ -114,15 +114,20 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           color: AppColors.primary,
                         ),
                       ),
-                    ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
+                    ).animate().scale(
+                      duration: 400.ms,
+                      curve: Curves.easeOutBack,
+                    ),
                     const SizedBox(height: 16),
                     Text(
-                      'Jyoti Kirana',
+                      'Jyoti Traders',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
-                        color: isDark ? AppColors.textPrimaryDark : AppColors.primary,
+                        color: isDark
+                            ? AppColors.textPrimaryDark
+                            : AppColors.primary,
                         letterSpacing: 0.5,
                       ),
                     ).animate().fadeIn(delay: 200.ms, duration: 450.ms),
@@ -133,176 +138,233 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 14,
-                        color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                        color: isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight,
                       ),
                     ).animate().fadeIn(delay: 300.ms, duration: 450.ms),
                     const SizedBox(height: 32),
 
                     // Card Form Container (Glassmorphic vibe)
                     Container(
-                      padding: const EdgeInsets.all(24.0),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppColors.surfaceDark : Colors.white,
-                        borderRadius: BorderRadius.circular(24.0),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                        border: Border.all(
-                          color: isDark 
-                              ? Colors.white.withOpacity(0.05) 
-                              : AppColors.primary.withOpacity(0.05),
-                        ),
-                      ),
-                      child: AnimatedSize(
-                        duration: 300.ms,
-                        curve: Curves.easeInOut,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Sign Up Specific Fields
-                            if (!_isLogin) ...[
-                              // Name Field
-                              _buildTextField(
-                                controller: _nameController,
-                                label: 'Full Name',
-                                icon: Icons.person_outline,
-                                helperText: 'Letters and spaces only',
-                                validator: Validators.name,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(RegExp("[a-zA-Z' -]")),
-                                  LengthLimitingTextInputFormatter(50),
-                                ],
+                          padding: const EdgeInsets.all(24.0),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppColors.surfaceDark
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(24.0),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(
+                                  isDark ? 0.3 : 0.05,
+                                ),
+                                blurRadius: 20,
+                                offset: const Offset(0, 10),
                               ),
-                              const SizedBox(height: 16),
-
-                              // Phone Field
-                              _buildTextField(
-                                controller: _phoneController,
-                                label: 'Phone Number',
-                                icon: Icons.phone_outlined,
-                                keyboardType: TextInputType.phone,
-                                helperText: '10-digit mobile number',
-                                validator: Validators.phone,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                  LengthLimitingTextInputFormatter(10),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-
-                              // Business Name
-                              _buildTextField(
-                                controller: _businessNameController,
-                                label: 'Business / Shop Name',
-                                icon: Icons.store_outlined,
-                                helperText: 'Letters, numbers, spaces, & - . allowed',
-                                validator: Validators.businessName,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9 &.-]')),
-                                  LengthLimitingTextInputFormatter(100),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
                             ],
-
-                            // Email Field
-                            _buildTextField(
-                              controller: _emailController,
-                              label: 'Email Address',
-                              icon: Icons.mail_outline,
-                              keyboardType: TextInputType.emailAddress,
-                              validator: Validators.email,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.deny(RegExp(r'\s')),
-                                LengthLimitingTextInputFormatter(254),
-                              ],
+                            border: Border.all(
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.05)
+                                  : AppColors.primary.withOpacity(0.05),
                             ),
-                            const SizedBox(height: 16),
-
-                            // Password Field
-                            TextFormField(
-                              controller: _passwordController,
-                              obscureText: _obscurePassword,
-                              autovalidateMode: AutovalidateMode.onUserInteraction,
-                              style: TextStyle(color: isDark ? Colors.white : AppColors.textPrimaryLight),
-                              decoration: InputDecoration(
-                                labelText: 'Password',
-                                labelStyle: TextStyle(
-                                  color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                                ),
-                                helperText: _isLogin ? null : '8+ chars with upper, lower, number & symbol',
-                                helperMaxLines: 2,
-                                prefixIcon: const Icon(Icons.lock_outline, color: AppColors.primary),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                                  ),
-                                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16.0),
-                                  borderSide: BorderSide(
-                                    color: isDark ? Colors.white24 : Colors.black12,
-                                  ),
-                                ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16.0),
-                                  borderSide: BorderSide(
-                                    color: isDark ? Colors.white10 : Colors.black12,
-                                  ),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(16.0),
-                                  borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                                ),
-                              ),
-                              validator: (val) {
-                                if (_isLogin) {
-                                  return (val == null || val.isEmpty) ? 'Enter password' : null;
-                                }
-                                return Validators.password(val);
-                              },
-                            ),
-                            const SizedBox(height: 24),
-
-                            // Submit Button
-                            ElevatedButton(
-                              onPressed: authState is AuthLoading ? null : _submit,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 16.0),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16.0),
-                                ),
-                                elevation: 2,
-                              ),
-                              child: authState is AuthLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2.5,
-                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                          child: AnimatedSize(
+                            duration: 300.ms,
+                            curve: Curves.easeInOut,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                // Sign Up Specific Fields
+                                if (!_isLogin) ...[
+                                  // Name Field
+                                  _buildTextField(
+                                    controller: _nameController,
+                                    label: 'Full Name',
+                                    icon: Icons.person_outline,
+                                    helperText: 'Letters and spaces only',
+                                    validator: Validators.name,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp("[a-zA-Z' -]"),
                                       ),
-                                    )
-                                  : Text(
-                                      _isLogin ? 'Sign In' : 'Create Account',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                      LengthLimitingTextInputFormatter(50),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  // Phone Field
+                                  _buildTextField(
+                                    controller: _phoneController,
+                                    label: 'Phone Number',
+                                    icon: Icons.phone_outlined,
+                                    keyboardType: TextInputType.phone,
+                                    helperText: '10-digit mobile number',
+                                    validator: Validators.phone,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.digitsOnly,
+                                      LengthLimitingTextInputFormatter(10),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+
+                                  // Business Name
+                                  _buildTextField(
+                                    controller: _businessNameController,
+                                    label: 'Business / Shop Name',
+                                    icon: Icons.store_outlined,
+                                    helperText:
+                                        'Letters, numbers, spaces, & - . allowed',
+                                    validator: Validators.businessName,
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(
+                                        RegExp(r'[A-Za-z0-9 &.-]'),
+                                      ),
+                                      LengthLimitingTextInputFormatter(100),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                ],
+
+                                // Email Field
+                                _buildTextField(
+                                  controller: _emailController,
+                                  label: 'Email Address',
+                                  icon: Icons.mail_outline,
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: Validators.email,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.deny(
+                                      RegExp(r'\s'),
+                                    ),
+                                    LengthLimitingTextInputFormatter(254),
+                                  ],
+                                ),
+                                const SizedBox(height: 16),
+
+                                // Password Field
+                                TextFormField(
+                                  controller: _passwordController,
+                                  obscureText: _obscurePassword,
+                                  autovalidateMode:
+                                      AutovalidateMode.onUserInteraction,
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? Colors.white
+                                        : AppColors.textPrimaryLight,
+                                  ),
+                                  decoration: InputDecoration(
+                                    labelText: 'Password',
+                                    labelStyle: TextStyle(
+                                      color: isDark
+                                          ? AppColors.textSecondaryDark
+                                          : AppColors.textSecondaryLight,
+                                    ),
+                                    helperText: _isLogin
+                                        ? null
+                                        : '8+ chars with upper, lower, number & symbol',
+                                    helperMaxLines: 2,
+                                    prefixIcon: const Icon(
+                                      Icons.lock_outline,
+                                      color: AppColors.primary,
+                                    ),
+                                    suffixIcon: IconButton(
+                                      icon: Icon(
+                                        _obscurePassword
+                                            ? Icons.visibility_off_outlined
+                                            : Icons.visibility_outlined,
+                                        color: isDark
+                                            ? AppColors.textSecondaryDark
+                                            : AppColors.textSecondaryLight,
+                                      ),
+                                      onPressed: () => setState(
+                                        () => _obscurePassword =
+                                            !_obscurePassword,
                                       ),
                                     ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16.0),
+                                      borderSide: BorderSide(
+                                        color: isDark
+                                            ? Colors.white24
+                                            : Colors.black12,
+                                      ),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16.0),
+                                      borderSide: BorderSide(
+                                        color: isDark
+                                            ? Colors.white10
+                                            : Colors.black12,
+                                      ),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(16.0),
+                                      borderSide: const BorderSide(
+                                        color: AppColors.primary,
+                                        width: 2,
+                                      ),
+                                    ),
+                                  ),
+                                  validator: (val) {
+                                    if (_isLogin) {
+                                      return (val == null || val.isEmpty)
+                                          ? 'Enter password'
+                                          : null;
+                                    }
+                                    return Validators.password(val);
+                                  },
+                                ),
+                                const SizedBox(height: 24),
+
+                                // Submit Button
+                                ElevatedButton(
+                                  onPressed: authState is AuthLoading
+                                      ? null
+                                      : _submit,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 16.0,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16.0),
+                                    ),
+                                    elevation: 2,
+                                  ),
+                                  child: authState is AuthLoading
+                                      ? const SizedBox(
+                                          height: 20,
+                                          width: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2.5,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  Colors.white,
+                                                ),
+                                          ),
+                                        )
+                                      : Text(
+                                          _isLogin
+                                              ? 'Sign In'
+                                              : 'Create Account',
+                                          style: GoogleFonts.inter(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                    ).animate().slideY(begin: 0.1, duration: 400.ms, curve: Curves.easeOutQuad).fadeIn(),
+                          ),
+                        )
+                        .animate()
+                        .slideY(
+                          begin: 0.1,
+                          duration: 400.ms,
+                          curve: Curves.easeOutQuad,
+                        )
+                        .fadeIn(),
 
                     const SizedBox(height: 24),
 
@@ -311,9 +373,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          _isLogin ? "Don't have an account? " : "Already have an account? ",
+                          _isLogin
+                              ? "Don't have an account? "
+                              : "Already have an account? ",
                           style: GoogleFonts.inter(
-                            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                            color: isDark
+                                ? AppColors.textSecondaryDark
+                                : AppColors.textSecondaryLight,
                           ),
                         ),
                         TextButton(
@@ -329,12 +395,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           ),
                           child: Text(
                             _isLogin ? 'Sign Up' : 'Sign In',
-                            style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                            style: GoogleFonts.inter(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
                     ).animate().fadeIn(delay: 500.ms),
-                    
+
                     if (_isLogin) ...[
                       const SizedBox(height: 20),
                       // Helper text for quick demoing
@@ -343,7 +411,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         decoration: BoxDecoration(
                           color: AppColors.primary.withOpacity(0.06),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.primary.withOpacity(0.1)),
+                          border: Border.all(
+                            color: AppColors.primary.withOpacity(0.1),
+                          ),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -364,16 +434,26 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                     onPressed: () {
                                       setState(() {
                                         _isLogin = true;
-                                        _emailController.text = 'admin@jyoti.com';
+                                        _emailController.text =
+                                            'admin@jyoti.com';
                                         _passwordController.text = 'admin123';
                                       });
                                       _submit();
                                     },
-                                    icon: const Icon(Icons.admin_panel_settings, size: 16),
-                                    label: const Text('Admin Demo', style: TextStyle(fontSize: 11)),
+                                    icon: const Icon(
+                                      Icons.admin_panel_settings,
+                                      size: 16,
+                                    ),
+                                    label: const Text(
+                                      'Admin Demo',
+                                      style: TextStyle(fontSize: 11),
+                                    ),
                                     style: OutlinedButton.styleFrom(
                                       visualDensity: VisualDensity.compact,
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -383,16 +463,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                     onPressed: () {
                                       setState(() {
                                         _isLogin = true;
-                                        _emailController.text = 'retailer@jyoti.com';
-                                        _passwordController.text = 'retailer123';
+                                        _emailController.text =
+                                            'retailer@jyoti.com';
+                                        _passwordController.text =
+                                            'retailer123';
                                       });
                                       _submit();
                                     },
                                     icon: const Icon(Icons.store, size: 16),
-                                    label: const Text('Retailer Demo', style: TextStyle(fontSize: 11)),
+                                    label: const Text(
+                                      'Retailer Demo',
+                                      style: TextStyle(fontSize: 11),
+                                    ),
                                     style: OutlinedButton.styleFrom(
                                       visualDensity: VisualDensity.compact,
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -427,11 +515,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      style: TextStyle(color: isDark ? Colors.white : AppColors.textPrimaryLight),
+      style: TextStyle(
+        color: isDark ? Colors.white : AppColors.textPrimaryLight,
+      ),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
-          color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+          color: isDark
+              ? AppColors.textSecondaryDark
+              : AppColors.textSecondaryLight,
         ),
         helperText: helperText,
         prefixIcon: Icon(icon, color: AppColors.primary),

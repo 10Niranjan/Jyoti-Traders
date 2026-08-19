@@ -9,6 +9,7 @@ import '../../core/utils/extensions.dart';
 import '../../core/utils/weight_formatter.dart';
 import '../../domain/entities/order_entity.dart';
 import 'order_status_badge.dart';
+import 'order_tracking_stepper.dart';
 
 /// Full order breakdown — id/status, items, totals, delivery address and
 /// payment method. Shared by the retailer's read-only `OrderDetailScreen`
@@ -39,7 +40,10 @@ class OrderDetailBody extends StatelessWidget {
           children: [
             Text(
               'Order #${order.id.shortId}',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 16),
+              style: GoogleFonts.poppins(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
             OrderStatusBadge(status: order.orderStatus),
           ],
@@ -47,20 +51,30 @@ class OrderDetailBody extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           formatOrderDateTime(order.createdAt),
-          style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondaryLight),
+          style: GoogleFonts.inter(
+            fontSize: 12,
+            color: AppColors.textSecondaryLight,
+          ),
         ),
         if (showShopName) ...[
           const SizedBox(height: 4),
           Text(
             order.shopName,
-            style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.primary),
+            style: GoogleFonts.inter(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: AppColors.primary,
+            ),
           ),
         ],
-        if (header != null) ...[
-          const SizedBox(height: 16),
-          header!,
-        ],
+        if (header != null) ...[const SizedBox(height: 16), header!],
         const SizedBox(height: 20),
+        Text(
+          'Order Status',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        OrderTrackingStepper(status: order.orderStatus),
         Text('Items', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
         const SizedBox(height: 8),
         ...order.items.map(
@@ -77,24 +91,43 @@ class OrderDetailBody extends StatelessWidget {
                     style: GoogleFonts.inter(fontSize: 13),
                   ),
                 ),
-                Text(item.totalPrice.formatted, style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600)),
+                Text(
+                  item.totalPrice.formatted,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ],
             ),
           ),
         ),
         const Divider(height: 28),
         _TotalRow(label: 'Subtotal', value: order.subtotal.formatted),
-        _TotalRow(label: 'Delivery Charge', value: order.deliveryCharge.formatted),
-        _TotalRow(label: 'Grand Total', value: order.grandTotal.formatted, bold: true),
+        _TotalRow(
+          label: 'Delivery Charge',
+          value: order.deliveryCharge.formatted,
+        ),
+        _TotalRow(
+          label: 'Grand Total',
+          value: order.grandTotal.formatted,
+          bold: true,
+        ),
         const SizedBox(height: 24),
-        Text('Delivery Address', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        Text(
+          'Delivery Address',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 6),
         Text(
           '${order.deliveryAddress.street}, ${order.deliveryAddress.city} - ${order.deliveryAddress.pincode}',
           style: GoogleFonts.inter(fontSize: 13),
         ),
         const SizedBox(height: 24),
-        Text('Payment', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        Text(
+          'Payment',
+          style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 6),
         Text(
           order.paymentMethod == PaymentMethod.cod ? 'Cash on Delivery' : 'UPI',
@@ -107,12 +140,20 @@ class OrderDetailBody extends StatelessWidget {
             style: GoogleFonts.inter(
               fontSize: 12.5,
               fontWeight: FontWeight.w600,
-              color: order.paymentStatus == PaymentStatus.paid ? AppColors.success : AppColors.warning,
+              color: order.paymentStatus == PaymentStatus.paid
+                  ? AppColors.success
+                  : AppColors.warning,
             ),
           ),
           if (order.paymentScreenshotUrl != null) ...[
             const SizedBox(height: 10),
-            Text('Payment Screenshot', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600)),
+            Text(
+              'Payment Screenshot',
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 6),
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
@@ -120,8 +161,14 @@ class OrderDetailBody extends StatelessWidget {
                 width: 140,
                 height: 140,
                 child: order.paymentScreenshotUrl!.startsWith('http')
-                    ? CachedNetworkImage(imageUrl: order.paymentScreenshotUrl!, fit: BoxFit.cover)
-                    : Image.file(File(order.paymentScreenshotUrl!), fit: BoxFit.cover),
+                    ? CachedNetworkImage(
+                        imageUrl: order.paymentScreenshotUrl!,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.file(
+                        File(order.paymentScreenshotUrl!),
+                        fit: BoxFit.cover,
+                      ),
               ),
             ),
           ],
@@ -140,16 +187,26 @@ class _TotalRow extends StatelessWidget {
   final String value;
   final bool bold;
 
-  const _TotalRow({required this.label, required this.value, this.bold = false});
+  const _TotalRow({
+    required this.label,
+    required this.value,
+    this.bold = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final style = GoogleFonts.inter(fontSize: bold ? 15 : 13, fontWeight: bold ? FontWeight.bold : FontWeight.normal);
+    final style = GoogleFonts.inter(
+      fontSize: bold ? 15 : 13,
+      fontWeight: bold ? FontWeight.bold : FontWeight.normal,
+    );
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text(label, style: style), Text(value, style: style)],
+        children: [
+          Text(label, style: style),
+          Text(value, style: style),
+        ],
       ),
     );
   }

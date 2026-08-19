@@ -13,12 +13,11 @@ import 'package:traders_retailer/domain/entities/order_entity.dart';
 import 'package:traders_retailer/domain/entities/order_item_entity.dart';
 import 'package:traders_retailer/domain/repositories/order_repository.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
-import 'package:traders_retailer/features/checkout/screens/upi_payment_screen.dart';
+import 'package:traders_retailer/features/orders/screens/order_history_screen.dart';
 
-/// Backs `authControllerProvider` with an already-signed-in retailer so
-/// `orderByIdProvider` (retailer-scoped) resolves — no test in this codebase
-/// has needed a signed-in auth state before, so this is a new but minimal
-/// fake: just enough of `AuthRepository` to reach `AuthenticatedCustomer`.
+/// Minimal fake, same shape as the one in order_detail_screen_test.dart —
+/// just enough of `AuthRepository` to reach `AuthenticatedCustomer`, which
+/// `orderHistoryProvider` requires.
 class FakeAuthRepository implements AuthRepository {
   final UserModel user;
   FakeAuthRepository(this.user);
@@ -116,70 +115,97 @@ final _retailer = UserModel(
   createdAt: DateTime(2026, 1, 1),
 );
 
-final _order = OrderEntity(
-  id: 'order_upi_1',
-  userId: 'u1',
-  shopName: 'Ramesh Kirana Store',
-  items: [
-    OrderItemEntity(
-      productId: 'p1',
-      name: 'Basmati Rice',
-      qty: 2,
-      unitPrice: Money(1500),
-    ),
-  ],
-  subtotal: Money(3000),
-  deliveryCharge: Money(50),
-  paymentMethod: PaymentMethod.upi,
-  paymentStatus: PaymentStatus.pending,
-  orderStatus: OrderStatus.pending,
-  deliveryAddress: const AddressEntity(
-    street: 'St',
-    city: 'City',
-    pincode: '123456',
-  ),
-  createdAt: DateTime(2026, 7, 20),
-);
-
-Widget _wrap(FakeOrderRepository repo, {String orderId = 'order_upi_1'}) =>
-    ProviderScope(
-      overrides: [
-        authRepositoryProvider.overrideWithValue(FakeAuthRepository(_retailer)),
-        orderRepositoryProvider.overrideWithValue(repo),
+OrderEntity _order({required String id, required OrderStatus status}) =>
+    OrderEntity(
+      id: id,
+      userId: 'u1',
+      shopName: 'Ramesh Kirana Store',
+      items: [
+        OrderItemEntity(
+          productId: 'p1',
+          name: 'Basmati Rice',
+          qty: 2,
+          unitPrice: Money(1500),
+        ),
       ],
-      child: MaterialApp(home: UpiPaymentScreen(orderId: orderId)),
+      subtotal: Money(3000),
+      deliveryCharge: Money(50),
+      paymentMethod: PaymentMethod.cod,
+      paymentStatus: PaymentStatus.pending,
+      orderStatus: status,
+      deliveryAddress: const AddressEntity(
+        street: 'St',
+        city: 'City',
+        pincode: '123456',
+      ),
+      createdAt: DateTime(2026, 7, 20),
     );
 
+Widget _wrap(FakeOrderRepository repo) => ProviderScope(
+  overrides: [
+    authRepositoryProvider.overrideWithValue(FakeAuthRepository(_retailer)),
+    orderRepositoryProvider.overrideWithValue(repo),
+  ],
+  child: const MaterialApp(home: OrderHistoryScreen()),
+);
+
 void main() {
-  testWidgets('shows the amount due and the UPI id', (tester) async {
-    await tester.pumpWidget(_wrap(FakeOrderRepository([_order])));
+  testWidgets('shows an empty state when there are no orders', (tester) async {
+    await tester.pumpWidget(_wrap(FakeOrderRepository([])));
     await tester.pumpAndSettle();
 
-    expect(find.text('Pay ₹3,050'), findsOneWidget);
-    expect(find.text('jyotitraders@upi'), findsOneWidget);
-    expect(find.text('I Have Paid'), findsOneWidget);
+    expect(find.text('No orders yet'), findsOneWidget);
   });
 
-  testWidgets('tapping the UPI id copies it and confirms via snackbar', (
-    tester,
-  ) async {
-    await tester.pumpWidget(_wrap(FakeOrderRepository([_order])));
+  testWidgets('lists every order by default', (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        FakeOrderRepository([
+          _order(id: 'o1', status: OrderStatus.pending),
+          _order(id: 'o2', status: OrderStatus.delivered),
+        ]),
+      ),
+    );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('jyotitraders@upi'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('UPI ID copied.'), findsOneWidget);
+    expect(find.text('Order #${'o1'.toUpperCase()}'), findsOneWidget);
+    expect(find.text('Order #${'o2'.toUpperCase()}'), findsOneWidget);
   });
 
-  testWidgets('shows a not-found state for an unknown order id', (
+  testWidgets('filtering by status hides orders in other statuses', (
     tester,
   ) async {
     await tester.pumpWidget(
-      _wrap(FakeOrderRepository([_order]), orderId: 'missing'),
+      _wrap(
+        FakeOrderRepository([
+          _order(id: 'o1', status: OrderStatus.pending),
+          _order(id: 'o2', status: OrderStatus.delivered),
+        ]),
+      ),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('This order could not be found.'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilterChip, 'Delivered'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Order #${'o1'.toUpperCase()}'), findsNothing);
+    expect(find.text('Order #${'o2'.toUpperCase()}'), findsOneWidget);
   });
+
+  testWidgets(
+    'shows a status-specific empty message when a filter matches nothing',
+    (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          FakeOrderRepository([_order(id: 'o1', status: OrderStatus.pending)]),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(FilterChip, 'Delivered'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('No delivered orders'), findsOneWidget);
+    },
+  );
 }

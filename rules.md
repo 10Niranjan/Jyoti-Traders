@@ -1,5 +1,5 @@
 # 📜 RULES.md
-## Jyoti Kirana — Project Development Rules & Regulations
+## Jyoti Traders — Project Development Rules & Regulations
 
 > These rules are **non-negotiable** and must be followed on **every single implementation**, every file, every feature, every session — without exception.  
 > **Every AI agent, developer, or contributor working on this project must read and internalize this file before writing a single line of code.**
@@ -34,7 +34,7 @@ Only the following packages are approved for this project. **Do not introduce an
 | Icons/SVG | `flutter_svg` |
 | Fonts | `google_fonts` — Poppins + Inter only |
 | Serialization | `freezed`, `json_annotation`, `json_serializable` |
-| Utilities | `intl`, `equatable`, `uuid`, `url_launcher`, `geolocator`, `permission_handler` |
+| Utilities | `intl`, `equatable`, `uuid`, `url_launcher`, `geolocator`, `permission_handler`, `share_plus` |
 | Payments | `qr_flutter` — renders the UPI QR code client-side from the UPI ID string (Phase 5, approved by client-facing user in session) |
 | Testing | `flutter_test`, `mocktail`, `integration_test` |
 | Code Gen | `build_runner` |

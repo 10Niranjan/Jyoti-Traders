@@ -24,11 +24,14 @@ class FirebaseAuthRepository implements AuthRepository {
     fb.FirebaseAuth? firebaseAuth,
     FirebaseFirestore? firestore,
     required Box userCacheBox,
-  })  : _userCacheBox = userCacheBox {
+  }) : _userCacheBox = userCacheBox {
     _initFirebaseAndMock(firebaseAuth, firestore);
   }
 
-  void _initFirebaseAndMock(fb.FirebaseAuth? firebaseAuth, FirebaseFirestore? firestore) {
+  void _initFirebaseAndMock(
+    fb.FirebaseAuth? firebaseAuth,
+    FirebaseFirestore? firestore,
+  ) {
     try {
       _firebaseAuth = firebaseAuth ?? fb.FirebaseAuth.instance;
       _firestore = firestore ?? FirebaseFirestore.instance;
@@ -42,16 +45,22 @@ class FirebaseAuthRepository implements AuthRepository {
     } catch (e) {
       _useMock = true;
       _initMockUser();
-      debugPrint('AuthRepository: Firebase not available, using simulation mode: $e');
+      debugPrint(
+        'AuthRepository: Firebase not available, using simulation mode: $e',
+      );
     }
-    debugPrint('AuthRepository: Running in ${_useMock ? "SIMULATION" : "FIREBASE"} mode.');
+    debugPrint(
+      'AuthRepository: Running in ${_useMock ? "SIMULATION" : "FIREBASE"} mode.',
+    );
   }
 
   void _initMockUser() {
     final cached = _userCacheBox.get('current_user');
     if (cached != null) {
       try {
-        final Map<String, dynamic> map = Map<String, dynamic>.from(cached as Map);
+        final Map<String, dynamic> map = Map<String, dynamic>.from(
+          cached as Map,
+        );
         _mockCurrentUser = UserModel.fromJson(map);
         _mockStreamController.add(_mockCurrentUser);
       } catch (e) {
@@ -91,7 +100,7 @@ class FirebaseAuthRepository implements AuthRepository {
     } catch (e) {
       debugPrint('Firestore read error: $e');
     }
-    
+
     // Check cache as fallback
     final cached = _userCacheBox.get('current_user');
     if (cached != null) {
@@ -115,9 +124,12 @@ class FirebaseAuthRepository implements AuthRepository {
   }) async {
     if (_useMock) {
       await Future.delayed(const Duration(milliseconds: 800));
-      
+
       // Check if user already exists in simulated db
-      final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+      final List<dynamic> users = _userCacheBox.get(
+        'simulated_users',
+        defaultValue: [],
+      );
       final exists = users.any((u) => (u as Map)['email'] == email);
       if (exists) {
         throw Exception('An account already exists with this email address.');
@@ -126,7 +138,9 @@ class FirebaseAuthRepository implements AuthRepository {
       final uid = 'mock_uid_${DateTime.now().millisecondsSinceEpoch}';
 
       // Admins are approved by default; normal users need manual approval
-      final status = role == UserRole.admin ? UserStatus.approved : UserStatus.pending;
+      final status = role == UserRole.admin
+          ? UserStatus.approved
+          : UserStatus.pending;
 
       final newUser = UserModel(
         uid: uid,
@@ -166,7 +180,9 @@ class FirebaseAuthRepository implements AuthRepository {
     }
 
     // Admin is approved by default
-    final status = role == UserRole.admin ? UserStatus.approved : UserStatus.pending;
+    final status = role == UserRole.admin
+        ? UserStatus.approved
+        : UserStatus.pending;
     final user = UserModel(
       uid: fbUser.uid,
       name: name,
@@ -192,7 +208,7 @@ class FirebaseAuthRepository implements AuthRepository {
   }) async {
     if (_useMock) {
       await Future.delayed(const Duration(milliseconds: 800));
-      
+
       // Special accounts for quick testing
       if (email == 'admin@jyoti.com' && password == 'admin123') {
         final admin = UserModel(
@@ -202,7 +218,7 @@ class FirebaseAuthRepository implements AuthRepository {
           phone: '9860460325',
           role: UserRole.admin,
           status: UserStatus.approved,
-          businessName: 'Jyoti Kirana Wholesale',
+          businessName: 'Jyoti Traders Wholesale',
           createdAt: DateTime.now(),
         );
         _mockCurrentUser = admin;
@@ -210,7 +226,7 @@ class FirebaseAuthRepository implements AuthRepository {
         _mockStreamController.add(admin);
         return admin;
       }
-      
+
       if (email == 'retailer@jyoti.com' && password == 'retailer123') {
         final retailer = UserModel(
           uid: 'mock_retailer_uid',
@@ -229,7 +245,10 @@ class FirebaseAuthRepository implements AuthRepository {
       }
 
       // Check simulated users list
-      final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+      final List<dynamic> users = _userCacheBox.get(
+        'simulated_users',
+        defaultValue: [],
+      );
       final matchIndex = users.indexWhere((u) => (u as Map)['email'] == email);
       final matchingUserMap = matchIndex == -1 ? null : users[matchIndex];
 
@@ -237,7 +256,9 @@ class FirebaseAuthRepository implements AuthRepository {
         throw Exception('No account found for this email address.');
       }
 
-      final foundUser = UserModel.fromJson(Map<String, dynamic>.from(matchingUserMap as Map));
+      final foundUser = UserModel.fromJson(
+        Map<String, dynamic>.from(matchingUserMap as Map),
+      );
       _mockCurrentUser = foundUser;
       await _userCacheBox.put('current_user', foundUser.toJson());
       _mockStreamController.add(foundUser);
@@ -291,12 +312,17 @@ class FirebaseAuthRepository implements AuthRepository {
   Future<UserModel?> refreshUserStatus(String uid) async {
     if (_useMock) {
       // Re-read simulated database list
-      final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+      final List<dynamic> users = _userCacheBox.get(
+        'simulated_users',
+        defaultValue: [],
+      );
       final matchIndex = users.indexWhere((u) => (u as Map)['uid'] == uid);
       final matchingUserMap = matchIndex == -1 ? null : users[matchIndex];
 
       if (matchingUserMap != null) {
-        final updated = UserModel.fromJson(Map<String, dynamic>.from(matchingUserMap as Map));
+        final updated = UserModel.fromJson(
+          Map<String, dynamic>.from(matchingUserMap as Map),
+        );
         if (_mockCurrentUser?.uid == uid) {
           _mockCurrentUser = updated;
           await _userCacheBox.put('current_user', updated.toJson());
@@ -335,7 +361,10 @@ class FirebaseAuthRepository implements AuthRepository {
     NotificationPreferencesEntity? notificationPreferences,
   }) async {
     if (_useMock) {
-      final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+      final List<dynamic> users = _userCacheBox.get(
+        'simulated_users',
+        defaultValue: [],
+      );
       final userMapList = List<Map<String, dynamic>>.from(
         users.map((e) => Map<String, dynamic>.from(e as Map)),
       );
@@ -426,15 +455,23 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> updateFcmToken({required String uid, required String fcmToken}) async {
+  Future<void> updateFcmToken({
+    required String uid,
+    required String fcmToken,
+  }) async {
     if (_useMock) {
-      final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+      final List<dynamic> users = _userCacheBox.get(
+        'simulated_users',
+        defaultValue: [],
+      );
       final userMapList = List<Map<String, dynamic>>.from(
         users.map((e) => Map<String, dynamic>.from(e as Map)),
       );
       for (int i = 0; i < userMapList.length; i++) {
         if (userMapList[i]['uid'] == uid) {
-          userMapList[i] = UserModel.fromJson(userMapList[i]).copyWith(fcmToken: fcmToken).toJson();
+          userMapList[i] = UserModel.fromJson(
+            userMapList[i],
+          ).copyWith(fcmToken: fcmToken).toJson();
         }
       }
       await _userCacheBox.put('simulated_users', userMapList);
@@ -447,7 +484,9 @@ class FirebaseAuthRepository implements AuthRepository {
       return;
     }
 
-    await _firestore!.collection('users').doc(uid).update({'fcmToken': fcmToken});
+    await _firestore!.collection('users').doc(uid).update({
+      'fcmToken': fcmToken,
+    });
   }
 
   @override
@@ -473,7 +512,10 @@ class FirebaseAuthRepository implements AuthRepository {
       return;
     }
 
-    final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+    final List<dynamic> users = _userCacheBox.get(
+      'simulated_users',
+      defaultValue: [],
+    );
     final userMapList = List<Map<String, dynamic>>.from(
       users.map((e) => Map<String, dynamic>.from(e as Map)),
     );
@@ -504,7 +546,10 @@ class FirebaseAuthRepository implements AuthRepository {
       return snap.docs.map((doc) => UserModel.fromJson(doc.data())).toList();
     }
 
-    final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+    final List<dynamic> users = _userCacheBox.get(
+      'simulated_users',
+      defaultValue: [],
+    );
     return users
         .map((u) => UserModel.fromJson(Map<String, dynamic>.from(u as Map)))
         .where((u) => u.role == UserRole.customer && !u.isApproved)
