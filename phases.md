@@ -335,11 +335,13 @@
 
 ---
 
-## ⬜ Phase 8 — Launch Preparation & Play Store
-> **Status**: NOT STARTED ⬜  
+## 🔶 Phase 8 — Launch Preparation & Play Store
+> **Status**: IN PROGRESS 🔶 (started 2026-08-19)  
 > **Goal**: Ship to Google Play Store.
 
-- [ ] Configure `firebase_crashlytics` — auto-capture uncaught exceptions in release build
+- [x] Configure `firebase_crashlytics` — auto-capture uncaught exceptions in release build
+
+> **Scope note**: `firebase_crashlytics` was already pre-approved in rules.md/ARCHITECTURE.md but never wired up. Hooked `FlutterError.onError` → `FirebaseCrashlytics.instance.recordFlutterFatalError` and `PlatformDispatcher.instance.onError` → `recordError(fatal: true)` in `main.dart`, right after the existing Firebase/FCM init block. `setCrashlyticsCollectionEnabled(kReleaseMode)` gates collection to release builds only, so local dev/debug errors and the test suite's expected simulation-mode fallbacks don't get reported. Follows the same defensive try/catch pattern as every other Firebase call in `main.dart` — setup failure degrades to a debug print, never a crash. `flutter analyze` zero issues, `flutter test` 225/225 passing (unchanged, this branch's prior Change Password/Settings work already added tests up to 225).
 - [ ] Configure `firebase_analytics` — track key events (order placed, user registered, login)
 - [ ] Write and deploy Firestore Security Rules — role-based read/write guards
 - [ ] Set Android `minSdkVersion = 24`, `targetSdkVersion = 34` in `build.gradle.kts`
@@ -362,7 +364,7 @@
 ### Next Immediate Task:
 > ✅ **Phase 7 (Testing & Quality Assurance) is fully complete — 12/12** (2026-07-31). `flutter analyze` zero issues, `flutter test` 163/163 passing.
 >
-> Next: **Phase 8 — Launch Preparation & Play Store.** First unchecked task: configure `firebase_crashlytics` to auto-capture uncaught exceptions in release builds.
+> 🔶 **Phase 8 in progress** — 1/12 done (2026-08-19). Next unchecked task: configure `firebase_analytics` to track key events (order placed, user registered, login).
 
 ---
 
