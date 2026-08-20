@@ -118,7 +118,7 @@ This application is built on **Clean Architecture** principles, popularized by R
 ## 3. 📁 Folder & File Structure
 
 ```
-jyoti_kirana/
+jyoti_traders/
 │
 ├── android/                          # Android native project
 │   └── app/

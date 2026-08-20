@@ -76,7 +76,7 @@ These are the official requirements provided by the client:
   - Implemented `HomeScreen` (customer marketplace) showcasing wholesale categories, items, and minimum order rules (₹2,500).
 - **Reactive Navigation**: Wired `appRouterProvider` (GoRouter + Riverpod) to automatically handle state-driven redirects.
 - **Fixed Test Suite**: Corrected Firebase dependency initializers and prevented repeating animations from causing timer leaks during widget tests. All tests pass with exit code `0`.
-- **GitHub Deployment**: Linked local workspace to GitHub remote (`10Niranjan/Jyoti-Kirana`), resolved `README.md` merge conflicts, and successfully pushed the full Flutter project architecture. Executed dummy commits to fulfill daily contribution streak requirements.
+- **GitHub Deployment**: Linked local workspace to GitHub remote (`10Niranjan/Jyoti-Traders`), resolved `README.md` merge conflicts, and successfully pushed the full Flutter project architecture. Executed dummy commits to fulfill daily contribution streak requirements.
 
 ### 💬 Latest Discussion Summary:
 

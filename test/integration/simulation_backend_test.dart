@@ -50,7 +50,7 @@ void main() {
     // with the delete), so even a "successful" run can leave its directory
     // behind. Scratch that leaks belongs in the OS temp dir, not cluttering
     // the project tree / IDE explorer.
-    tempDir = Directory.systemTemp.createTempSync('jyoti_kirana_hive_test_');
+    tempDir = Directory.systemTemp.createTempSync('jyoti_traders_hive_test_');
     Hive.init(tempDir.path);
     userCacheBox = await Hive.openBox('user_cache');
     catalogBox = await Hive.openBox('catalog_cache');

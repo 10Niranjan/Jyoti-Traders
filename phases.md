@@ -43,7 +43,7 @@
 - [x] `appRouterProvider` — reactive routing based on auth state (Admin/Approved/Pending)
 - [x] Fix all compile errors — `flutter analyze` passes with zero issues
 - [x] Fix test suite — `flutter test` passes with zero failures
-- [x] Git repository initialized and linked to `10Niranjan/Jyoti-Kirana`
+- [x] Git repository initialized and linked to `10Niranjan/Jyoti-Traders`
 - [x] Created `PRD.md`, `ARCHITECTURE.md`, `rules.md`, `phases.md`
 
 ---
