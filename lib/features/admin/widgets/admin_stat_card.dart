@@ -60,12 +60,24 @@ class AdminStatCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           value.when(
-            data: (v) => Text(
-              '$v',
-              style: GoogleFonts.poppins(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+            // TweenAnimationBuilder retargets from whatever's on screen to
+            // the new `end` on every rebuild, so this both counts up from 0
+            // on first load and animates smoothly on later live updates —
+            // no manual "previous value" tracking needed.
+            data: (v) => TweenAnimationBuilder<int>(
+              tween: IntTween(begin: 0, end: v),
+              duration: (MediaQuery.maybeOf(context)?.disableAnimations ?? false)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 900),
+              curve: Curves.easeOutCubic,
+              builder: (context, animatedValue, _) => Text(
+                '$animatedValue',
+                style: GoogleFonts.poppins(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                ),
               ),
             ),
             loading: () => Shimmer.fromColors(

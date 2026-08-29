@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
 import '../../../core/utils/extensions.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../../core/utils/order_share_formatter.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/entities/cart_item_entity.dart';
@@ -37,7 +38,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
         subject: 'Order #${order.id.shortId}',
       );
     } catch (e) {
-      debugPrint('OrderDetailScreen: share sheet unavailable: $e');
+      logWarning('OrderDetailScreen: share sheet unavailable', e);
     }
   }
 

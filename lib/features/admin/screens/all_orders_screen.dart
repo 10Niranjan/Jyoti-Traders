@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../../core/utils/csv_encoder.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/utils/extensions.dart';
@@ -96,7 +97,7 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
         ),
       ], subject: 'Orders Export');
     } catch (e) {
-      debugPrint('AllOrdersScreen: export share sheet unavailable: $e');
+      logWarning('AllOrdersScreen: export share sheet unavailable', e);
     }
   }
 

@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'auth_repository.dart';
 import '../models/user_model.dart';
 import '../../core/network/firebase_mode.dart';
+import '../../core/utils/app_logger.dart';
 import '../../domain/entities/address_entity.dart';
 import '../../domain/entities/bank_details_entity.dart';
 import '../../domain/entities/business_hours_entity.dart';
@@ -45,13 +45,9 @@ class FirebaseAuthRepository implements AuthRepository {
     } catch (e) {
       _useMock = true;
       _initMockUser();
-      debugPrint(
-        'AuthRepository: Firebase not available, using simulation mode: $e',
-      );
+      logWarning('AuthRepository: Firebase not available, using simulation mode', e);
     }
-    debugPrint(
-      'AuthRepository: Running in ${_useMock ? "SIMULATION" : "FIREBASE"} mode.',
-    );
+    logWarning('AuthRepository: Running in ${_useMock ? "SIMULATION" : "FIREBASE"} mode.');
   }
 
   void _initMockUser() {
@@ -64,7 +60,7 @@ class FirebaseAuthRepository implements AuthRepository {
         _mockCurrentUser = UserModel.fromJson(map);
         _mockStreamController.add(_mockCurrentUser);
       } catch (e) {
-        debugPrint('Error loading cached user: $e');
+        logWarning('Error loading cached user', e);
       }
     } else {
       _mockStreamController.add(null);
@@ -98,7 +94,7 @@ class FirebaseAuthRepository implements AuthRepository {
         return user;
       }
     } catch (e) {
-      debugPrint('Firestore read error: $e');
+      logWarning('Firestore read error', e);
     }
 
     // Check cache as fallback
@@ -342,7 +338,7 @@ class FirebaseAuthRepository implements AuthRepository {
         return user;
       }
     } catch (e) {
-      debugPrint('Error refreshing user status: $e');
+      logWarning('Error refreshing user status', e);
     }
     return null;
   }

@@ -38,8 +38,7 @@ dependencies:
   # Navigation
   go_router: ^14.0.0
 
-  # Networking & Cache
-  dio: ^5.4.3
+  # Cache
   hive_flutter: ^1.1.0
 
   # UI & Design System
