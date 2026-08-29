@@ -5,12 +5,12 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
-import '../../../core/utils/weight_formatter.dart';
 import '../../../domain/entities/cart_item_entity.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../shared/widgets/error_state_widget.dart';
+import '../../../shared/widgets/inline_toast.dart';
 import '../../../shared/widgets/primary_button.dart';
-import '../../../shared/widgets/qty_stepper.dart';
+import '../../../shared/widgets/quantity_picker.dart';
 import '../../../shared/widgets/weight_selector.dart';
 import '../../cart/controllers/cart_controller.dart';
 import '../controllers/product_controller.dart';
@@ -30,6 +30,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   /// product itself the first time it loads, since 1 is a sane starting
   /// count but a nonsense starting weight.
   int? _qty;
+
+  final _toastKey = GlobalKey<InlineToastState>();
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +85,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
                   product: product,
                   qty: _qty ?? product.minQty,
                   onQtyChanged: (qty) => setState(() => _qty = qty),
+                  toastKey: _toastKey,
                 );
               },
             ),
@@ -97,11 +100,13 @@ class _ProductDetailBody extends ConsumerWidget {
   final ProductEntity product;
   final int qty;
   final ValueChanged<int> onQtyChanged;
+  final GlobalKey<InlineToastState> toastKey;
 
   const _ProductDetailBody({
     required this.product,
     required this.qty,
     required this.onQtyChanged,
+    required this.toastKey,
   });
 
   @override
@@ -167,12 +172,13 @@ class _ProductDetailBody extends ConsumerWidget {
                           slabs: product.rateSlabs!,
                           activeGrams: qty,
                         ),
+                      ],
+                      if (product.isInStock) ...[
                         const SizedBox(height: 20),
-                        WeightSelector(
-                          grams: qty,
+                        QuantityPicker(
+                          product: product,
+                          qty: qty,
                           onChanged: onQtyChanged,
-                          slabs: product.rateSlabs!,
-                          maxGrams: product.maxQty,
                         ),
                       ],
                       if (product.description != null &&
@@ -201,62 +207,44 @@ class _ProductDetailBody extends ConsumerWidget {
           top: false,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-            child: Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Weighed products get their picker inline in the body next
-                // to the rate card, where the band highlight makes sense —
-                // so the bottom bar is just the add button.
-                if (product.isInStock && !product.isWeighed) ...[
-                  QtyStepper(
-                    qty: qty,
-                    onChanged: onQtyChanged,
-                    min: 1,
-                    max: product.stock,
-                  ),
-                  const SizedBox(width: 14),
-                ],
-                Expanded(
-                  child: PrimaryButton(
-                    label: product.isInStock
-                        ? (product.isWeighed
-                              ? 'Add ${formatGrams(qty)} · ${product.priceForQty(qty).formatted}'
-                              : 'Add to Cart')
-                        : 'Out of Stock',
-                    icon: Icons.shopping_cart_outlined,
-                    onPressed: product.isInStock
-                        ? () {
-                            ref
-                                .read(cartControllerProvider.notifier)
-                                .addItem(
-                                  CartItemEntity(
-                                    productId: product.id,
-                                    name: product.name,
-                                    imageUrl: product.imageUrl,
-                                    unitPrice: product.price,
-                                    unit: product.unit,
-                                    qty: qty,
-                                    rateSlabs: product.rateSlabs,
-                                  ),
-                                );
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${product.name} added to cart'),
-                                // This screen sits above the shell, so its
-                                // floating cart bar isn't here to tap — the
-                                // snackbar carries the route to the cart.
-                                // Pushed, not `go`, for the same reason as
-                                // the category screen's cart bar: `go`-ing to
-                                // the Cart tab would discard this pushed
-                                // product page, leaving no way back to it.
-                                action: SnackBarAction(
-                                  label: 'VIEW CART',
-                                  onPressed: () => context.push(RouteNames.viewCart),
+                InlineToast(key: toastKey),
+                PrimaryButton(
+                  label: product.isInStock
+                      ? 'Add ${product.labelForQty(qty)} · ${product.priceForQty(qty).formatted}'
+                      : 'Out of Stock',
+                  icon: Icons.shopping_cart_outlined,
+                  onPressed: (product.isInStock && qty >= product.minQty && qty <= product.maxQty)
+                      ? () {
+                          ref
+                              .read(cartControllerProvider.notifier)
+                              .addItem(
+                                CartItemEntity(
+                                  productId: product.id,
+                                  name: product.name,
+                                  imageUrl: product.imageUrl,
+                                  unitPrice: product.price,
+                                  unit: product.unit,
+                                  qty: qty,
+                                  rateSlabs: product.rateSlabs,
                                 ),
-                              ),
-                            );
-                          }
-                        : null,
-                  ),
+                              );
+                          // This screen sits above the shell, so its
+                          // floating cart bar isn't here to tap — the
+                          // toast carries the route to the cart. Pushed,
+                          // not `go`, for the same reason as the category
+                          // screen's cart bar: `go`-ing to the Cart tab
+                          // would discard this pushed product page, leaving
+                          // no way back to it.
+                          toastKey.currentState?.show(
+                            '${product.name} added to cart',
+                            actionLabel: 'VIEW CART',
+                            onAction: () => context.push(RouteNames.viewCart),
+                          );
+                        }
+                      : null,
                 ),
               ],
             ),

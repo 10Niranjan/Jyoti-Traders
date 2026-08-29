@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../core/utils/weight_formatter.dart';
 import '../value_objects/money.dart';
 import '../value_objects/weight_rate_slabs.dart';
 
@@ -67,6 +68,9 @@ class ProductEntity extends Equatable {
 
   /// Smallest sensible starting quantity — 100 g, or one whole unit.
   int get minQty => isWeighed ? 100 : 1;
+
+  /// How [qty] reads in prose: `2.5 kg`, or `3 box`.
+  String labelForQty(int qty) => isWeighed ? formatGrams(qty) : '$qty ${unit.value}';
 
   ProductEntity copyWith({String? imageUrl}) {
     return ProductEntity(
