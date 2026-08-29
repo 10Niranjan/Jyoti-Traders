@@ -10,6 +10,11 @@ Widget _wrap(OrderStatus status) => MaterialApp(
 void main() {
   testWidgets('shows all four steps for a pending order', (tester) async {
     await tester.pumpWidget(_wrap(OrderStatus.pending));
+    // The done steps' dot/line each start an entrance animation on its own
+    // delayed timer (staggered by index) — settle before asserting, and
+    // before the test tears down the tree, or the still-pending timer trips
+    // flutter_test's leak check even though nothing is actually wrong.
+    await tester.pumpAndSettle();
 
     expect(find.text('Order Placed'), findsOneWidget);
     expect(find.text('Confirmed'), findsOneWidget);
@@ -22,6 +27,7 @@ void main() {
     'shows a single Order Cancelled row for a cancelled order, not the stepper',
     (tester) async {
       await tester.pumpWidget(_wrap(OrderStatus.cancelled));
+      await tester.pumpAndSettle();
 
       expect(find.text('Order Cancelled'), findsOneWidget);
       expect(find.text('Order Placed'), findsNothing);
@@ -32,6 +38,7 @@ void main() {
   testWidgets('renders without overflow for every real status', (tester) async {
     for (final status in OrderStatus.values) {
       await tester.pumpWidget(_wrap(status));
+      await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
     }
   });

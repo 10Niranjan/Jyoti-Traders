@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../domain/entities/order_entity.dart';
@@ -6,6 +7,10 @@ import '../../domain/entities/order_entity.dart';
 /// Vertical progress timeline for an order's lifecycle — Placed → Confirmed
 /// → Out for Delivery → Delivered. A cancelled order is a branch, not a
 /// stalled point on that line, so it renders as its own single row instead.
+///
+/// Keyed on [status] so completed steps pop in and their connector lines
+/// fill in sequence — replaying live if the status advances while this
+/// screen is open, not just on first load.
 class OrderTrackingStepper extends StatelessWidget {
   final OrderStatus status;
 
@@ -24,8 +29,11 @@ class OrderTrackingStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final reduceMotion =
+        MediaQuery.maybeOf(context)?.disableAnimations ?? false;
+
     if (status == OrderStatus.cancelled) {
-      return Row(
+      final row = Row(
         children: [
           Container(
             width: 28,
@@ -51,11 +59,15 @@ class OrderTrackingStepper extends StatelessWidget {
           ),
         ],
       );
+      return reduceMotion
+          ? row
+          : row.animate().fadeIn(duration: 250.ms).scaleXY(begin: 0.92);
     }
 
     final currentIndex = _steps.indexWhere((s) => s.$1 == status);
 
     return Column(
+      key: ValueKey(status),
       children: [
         for (var i = 0; i < _steps.length; i++)
           _StepRow(
@@ -63,6 +75,8 @@ class OrderTrackingStepper extends StatelessWidget {
             label: _steps[i].$2,
             isDone: i <= currentIndex,
             isLast: i == _steps.length - 1,
+            index: i,
+            reduceMotion: reduceMotion,
           ),
       ],
     );
@@ -74,12 +88,16 @@ class _StepRow extends StatelessWidget {
   final String label;
   final bool isDone;
   final bool isLast;
+  final int index;
+  final bool reduceMotion;
 
   const _StepRow({
     required this.icon,
     required this.label,
     required this.isDone,
     required this.isLast,
+    required this.index,
+    required this.reduceMotion,
   });
 
   @override
@@ -87,6 +105,24 @@ class _StepRow extends StatelessWidget {
     final color = isDone
         ? AppColors.primary
         : AppColors.textSecondaryLight.withOpacity(0.4);
+    final delay = Duration(milliseconds: index * 180);
+
+    final dot = Container(
+      width: 26,
+      height: 26,
+      decoration: BoxDecoration(
+        color: isDone ? AppColors.primary : Colors.transparent,
+        shape: BoxShape.circle,
+        border: Border.all(color: color, width: 1.5),
+      ),
+      child: Icon(icon, size: 14, color: isDone ? Colors.white : color),
+    );
+
+    final line = Container(
+      width: 2,
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      color: isDone ? AppColors.primary.withOpacity(0.4) : color,
+    );
 
     return IntrinsicHeight(
       child: Row(
@@ -94,27 +130,21 @@ class _StepRow extends StatelessWidget {
         children: [
           Column(
             children: [
-              Container(
-                width: 26,
-                height: 26,
-                decoration: BoxDecoration(
-                  color: isDone ? AppColors.primary : Colors.transparent,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: color, width: 1.5),
-                ),
-                child: Icon(
-                  icon,
-                  size: 14,
-                  color: isDone ? Colors.white : color,
-                ),
-              ),
+              isDone && !reduceMotion
+                  ? dot
+                        .animate(delay: delay)
+                        .scale(
+                          begin: const Offset(0.4, 0.4),
+                          curve: Curves.elasticOut,
+                          duration: 420.ms,
+                        )
+                        .fadeIn(duration: 200.ms)
+                  : dot,
               if (!isLast)
                 Expanded(
-                  child: Container(
-                    width: 2,
-                    margin: const EdgeInsets.symmetric(vertical: 2),
-                    color: isDone ? AppColors.primary.withOpacity(0.4) : color,
-                  ),
+                  child: isDone && !reduceMotion
+                      ? _AnimatedLine(baseColor: color, delay: delay + 250.ms)
+                      : line,
                 ),
             ],
           ),
@@ -133,5 +163,34 @@ class _StepRow extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// The connector line for a completed step — fades from the muted resting
+/// color to a filled brand color instead of just popping in, echoing the
+/// progress-line fill from the web design reference.
+class _AnimatedLine extends StatelessWidget {
+  final Color baseColor;
+  final Duration delay;
+
+  const _AnimatedLine({required this.baseColor, required this.delay});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+          width: 2,
+          margin: const EdgeInsets.symmetric(vertical: 2),
+          color: baseColor,
+        )
+        .animate(delay: delay)
+        .custom(
+          duration: 350.ms,
+          curve: Curves.easeOut,
+          builder: (context, t, _) => Container(
+            width: 2,
+            margin: const EdgeInsets.symmetric(vertical: 2),
+            color: Color.lerp(baseColor, AppColors.primary.withOpacity(0.4), t),
+          ),
+        );
   }
 }
