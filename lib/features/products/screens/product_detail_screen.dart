@@ -12,6 +12,7 @@ import '../../../shared/widgets/inline_toast.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/quantity_picker.dart';
 import '../../../shared/widgets/weight_selector.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../cart/controllers/cart_controller.dart';
 import '../controllers/product_controller.dart';
 
@@ -37,9 +38,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
   Widget build(BuildContext context) {
     final productAsync = ref.watch(productByIdProvider(widget.productId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Product Details')),
+      appBar: AppBar(title: Text(l10n.productDetailsTitle)),
       // The Hero sits outside `productAsync.when()`, keyed on the route's
       // `productId` (known synchronously), so it's mounted on frame one —
       // `productByIdProvider` is a FutureProvider, and a Hero nested only
@@ -77,8 +79,8 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               ),
               data: (product) {
                 if (product == null) {
-                  return const ErrorStateWidget(
-                    message: 'This product is no longer available.',
+                  return ErrorStateWidget(
+                    message: l10n.productNoLongerAvailable,
                   );
                 }
                 return _ProductDetailBody(
@@ -112,6 +114,7 @@ class _ProductDetailBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       children: [
@@ -127,14 +130,14 @@ class _ProductDetailBody extends ConsumerWidget {
                     children: [
                       Text(
                         product.name,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.inter(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        'Sold per ${product.unit.value}',
+                        l10n.productSoldPer(product.unit.value),
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           color: isDark
@@ -145,9 +148,9 @@ class _ProductDetailBody extends ConsumerWidget {
                       const SizedBox(height: 12),
                       Text(
                         product.isWeighed
-                            ? 'from ₹${product.rateSlabs!.bestRatePerKg.toStringAsFixed(0)}/kg'
+                            ? l10n.homeFromRatePerKg(product.rateSlabs!.bestRatePerKg.toStringAsFixed(0))
                             : product.price.formatted,
-                        style: GoogleFonts.poppins(
+                        style: GoogleFonts.inter(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
                           color: AppColors.primary,
@@ -156,8 +159,8 @@ class _ProductDetailBody extends ConsumerWidget {
                       const SizedBox(height: 8),
                       Text(
                         product.isInStock
-                            ? '${product.stock} ${product.unit.value} in stock'
-                            : 'Out of stock',
+                            ? l10n.productInStock(product.stock, product.unit.value)
+                            : l10n.homeOutOfStock,
                         style: GoogleFonts.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -185,8 +188,8 @@ class _ProductDetailBody extends ConsumerWidget {
                           product.description!.isNotEmpty) ...[
                         const SizedBox(height: 20),
                         Text(
-                          'Description',
-                          style: GoogleFonts.poppins(
+                          l10n.productDescription,
+                          style: GoogleFonts.inter(
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -213,8 +216,8 @@ class _ProductDetailBody extends ConsumerWidget {
                 InlineToast(key: toastKey),
                 PrimaryButton(
                   label: product.isInStock
-                      ? 'Add ${product.labelForQty(qty)} · ${product.priceForQty(qty).formatted}'
-                      : 'Out of Stock',
+                      ? l10n.productAddButtonLabel(product.labelForQty(qty), product.priceForQty(qty).formatted)
+                      : l10n.productOutOfStockButton,
                   icon: Icons.shopping_cart_outlined,
                   onPressed: (product.isInStock && qty >= product.minQty && qty <= product.maxQty)
                       ? () {
@@ -239,8 +242,8 @@ class _ProductDetailBody extends ConsumerWidget {
                           // would discard this pushed product page, leaving
                           // no way back to it.
                           toastKey.currentState?.show(
-                            '${product.name} added to cart',
-                            actionLabel: 'VIEW CART',
+                            l10n.productAddedToCart(product.name),
+                            actionLabel: l10n.productViewCartAction,
                             onAction: () => context.push(RouteNames.viewCart),
                           );
                         }

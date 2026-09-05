@@ -1,0 +1,10 @@
+{
+  "description": "A modern, user-friendly quick-commerce app prototype offering seamless product browsing, smooth navigation, and efficient checkout for fast online shopping.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

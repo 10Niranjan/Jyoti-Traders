@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../controllers/auth_controller.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 
 class PendingApprovalScreen extends ConsumerWidget {
   const PendingApprovalScreen({super.key});
@@ -22,7 +23,7 @@ class PendingApprovalScreen extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        _showErrorSnackBar(context, 'Unable to dial phone: 9860460325');
+        _showErrorSnackBar(context, AppLocalizations.of(context)!.pendingUnableToDialPhone);
       }
     }
   }
@@ -46,7 +47,7 @@ class PendingApprovalScreen extends ConsumerWidget {
       if (context.mounted) {
         _showErrorSnackBar(
           context,
-          'Unable to open email client: vishvatejkatkar007@gmail.com',
+          AppLocalizations.of(context)!.pendingUnableToOpenEmail,
         );
       }
     }
@@ -65,6 +66,7 @@ class PendingApprovalScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: Container(
@@ -145,9 +147,9 @@ class PendingApprovalScreen extends ConsumerWidget {
 
                 // Main message
                 Text(
-                  'Account Verification Pending',
+                  l10n.pendingTitle,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.inter(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                     color: isDark
@@ -159,8 +161,7 @@ class PendingApprovalScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
 
                 Text(
-                  'Your retailer application is currently being reviewed by the owner of Jyoti Traders. '
-                  'Once approved, you will gain full access to wholesale product purchasing.',
+                  l10n.pendingMessage,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     fontSize: 14,
@@ -177,9 +178,9 @@ class PendingApprovalScreen extends ConsumerWidget {
                 ElevatedButton.icon(
                   onPressed: () async {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Checking verification status...'),
-                        duration: Duration(seconds: 1),
+                      SnackBar(
+                        content: Text(l10n.pendingCheckingStatus),
+                        duration: const Duration(seconds: 1),
                       ),
                     );
                     await ref
@@ -187,7 +188,7 @@ class PendingApprovalScreen extends ConsumerWidget {
                         .checkApprovalStatus();
                   },
                   icon: const Icon(Icons.refresh_rounded),
-                  label: const Text('Check Status Again'),
+                  label: Text(l10n.pendingCheckStatusAgain),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
@@ -222,7 +223,7 @@ class PendingApprovalScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Text(
-                        'Need Urgent Approval? Contact Support',
+                        l10n.pendingContactSupportTitle,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
                           fontSize: 14,
@@ -242,7 +243,7 @@ class PendingApprovalScreen extends ConsumerWidget {
                           color: AppColors.success,
                         ),
                         label: Text(
-                          'Call Owner: +91 98604 60325',
+                          l10n.pendingCallOwner,
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -267,7 +268,7 @@ class PendingApprovalScreen extends ConsumerWidget {
                           color: AppColors.primary,
                         ),
                         label: Text(
-                          'Email: vishvatejkatkar007@gmail.com',
+                          l10n.pendingEmailSupport,
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
@@ -297,7 +298,7 @@ class PendingApprovalScreen extends ConsumerWidget {
                     color: AppColors.error,
                   ),
                   label: Text(
-                    'Sign Out & Try Another Account',
+                    l10n.pendingSignOut,
                     style: GoogleFonts.inter(
                       color: AppColors.error,
                       fontWeight: FontWeight.bold,

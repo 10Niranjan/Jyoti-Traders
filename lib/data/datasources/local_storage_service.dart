@@ -56,6 +56,20 @@ class LocalStorageService {
     return _settingsBox.get(HiveKeys.isFirstLaunch, defaultValue: true) as bool;
   }
 
+  /// Saves the user's chosen app language (an ISO 639-1 code, e.g. 'hi').
+  /// Null means "follow system", mirroring the theme preference above.
+  Future<void> saveLanguagePreference(String languageCode) async {
+    await _settingsBox.put(HiveKeys.languageCode, languageCode);
+  }
+
+  String? getLanguagePreference() {
+    return _settingsBox.get(HiveKeys.languageCode) as String?;
+  }
+
+  Future<void> clearLanguagePreference() async {
+    await _settingsBox.delete(HiveKeys.languageCode);
+  }
+
   /// Marks the onboarding as completed
   Future<void> setFirstLaunchCompleted() async {
     await _settingsBox.put(HiveKeys.isFirstLaunch, false);

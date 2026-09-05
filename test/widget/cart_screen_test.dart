@@ -6,12 +6,17 @@ import 'package:traders_retailer/domain/entities/cart_item_entity.dart';
 import 'package:traders_retailer/domain/entities/product_entity.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/cart/screens/cart_screen.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 import '../helpers/fake_cart_repository.dart';
 
 Widget _wrap(FakeCartRepository repo) => ProviderScope(
       overrides: [cartRepositoryProvider.overrideWithValue(repo)],
-      child: const MaterialApp(home: CartScreen()),
+      child: const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: CartScreen(),
+      ),
     );
 
 void main() {

@@ -14,6 +14,7 @@ import 'package:traders_retailer/domain/entities/order_item_entity.dart';
 import 'package:traders_retailer/domain/repositories/order_repository.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/checkout/screens/upi_payment_screen.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 /// Backs `authControllerProvider` with an already-signed-in retailer so
 /// `orderByIdProvider` (retailer-scoped) resolves — no test in this codebase
@@ -147,7 +148,11 @@ Widget _wrap(FakeOrderRepository repo, {String orderId = 'order_upi_1'}) =>
         authRepositoryProvider.overrideWithValue(FakeAuthRepository(_retailer)),
         orderRepositoryProvider.overrideWithValue(repo),
       ],
-      child: MaterialApp(home: UpiPaymentScreen(orderId: orderId)),
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: UpiPaymentScreen(orderId: orderId),
+      ),
     );
 
 void main() {

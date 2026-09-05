@@ -48,10 +48,10 @@ void main() {
     await tester.pumpWidget(_wrap(repo));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.widgetWithText(ElevatedButton, 'Add Category'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Category name is required'), findsOneWidget);
+    // The Save button is proactively disabled while the name is empty,
+    // matching the Figma reference — greyed out, not tappable.
+    final button = tester.widget<ElevatedButton>(find.widgetWithText(ElevatedButton, 'Add Category'));
+    expect(button.onPressed, isNull);
     expect(repo.created, isEmpty);
   });
 
@@ -63,6 +63,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.widgetWithText(TextFormField, 'Category name'), 'Edible Oils');
+    await tester.pump(); // lets the Save button's enabled state catch up to the typed name
     await tester.tap(find.widgetWithText(ElevatedButton, 'Add Category'));
     await tester.pumpAndSettle();
 

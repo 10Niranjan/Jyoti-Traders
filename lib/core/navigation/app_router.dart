@@ -9,6 +9,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../features/auth/controllers/auth_controller.dart';
 import '../../features/auth/controllers/auth_state.dart';
 import '../../features/auth/screens/auth_screen.dart';
+import '../../features/auth/screens/onboarding_screen.dart';
+import '../../data/datasources/local_storage_service.dart';
 import '../../features/admin/screens/add_edit_category_screen.dart';
 import '../../features/admin/screens/add_edit_product_screen.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
@@ -55,30 +57,24 @@ class _AuthRefreshNotifier extends ChangeNotifier {
   }
 }
 
-/// Shared fade+slide transition for retailer-facing push routes (Product
-/// Detail, Checkout, etc.) — replaces GoRouter's default platform transition
-/// with a single consistent, subtle motion used everywhere it's applied.
-/// Admin routes and the bottom-nav shell's own tab switches intentionally
-/// keep their existing (instant/native) transitions — out of 6.4's scope.
+/// Shared horizontal-slide transition for retailer-facing push routes
+/// (Product Detail, Checkout, etc.) — replaces GoRouter's default platform
+/// transition with a single consistent motion used everywhere it's applied,
+/// matching the Figma reference's 200ms slide-in-from-right (and, on pop,
+/// the same tween reversed — slide back out to the right).
 CustomTransitionPage<void> _fadeSlidePage(Widget child, GoRouterState state) {
   return CustomTransitionPage<void>(
     key: state.pageKey,
     child: child,
-    transitionDuration: const Duration(milliseconds: 300),
-    reverseTransitionDuration: const Duration(milliseconds: 250),
+    transitionDuration: const Duration(milliseconds: 200),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(
-        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-        child: SlideTransition(
-          position:
-              Tween<Offset>(
-                begin: const Offset(0, 0.04),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-              ),
-          child: child,
-        ),
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(1, 0),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+        child: child,
       );
     },
   );
@@ -101,8 +97,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return location == RouteNames.splash ? null : RouteNames.splash;
       }
 
-      // If user is not authenticated, force Auth screen
+      // If user is not authenticated, force Auth screen — unless this is the
+      // very first launch, in which case show the onboarding walkthrough
+      // first. `isFirstLaunch()` flips to false the moment onboarding calls
+      // setFirstLaunchCompleted(), so this only ever fires once per install.
       if (authState is Unauthenticated || authState is AuthError) {
+        if (ref.read(localStorageProvider).isFirstLaunch()) {
+          return location == RouteNames.onboarding ? null : RouteNames.onboarding;
+        }
         return location == RouteNames.login ? null : RouteNames.login;
       }
 
@@ -143,6 +145,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.splash,
         builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.onboarding,
+        builder: (context, state) => const OnboardingScreen(),
       ),
       GoRoute(
         path: RouteNames.login,
@@ -255,8 +261,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ],
       ),
 
-      // Retailer bottom-nav shell — Home/Search/Cart/Orders/Profile keep
-      // independent navigation state across tab switches.
+      // Retailer bottom-nav shell — Home/Search/Orders/Profile keep
+      // independent navigation state across tab switches. Cart is not a tab
+      // (matches the Figma reference) — it's reached via the floating cart
+      // bar this shell renders on top of every branch, pushing [viewCart].
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             _RetailerShell(navigationShell: navigationShell),
@@ -274,14 +282,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RouteNames.search,
                 builder: (context, state) => const SearchScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: RouteNames.cart,
-                builder: (context, state) => const CartScreen(),
               ),
             ],
           ),
@@ -323,14 +323,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state,
         ),
       ),
-      // A *pushed* Cart, distinct from the Cart tab (`RouteNames.cart`,
-      // inside the shell below). "View Cart" from a pushed screen (category
-      // grid, product detail's add snackbar) used to `context.go` straight
-      // to the Cart tab, which discards whatever was pushed — so tapping it
-      // while browsing a category threw the retailer out of that category
-      // with no way back except re-navigating from Home. Same `CartScreen`
-      // widget either way; pushing it here instead gives GoRouter something
-      // to pop, which is what makes `AppBar`'s automatic back arrow appear.
+      // Cart is reached exclusively through this pushed route — no
+      // bottom-nav tab for it (matches the Figma reference) — from the
+      // shell's own floating cart bar, or from a pushed screen's (category
+      // grid, product detail's add snackbar) floating bar / "VIEW CART"
+      // action. Always pushed, never `go`, so it has something to pop back
+      // to and `AppBar` gets its automatic back arrow.
       GoRoute(
         path: RouteNames.viewCart,
         pageBuilder: (context, state) =>
@@ -371,11 +369,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-/// Index of the Cart tab within the shell's branches — the floating cart
-/// bar hides on this one tab, since showing it on top of the cart itself
-/// would be redundant.
-const _cartBranchIndex = 2;
-
 // ponytail: fixed estimate of the pill's rendered height (padding + two text
 // rows) plus its 12px bottom margin; swap for a measured height via a
 // GlobalKey if the pill's content ever grows enough to under/over-reserve.
@@ -390,7 +383,7 @@ Future<void> _confirmExitApp(BuildContext context) async {
     builder: (dialogContext) => AlertDialog(
       title: Text(
         'Exit app?',
-        style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17),
+        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17),
       ),
       content: Text(
         'Are you sure you want to close the app?',
@@ -421,8 +414,7 @@ class _RetailerShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartControllerProvider);
-    final onCartTab = navigationShell.currentIndex == _cartBranchIndex;
-    final barVisible = !onCartTab && !cart.isEmpty;
+    final barVisible = !cart.isEmpty;
 
     return PopScope(
       canPop: false,
@@ -441,16 +433,15 @@ class _RetailerShell extends ConsumerWidget {
               ),
               child: navigationShell,
             ),
-            if (!onCartTab)
-              Positioned(
-                left: 16,
-                right: 16,
-                bottom: 12,
-                child: FloatingCartBar(
-                  cart: cart,
-                  onTap: () => navigationShell.goBranch(_cartBranchIndex),
-                ),
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 12,
+              child: FloatingCartBar(
+                cart: cart,
+                onTap: () => context.push(RouteNames.viewCart),
               ),
+            ),
           ],
         ),
         bottomNavigationBar: BottomNavBar(navigationShell: navigationShell),
@@ -539,7 +530,7 @@ class SplashScreen extends ConsumerWidget {
 
               Text(
                 'Jyoti Traders',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.inter(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: isDark ? AppColors.textPrimaryDark : AppColors.primary,

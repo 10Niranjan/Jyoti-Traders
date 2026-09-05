@@ -20,7 +20,7 @@ class DeliverySettingsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Delivery Settings',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
       ),
       body: const DeliveryConfigFormView(),
@@ -114,7 +114,7 @@ class _DeliveryConfigFormViewState
       SnackBar(
         content: Text(
           success
-              ? 'Delivery settings updated.'
+              ? '✓ Delivery settings saved successfully'
               : 'Save failed: ${ref.read(adminDeliveryConfigControllerProvider).error}',
         ),
         backgroundColor: success ? AppColors.success : AppColors.error,
@@ -149,87 +149,115 @@ class _DeliveryConfigFormViewState
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Warehouse Location',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Every delivery charge is calculated as straight-line distance from this point.',
-                style: GoogleFonts.inter(
-                  fontSize: 11.5,
-                  color: AppColors.textSecondaryLight,
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Warehouse Location',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Every delivery charge is calculated as straight-line distance from this point.',
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        color: AppColors.textSecondaryLight,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: _latController,
+                            enabled: !isSaving,
+                            decoration: const InputDecoration(labelText: 'Latitude'),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                              signed: true,
+                            ),
+                            validator: _validateCoordinate,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: TextFormField(
+                            controller: _lngController,
+                            enabled: !isSaving,
+                            decoration: const InputDecoration(labelText: 'Longitude'),
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                              signed: true,
+                            ),
+                            validator: _validateCoordinate,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed: (isSaving || _isLocating)
+                            ? null
+                            : _useCurrentLocation,
+                        icon: _isLocating
+                            ? const SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : const Icon(Icons.my_location_rounded, size: 16),
+                        label: const Text('Use current location'),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _latController,
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Per-km Rate',
+                      style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _rateController,
                       enabled: !isSaving,
-                      decoration: const InputDecoration(labelText: 'Latitude'),
+                      decoration: const InputDecoration(
+                        labelText: 'Rate (₹ per km)',
+                        prefixText: '₹ ',
+                      ),
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
-                        signed: true,
                       ),
-                      validator: _validateCoordinate,
+                      validator: (v) {
+                        final parsed = double.tryParse(v?.trim() ?? '');
+                        if (parsed == null) return 'Enter a valid rate';
+                        if (parsed <= 0) return 'Rate must be above ₹0';
+                        return null;
+                      },
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextFormField(
-                      controller: _lngController,
-                      enabled: !isSaving,
-                      decoration: const InputDecoration(labelText: 'Longitude'),
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                        signed: true,
-                      ),
-                      validator: _validateCoordinate,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: TextButton.icon(
-                  onPressed: (isSaving || _isLocating)
-                      ? null
-                      : _useCurrentLocation,
-                  icon: _isLocating
-                      ? const SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.my_location_rounded, size: 16),
-                  label: const Text('Use current location'),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Per-km Rate',
-                style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              TextFormField(
-                controller: _rateController,
-                enabled: !isSaving,
-                decoration: const InputDecoration(
-                  labelText: 'Rate (₹ per km)',
-                  prefixText: '₹ ',
-                ),
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                validator: (v) {
-                  final parsed = double.tryParse(v?.trim() ?? '');
-                  if (parsed == null) return 'Enter a valid rate';
-                  if (parsed <= 0) return 'Rate must be above ₹0';
-                  return null;
-                },
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -250,7 +278,7 @@ class _DeliveryConfigFormViewState
                         )
                       : Text(
                           'Save Changes',
-                          style: GoogleFonts.poppins(
+                          style: GoogleFonts.inter(
                             fontWeight: FontWeight.bold,
                           ),
                         ),

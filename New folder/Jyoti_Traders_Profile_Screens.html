@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jyoti Traders — Profile Screens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#7C3AED;--primary-light:#A78BFA;--primary-dark:#5B21B6;
+  --bg:#F8FAFC;--surface:#FFFFFF;
+  --success:#10B981;--warning:#F59E0B;--error:#EF4444;
+  --text:#0F172A;--text2:#475569;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;color:var(--text);background:#fff}
+.poppins{font-family:'Poppins',sans-serif}
+.row{display:flex;align-items:center}
+.col{display:flex;flex-direction:column}
+.between{justify-content:space-between}
+@page{size:A4;margin:0}
+.page{width:210mm;height:297mm;padding:8mm 0 0;display:flex;flex-direction:column;align-items:center;page-break-after:always;background:#fff;overflow:hidden}
+.page:last-child{page-break-after:avoid}
+.page-label{font-family:'Poppins';font-weight:700;font-size:15px;margin-bottom:10px}
+.frame{width:340px;border-radius:26px;overflow:hidden;background:var(--bg);border:1px solid #E2E8F0;box-shadow:0 6px 24px rgba(0,0,0,.1)}
+.statusbar{height:18px;display:flex;align-items:center;justify-content:space-between;padding:0 18px;font-size:10px;font-weight:600}
+.appbar{background:#fff;min-height:42px;display:flex;align-items:center;padding:0 12px;border-bottom:1px solid #F1F5F9;gap:10px}
+.appbar-title{font-family:'Poppins';font-weight:600;font-size:15px}
+.tabbar{display:flex;border-bottom:1px solid #F1F5F9;background:#fff}
+.tabbar div{flex:1;text-align:center;padding:6px 0;font-size:11px;font-weight:600;color:#94A3B8;border-bottom:2px solid transparent}
+.tabbar div.active{color:var(--primary);border-color:var(--primary)}
+.p16{padding:12px}
+.field{margin-bottom:7px}
+.field-label{font-size:10px;color:var(--text2);margin-bottom:2px;font-weight:500}
+.field-input{width:100%;height:32px;border:1.5px solid #E2E8F0;border-radius:10px;padding:0 10px;font-size:11.5px;display:flex;align-items:center;gap:8px}
+.btn-primary{width:100%;height:38px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-outlined{height:34px;border:1.5px solid var(--primary);color:var(--primary);border-radius:10px;font-weight:700;font-size:11.5px;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-outlined.error{border-color:var(--error);color:var(--error)}
+.section-card{background:#fff;border-radius:10px;padding:9px;border:1px solid #E2E8F0;margin-bottom:7px}
+.sc-title{font-family:'Poppins';font-weight:600;font-size:12px;display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.switch{width:32px;height:18px;border-radius:10px;background:var(--primary);position:relative;flex-shrink:0}
+.switch .dot{width:13px;height:13px;border-radius:50%;background:#fff;position:absolute;top:2.5px;right:2.5px}
+.switch.off{background:#E2E8F0}
+.switch.off .dot{left:2.5px;right:auto}
+.list-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid #F8FAFC;font-size:11.5px}
+.avatar{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+.profile-header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:14px;padding:10px;color:#fff}
+.navbar{background:#fff;border-top:1px solid #E2E8F0;display:flex;padding:5px 0 4px}
+.navitem{flex:1;text-align:center;font-size:8.5px;color:#94A3B8;font-weight:600}
+.navitem.active{color:var(--primary)}
+.navicon{font-size:15px;margin-bottom:1px}
+</style>
+</head>
+<body>
+
+<!-- PAGE 1: CUSTOMER PROFILE -->
+<div class="page">
+<div class="page-label">Customer App — Profile</div>
+<div class="frame">
+<div class="statusbar">9:41</div>
+<div class="appbar poppins"><div class="appbar-title">Profile</div></div>
+<div class="tabbar"><div class="active">🏬 Profile</div><div>⚙ Settings</div></div>
+<div class="p16">
+  <div class="profile-header row" style="gap:12px"><div class="avatar">S</div><div><div style="font-weight:700;font-size:15.5px">Sharma General Store</div><div style="font-size:11.5px;color:rgba(255,255,255,.85)">Ramesh Sharma</div><div style="font-size:11.5px;color:rgba(255,255,255,.85)">98765 43210</div></div><div style="margin-left:auto">✎</div></div>
+
+  <div class="section-card" style="margin-top:14px"><div class="sc-title">📍 Delivery Address</div>
+    <div class="field"><div class="field-label">Street Address</div><div class="field-input">MG Road, Shop No. 14</div></div>
+    <div class="row" style="gap:10px"><div class="field" style="flex:1"><div class="field-label">City</div><div class="field-input">Pune</div></div><div class="field" style="flex:1"><div class="field-label">Pincode</div><div class="field-input">411001</div></div></div>
+  </div>
+
+  <div class="section-card"><div class="sc-title">🏬 Business Details</div>
+    <div class="field"><div class="field-label">GST Number (optional)</div><div class="field-input">27ABCDE1234F1Z5</div></div>
+    <div class="row between" style="padding:6px 0"><span style="font-size:13px">Open 24×7</span><div class="switch off"><div class="dot"></div></div></div>
+    <div class="row" style="gap:10px"><div class="btn-outlined" style="flex:1">Opens: 09:00 AM</div><div class="btn-outlined" style="flex:1">Closes: 09:00 PM</div></div>
+  </div>
+
+  <div class="section-card"><div class="sc-title">🏦 Payout Details</div>
+    <div class="field"><div class="field-label">Account Holder Name</div><div class="field-input">Ramesh Sharma</div></div>
+    <div class="field"><div class="field-label">Account Number</div><div class="field-input">XXXXXXXX4521</div></div>
+    <div class="row" style="gap:10px"><div class="field" style="flex:1"><div class="field-label">IFSC Code</div><div class="field-input">HDFC0001234</div></div><div class="field" style="flex:1"><div class="field-label">Bank Name</div><div class="field-input">HDFC Bank</div></div></div>
+  </div>
+  <div class="btn-primary">Save Changes</div>
+</div>
+<div class="navbar">
+  <div class="navitem"><div class="navicon">🏬</div>Home</div>
+  <div class="navitem"><div class="navicon">🔍</div>Search</div>
+  <div class="navitem"><div class="navicon">🛒</div>Cart</div>
+  <div class="navitem"><div class="navicon">🧾</div>Orders</div>
+  <div class="navitem active"><div class="navicon">👤</div>Profile</div>
+</div>
+</div>
+</div>
+
+<!-- PAGE 2: CUSTOMER PROFILE SETTINGS -->
+<div class="page">
+<div class="page-label">Customer App — Profile · Settings</div>
+<div class="frame">
+<div class="statusbar">9:41</div>
+<div class="appbar poppins"><div class="appbar-title">Profile</div></div>
+<div class="tabbar"><div>🏬 Profile</div><div class="active">⚙ Settings</div></div>
+<div class="p16">
+  <div class="section-card"><div class="sc-title">🔔 Notifications</div>
+    <div class="row between" style="padding:6px 0"><div><div style="font-size:13px;font-weight:500">Order Updates</div><div style="font-size:11px;color:var(--text2)">Status changes for your orders</div></div><div class="switch"><div class="dot"></div></div></div>
+    <div class="row between" style="padding:6px 0"><div><div style="font-size:13px;font-weight:500">Promotions</div><div style="font-size:11px;color:var(--text2)">Offers and discounts</div></div><div class="switch"><div class="dot"></div></div></div>
+    <div class="row between" style="padding:6px 0"><div><div style="font-size:13px;font-weight:500">Low Stock Alerts</div><div style="font-size:11px;color:var(--text2)">When items you buy often are running low</div></div><div class="switch"><div class="dot"></div></div></div>
+  </div>
+  <div class="section-card"><div class="sc-title">🎨 Appearance</div>
+    <div style="display:inline-flex;border:1.5px solid #E2E8F0;border-radius:10px;overflow:hidden">
+      <div style="padding:7px 14px;font-size:11.5px;font-weight:600;background:var(--primary);color:#fff">◐ System</div>
+      <div style="padding:7px 14px;font-size:11.5px;font-weight:600;color:var(--text2)">☀ Light</div>
+      <div style="padding:7px 14px;font-size:11.5px;font-weight:600;color:var(--text2)">☾ Dark</div>
+    </div>
+  </div>
+  <div class="section-card"><div class="sc-title">🔒 Account</div>
+    <div class="list-row" style="border:none"><div><div style="font-weight:500">Change Password</div><div style="font-size:11px;color:var(--text2)">retailer@shop.com</div></div><span>›</span></div>
+  </div>
+  <div class="section-card"><div class="sc-title">🎧 Support</div>
+    <div class="list-row"><div><div style="font-weight:500">Call Support</div><div style="font-size:11px;color:var(--text2)">+91 98604 60325</div></div><span>📞</span></div>
+    <div class="list-row" style="border:none"><div><div style="font-weight:500">Email Support</div><div style="font-size:11px;color:var(--text2)">vishvatejkatkar007@gmail.com</div></div><span>✉</span></div>
+  </div>
+  <div class="btn-outlined error" style="width:100%">⇥ Log Out</div>
+</div>
+<div class="navbar">
+  <div class="navitem"><div class="navicon">🏬</div>Home</div>
+  <div class="navitem"><div class="navicon">🔍</div>Search</div>
+  <div class="navitem"><div class="navicon">🛒</div>Cart</div>
+  <div class="navitem"><div class="navicon">🧾</div>Orders</div>
+  <div class="navitem active"><div class="navicon">👤</div>Profile</div>
+</div>
+</div>
+</div>
+
+<!-- PAGE 3: ADMIN PROFILE + SETTINGS COMBINED -->
+<div class="page">
+<div class="page-label">Admin App — Profile (Profile + Settings)</div>
+<div class="frame">
+<div class="statusbar">9:41</div>
+<div class="appbar"><div class="appbar-title">Admin Profile</div></div>
+<div class="p16">
+  <div class="profile-header row" style="gap:12px">
+    <div class="avatar">V</div>
+    <div><div style="font-weight:700;font-size:15.5px">Vishvatej Katkar</div><div style="font-size:11.5px;color:rgba(255,255,255,.85)">vishvatejkatkar007@gmail.com</div><div style="font-size:11.5px;color:rgba(255,255,255,.85)">98604 60325</div></div>
+    <div style="margin-left:auto">✎</div>
+  </div>
+
+  <div style="font-family:'Poppins';font-weight:600;font-size:12px;color:#94A3B8;letter-spacing:.04em;text-transform:uppercase;margin:16px 0 8px">Settings tab</div>
+
+  <div class="section-card"><div class="sc-title">🎨 Appearance</div>
+    <div style="display:inline-flex;border:1.5px solid #E2E8F0;border-radius:10px;overflow:hidden">
+      <div style="padding:7px 14px;font-size:11.5px;font-weight:600;background:var(--primary);color:#fff">◐ System</div>
+      <div style="padding:7px 14px;font-size:11.5px;font-weight:600;color:var(--text2)">☀ Light</div>
+      <div style="padding:7px 14px;font-size:11.5px;font-weight:600;color:var(--text2)">☾ Dark</div>
+    </div>
+  </div>
+  <div class="section-card"><div class="sc-title">🏬 Store</div>
+    <div class="list-row" style="border:none"><div><div style="font-weight:500">Delivery Settings</div><div style="font-size:11px;color:var(--text2)">Delivery radius, fees, and minimum order value</div></div><span>›</span></div>
+  </div>
+  <div class="section-card"><div class="sc-title">🔒 Account</div>
+    <div class="list-row" style="border:none"><div><div style="font-weight:500">Change Password</div><div style="font-size:11px;color:var(--text2)">vishvatejkatkar007@gmail.com</div></div><span>›</span></div>
+  </div>
+  <div class="section-card"><div class="sc-title">🎧 Support</div>
+    <div class="list-row"><div style="font-weight:500">Call Support</div><span>📞</span></div>
+    <div class="list-row" style="border:none"><div style="font-weight:500">Email Support</div><span>✉</span></div>
+  </div>
+  <div class="btn-outlined error" style="width:100%">⇥ Log Out</div>
+</div>
+<div class="navbar">
+  <div class="navitem"><div class="navicon">📊</div>Dashboard</div>
+  <div class="navitem"><div class="navicon">🧾</div>Orders</div>
+  <div class="navitem"><div class="navicon">📦</div>Catalog</div>
+  <div class="navitem"><div class="navicon">🏬</div>Retailers</div>
+  <div class="navitem active"><div class="navicon">👤</div>Profile</div>
+</div>
+</div>
+</div>
+
+</body>
+</html>

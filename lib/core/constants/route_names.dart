@@ -3,6 +3,7 @@ class RouteNames {
   RouteNames._();
 
   static const String splash = '/';
+  static const String onboarding = '/onboarding';
   static const String login = '/login';
   static const String pendingApproval = '/pending-approval';
   static const String home = '/home';
@@ -35,7 +36,6 @@ class RouteNames {
 
   // Retailer bottom-nav tabs (Phase 3)
   static const String search = '/search';
-  static const String cart = '/cart';
   static const String orders = '/orders';
   static const String profile = '/profile';
 
@@ -43,10 +43,11 @@ class RouteNames {
   static const String productCategory = '/product-category/:categoryId';
   static const String productDetail = '/product/:productId';
 
-  /// A *pushed* Cart with a back button, for "View Cart" tapped from
-  /// somewhere else (category grid, product detail) — distinct from [cart],
-  /// the bottom-nav tab, which has no back button and switches the whole
-  /// shell instead of returning to wherever the retailer was.
+  /// A pushed Cart with a back button — reached from the floating cart bar
+  /// (shown on the shell itself, and on pushed screens like Category
+  /// Products / Product Detail) rather than a bottom-nav tab, matching the
+  /// Figma reference's nav shape (Home/Search/Orders/Profile + a floating
+  /// bar, no separate Cart tab).
   static const String viewCart = '/view-cart';
   static const String checkout = '/checkout';
   static const String upiPayment = '/upi-payment/:orderId';

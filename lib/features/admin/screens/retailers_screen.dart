@@ -44,7 +44,7 @@ class _RetailersScreenState extends ConsumerState<RetailersScreen>
       appBar: AppBar(
         title: Text(
           'Retailers',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
         bottom: TabBar(
           controller: _tabController,

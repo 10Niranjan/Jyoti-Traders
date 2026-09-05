@@ -7,6 +7,7 @@ import '../../../domain/entities/notification_entity.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/notification_controller.dart';
 
 class NotificationsScreen extends ConsumerWidget {
@@ -16,15 +17,16 @@ class NotificationsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final notificationsAsync = ref.watch(notificationsProvider);
     final unreadCount = ref.watch(unreadNotificationCountProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notifications', style: GoogleFonts.poppins(fontWeight: FontWeight.bold)),
+        title: Text(l10n.notificationsTitle, style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
         actions: [
           if (unreadCount > 0)
             TextButton(
               onPressed: () => ref.read(notificationControllerProvider).markAllAsRead(),
-              child: const Text('Mark all read'),
+              child: Text(l10n.notificationsMarkAllRead),
             ),
         ],
       ),
@@ -36,16 +38,16 @@ class NotificationsScreen extends ConsumerWidget {
         error: (e, _) => Padding(
           padding: const EdgeInsets.all(16.0),
           child: ErrorStateWidget(
-            message: 'Couldn\'t load notifications: $e',
+            message: l10n.notificationsLoadError(e.toString()),
             onRetry: () => ref.invalidate(notificationsProvider),
           ),
         ),
         data: (notifications) {
           if (notifications.isEmpty) {
-            return const EmptyStateWidget(
+            return EmptyStateWidget(
               icon: Icons.notifications_none_rounded,
-              title: 'No notifications yet',
-              message: 'Updates about your orders will show up here.',
+              title: l10n.notificationsEmptyTitle,
+              message: l10n.notificationsEmptyMessage,
             );
           }
           return ListView.separated(

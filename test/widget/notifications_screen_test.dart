@@ -5,6 +5,7 @@ import 'package:traders_retailer/data/repositories/repository_providers.dart';
 import 'package:traders_retailer/domain/entities/notification_entity.dart';
 import 'package:traders_retailer/domain/repositories/notification_repository.dart';
 import 'package:traders_retailer/features/notifications/screens/notifications_screen.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 class FakeNotificationRepository implements NotificationRepository {
   final List<NotificationEntity> notifications;
@@ -43,7 +44,11 @@ NotificationEntity _notification({
 
 Widget _wrap(FakeNotificationRepository repo) => ProviderScope(
       overrides: [notificationRepositoryProvider.overrideWithValue(repo)],
-      child: const MaterialApp(home: NotificationsScreen()),
+      child: const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: NotificationsScreen(),
+      ),
     );
 
 void main() {

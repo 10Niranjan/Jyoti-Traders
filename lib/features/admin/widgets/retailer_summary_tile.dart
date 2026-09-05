@@ -56,7 +56,7 @@ class RetailerSummaryTile extends StatelessWidget {
                 children: [
                   Text(
                     summary.totalSpend.formatted,
-                    style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.primary),
+                    style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 15, color: AppColors.primary),
                   ),
                   const SizedBox(height: 2),
                   Text(

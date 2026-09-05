@@ -11,6 +11,7 @@ import 'package:traders_retailer/domain/entities/bank_details_entity.dart';
 import 'package:traders_retailer/domain/entities/business_hours_entity.dart';
 import 'package:traders_retailer/domain/entities/notification_preferences_entity.dart';
 import 'package:traders_retailer/features/profile/screens/profile_screen.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 import '../helpers/test_viewport.dart';
 
@@ -97,6 +98,15 @@ class FakeLocalStorageService extends LocalStorageService {
 
   @override
   Future<void> clearThemePreference() async => stored = null;
+
+  @override
+  String? getLanguagePreference() => null;
+
+  @override
+  Future<void> saveLanguagePreference(String languageCode) async {}
+
+  @override
+  Future<void> clearLanguagePreference() async {}
 }
 
 final _retailer = UserModel(
@@ -116,8 +126,13 @@ Widget _wrap(FakeAuthRepository repository, {ThemeMode initial = ThemeMode.syste
         themeModeProvider.overrideWith((ref) => ThemeModeController(FakeLocalStorageService(
               initial == ThemeMode.system ? null : initial == ThemeMode.dark,
             ))),
+        localStorageProvider.overrideWithValue(FakeLocalStorageService()),
       ],
-      child: const MaterialApp(home: ProfileScreen()),
+      child: const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: ProfileScreen(),
+      ),
     );
 
 void main() {
@@ -196,14 +211,14 @@ void main() {
     expect(repo.lastUpdate?['businessName'], 'Suresh Kirana');
   });
 
-  testWidgets('toggling Open 24x7 hides the open/close time pickers', (tester) async {
+  testWidgets('toggling Open 24×7 hides the open/close time pickers', (tester) async {
     await tester.pumpWidget(_wrap(FakeAuthRepository(_retailer)));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Opens:'), findsOneWidget);
     expect(find.textContaining('Closes:'), findsOneWidget);
 
-    await tester.tap(find.text('Open 24x7'));
+    await tester.tap(find.text('Open 24×7'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Opens:'), findsNothing);

@@ -17,6 +17,8 @@ import '../../../domain/usecases/delivery/calculate_delivery_charge_usecase.dart
 import '../../../domain/value_objects/money.dart';
 import '../../../shared/widgets/address_form_fields.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../../shared/widgets/summary_row.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../admin/controllers/admin_delivery_config_controller.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/controllers/auth_state.dart';
@@ -69,8 +71,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       setState(() => _isLocating = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Couldn\'t get your location. Check location permission and try again.'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.checkoutLocationError),
             backgroundColor: AppColors.error,
           ),
         );
@@ -197,9 +199,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final config = ref.watch(deliveryConfigProvider).valueOrNull;
     final deliveryCharge = _deliveryChargeFor(_currentAddress(), config);
     final grandTotal = cart.subtotal + deliveryCharge;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Checkout')),
+      appBar: AppBar(title: Text(l10n.checkoutTitle)),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -207,7 +210,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Delivery Address', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+              Text(l10n.checkoutDeliveryAddress, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               AddressFormFields(
                 streetController: _streetController,
@@ -218,37 +221,38 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 onUseCurrentLocation: _useCurrentLocation,
               ),
               const SizedBox(height: 24),
-              Text('Payment Method', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+              Text(l10n.checkoutPaymentMethod, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-              RadioListTile<PaymentMethod>(
-                contentPadding: EdgeInsets.zero,
+              _PaymentMethodCard(
                 value: PaymentMethod.cod,
                 groupValue: _paymentMethod,
-                onChanged: (v) => setState(() => _paymentMethod = v ?? PaymentMethod.cod),
-                secondary: const Icon(Icons.payments_outlined, color: AppColors.primary),
-                title: const Text('Cash on Delivery (COD)'),
+                icon: Icons.payments_outlined,
+                label: l10n.checkoutCod,
+                onTap: () => setState(() => _paymentMethod = PaymentMethod.cod),
               ),
-              RadioListTile<PaymentMethod>(
-                contentPadding: EdgeInsets.zero,
+              const SizedBox(height: 8),
+              _PaymentMethodCard(
                 value: PaymentMethod.upi,
                 groupValue: _paymentMethod,
-                onChanged: (v) => setState(() => _paymentMethod = v ?? PaymentMethod.cod),
-                secondary: const Icon(Icons.qr_code_rounded, color: AppColors.primary),
-                title: const Text('UPI'),
+                icon: Icons.qr_code_rounded,
+                label: l10n.checkoutUpi,
+                onTap: () => setState(() => _paymentMethod = PaymentMethod.upi),
               ),
               const SizedBox(height: 24),
-              Text('Order Summary', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+              Text(l10n.checkoutOrderSummary, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-              _SummaryRow(label: 'Subtotal (${cart.items.length} items)', value: cart.subtotal.formatted),
-              _SummaryRow(
-                label: (_latitude != null && _longitude != null) ? 'Delivery Charge' : 'Delivery Charge (estimated)',
+              SummaryRow(label: l10n.checkoutSubtotalItems(cart.items.length), value: cart.subtotal.formatted),
+              SummaryRow(
+                label: (_latitude != null && _longitude != null)
+                    ? l10n.checkoutDeliveryCharge
+                    : l10n.checkoutDeliveryChargeEstimated,
                 value: deliveryCharge.formatted,
               ),
               const Divider(),
-              _SummaryRow(label: 'Grand Total', value: grandTotal.formatted, bold: true),
+              SummaryRow(label: l10n.checkoutGrandTotal, value: grandTotal.formatted, bold: true),
               const SizedBox(height: 24),
               PrimaryButton(
-                label: 'Place Order',
+                label: l10n.checkoutPlaceOrder,
                 icon: Icons.check_circle_outline_rounded,
                 isLoading: checkoutState.isLoading,
                 onPressed: _placeOrder,
@@ -262,21 +266,53 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 }
 
-class _SummaryRow extends StatelessWidget {
+/// A selectable payment-method row styled as a bordered card that highlights
+/// violet when chosen, matching the Figma reference's selected-state
+/// treatment (used everywhere else in the app a choice needs to stand out).
+class _PaymentMethodCard extends StatelessWidget {
+  final PaymentMethod value;
+  final PaymentMethod groupValue;
+  final IconData icon;
   final String label;
-  final String value;
-  final bool bold;
+  final VoidCallback onTap;
 
-  const _SummaryRow({required this.label, required this.value, this.bold = false});
+  const _PaymentMethodCard({
+    required this.value,
+    required this.groupValue,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final style = GoogleFonts.inter(fontSize: bold ? 15 : 13, fontWeight: bold ? FontWeight.bold : FontWeight.normal);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text(label, style: style), Text(value, style: style)],
+    final selected = value == groupValue;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary.withOpacity(0.06) : null,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? AppColors.primary : const Color(0xFFE2E8F0),
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.primary),
+            const SizedBox(width: 12),
+            Expanded(child: Text(label, style: GoogleFonts.inter(fontWeight: FontWeight.w600))),
+            Radio<PaymentMethod>(
+              value: value,
+              groupValue: groupValue,
+              onChanged: (_) => onTap(),
+              activeColor: AppColors.primary,
+            ),
+          ],
+        ),
       ),
     );
   }

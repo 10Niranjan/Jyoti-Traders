@@ -5,6 +5,7 @@ import 'package:traders_retailer/data/repositories/repository_providers.dart';
 import 'package:traders_retailer/domain/entities/cart_item_entity.dart';
 import 'package:traders_retailer/domain/entities/product_entity.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 import 'package:traders_retailer/shared/widgets/product_card.dart';
 
 import '../helpers/fake_cart_repository.dart';
@@ -27,6 +28,8 @@ ProductEntity _product({int stock = 20, bool isActive = true}) => ProductEntity(
 Widget _wrap(FakeCartRepository repo, ProductEntity product) => ProviderScope(
       overrides: [cartRepositoryProvider.overrideWithValue(repo)],
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: SizedBox(width: 170, child: ProductCard(product: product, onTap: () {})),
         ),

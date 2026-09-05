@@ -124,7 +124,7 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
       appBar: AppBar(
         title: Text(
           title,
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -140,22 +140,25 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                StatusFilterChip(
-                  label: 'All',
-                  selected: _filter == null,
-                  onTap: () => setState(() => _filter = null),
-                ),
-                for (final status in OrderStatus.values)
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: [
                   StatusFilterChip(
-                    label: status.label,
-                    selected: _filter == status,
-                    onTap: () => setState(() => _filter = status),
+                    label: 'All',
+                    selected: _filter == null,
+                    onTap: () => setState(() => _filter = null),
                   ),
-              ],
+                  for (final status in OrderStatus.values) ...[
+                    const SizedBox(width: 8),
+                    StatusFilterChip(
+                      label: status.label,
+                      selected: _filter == status,
+                      onTap: () => setState(() => _filter = status),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
           Expanded(
@@ -202,14 +205,12 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
                         onTap: () => context.push(
                           RouteNames.adminOrderManagementPath(order.id),
                         ),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                         child: Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            border: Border.all(
-                              color: AppColors.primary.withOpacity(0.08),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFF1F5F9)),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,7 +251,7 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
                               const SizedBox(height: 6),
                               Text(
                                 order.grandTotal.formatted,
-                                style: GoogleFonts.poppins(
+                                style: GoogleFonts.inter(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
                                   color: AppColors.primary,

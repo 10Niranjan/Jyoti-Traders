@@ -4,9 +4,12 @@ import 'package:traders_retailer/domain/entities/cart_entity.dart';
 import 'package:traders_retailer/domain/entities/cart_item_entity.dart';
 import 'package:traders_retailer/domain/entities/product_entity.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 import 'package:traders_retailer/shared/widgets/floating_cart_bar.dart';
 
 Widget _wrap(CartEntity cart, {VoidCallback? onTap}) => MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(body: FloatingCartBar(cart: cart, onTap: onTap ?? () {})),
     );
 

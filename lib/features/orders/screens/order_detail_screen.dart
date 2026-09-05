@@ -13,6 +13,7 @@ import '../../../domain/entities/order_entity.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/order_detail_body.dart';
 import '../../cart/controllers/cart_controller.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/order_controller.dart';
 
 class OrderDetailScreen extends ConsumerStatefulWidget {
@@ -35,7 +36,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
     try {
       await Share.share(
         buildOrderShareText(order),
-        subject: 'Order #${order.id.shortId}',
+        subject: AppLocalizations.of(context)!.orderNumber(order.id.shortId),
       );
     } catch (e) {
       logWarning('OrderDetailScreen: share sheet unavailable', e);
@@ -76,16 +77,17 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
     if (!mounted) return;
     setState(() => _isReordering = false);
 
+    final l10n = AppLocalizations.of(context)!;
     final message = unavailable == 0
-        ? '$added item${added == 1 ? '' : 's'} added to cart.'
-        : '$added item${added == 1 ? '' : 's'} added to cart — $unavailable no longer available.';
+        ? '${l10n.buyAgainAddedCount(added)}.'
+        : '${l10n.buyAgainAddedCount(added)}${l10n.buyAgainUnavailableSuffix(unavailable)}';
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,
         action: added > 0
             ? SnackBarAction(
-                label: 'VIEW CART',
+                label: l10n.productViewCartAction,
                 onPressed: () => context.push(RouteNames.viewCart),
               )
             : null,
@@ -94,19 +96,20 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
   }
 
   Future<void> _cancelOrder(OrderEntity order) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Cancel this order?'),
-        content: const Text('This cannot be undone.'),
+        title: Text(l10n.orderCancelDialogTitle),
+        content: Text(l10n.orderCancelDialogContent),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('No'),
+            child: Text(l10n.no),
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Yes, Cancel'),
+            child: Text(l10n.yesCancel),
           ),
         ],
       ),
@@ -125,8 +128,8 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
       SnackBar(
         content: Text(
           success
-              ? 'Order cancelled.'
-              : 'Cancellation failed. Please try again.',
+              ? l10n.orderCancelledMessage
+              : l10n.orderCancelFailedMessage,
         ),
         backgroundColor: success ? AppColors.success : AppColors.error,
         behavior: SnackBarBehavior.floating,
@@ -137,17 +140,18 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final orderAsync = ref.watch(orderByIdProvider(widget.orderId));
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Order Details'),
+        title: Text(l10n.orderDetailsTitle),
         actions: [
           orderAsync.maybeWhen(
             data: (order) => order == null
                 ? const SizedBox.shrink()
                 : IconButton(
                     icon: const Icon(Icons.ios_share_rounded),
-                    tooltip: 'Share',
+                    tooltip: l10n.orderShareTooltip,
                     onPressed: () => _shareOrder(order),
                   ),
             orElse: () => const SizedBox.shrink(),
@@ -159,8 +163,8 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
         error: (error, stack) => const ErrorStateWidget(),
         data: (order) {
           if (order == null) {
-            return const ErrorStateWidget(
-              message: 'This order could not be found.',
+            return ErrorStateWidget(
+              message: l10n.upiOrderNotFound,
             );
           }
           return Column(
@@ -178,7 +182,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                               ? null
                               : () => _buyAgain(order),
                           icon: const Icon(Icons.replay_rounded, size: 18),
-                          label: const Text('Buy Again'),
+                          label: Text(l10n.homeBuyAgain),
                         ),
                       ),
                       if (order.isCancellable) ...[
@@ -189,7 +193,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                                 ? null
                                 : () => _cancelOrder(order),
                             icon: const Icon(Icons.cancel_outlined, size: 18),
-                            label: const Text('Cancel'),
+                            label: Text(l10n.cancelButton),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.error,
                             ),

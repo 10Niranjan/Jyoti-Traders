@@ -72,6 +72,6 @@ void main() {
     expect(repo.updated, hasLength(1));
     expect(repo.updated.single.perKmRate, 15);
     expect(repo.updated.single.warehouseLat, 19.076); // unchanged fields preserved
-    expect(find.text('Delivery settings updated.'), findsOneWidget);
+    expect(find.text('✓ Delivery settings saved successfully'), findsOneWidget);
   });
 }

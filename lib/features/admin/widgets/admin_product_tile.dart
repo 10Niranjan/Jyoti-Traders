@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/product_entity.dart';
+import '../../../shared/widgets/status_pill.dart';
 
 /// One row in the admin product list — thumbnail, name, price/unit, stock
 /// (highlighted when low), an inactive badge, and edit/delete actions.
@@ -57,22 +58,14 @@ class AdminProductTile extends StatelessWidget {
                         ),
                       ),
                       if (!product.isActive)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.textSecondaryLight.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            'Inactive',
-                            style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600),
-                          ),
-                        ),
+                        const StatusPill(label: 'Inactive', color: AppColors.textSecondaryLight),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${product.price.formatted} · per ${product.unit.value}',
+                    product.isWeighed
+                        ? 'from ₹${product.rateSlabs!.bestRatePerKg.toStringAsFixed(0)}/kg'
+                        : '${product.price.formatted} · per ${product.unit.value}',
                     style: GoogleFonts.inter(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600),
                   ),
                   const SizedBox(height: 4),

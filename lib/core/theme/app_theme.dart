@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
@@ -19,14 +20,26 @@ class AppTheme {
         error: AppColors.error,
       ),
       scaffoldBackgroundColor: AppColors.backgroundLight,
+      // Horizontal slide on every platform — matches the Figma reference's
+      // slide-in-from-right transition instead of each OS's own default
+      // (Android's fade-through, in particular, reads nothing like it).
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.linux: CupertinoPageTransitionsBuilder(),
+        },
+      ),
       fontFamily: GoogleFonts.inter().fontFamily,
       textTheme: TextTheme(
-        displayLarge: GoogleFonts.poppins(
+        displayLarge: GoogleFonts.inter(
           fontSize: 32.0,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w800,
           color: AppColors.textPrimaryLight,
         ),
-        titleLarge: GoogleFonts.poppins(
+        titleLarge: GoogleFonts.inter(
           fontSize: 20.0,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimaryLight,
@@ -55,7 +68,28 @@ class AppTheme {
         color: AppColors.surfaceLight,
         elevation: 1.0,
         shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.surfaceLight,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+        border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: const BorderSide(color: AppColors.error),
         ),
       ),
     );
@@ -72,14 +106,23 @@ class AppTheme {
         error: AppColors.error,
       ),
       scaffoldBackgroundColor: AppColors.backgroundDark,
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.linux: CupertinoPageTransitionsBuilder(),
+        },
+      ),
       fontFamily: GoogleFonts.inter().fontFamily,
       textTheme: TextTheme(
-        displayLarge: GoogleFonts.poppins(
+        displayLarge: GoogleFonts.inter(
           fontSize: 32.0,
-          fontWeight: FontWeight.bold,
+          fontWeight: FontWeight.w800,
           color: AppColors.textPrimaryDark,
         ),
-        titleLarge: GoogleFonts.poppins(
+        titleLarge: GoogleFonts.inter(
           fontSize: 20.0,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimaryDark,
@@ -108,7 +151,28 @@ class AppTheme {
         color: AppColors.surfaceDark,
         elevation: 1.0,
         shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: AppColors.surfaceDark,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12.0),
+        border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12.0),
+          borderSide: const BorderSide(color: Colors.white24),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: const BorderSide(color: Colors.white24),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.0),
+          borderSide: const BorderSide(color: AppColors.error),
         ),
       ),
     );

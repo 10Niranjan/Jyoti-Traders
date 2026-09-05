@@ -14,6 +14,7 @@ import 'package:traders_retailer/domain/entities/delivery_config_entity.dart';
 import 'package:traders_retailer/domain/entities/notification_preferences_entity.dart';
 import 'package:traders_retailer/domain/repositories/delivery_config_repository.dart';
 import 'package:traders_retailer/features/admin/screens/admin_profile_screen.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 import '../helpers/test_viewport.dart';
 
@@ -144,7 +145,11 @@ Widget _wrap(
           ),
     ),
   ],
-  child: const MaterialApp(home: AdminProfileScreen()),
+  child: const MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: AdminProfileScreen(),
+  ),
 );
 
 void main() {
@@ -257,7 +262,7 @@ void main() {
 
     expect(deliveryRepo.updated, hasLength(1));
     expect(deliveryRepo.updated.single.perKmRate, 20);
-    expect(find.text('Delivery settings updated.'), findsOneWidget);
+    expect(find.text('✓ Delivery settings saved successfully'), findsOneWidget);
   });
 
   testWidgets('tapping Log Out shows the confirmation dialog', (tester) async {

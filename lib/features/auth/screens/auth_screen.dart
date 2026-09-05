@@ -8,6 +8,7 @@ import '../controllers/auth_state.dart';
 import '../../../data/models/user_model.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/validators.dart';
+import '../../../l10n/app_localizations.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -62,6 +63,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     // Listen for Auth Error state to show alert
     ref.listen<AuthState>(authControllerProvider, (previous, next) {
@@ -122,7 +124,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     Text(
                       'Jyoti Traders',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.inter(
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                         color: isDark
@@ -133,8 +135,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ).animate().fadeIn(delay: 200.ms, duration: 450.ms),
                     Text(
                       _isLogin
-                          ? 'Wholesale & Retail Market Hub'
-                          : 'Create Your Retailer Account',
+                          ? l10n.authSubtitleLogin
+                          : l10n.authSubtitleSignup,
                       textAlign: TextAlign.center,
                       style: GoogleFonts.inter(
                         fontSize: 14,
@@ -152,7 +154,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                             color: isDark
                                 ? AppColors.surfaceDark
                                 : Colors.white,
-                            borderRadius: BorderRadius.circular(24.0),
+                            borderRadius: BorderRadius.circular(16.0),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(
@@ -179,9 +181,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                   // Name Field
                                   _buildTextField(
                                     controller: _nameController,
-                                    label: 'Full Name',
+                                    label: l10n.authFullName,
                                     icon: Icons.person_outline,
-                                    helperText: 'Letters and spaces only',
+                                    helperText: l10n.authFullNameHelper,
                                     validator: Validators.name,
                                     inputFormatters: [
                                       FilteringTextInputFormatter.allow(
@@ -195,10 +197,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                   // Phone Field
                                   _buildTextField(
                                     controller: _phoneController,
-                                    label: 'Phone Number',
+                                    label: l10n.authPhoneNumber,
                                     icon: Icons.phone_outlined,
                                     keyboardType: TextInputType.phone,
-                                    helperText: '10-digit mobile number',
+                                    helperText: l10n.authPhoneHelper,
                                     validator: Validators.phone,
                                     inputFormatters: [
                                       FilteringTextInputFormatter.digitsOnly,
@@ -210,10 +212,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                   // Business Name
                                   _buildTextField(
                                     controller: _businessNameController,
-                                    label: 'Business / Shop Name',
+                                    label: l10n.authBusinessName,
                                     icon: Icons.store_outlined,
-                                    helperText:
-                                        'Letters, numbers, spaces, & - . allowed',
+                                    helperText: l10n.authBusinessNameHelper,
                                     validator: Validators.businessName,
                                     inputFormatters: [
                                       FilteringTextInputFormatter.allow(
@@ -228,7 +229,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                 // Email Field
                                 _buildTextField(
                                   controller: _emailController,
-                                  label: 'Email Address',
+                                  label: l10n.authEmailAddress,
                                   icon: Icons.mail_outline,
                                   keyboardType: TextInputType.emailAddress,
                                   validator: Validators.email,
@@ -253,7 +254,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                         : AppColors.textPrimaryLight,
                                   ),
                                   decoration: InputDecoration(
-                                    labelText: 'Password',
+                                    labelText: l10n.authPassword,
                                     labelStyle: TextStyle(
                                       color: isDark
                                           ? AppColors.textSecondaryDark
@@ -261,7 +262,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                     ),
                                     helperText: _isLogin
                                         ? null
-                                        : '8+ chars with upper, lower, number & symbol',
+                                        : l10n.authPasswordHelperSignup,
                                     helperMaxLines: 2,
                                     prefixIcon: const Icon(
                                       Icons.lock_outline,
@@ -308,7 +309,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                   validator: (val) {
                                     if (_isLogin) {
                                       return (val == null || val.isEmpty)
-                                          ? 'Enter password'
+                                          ? l10n.authEnterPasswordError
                                           : null;
                                     }
                                     return Validators.password(val);
@@ -346,8 +347,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                         )
                                       : Text(
                                           _isLogin
-                                              ? 'Sign In'
-                                              : 'Create Account',
+                                              ? l10n.authSignIn
+                                              : l10n.authCreateAccount,
                                           style: GoogleFonts.inter(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
@@ -374,8 +375,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       children: [
                         Text(
                           _isLogin
-                              ? "Don't have an account? "
-                              : "Already have an account? ",
+                              ? l10n.authNoAccount
+                              : l10n.authHasAccount,
                           style: GoogleFonts.inter(
                             color: isDark
                                 ? AppColors.textSecondaryDark
@@ -394,7 +395,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                             padding: EdgeInsets.zero,
                           ),
                           child: Text(
-                            _isLogin ? 'Sign Up' : 'Sign In',
+                            _isLogin ? l10n.authSignUp : l10n.authSignIn,
                             style: GoogleFonts.inter(
                               fontWeight: FontWeight.bold,
                             ),
@@ -419,7 +420,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '💡 Simulation Demo Quick Login:',
+                              l10n.authDemoLoginLabel,
                               style: GoogleFonts.inter(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
@@ -430,7 +431,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                             Row(
                               children: [
                                 Expanded(
-                                  child: OutlinedButton.icon(
+                                  child: ElevatedButton.icon(
                                     onPressed: () {
                                       setState(() {
                                         _isLogin = true;
@@ -444,11 +445,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                       Icons.admin_panel_settings,
                                       size: 16,
                                     ),
-                                    label: const Text(
-                                      'Admin Demo',
-                                      style: TextStyle(fontSize: 11),
+                                    label: Text(
+                                      l10n.authAdminDemo,
+                                      style: const TextStyle(fontSize: 11),
                                     ),
-                                    style: OutlinedButton.styleFrom(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                      foregroundColor: Colors.white,
                                       visualDensity: VisualDensity.compact,
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 8,
@@ -471,9 +474,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                       _submit();
                                     },
                                     icon: const Icon(Icons.store, size: 16),
-                                    label: const Text(
-                                      'Retailer Demo',
-                                      style: TextStyle(fontSize: 11),
+                                    label: Text(
+                                      l10n.authRetailerDemo,
+                                      style: const TextStyle(fontSize: 11),
                                     ),
                                     style: OutlinedButton.styleFrom(
                                       visualDensity: VisualDensity.compact,

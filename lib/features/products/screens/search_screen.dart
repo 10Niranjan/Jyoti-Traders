@@ -11,6 +11,7 @@ import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/quantity_sheet.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/search_controller.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -33,18 +34,52 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(searchControllerProvider);
     final notifier = ref.read(searchControllerProvider.notifier);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: TextField(
-          controller: _controller,
-          autofocus: true,
-          decoration: const InputDecoration(
-            hintText: 'Search products...',
-            border: InputBorder.none,
+        titleSpacing: 0,
+        title: Container(
+          height: 40,
+          margin: const EdgeInsets.only(right: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.white10 : AppColors.backgroundLight,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
-          onChanged: notifier.onQueryChanged,
-          onSubmitted: notifier.commitToRecentSearches,
+          child: Row(
+            children: [
+              Icon(Icons.search_rounded, size: 20, color: AppColors.textSecondaryLight),
+              const SizedBox(width: 8),
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: l10n.searchHint,
+                    border: InputBorder.none,
+                    isDense: true,
+                  ),
+                  onChanged: (value) {
+                    notifier.onQueryChanged(value);
+                    setState(() {});
+                  },
+                  onSubmitted: notifier.commitToRecentSearches,
+                ),
+              ),
+              if (_controller.text.isNotEmpty)
+                InkWell(
+                  onTap: () {
+                    _controller.clear();
+                    notifier.onQueryChanged('');
+                    setState(() {});
+                  },
+                  child: Icon(Icons.close_rounded, size: 18, color: AppColors.textSecondaryLight),
+                ),
+            ],
+          ),
         ),
       ),
       body: Padding(
@@ -59,6 +94,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 onClear: notifier.clearRecentSearches,
               )
             : _SearchResults(
+                query: state.query,
                 isLoading: state.isLoading,
                 hasError: state.hasError,
                 results: state.results,
@@ -86,11 +122,12 @@ class _RecentSearches extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (terms.isEmpty) {
-      return const EmptyStateWidget(
+      return EmptyStateWidget(
         icon: Icons.search_rounded,
-        title: 'Search for products',
-        message: 'Try a product name like "rice" or "oil".',
+        title: l10n.searchEmptyTitle,
+        message: l10n.searchEmptyMessage,
       );
     }
     return Column(
@@ -100,12 +137,13 @@ class _RecentSearches extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Recent Searches',
-              style: GoogleFonts.poppins(fontWeight: FontWeight.w600),
+              l10n.searchRecentSearches,
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600),
             ),
-            TextButton(onPressed: onClear, child: const Text('Clear')),
+            TextButton(onPressed: onClear, child: Text(l10n.searchClear)),
           ],
         ),
+        const SizedBox(height: 8),
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -113,6 +151,12 @@ class _RecentSearches extends StatelessWidget {
               .map(
                 (term) => ActionChip(
                   label: Text(term),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(999),
+                    side: const BorderSide(color: Color(0xFFE2E8F0)),
+                  ),
+                  backgroundColor: Colors.white,
+                  elevation: 0,
                   onPressed: () => onTapTerm(term),
                 ),
               )
@@ -124,6 +168,7 @@ class _RecentSearches extends StatelessWidget {
 }
 
 class _SearchResults extends StatelessWidget {
+  final String query;
   final bool isLoading;
   final bool hasError;
   final List<ProductEntity> results;
@@ -131,6 +176,7 @@ class _SearchResults extends StatelessWidget {
   final ValueChanged<ProductEntity> onResultTap;
 
   const _SearchResults({
+    required this.query,
     required this.isLoading,
     required this.hasError,
     required this.results,
@@ -147,10 +193,10 @@ class _SearchResults extends StatelessWidget {
           ? ListView(children: [ErrorStateWidget(onRetry: onRetry)])
           : results.isEmpty
           ? ListView(
-              children: const [
+              children: [
                 EmptyStateWidget(
                   icon: Icons.search_off_rounded,
-                  title: 'No products found',
+                  title: AppLocalizations.of(context)!.searchNoResultsFor(query),
                 ),
               ],
             )
@@ -230,7 +276,8 @@ class _SearchResultTile extends StatelessWidget {
                     // (e.g. "₹260") reads as the product costing ₹260, not
                     // ₹260/kg. Same "from ₹x/kg" treatment as ProductCard.
                     product.isWeighed
-                        ? 'from ₹${product.rateSlabs!.bestRatePerKg.toStringAsFixed(0)}/kg'
+                        ? AppLocalizations.of(context)!
+                            .homeFromRatePerKg(product.rateSlabs!.bestRatePerKg.toStringAsFixed(0))
                         : product.price.formatted,
                     style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 14),
                   ),

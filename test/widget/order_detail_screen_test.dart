@@ -17,6 +17,7 @@ import 'package:traders_retailer/domain/repositories/order_repository.dart';
 import 'package:traders_retailer/domain/repositories/product_repository.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/orders/screens/order_detail_screen.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 import '../helpers/fake_cart_repository.dart';
 import '../helpers/test_viewport.dart';
@@ -206,7 +207,11 @@ Widget _wrap({
     ),
     cartRepositoryProvider.overrideWithValue(cartRepo ?? FakeCartRepository()),
   ],
-  child: MaterialApp(home: OrderDetailScreen(orderId: orderId)),
+  child: MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: OrderDetailScreen(orderId: orderId),
+  ),
 );
 
 void main() {

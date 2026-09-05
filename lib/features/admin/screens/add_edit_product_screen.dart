@@ -167,6 +167,8 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
     }
   }
 
+  String _pluralUnit(ProductUnit unit) => unit == ProductUnit.box ? 'boxes' : '${unit.value}s';
+
   @override
   Widget build(BuildContext context) {
     // Unfiltered — a product may already be assigned to a category the
@@ -186,7 +188,7 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
       appBar: AppBar(
         title: Text(
           widget.isEditing ? 'Edit Product' : 'Add Product',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
@@ -276,10 +278,10 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                 ),
                 const SizedBox(height: 10),
                 for (final (i, label) in const [
-                  'Below 240 g',
-                  '240 g – 999 g',
-                  '1 kg – 2.4 kg',
-                  'Above 2.4 kg',
+                  'Below 240g',
+                  '240g – 999g',
+                  '1kg – 2.4kg',
+                  'Above 2.4kg',
                 ].indexed) ...[
                   TextFormField(
                     controller: _rateControllers[i],
@@ -311,7 +313,7 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: InputDecoration(
                   labelText: 'Stock quantity',
-                  helperText: _unit == ProductUnit.kg ? 'In kilograms' : null,
+                  helperText: _unit == ProductUnit.kg ? 'In kilograms' : 'In ${_pluralUnit(_unit)}',
                 ),
                 validator: (v) {
                   final parsed = int.tryParse(v?.trim() ?? '');
@@ -333,14 +335,23 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
               ),
               const SizedBox(height: 8),
 
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                value: _isActive,
-                onChanged: isSaving ? null : (v) => setState(() => _isActive = v),
-                title: Text('Active', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
-                subtitle: Text(
-                  'Inactive products stay in your catalog but are hidden from retailers.',
-                  style: GoogleFonts.inter(fontSize: 11.5),
+              Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: SwitchListTile(
+                    value: _isActive,
+                    onChanged: isSaving ? null : (v) => setState(() => _isActive = v),
+                    title: Text('Active', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
+                    subtitle: Text(
+                      'Inactive products stay in your catalog but are hidden from retailers.',
+                      style: GoogleFonts.inter(fontSize: 11.5),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
@@ -358,7 +369,7 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                         )
                       : Text(
                           widget.isEditing ? 'Save Changes' : 'Add Product',
-                          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+                          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
                         ),
                 ),
               ),

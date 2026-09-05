@@ -11,6 +11,7 @@ import 'package:traders_retailer/domain/entities/user_entity.dart';
 import 'package:traders_retailer/domain/repositories/user_repository.dart';
 import 'package:traders_retailer/features/admin/screens/retailer_detail_screen.dart';
 import 'package:traders_retailer/features/admin/widgets/retailer_approval_card.dart';
+import '../helpers/test_viewport.dart';
 
 class FakeUserRepository implements UserRepository {
   @override
@@ -48,6 +49,8 @@ final _fullUser = UserEntity(
 );
 
 void main() {
+  useTallTestViewport();
+
   testWidgets('RetailerDetailScreen shows the full retailer profile', (tester) async {
     await tester.pumpWidget(
       ProviderScope(

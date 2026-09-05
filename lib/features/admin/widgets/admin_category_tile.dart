@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/category_entity.dart';
+import '../../../shared/widgets/status_pill.dart';
 
 /// One row in the admin category list — thumbnail, name, an inactive badge,
 /// a drag handle for reordering, and edit/delete actions.
@@ -60,17 +61,7 @@ class AdminCategoryTile extends StatelessWidget {
                     ),
                   ),
                   if (!category.isActive)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppColors.textSecondaryLight.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        'Inactive',
-                        style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600),
-                      ),
-                    ),
+                    const StatusPill(label: 'Inactive', color: AppColors.textSecondaryLight),
                 ],
               ),
             ),

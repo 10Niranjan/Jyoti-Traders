@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:traders_retailer/domain/entities/product_entity.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/domain/value_objects/weight_rate_slabs.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 import 'package:traders_retailer/shared/widgets/quantity_picker.dart';
 
 /// Stock is counted in kilos for a weighed product, so `stock: 5` is a 5 kg
@@ -46,6 +47,8 @@ class _HostState extends State<_Host> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: QuantityPicker(
           product: widget.product,

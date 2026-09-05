@@ -41,7 +41,7 @@ class SectionCard extends StatelessWidget {
                   const SizedBox(width: 8),
                 ],
                 Expanded(
-                  child: Text(title, style: GoogleFonts.poppins(fontWeight: FontWeight.w600, fontSize: 15)),
+                  child: Text(title, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 15)),
                 ),
                 ?trailing,
               ],

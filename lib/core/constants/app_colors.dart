@@ -18,7 +18,7 @@ class AppColors {
   static const Color accentLight = Color(0xFF2DD4BF);  // used on dark surfaces (e.g. floating cart bar)
   
   // Neutral Background & Surfaces
-  static const Color backgroundLight = Color(0xFFF8FAFC); // Off-White
+  static const Color backgroundLight = Color(0xFFF1F0F5); // Lavender-tinted off-white
   static const Color surfaceLight = Color(0xFFFFFFFF);
   
   static const Color backgroundDark = Color(0xFF0F172A);  // Deep Slate Blue
@@ -28,7 +28,7 @@ class AppColors {
   static const Color success = Color(0xFF10B981);
   static const Color warning = Color(0xFFF59E0B);
   static const Color error = Color(0xFFEF4444);
-  static const Color info = Color(0xFF06B6D4);
+  static const Color info = Color(0xFF2563EB);
   
   // Discount & Promotional Badges
   static const Color discountBadge = Color(0xFF16A34A); // Emerald green for discounts
@@ -39,15 +39,17 @@ class AppColors {
   /// tinted surface in this app already works (see `CategoryCard`).
   ///
   /// Fixed regardless of brand palette (unlike [primary]/[accent]) — these
-  /// six colors exist purely to make an 8+ item category grid scannable at a
-  /// glance, per the visual-direction mockup.
+  /// eight colors exist purely to make an 8+ item category grid scannable at
+  /// a glance, matching the Figma reference's own 8-color category set.
   static const List<Color> categoryPalette = [
-    Color(0xFF1D4ED8), // Blue
-    Color(0xFFEA580C), // Burnt Orange
+    Color(0xFFD97706), // Amber
+    Color(0xFFEA580C), // Orange
     Color(0xFF0D9488), // Teal
     Color(0xFF7C3AED), // Violet
-    Color(0xFFBE185D), // Pink
-    Color(0xFF15803D), // Green
+    Color(0xFFDB2777), // Pink
+    Color(0xFF92400E), // Brown
+    Color(0xFF2563EB), // Blue
+    Color(0xFFDC2626), // Red
   ];
   
   // Text Colors

@@ -14,6 +14,7 @@ import 'package:traders_retailer/domain/entities/order_item_entity.dart';
 import 'package:traders_retailer/domain/repositories/order_repository.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/orders/screens/order_history_screen.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 /// Minimal fake, same shape as the one in order_detail_screen_test.dart —
 /// just enough of `AuthRepository` to reach `AuthenticatedCustomer`, which
@@ -146,7 +147,11 @@ Widget _wrap(FakeOrderRepository repo) => ProviderScope(
     authRepositoryProvider.overrideWithValue(FakeAuthRepository(_retailer)),
     orderRepositoryProvider.overrideWithValue(repo),
   ],
-  child: const MaterialApp(home: OrderHistoryScreen()),
+  child: const MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: OrderHistoryScreen(),
+  ),
 );
 
 void main() {

@@ -16,6 +16,7 @@ class HiveKeys {
   // settings_cache
   static const String themeMode = 'theme_mode';
   static const String isFirstLaunch = 'is_first_launch';
+  static const String languageCode = 'language_code';
   static const String simulatedDeliveryConfig = 'simulated_delivery_config';
 
   // user_cache

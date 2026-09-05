@@ -21,7 +21,7 @@ class ApprovalQueueScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(
           'Retailer Approval Queue',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(

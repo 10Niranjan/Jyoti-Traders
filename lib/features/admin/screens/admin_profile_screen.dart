@@ -93,7 +93,7 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
               child: Text(
                 'Delivery Settings',
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.inter(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
                 ),
@@ -112,7 +112,7 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Change Password?',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17),
         ),
         content: Text(
           'We\'ll send a password reset link to $email.',
@@ -154,7 +154,7 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Log out?',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17),
         ),
         content: Text(
           'You\'ll need to sign in again to access the admin panel.',
@@ -197,7 +197,7 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
       appBar: AppBar(
         title: Text(
           'Admin Profile',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
         bottom: TabBar(
           controller: _tabController,

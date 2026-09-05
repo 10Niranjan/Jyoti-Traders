@@ -13,6 +13,7 @@ class AdminStatCard extends StatelessWidget {
   final AsyncValue<int> value;
   final IconData icon;
   final Color color;
+  final String Function(int)? formatter;
 
   const AdminStatCard({
     super.key,
@@ -20,6 +21,7 @@ class AdminStatCard extends StatelessWidget {
     required this.value,
     required this.icon,
     required this.color,
+    this.formatter,
   });
 
   @override
@@ -71,10 +73,10 @@ class AdminStatCard extends StatelessWidget {
                   : const Duration(milliseconds: 900),
               curve: Curves.easeOutCubic,
               builder: (context, animatedValue, _) => Text(
-                '$animatedValue',
-                style: GoogleFonts.poppins(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+                formatter?.call(animatedValue) ?? '$animatedValue',
+                style: GoogleFonts.inter(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
                   fontFeatures: const [FontFeature.tabularFigures()],
                   color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
                 ),
@@ -85,13 +87,13 @@ class AdminStatCard extends StatelessWidget {
               highlightColor: isDark ? AppColors.backgroundDark : Colors.grey.shade100,
               child: Container(
                 width: 40,
-                height: 24,
+                height: 30,
                 decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6)),
               ),
             ),
             error: (_, _) => Text(
               '—',
-              style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.error),
+              style: GoogleFonts.inter(fontSize: 30, fontWeight: FontWeight.w800, color: AppColors.error),
             ),
           ),
         ],

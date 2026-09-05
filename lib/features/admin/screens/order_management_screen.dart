@@ -53,7 +53,7 @@ class OrderManagementScreen extends ConsumerWidget {
     final isSaving = ref.watch(adminOrderControllerProvider).isLoading;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Manage Order', style: GoogleFonts.poppins(fontWeight: FontWeight.bold))),
+      appBar: AppBar(title: Text('Manage Order', style: GoogleFonts.inter(fontWeight: FontWeight.bold))),
       body: orderAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => ErrorStateWidget(message: 'Couldn\'t load order: $e'),
@@ -82,11 +82,19 @@ class OrderManagementScreen extends ConsumerWidget {
             ),
             paymentExtra: order.paymentStatus == PaymentStatus.paid
                 ? null
-                : OutlinedButton.icon(
-                    onPressed: isSaving ? null : () => _markAsPaid(context, ref, order),
-                    icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
-                    label: const Text('Mark as Paid'),
-                    style: OutlinedButton.styleFrom(foregroundColor: AppColors.success),
+                : SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: isSaving ? null : () => _markAsPaid(context, ref, order),
+                      icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
+                      label: const Text('Mark as Paid'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.success,
+                        side: const BorderSide(color: AppColors.success),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                    ),
                   ),
           );
         },

@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../domain/entities/product_entity.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Inline "how much?" picker embedded directly on Product Detail — quick-pick
 /// chips, a typed custom amount, and a doubling +/- stepper, all driving the
@@ -102,13 +103,14 @@ class _QuantityPickerState extends State<QuantityPicker> {
     final qty = widget.qty;
     final valid = qty >= _p.minQty && qty <= _p.maxQty;
     final total = valid ? _p.priceForQty(qty) : null;
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Select quantity',
-          style: GoogleFonts.poppins(fontSize: 13.5, fontWeight: FontWeight.w600),
+          l10n.quantityPickerSelectQuantity,
+          style: GoogleFonts.inter(fontSize: 13.5, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 10),
         Wrap(
@@ -149,12 +151,12 @@ class _QuantityPickerState extends State<QuantityPicker> {
                   FilteringTextInputFormatter.allow(_weighed ? RegExp(r'[0-9.]') : RegExp(r'[0-9]')),
                 ],
                 onChanged: _onTyped,
-                style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold),
+                style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.bold),
                 decoration: InputDecoration(
-                  labelText: 'Custom quantity',
+                  labelText: l10n.quantityPickerCustomQuantity,
                   suffixText: _weighed ? 'kg' : _p.unit.value,
-                  helperText: 'In stock: ${_p.labelForQty(_p.maxQty)}',
-                  errorText: qty > 0 && qty < _p.minQty ? 'Minimum ${_p.labelForQty(_p.minQty)}' : null,
+                  helperText: l10n.quantitySheetInStock(_p.labelForQty(_p.maxQty)),
+                  errorText: qty > 0 && qty < _p.minQty ? l10n.quantitySheetMinimum(_p.labelForQty(_p.minQty)) : null,
                   isDense: true,
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                 ),
@@ -190,7 +192,7 @@ class _QuantityPickerState extends State<QuantityPicker> {
           alignment: Alignment.centerRight,
           child: Text(
                 total?.formatted ?? '—',
-                style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary),
+                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary),
               )
               // A quantity change re-prices the line — a quick pop is the
               // same "it moved" feedback the chips' own selected-color

@@ -27,7 +27,7 @@ class EmptyApprovalQueueCard extends ConsumerWidget {
           Text('Approval queue is clear!', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 15)),
           const SizedBox(height: 4),
           Text(
-            'All registered customers are verified.',
+            'All registered retailers are verified.',
             style: GoogleFonts.inter(
               fontSize: 12,
               color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,

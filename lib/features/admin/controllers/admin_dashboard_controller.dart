@@ -40,6 +40,54 @@ final todayOrderCountProvider = Provider.autoDispose<AsyncValue<int>>((ref) {
   });
 });
 
+/// Derived stat: revenue from today's orders, in whole rupees (cancelled
+/// orders excluded — they were never fulfilled).
+final todayRevenueProvider = Provider.autoDispose<AsyncValue<int>>((ref) {
+  return ref.watch(allOrdersProvider).whenData((orders) {
+    final now = DateTime.now();
+    final total = orders
+        .where((o) =>
+            o.orderStatus != OrderStatus.cancelled &&
+            o.createdAt.year == now.year &&
+            o.createdAt.month == now.month &&
+            o.createdAt.day == now.day)
+        .fold(0.0, (sum, o) => sum + o.grandTotal.amount);
+    return total.round();
+  });
+});
+
+/// One row in the "Top Products" list — revenue-ranked, not quantity-ranked,
+/// since order lines mix per-piece counts and per-kg grams that can't be
+/// summed meaningfully.
+class TopProduct {
+  final String productId;
+  final String name;
+  final double revenue;
+  const TopProduct(this.productId, this.name, this.revenue);
+}
+
+/// Derived stat: the 5 best-selling products by revenue across the loaded
+/// order history (cancelled orders excluded).
+final topProductsProvider = Provider.autoDispose<AsyncValue<List<TopProduct>>>((ref) {
+  return ref.watch(allOrdersProvider).whenData((orders) {
+    final revenueByProduct = <String, double>{};
+    final nameByProduct = <String, String>{};
+
+    for (final order in orders) {
+      if (order.orderStatus == OrderStatus.cancelled) continue;
+      for (final item in order.items) {
+        revenueByProduct[item.productId] = (revenueByProduct[item.productId] ?? 0) + item.totalPrice.amount;
+        nameByProduct[item.productId] ??= item.name;
+      }
+    }
+
+    final ranked = revenueByProduct.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    return ranked.take(5).map((e) => TopProduct(e.key, nameByProduct[e.key]!, e.value)).toList();
+  });
+});
+
 /// One bucket in the last-7-days order chart.
 class DailyOrderCount {
   final DateTime day;

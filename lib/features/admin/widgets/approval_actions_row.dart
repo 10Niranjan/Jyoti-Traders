@@ -45,22 +45,23 @@ class ApprovalActionsRow extends ConsumerWidget {
     }
 
     return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
       children: [
         TextButton(
           onPressed: () => _handle(context, ref, controller.reject, '${user.shopName} rejected.'),
           child: const Text('Reject', style: TextStyle(color: AppColors.error)),
         ),
         const SizedBox(width: 12),
-        ElevatedButton.icon(
-          onPressed: () => _handle(context, ref, controller.approve, '${user.shopName} approved successfully!'),
-          icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
-          label: const Text('Approve'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.success,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        Expanded(
+          child: ElevatedButton.icon(
+            onPressed: () => _handle(context, ref, controller.approve, '${user.shopName} approved successfully!'),
+            icon: const Icon(Icons.check_circle_outline_rounded, size: 16),
+            label: const Text('Approve'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.success,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
           ),
         ),
       ],

@@ -122,7 +122,7 @@ class _AddEditCategoryScreenState extends ConsumerState<AddEditCategoryScreen> {
       appBar: AppBar(
         title: Text(
           widget.isEditing ? 'Edit Category' : 'Add Category',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
       ),
       body: SingleChildScrollView(
@@ -147,34 +147,49 @@ class _AddEditCategoryScreenState extends ConsumerState<AddEditCategoryScreen> {
               ),
               const SizedBox(height: 8),
 
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                value: _isActive,
-                onChanged: isSaving ? null : (v) => setState(() => _isActive = v),
-                title: Text('Active', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
-                subtitle: Text(
-                  'Inactive categories stay in your catalog but are hidden from retailers.',
-                  style: GoogleFonts.inter(fontSize: 11.5),
+              Material(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: SwitchListTile(
+                    value: _isActive,
+                    onChanged: isSaving ? null : (v) => setState(() => _isActive = v),
+                    title: Text('Active', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
+                    subtitle: Text(
+                      'Inactive categories stay in your catalog but are hidden from retailers.',
+                      style: GoogleFonts.inter(fontSize: 11.5),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
 
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isSaving ? null : _submit,
-                  style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 15)),
-                  child: isSaving
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : Text(
-                          widget.isEditing ? 'Save Changes' : 'Add Category',
-                          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-                        ),
-                ),
+              AnimatedBuilder(
+                animation: _nameController,
+                builder: (context, _) {
+                  final canSave = !isSaving && _nameController.text.trim().isNotEmpty;
+                  return SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: canSave ? _submit : null,
+                      style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 15)),
+                      child: isSaving
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : Text(
+                              widget.isEditing ? 'Save Changes' : 'Add Category',
+                              style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                            ),
+                    ),
+                  );
+                },
               ),
             ],
           ),

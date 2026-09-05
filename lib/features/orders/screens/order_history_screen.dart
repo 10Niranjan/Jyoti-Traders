@@ -12,6 +12,7 @@ import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/order_status_badge.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
 import '../../../shared/widgets/status_filter_chip.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/order_controller.dart';
 
 class OrderHistoryScreen extends ConsumerStatefulWidget {
@@ -27,31 +28,35 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final ordersAsync = ref.watch(orderHistoryProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('My Orders')),
+      appBar: AppBar(title: Text(l10n.orderHistoryTitle)),
       body: RefreshIndicator(
         onRefresh: () async => ref.invalidate(orderHistoryProvider),
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-              child: Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  StatusFilterChip(
-                    label: 'All',
-                    selected: _filter == null,
-                    onTap: () => setState(() => _filter = null),
-                  ),
-                  for (final status in OrderStatus.values)
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
                     StatusFilterChip(
-                      label: status.label,
-                      selected: _filter == status,
-                      onTap: () => setState(() => _filter = status),
+                      label: l10n.orderHistoryFilterAll,
+                      selected: _filter == null,
+                      onTap: () => setState(() => _filter = null),
                     ),
-                ],
+                    for (final status in OrderStatus.values) ...[
+                      const SizedBox(width: 8),
+                      StatusFilterChip(
+                        label: status.label,
+                        selected: _filter == status,
+                        onTap: () => setState(() => _filter = status),
+                      ),
+                    ],
+                  ],
+                ),
               ),
             ),
             Expanded(
@@ -79,10 +84,10 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                           EmptyStateWidget(
                             icon: Icons.receipt_long_outlined,
                             title: _filter == null
-                                ? 'No orders yet'
-                                : 'No ${_filter!.label.toLowerCase()} orders',
+                                ? l10n.orderHistoryEmptyTitle
+                                : l10n.orderHistoryEmptyFiltered(_filter!.label.toLowerCase()),
                             message: _filter == null
-                                ? 'Your placed orders will show up here.'
+                                ? l10n.orderHistoryEmptyMessage
                                 : null,
                           ),
                         ],
@@ -97,14 +102,12 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                           onTap: () => context.push(
                             RouteNames.orderDetailPath(order.id),
                           ),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                           child: Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              border: Border.all(
-                                color: AppColors.primary.withOpacity(0.08),
-                              ),
-                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFFF1F5F9)),
+                              borderRadius: BorderRadius.circular(16),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,7 +117,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                                       MainAxisAlignment.spaceBetween,
                                   children: [
                                     Text(
-                                      'Order #${order.id.shortId}',
+                                      l10n.orderNumber(order.id.shortId),
                                       style: GoogleFonts.inter(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13,
@@ -125,7 +128,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                                 ),
                                 const SizedBox(height: 6),
                                 Text(
-                                  '${order.items.length} items · ${formatOrderDate(order.createdAt)}',
+                                  l10n.orderItemsAndDate(order.items.length, formatOrderDate(order.createdAt)),
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
                                     color: AppColors.textSecondaryLight,
@@ -134,7 +137,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                                 const SizedBox(height: 6),
                                 Text(
                                   order.grandTotal.formatted,
-                                  style: GoogleFonts.poppins(
+                                  style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 15,
                                     color: AppColors.primary,

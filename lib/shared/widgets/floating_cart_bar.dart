@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../domain/entities/cart_entity.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Persistent "N items · ₹total · View Cart" pill, docked above the bottom
 /// nav bar on Home/Search/Category screens (PRD/mockup: quick-commerce apps
@@ -16,6 +17,7 @@ class FloatingCartBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return IgnorePointer(
       ignoring: cart.isEmpty,
       child: AnimatedSlide(
@@ -52,12 +54,12 @@ class FloatingCartBar extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          cart.itemCount == 1 ? '1 item' : '${cart.itemCount} items',
+                          l10n.cartItemCount(cart.itemCount),
                           style: GoogleFonts.inter(fontSize: 10.5, color: Colors.white70, letterSpacing: 0.3),
                         ),
                         Text(
                           cart.subtotal.formatted,
-                          style: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
+                          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                       ],
                     ),
@@ -76,7 +78,7 @@ class FloatingCartBar extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'View Cart',
+                            l10n.cartViewCart,
                             style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700, color: Colors.white),
                           ),
                           const SizedBox(width: 4),

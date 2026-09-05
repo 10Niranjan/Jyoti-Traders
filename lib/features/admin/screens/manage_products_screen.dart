@@ -24,7 +24,7 @@ class ManageProductsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Manage Products',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
       ),
       floatingActionButton: const AddProductFab(),
@@ -64,7 +64,7 @@ class ProductsListView extends ConsumerWidget {
       builder: (dialogContext) => AlertDialog(
         title: Text(
           'Delete product?',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17),
         ),
         content: Text(
           '"${product.name}" will be permanently removed from the catalog. '

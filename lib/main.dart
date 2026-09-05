@@ -9,7 +9,9 @@ import 'core/constants/hive_keys.dart';
 import 'core/navigation/app_router.dart';
 import 'core/services/fcm_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/locale_controller.dart';
 import 'core/theme/theme_controller.dart';
+import 'l10n/app_localizations.dart';
 import 'data/datasources/seed/demo_catalog_seeder.dart';
 import 'features/notifications/controllers/fcm_controller.dart';
 import 'features/notifications/controllers/stock_alert_controller.dart';
@@ -87,6 +89,12 @@ class JyotiTradersApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ref.watch(themeModeProvider),
+
+      // Language settings — null follows the device locale, same
+      // null-means-system shape as themeMode above.
+      locale: ref.watch(localeProvider),
+      supportedLocales: supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
 
       // Navigation router
       routerConfig: router,

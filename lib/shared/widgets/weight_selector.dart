@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../domain/value_objects/weight_rate_slabs.dart';
+import '../../l10n/app_localizations.dart';
 
 /// The full rate card, so a retailer can see what buying more would save.
 class RateSlabTable extends StatelessWidget {
@@ -17,11 +18,20 @@ class RateSlabTable extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeLabel =
         activeGrams == null ? null : slabs.bandLabelFor(activeGrams!);
+    final l10n = AppLocalizations.of(context)!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Rate by quantity', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+        Text(l10n.rateSlabTitle, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        const SizedBox(height: 2),
+        Text(
+          l10n.rateSlabSubtitle,
+          style: GoogleFonts.inter(
+            fontSize: 11.5,
+            color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+          ),
+        ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
@@ -53,7 +63,7 @@ class RateSlabTable extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '₹${band.ratePerKg.toStringAsFixed(0)}/kg',
+                        l10n.ratePerKg(band.ratePerKg.toStringAsFixed(0)),
                         style: GoogleFonts.inter(
                           fontSize: 12.5,
                           fontWeight: FontWeight.w700,

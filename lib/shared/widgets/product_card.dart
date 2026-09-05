@@ -4,9 +4,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_shadows.dart';
 import '../../core/utils/weight_formatter.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../features/cart/controllers/cart_controller.dart';
+import '../../l10n/app_localizations.dart';
 import 'add_to_cart_pill.dart';
 import 'quantity_sheet.dart';
 
@@ -29,6 +31,7 @@ class ProductCard extends ConsumerWidget {
     final qtyInCart = ref.watch(
       cartControllerProvider.select((cart) => cart.qtyFor(product.id)),
     );
+    final l10n = AppLocalizations.of(context)!;
 
     return InkWell(
       onTap: onTap,
@@ -38,6 +41,7 @@ class ProductCard extends ConsumerWidget {
           color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.primary.withOpacity(0.08)),
+          boxShadow: isDark ? null : AppShadows.card,
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -69,7 +73,7 @@ class ProductCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'per ${product.unit.value}',
+                    l10n.productPerUnit(product.unit.value),
                     style: GoogleFonts.inter(
                       fontSize: 10.5,
                       color: isDark
@@ -84,7 +88,7 @@ class ProductCard extends ConsumerWidget {
                       Expanded(
                         child: Text(
                           product.isWeighed
-                              ? 'from ₹${product.rateSlabs!.bestRatePerKg.toStringAsFixed(0)}/kg'
+                              ? l10n.homeFromRatePerKg(product.rateSlabs!.bestRatePerKg.toStringAsFixed(0))
                               : product.price.formatted,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -117,7 +121,7 @@ class ProductCard extends ConsumerWidget {
                   if (!product.isInStock) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'Out of stock',
+                      l10n.homeOutOfStock,
                       style: GoogleFonts.inter(
                         fontSize: 10,
                         color: AppColors.error,

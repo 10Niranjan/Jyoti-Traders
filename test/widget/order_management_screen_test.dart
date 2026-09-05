@@ -8,6 +8,7 @@ import 'package:traders_retailer/domain/entities/order_item_entity.dart';
 import 'package:traders_retailer/domain/repositories/order_repository.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/admin/screens/order_management_screen.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 import '../helpers/test_viewport.dart';
 
@@ -72,7 +73,11 @@ final _order = OrderEntity(
 Widget _wrap(FakeOrderRepository repo, {String orderId = 'o1'}) =>
     ProviderScope(
       overrides: [orderRepositoryProvider.overrideWithValue(repo)],
-      child: MaterialApp(home: OrderManagementScreen(orderId: orderId)),
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: OrderManagementScreen(orderId: orderId),
+      ),
     );
 
 void main() {
@@ -115,14 +120,16 @@ void main() {
     },
   );
 
-  testWidgets('COD orders show no payment status or Mark as Paid button', (
+  testWidgets('COD orders also show payment status and a Mark as Paid button', (
     tester,
   ) async {
     await tester.pumpWidget(_wrap(FakeOrderRepository([_order])));
     await tester.pumpAndSettle();
 
-    expect(find.text('Mark as Paid'), findsNothing);
-    expect(find.text('Awaiting payment'), findsNothing);
+    // COD is "cash due on delivery" — pending until the admin confirms it
+    // was actually collected, same as a UPI claim needing confirmation.
+    expect(find.text('Mark as Paid'), findsOneWidget);
+    expect(find.text('Awaiting payment'), findsOneWidget);
   });
 
   testWidgets(

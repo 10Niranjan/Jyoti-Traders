@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/notification_bell_button.dart';
 import '../controllers/admin_dashboard_controller.dart';
@@ -28,7 +29,7 @@ class AdminDashboardScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(
           'Jyoti Traders Admin',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
         actions: [const NotificationBellButton()],
       ),
@@ -61,15 +62,82 @@ class AdminDashboardScreen extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 12),
-              AdminStatCard(
-                title: "Today's Orders",
-                value: ref.watch(todayOrderCountProvider),
-                icon: Icons.shopping_bag_outlined,
-                color: AppColors.success,
+              Row(
+                children: [
+                  Expanded(
+                    child: AdminStatCard(
+                      title: "Today's Orders",
+                      value: ref.watch(todayOrderCountProvider),
+                      icon: Icons.shopping_bag_outlined,
+                      color: AppColors.success,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: AdminStatCard(
+                      title: "Today's Revenue",
+                      value: ref.watch(todayRevenueProvider),
+                      icon: Icons.payments_outlined,
+                      color: AppColors.accent,
+                      formatter: (v) => formatRupees(v.toDouble()),
+                    ),
+                  ),
+                ],
               ),
 
               const SizedBox(height: 20),
               const OrdersBarChart(),
+
+              const SizedBox(height: 20),
+              Text(
+                'Top Products',
+                style: GoogleFonts.inter(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                ),
+              ),
+              const SizedBox(height: 8),
+              ref.watch(topProductsProvider).when(
+                loading: () => const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (e, _) => Text('Couldn\'t load top products: $e'),
+                data: (products) => products.isEmpty
+                    ? Text(
+                        'No sales yet',
+                        style: GoogleFonts.inter(
+                          color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                        ),
+                      )
+                    : Column(
+                        children: [
+                          for (final p in products)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      p.name,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    formatRupees(p.revenue),
+                                    style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+              ),
 
               const SizedBox(height: 20),
               // "Manage Products", "Manage Categories", "All Orders" and
@@ -96,7 +164,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                 children: [
                   Text(
                     'Retailer Approval Queue',
-                    style: GoogleFonts.poppins(
+                    style: GoogleFonts.inter(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: isDark

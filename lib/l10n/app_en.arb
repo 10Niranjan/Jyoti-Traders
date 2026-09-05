@@ -1,0 +1,421 @@
+{
+  "@@locale": "en",
+
+  "navHome": "Home",
+  "navSearch": "Search",
+  "navOrders": "Orders",
+  "navProfile": "Profile",
+
+  "onboardingSkip": "Skip",
+  "onboardingNext": "Next",
+  "onboardingGetStarted": "Get Started",
+  "onboardingSlide1Title": "Browse the Full Catalog",
+  "onboardingSlide1Subtitle": "Wholesale and retail categories, curated products, always up to date.",
+  "onboardingSlide2Title": "Bulk Orders, Better Prices",
+  "onboardingSlide2Subtitle": "Order from ₹2,500 and get it delivered straight to your shop.",
+  "onboardingSlide3Title": "Pay Your Way",
+  "onboardingSlide3Subtitle": "Cash on Delivery or UPI — track every order from placement to delivery.",
+
+  "authSubtitleLogin": "Wholesale & Retail Market Hub",
+  "authSubtitleSignup": "Create Your Retailer Account",
+  "authFullName": "Full Name",
+  "authFullNameHelper": "Letters and spaces only",
+  "authPhoneNumber": "Phone Number",
+  "authPhoneHelper": "10-digit mobile number",
+  "authBusinessName": "Business / Shop Name",
+  "authBusinessNameHelper": "Letters, numbers, spaces, & - . allowed",
+  "authEmailAddress": "Email Address",
+  "authPassword": "Password",
+  "authPasswordHelperSignup": "8+ chars with upper, lower, number & symbol",
+  "authEnterPasswordError": "Enter password",
+  "authSignIn": "Sign In",
+  "authCreateAccount": "Create Account",
+  "authNoAccount": "Don't have an account? ",
+  "authHasAccount": "Already have an account? ",
+  "authSignUp": "Sign Up",
+  "authDemoLoginLabel": "Simulation Demo Quick Login:",
+  "authAdminDemo": "Admin Demo",
+  "authRetailerDemo": "Retailer Demo",
+
+  "homeDefaultCustomerName": "Valued Customer",
+  "homeDefaultBusinessName": "Retailer",
+  "homeOwnerLabel": "Owner: {name}",
+  "@homeOwnerLabel": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "homeBrowseCategories": "Browse Categories",
+  "homeNoCategoriesTitle": "No categories yet",
+  "homeNoCategoriesMessage": "Check back soon — the admin is setting up the catalog.",
+  "homeLowStockBanner": "{count, plural, one{1 of your regulars is low or out of stock.} other{{count} of your regulars are low or out of stock.}}",
+  "@homeLowStockBanner": {
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "homeBuyAgain": "Buy Again",
+  "homeTodaysPicks": "Today's Picks",
+  "homeFromRatePerKg": "from ₹{rate}/kg",
+  "@homeFromRatePerKg": {
+    "placeholders": { "rate": { "type": "String" } }
+  },
+  "homeOutOfStock": "Out of stock",
+  "homeOnlyLeftInStock": "Only {stock} {unit} left",
+  "@homeOnlyLeftInStock": {
+    "placeholders": {
+      "stock": { "type": "int" },
+      "unit": { "type": "String" }
+    }
+  },
+
+  "pendingUnableToDialPhone": "Unable to dial phone: 9860460325",
+  "pendingUnableToOpenEmail": "Unable to open email client: vishvatejkatkar007@gmail.com",
+  "pendingTitle": "Account Verification Pending",
+  "pendingMessage": "Your retailer application is currently being reviewed by the owner of Jyoti Traders. Once approved, you will gain full access to wholesale product purchasing.",
+  "pendingCheckingStatus": "Checking verification status...",
+  "pendingCheckStatusAgain": "Check Status Again",
+  "pendingContactSupportTitle": "Need Urgent Approval? Contact Support",
+  "pendingCallOwner": "Call Owner: +91 98604 60325",
+  "pendingEmailSupport": "Email: vishvatejkatkar007@gmail.com",
+  "pendingSignOut": "Sign Out & Try Another Account",
+
+  "searchHint": "Search products...",
+  "searchEmptyTitle": "Search for products",
+  "searchEmptyMessage": "Try a product name like \"rice\" or \"oil\".",
+  "searchRecentSearches": "Recent Searches",
+  "searchClear": "Clear",
+  "searchNoResultsFor": "No products found for \"{query}\"",
+  "@searchNoResultsFor": {
+    "placeholders": { "query": { "type": "String" } }
+  },
+
+  "productDetailsTitle": "Product Details",
+  "productNoLongerAvailable": "This product is no longer available.",
+  "productSoldPer": "Sold per {unit}",
+  "@productSoldPer": {
+    "placeholders": { "unit": { "type": "String" } }
+  },
+  "productInStock": "{stock} {unit} in stock",
+  "@productInStock": {
+    "placeholders": {
+      "stock": { "type": "int" },
+      "unit": { "type": "String" }
+    }
+  },
+  "productDescription": "Description",
+  "productAddButtonLabel": "Add {label} · {price}",
+  "@productAddButtonLabel": {
+    "placeholders": {
+      "label": { "type": "String" },
+      "price": { "type": "String" }
+    }
+  },
+  "productOutOfStockButton": "Out of Stock",
+  "productAddedToCart": "{name} added to cart",
+  "@productAddedToCart": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "productViewCartAction": "VIEW CART",
+
+  "categoryProductsFallbackTitle": "Products",
+  "categoryProductsEmptyTitle": "No products in this category yet",
+
+  "cartTitle": "Cart",
+  "cartClearAll": "Clear all",
+  "cartEmptyTitle": "Your cart is empty",
+  "cartEmptyMessage": "Add products to place a wholesale order.",
+  "cartBrowseProducts": "Browse Products",
+  "cartBelowMinimum": "Add {amount} more to reach the {minimum} minimum order.",
+  "@cartBelowMinimum": {
+    "placeholders": {
+      "amount": { "type": "String" },
+      "minimum": { "type": "String" }
+    }
+  },
+  "cartSubtotal": "Subtotal",
+  "cartDeliveryCharge": "Delivery Charge (estimated)",
+  "cartTotal": "Total",
+  "cartProceedToCheckout": "Proceed to Checkout",
+  "cartWeightAtRate": "{weight} @ ₹{rate}/kg",
+  "@cartWeightAtRate": {
+    "placeholders": {
+      "weight": { "type": "String" },
+      "rate": { "type": "String" }
+    }
+  },
+
+  "checkoutLocationError": "Couldn't get your location. Check location permission and try again.",
+  "checkoutTitle": "Checkout",
+  "checkoutDeliveryAddress": "Delivery Address",
+  "checkoutPaymentMethod": "Payment Method",
+  "checkoutCod": "Cash on Delivery (COD)",
+  "checkoutUpi": "UPI",
+  "checkoutOrderSummary": "Order Summary",
+  "checkoutSubtotalItems": "Subtotal ({count} items)",
+  "@checkoutSubtotalItems": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "checkoutDeliveryCharge": "Delivery Charge",
+  "checkoutDeliveryChargeEstimated": "Delivery Charge (estimated)",
+  "checkoutGrandTotal": "Grand Total",
+  "checkoutPlaceOrder": "Place Order",
+
+  "upiGalleryError": "Couldn't open the gallery: {error}",
+  "@upiGalleryError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "upiIdCopied": "UPI ID copied.",
+  "upiConfirmError": "Couldn't confirm payment: {error}",
+  "@upiConfirmError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "upiPaymentTitle": "UPI Payment",
+  "upiOrderLoadError": "Couldn't load order: {error}",
+  "@upiOrderLoadError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "upiOrderNotFound": "This order could not be found.",
+  "upiPayAmount": "Pay {amount}",
+  "@upiPayAmount": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "upiScanInstructions": "Scan with any UPI app, or use the ID below",
+  "upiScreenshotLabel": "Payment Screenshot (optional)",
+  "upiIHavePaid": "I Have Paid",
+  "upiConfirmationNote": "The admin will confirm your payment shortly after.",
+
+  "orderSuccessTitle": "Order Placed!",
+  "orderSuccessOrderNumber": "Order #{shortId}",
+  "@orderSuccessOrderNumber": {
+    "placeholders": { "shortId": { "type": "String" } }
+  },
+  "orderSuccessMessage": "The admin has been notified and will confirm your order shortly.",
+  "orderSuccessViewOrder": "View Order",
+  "orderSuccessContinueShopping": "Continue Shopping",
+
+  "orderHistoryTitle": "My Orders",
+  "orderHistoryFilterAll": "All",
+  "orderHistoryEmptyTitle": "No orders yet",
+  "orderHistoryEmptyFiltered": "No {status} orders",
+  "@orderHistoryEmptyFiltered": {
+    "placeholders": { "status": { "type": "String" } }
+  },
+  "orderHistoryEmptyMessage": "Your placed orders will show up here.",
+  "orderNumber": "Order #{shortId}",
+  "@orderNumber": {
+    "placeholders": { "shortId": { "type": "String" } }
+  },
+  "orderItemsAndDate": "{count} items · {date}",
+  "@orderItemsAndDate": {
+    "placeholders": {
+      "count": { "type": "int" },
+      "date": { "type": "String" }
+    }
+  },
+
+  "orderDetailsTitle": "Order Details",
+  "orderShareTooltip": "Share",
+  "orderCancelDialogTitle": "Cancel this order?",
+  "orderCancelDialogContent": "This cannot be undone.",
+  "no": "No",
+  "yesCancel": "Yes, Cancel",
+  "orderCancelledMessage": "Order cancelled.",
+  "orderCancelFailedMessage": "Cancellation failed. Please try again.",
+  "cancelButton": "Cancel",
+  "buyAgainAddedCount": "{count, plural, one{1 item added to cart} other{{count} items added to cart}}",
+  "@buyAgainAddedCount": {
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "buyAgainUnavailableSuffix": " — {count} no longer available.",
+  "@buyAgainUnavailableSuffix": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "profileSettingsTab": "Settings",
+  "profileUpdatePhotoError": "Couldn't update photo: {error}",
+  "@profileUpdatePhotoError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "profileUpdateFailed": "Update failed: {error}",
+  "@profileUpdateFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "profileUpdated": "Profile updated",
+  "profileSaveFailed": "Couldn't save: {error}",
+  "@profileSaveFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "profileChangePasswordDialogTitle": "Change Password?",
+  "profileResetLinkMessage": "We'll send a password reset link to {email}.",
+  "@profileResetLinkMessage": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "profileSendLink": "Send Link",
+  "profileResetLinkFailed": "Couldn't send reset link: {error}",
+  "@profileResetLinkFailed": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "profileResetLinkSent": "Password reset link sent to {email}",
+  "@profileResetLinkSent": {
+    "placeholders": { "email": { "type": "String" } }
+  },
+  "profileLogoutDialogTitle": "Log out?",
+  "profileLogoutDialogContent": "You'll need to sign in again to access your account.",
+  "profileLogOut": "Log Out",
+  "profileBusinessDetails": "Business Details",
+  "profileGstNumber": "GST Number (optional)",
+  "profileOpen24x7": "Open 24×7",
+  "profileOpensAt": "Opens: {time}",
+  "@profileOpensAt": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "profileClosesAt": "Closes: {time}",
+  "@profileClosesAt": {
+    "placeholders": { "time": { "type": "String" } }
+  },
+  "profilePayoutDetails": "Payout Details",
+  "profileAccountHolderName": "Account Holder Name",
+  "profileAccountNumber": "Account Number",
+  "profileIfscCode": "IFSC Code",
+  "profileBankName": "Bank Name",
+  "profileUpiIdOptional": "UPI ID (optional)",
+  "profileSaveChanges": "Save Changes",
+  "profileNotifications": "Notifications",
+  "profileOrderUpdates": "Order Updates",
+  "profileOrderUpdatesSubtitle": "Status changes for your orders",
+  "profilePromotions": "Promotions",
+  "profilePromotionsSubtitle": "Offers and discounts",
+  "profileLowStockAlerts": "Low Stock Alerts",
+  "profileLowStockAlertsSubtitle": "When items you buy often are running low",
+  "profileAppearance": "Appearance",
+  "themeSystem": "System",
+  "themeLight": "Light",
+  "themeDark": "Dark",
+  "profileAccountSection": "Account",
+  "profileChangePassword": "Change Password",
+  "profileSupport": "Support",
+  "profileCallSupport": "Call Support",
+  "profileEmailSupport": "Email Support",
+  "profileLanguage": "Language",
+  "languageEnglish": "English",
+  "languageHindi": "हिन्दी",
+  "languageMarathi": "मराठी",
+
+  "notificationsTitle": "Notifications",
+  "notificationsMarkAllRead": "Mark all read",
+  "notificationsLoadError": "Couldn't load notifications: {error}",
+  "@notificationsLoadError": {
+    "placeholders": { "error": { "type": "String" } }
+  },
+  "notificationsEmptyTitle": "No notifications yet",
+  "notificationsEmptyMessage": "Updates about your orders will show up here.",
+
+  "productPerUnit": "per {unit}",
+  "@productPerUnit": {
+    "placeholders": { "unit": { "type": "String" } }
+  },
+
+  "quantitySheetLabel": "Quantity",
+  "quantitySheetInStock": "In stock: {label}",
+  "@quantitySheetInStock": {
+    "placeholders": { "label": { "type": "String" } }
+  },
+  "quantitySheetMinimum": "Minimum {label}",
+  "@quantitySheetMinimum": {
+    "placeholders": { "label": { "type": "String" } }
+  },
+  "quantitySheetRateAtBand": "₹{rate}/kg · {band}",
+  "@quantitySheetRateAtBand": {
+    "placeholders": {
+      "rate": { "type": "String" },
+      "band": { "type": "String" }
+    }
+  },
+  "quantitySheetPricePerUnit": "{price} per {unit}",
+  "@quantitySheetPricePerUnit": {
+    "placeholders": {
+      "price": { "type": "String" },
+      "unit": { "type": "String" }
+    }
+  },
+  "quantitySheetEnterQuantity": "Enter a quantity",
+  "quantitySheetUpdateTo": "Update to {label}",
+  "@quantitySheetUpdateTo": {
+    "placeholders": { "label": { "type": "String" } }
+  },
+  "quantitySheetAddToCart": "Add {label} to Cart",
+  "@quantitySheetAddToCart": {
+    "placeholders": { "label": { "type": "String" } }
+  },
+
+  "quantityPickerSelectQuantity": "Select quantity",
+  "quantityPickerCustomQuantity": "Custom quantity",
+
+  "rateSlabTitle": "Rate by quantity (₹ per kg)",
+  "rateSlabSubtitle": "The whole weight is billed at the one rate its band earns.",
+  "ratePerKg": "₹{rate}/kg",
+  "@ratePerKg": {
+    "placeholders": { "rate": { "type": "String" } }
+  },
+
+  "addressStreetLabel": "Street / Shop Address",
+  "addressCityLabel": "City",
+  "addressPincodeLabel": "Pincode",
+  "addressDetecting": "Detecting your location…",
+  "addressDetectedPrefix": "Detected: ",
+  "addressAddForPricing": "Add your location for accurate delivery pricing",
+  "addressRefreshLocation": "Refresh location",
+  "addressUseCurrentLocation": "Use current location",
+
+  "orderStatusHeading": "Order Status",
+  "orderItemsHeading": "Items",
+  "orderWeighedLine": "{name} · {weight} @ ₹{rate}/kg",
+  "@orderWeighedLine": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "weight": { "type": "String" },
+      "rate": { "type": "String" }
+    }
+  },
+  "orderUnitLine": "{name} × {qty}",
+  "@orderUnitLine": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "qty": { "type": "int" }
+    }
+  },
+  "orderDeliveryAddressHeading": "DELIVERY ADDRESS",
+  "orderAddressLine": "{street}, {city} - {pincode}",
+  "@orderAddressLine": {
+    "placeholders": {
+      "street": { "type": "String" },
+      "city": { "type": "String" },
+      "pincode": { "type": "String" }
+    }
+  },
+  "orderPaymentHeading": "PAYMENT",
+  "orderPaymentCod": "Cash on Delivery",
+  "orderPaymentScreenshotLabel": "Payment Screenshot",
+
+  "cartItemCount": "{count, plural, one{1 item} other{{count} items}}",
+  "@cartItemCount": {
+    "placeholders": { "count": { "type": "num" } }
+  },
+  "cartViewCart": "View Cart",
+
+  "promoMinOrderTitle": "Wholesale Purchase Order Enforced",
+  "promoMinOrderBody": "Minimum order value: {amount} at checkout.",
+  "@promoMinOrderBody": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
+  "promoDeliveryTitle": "Own Fleet Delivery",
+  "promoDeliveryBody": "Delivered by our own delivery staff — no third-party logistics.",
+  "promoHelpTitle": "Need Help?",
+  "promoHelpBody": "Call {phone} for support with your order.",
+  "@promoHelpBody": {
+    "placeholders": { "phone": { "type": "String" } }
+  },
+
+  "editProfileTitle": "Edit Profile",
+  "save": "Save",
+  "editProfileTooltip": "Edit profile",
+  "errorGeneric": "Something went wrong. Please try again.",
+  "retry": "Retry"
+}

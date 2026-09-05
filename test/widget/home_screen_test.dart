@@ -20,6 +20,7 @@ import 'package:traders_retailer/domain/repositories/order_repository.dart';
 import 'package:traders_retailer/domain/repositories/product_repository.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/home/screens/home_screen.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 import '../helpers/fake_cart_repository.dart';
 
@@ -235,7 +236,11 @@ Widget _wrap({
     ),
     cartRepositoryProvider.overrideWithValue(FakeCartRepository()),
   ],
-  child: const MaterialApp(home: HomeScreen()),
+  child: const MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: HomeScreen(),
+  ),
 );
 
 void main() {
@@ -254,7 +259,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Buy Again'), findsOneWidget);
-    expect(find.text('Basmati Rice'), findsOneWidget);
+    // Appears in both the Buy Again rail and the Today's Picks section below
+    // it — this single product is both a repeat buy and part of the catalog.
+    expect(find.text('Basmati Rice'), findsWidgets);
   });
 
   testWidgets(

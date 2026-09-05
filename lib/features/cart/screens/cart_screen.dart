@@ -12,6 +12,8 @@ import '../../../domain/value_objects/money.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/qty_stepper.dart';
+import '../../../shared/widgets/summary_row.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/cart_controller.dart';
 
 class CartScreen extends ConsumerWidget {
@@ -22,14 +24,30 @@ class CartScreen extends ConsumerWidget {
     final cart = ref.watch(cartControllerProvider);
     final minimum = Money(AppConstants.kMinOrderAmount);
     final belowMinimum = cart.subtotal < minimum;
+    final deliveryCharge = Money(AppConstants.kStubDeliveryCharge);
+    final total = cart.subtotal + deliveryCharge;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cart')),
+      appBar: AppBar(
+        title: Text(l10n.cartTitle),
+        actions: [
+          if (!cart.isEmpty)
+            TextButton(
+              onPressed: () => ref.read(cartControllerProvider.notifier).clearCart(),
+              child: Text(l10n.cartClearAll),
+            ),
+        ],
+      ),
       body: cart.isEmpty
-          ? const EmptyStateWidget(
+          ? EmptyStateWidget(
               icon: Icons.shopping_cart_outlined,
-              title: 'Your cart is empty',
-              message: 'Browse categories to add wholesale items.',
+              title: l10n.cartEmptyTitle,
+              message: l10n.cartEmptyMessage,
+              action: OutlinedButton(
+                onPressed: () => context.go(RouteNames.home),
+                child: Text(l10n.cartBrowseProducts),
+              ),
             )
           : Column(
               children: [
@@ -49,9 +67,10 @@ class CartScreen extends ConsumerWidget {
                     decoration: BoxDecoration(
                       color: AppColors.warning.withOpacity(0.12),
                       borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: AppColors.warning.withOpacity(0.3)),
                     ),
                     child: Text(
-                      'Add ${(minimum - cart.subtotal).formatted} more to reach the ${minimum.formatted} minimum order.',
+                      l10n.cartBelowMinimum((minimum - cart.subtotal).formatted, minimum.formatted),
                       style: GoogleFonts.inter(fontSize: 12.5, color: AppColors.warning, fontWeight: FontWeight.w600),
                     ),
                   ),
@@ -61,19 +80,13 @@ class CartScreen extends ConsumerWidget {
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text('Subtotal', style: GoogleFonts.inter(fontSize: 14)),
-                            Text(
-                              cart.subtotal.formatted,
-                              style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
+                        SummaryRow(label: l10n.cartSubtotal, value: cart.subtotal.formatted),
+                        SummaryRow(label: l10n.cartDeliveryCharge, value: deliveryCharge.formatted),
+                        const Divider(),
+                        SummaryRow(label: l10n.cartTotal, value: total.formatted, bold: true),
                         const SizedBox(height: 12),
                         PrimaryButton(
-                          label: 'Proceed to Checkout',
+                          label: l10n.cartProceedToCheckout,
                           icon: Icons.arrow_forward_rounded,
                           onPressed: belowMinimum ? null : () => context.push(RouteNames.checkout),
                         ),
@@ -141,7 +154,8 @@ class _CartItemTile extends ConsumerWidget {
                 Text(item.totalPrice.formatted, style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 14)),
                 if (item.isWeighed)
                   Text(
-                    '${formatGrams(item.qty)} @ ₹${item.ratePerKg!.toStringAsFixed(0)}/kg',
+                    AppLocalizations.of(context)!
+                        .cartWeightAtRate(formatGrams(item.qty), item.ratePerKg!.toStringAsFixed(0)),
                     style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight),
                   ),
               ],

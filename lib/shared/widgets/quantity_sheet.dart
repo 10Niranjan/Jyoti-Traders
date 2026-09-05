@@ -9,6 +9,7 @@ import '../../core/utils/weight_formatter.dart';
 import '../../domain/entities/cart_item_entity.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../features/cart/controllers/cart_controller.dart';
+import '../../l10n/app_localizations.dart';
 import 'primary_button.dart';
 
 /// The "how much?" step a `+` tap now leads to, instead of silently dropping
@@ -131,6 +132,7 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
     final total = valid ? _p.priceForQty(_qty) : null;
     final secondary =
         isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final l10n = AppLocalizations.of(context)!;
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -174,16 +176,16 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
                   onSubmitted: (_) {
                     if (valid) _confirm();
                   },
-                  style: GoogleFonts.poppins(
+                  style: GoogleFonts.inter(
                     fontSize: 19,
                     fontWeight: FontWeight.bold,
                   ),
                   decoration: InputDecoration(
-                    labelText: 'Quantity',
+                    labelText: l10n.quantitySheetLabel,
                     suffixText: _p.isWeighed ? 'kg' : _p.unit.value,
-                    helperText: 'In stock: ${_label(_p.maxQty)}',
+                    helperText: l10n.quantitySheetInStock(_label(_p.maxQty)),
                     errorText: _qty > 0 && _qty < _p.minQty
-                        ? 'Minimum ${_label(_p.minQty)}'
+                        ? l10n.quantitySheetMinimum(_label(_p.minQty))
                         : null,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -226,15 +228,18 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
                       child: Text(
                         _p.isWeighed
                             ? (valid
-                                  ? '₹${_p.rateSlabs!.ratePerKgFor(_qty).toStringAsFixed(0)}/kg · ${_p.rateSlabs!.bandLabelFor(_qty)}'
-                                  : 'from ₹${_p.rateSlabs!.bestRatePerKg.toStringAsFixed(0)}/kg')
-                            : '${_p.price.formatted} per ${_p.unit.value}',
+                                  ? l10n.quantitySheetRateAtBand(
+                                      _p.rateSlabs!.ratePerKgFor(_qty).toStringAsFixed(0),
+                                      _p.rateSlabs!.bandLabelFor(_qty),
+                                    )
+                                  : l10n.homeFromRatePerKg(_p.rateSlabs!.bestRatePerKg.toStringAsFixed(0)))
+                            : l10n.quantitySheetPricePerUnit(_p.price.formatted, _p.unit.value),
                         style: GoogleFonts.inter(fontSize: 11.5, color: secondary),
                       ),
                     ),
                     Text(
                       total?.formatted ?? '—',
-                      style: GoogleFonts.poppins(
+                      style: GoogleFonts.inter(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: AppColors.primary,
@@ -256,10 +261,10 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
                 const SizedBox(height: 14),
                 PrimaryButton(
                   label: !valid
-                      ? 'Enter a quantity'
+                      ? l10n.quantitySheetEnterQuantity
                       : inCart > 0
-                      ? 'Update to ${_label(_qty)}'
-                      : 'Add ${_label(_qty)} to Cart',
+                      ? l10n.quantitySheetUpdateTo(_label(_qty))
+                      : l10n.quantitySheetAddToCart(_label(_qty)),
                   icon: Icons.shopping_cart_outlined,
                   onPressed: valid ? _confirm : null,
                 ),
@@ -313,7 +318,7 @@ class _Header extends StatelessWidget {
                 product.name,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.poppins(
+                style: GoogleFonts.inter(
                   fontSize: 14.5,
                   fontWeight: FontWeight.w600,
                 ),
@@ -321,8 +326,8 @@ class _Header extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 product.isWeighed
-                    ? 'from ₹${product.rateSlabs!.bestRatePerKg.toStringAsFixed(0)}/kg'
-                    : 'Sold per ${product.unit.value}',
+                    ? AppLocalizations.of(context)!.homeFromRatePerKg(product.rateSlabs!.bestRatePerKg.toStringAsFixed(0))
+                    : AppLocalizations.of(context)!.productSoldPer(product.unit.value),
                 style: GoogleFonts.inter(fontSize: 11.5, color: secondary),
               ),
             ],

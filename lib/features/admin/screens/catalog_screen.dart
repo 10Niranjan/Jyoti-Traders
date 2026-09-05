@@ -44,7 +44,7 @@ class _CatalogScreenState extends State<CatalogScreen>
       appBar: AppBar(
         title: Text(
           'Catalog',
-          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
         bottom: TabBar(
           controller: _tabController,

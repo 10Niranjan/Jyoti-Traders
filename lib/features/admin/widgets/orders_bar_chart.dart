@@ -32,7 +32,7 @@ class OrdersBarChart extends ConsumerWidget {
         children: [
           Text(
             'Orders — Last 7 Days',
-            style: GoogleFonts.poppins(fontSize: 15, fontWeight: FontWeight.bold, color: textColor),
+            style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.bold, color: textColor),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -90,7 +90,12 @@ class OrdersBarChart extends ConsumerWidget {
                           barRods: [
                             BarChartRodData(
                               toY: days[i].count.toDouble(),
-                              color: AppColors.primary,
+                              // Today's bar (the last one) stands out at full
+                              // brand color; the rest use a lighter tint, so
+                              // the chart reads "here's today" at a glance.
+                              color: i == days.length - 1
+                                  ? AppColors.primary
+                                  : AppColors.primaryLight,
                               width: 18,
                               borderRadius: BorderRadius.circular(4),
                             ),

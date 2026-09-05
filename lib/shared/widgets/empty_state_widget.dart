@@ -9,12 +9,14 @@ class EmptyStateWidget extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? message;
+  final Widget? action;
 
   const EmptyStateWidget({
     super.key,
     this.icon = Icons.inbox_outlined,
     required this.title,
     this.message,
+    this.action,
   });
 
   @override
@@ -31,7 +33,7 @@ class EmptyStateWidget extends StatelessWidget {
             Text(
               title,
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.inter(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
@@ -47,6 +49,10 @@ class EmptyStateWidget extends StatelessWidget {
                   color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                 ),
               ),
+            ],
+            if (action != null) ...[
+              const SizedBox(height: 20),
+              action!,
             ],
           ],
         ),
