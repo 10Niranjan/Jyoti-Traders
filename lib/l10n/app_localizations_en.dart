@@ -197,6 +197,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pendingSignOut => 'Sign Out & Try Another Account';
 
   @override
+  String get pendingBrowseCatalog => 'Browse Catalog While You Wait';
+
+  @override
+  String get homePendingBanner =>
+      'Preview mode — you can order once your account is approved.';
+
+  @override
   String get searchHint => 'Search products...';
 
   @override
@@ -218,7 +225,35 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get searchSortRelevance => 'Relevance';
+
+  @override
+  String get searchSortPriceLowToHigh => 'Price: Low to High';
+
+  @override
+  String get searchSortPriceHighToLow => 'Price: High to Low';
+
+  @override
+  String get searchInStockOnly => 'In stock only';
+
+  @override
   String get productDetailsTitle => 'Product Details';
+
+  @override
+  String get wishlistTitle => 'Wishlist';
+
+  @override
+  String get wishlistEmptyTitle => 'Nothing saved yet';
+
+  @override
+  String get wishlistEmptyMessage =>
+      'Tap the heart on a product to save it for later.';
+
+  @override
+  String get wishlistAdded => 'Added to wishlist';
+
+  @override
+  String get wishlistRemoved => 'Removed from wishlist';
 
   @override
   String get productNoLongerAvailable => 'This product is no longer available.';
@@ -235,6 +270,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productDescription => 'Description';
+
+  @override
+  String get productYouMayAlsoLike => 'You may also like';
 
   @override
   String productAddButtonLabel(String label, String price) {
@@ -333,6 +371,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get checkoutPlaceOrder => 'Place Order';
+
+  @override
+  String get checkoutSavedAddresses => 'Saved addresses';
+
+  @override
+  String get checkoutSaveAddressToggle => 'Save this address for later';
+
+  @override
+  String get checkoutSaveAddressLabelHint => 'Label (e.g. Shop, Warehouse)';
+
+  @override
+  String get checkoutSaveAddressLabelRequired =>
+      'Add a label to save this address';
 
   @override
   String upiGalleryError(String error) {
@@ -520,6 +571,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileLogOut => 'Log Out';
 
   @override
+  String get profileSavedAddresses => 'Saved Addresses';
+
+  @override
+  String get profileNoSavedAddresses =>
+      'Addresses you save at checkout will appear here.';
+
+  @override
+  String get profileRemoveAddressAction => 'Remove';
+
+  @override
+  String get profileRemoveAddressTitle => 'Remove address?';
+
+  @override
+  String profileRemoveAddressContent(String label) {
+    return 'Remove \"$label\" from your saved addresses?';
+  }
+
+  @override
+  String get profileAddressRemoved => 'Address removed';
+
+  @override
   String get profileBusinessDetails => 'Business Details';
 
   @override
@@ -619,6 +691,51 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageMarathi => 'मराठी';
+
+  @override
+  String get adminProfileTitle => 'Admin Profile';
+
+  @override
+  String get profileAccountInfo => 'Account Info';
+
+  @override
+  String get profileRoleLabel => 'Role';
+
+  @override
+  String get profileRoleAdmin => 'Administrator';
+
+  @override
+  String profileMemberSince(String date) {
+    return 'Member since $date';
+  }
+
+  @override
+  String get profileStoreSection => 'Store';
+
+  @override
+  String get profileDeliverySettings => 'Delivery Settings';
+
+  @override
+  String get broadcastTitle => 'Send Broadcast';
+
+  @override
+  String get broadcastTitleFieldLabel => 'Title';
+
+  @override
+  String get broadcastBodyFieldLabel => 'Message';
+
+  @override
+  String get broadcastSendButton => 'Send to All Retailers';
+
+  @override
+  String get broadcastSentConfirmation => 'Broadcast sent';
+
+  @override
+  String get broadcastHistoryEmpty => 'No broadcasts sent yet';
+
+  @override
+  String get profileDeliverySettingsSubtitle =>
+      'Delivery radius, fees, and minimum order value';
 
   @override
   String get notificationsTitle => 'Notifications';
@@ -768,6 +885,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cartViewCart => 'View Cart';
+
+  @override
+  String cartAddMoreShort(String amount) {
+    return 'Add $amount more to order';
+  }
 
   @override
   String get promoMinOrderTitle => 'Wholesale Purchase Order Enforced';

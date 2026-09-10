@@ -45,6 +45,11 @@ class UserEntity extends Equatable {
   final UserRole role;
   final UserStatus status;
   final AddressEntity? address;
+
+  /// Additional addresses (each with its own [AddressEntity.id]/[label]) a
+  /// retailer has saved for reuse at checkout, beyond the single [address]
+  /// above. Empty for every retailer who hasn't saved a second address.
+  final List<AddressEntity> savedAddresses;
   final String? gstNumber;
   final String? fcmToken;
   final String? photoUrl;
@@ -62,6 +67,7 @@ class UserEntity extends Equatable {
     required this.role,
     required this.status,
     this.address,
+    this.savedAddresses = const [],
     this.gstNumber,
     this.fcmToken,
     this.photoUrl,
@@ -83,6 +89,7 @@ class UserEntity extends Equatable {
     role,
     status,
     address,
+    savedAddresses,
     gstNumber,
     fcmToken,
     photoUrl,

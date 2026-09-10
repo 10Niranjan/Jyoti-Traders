@@ -44,18 +44,20 @@ class AddressFormFields extends StatelessWidget {
           decoration: InputDecoration(labelText: l10n.addressStreetLabel),
           validator: Validators.address,
         ),
+        const SizedBox(height: 12),
         TextFormField(
           controller: cityController,
           decoration: InputDecoration(labelText: l10n.addressCityLabel),
           validator: (v) => Validators.required(v, fieldName: 'City'),
         ),
+        const SizedBox(height: 12),
         TextFormField(
           controller: pincodeController,
           decoration: InputDecoration(labelText: l10n.addressPincodeLabel),
           keyboardType: TextInputType.number,
           validator: (v) => Validators.required(v, fieldName: 'Pincode'),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 12),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

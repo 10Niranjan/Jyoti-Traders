@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/utils/product_sort.dart';
 import '../../../data/datasources/local_storage_service.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/entities/product_entity.dart';
@@ -11,6 +12,8 @@ class SearchState {
   final bool isLoading;
   final bool hasError;
   final List<String> recentSearches;
+  final ProductSort sort;
+  final bool inStockOnly;
 
   const SearchState({
     this.query = '',
@@ -18,7 +21,16 @@ class SearchState {
     this.isLoading = false,
     this.hasError = false,
     this.recentSearches = const [],
+    this.sort = ProductSort.relevance,
+    this.inStockOnly = false,
   });
+
+  /// What the screen actually renders — [results] as fetched, with [sort]
+  /// and [inStockOnly] applied client-side. Kept as a derived getter rather
+  /// than a stored field so there's only one source of truth for the raw
+  /// results and no risk of the two drifting out of sync.
+  List<ProductEntity> get visibleResults =>
+      sortAndFilterProducts(results, sort: sort, inStockOnly: inStockOnly);
 
   SearchState copyWith({
     String? query,
@@ -26,6 +38,8 @@ class SearchState {
     bool? isLoading,
     bool? hasError,
     List<String>? recentSearches,
+    ProductSort? sort,
+    bool? inStockOnly,
   }) {
     return SearchState(
       query: query ?? this.query,
@@ -33,6 +47,8 @@ class SearchState {
       isLoading: isLoading ?? this.isLoading,
       hasError: hasError ?? this.hasError,
       recentSearches: recentSearches ?? this.recentSearches,
+      sort: sort ?? this.sort,
+      inStockOnly: inStockOnly ?? this.inStockOnly,
     );
   }
 }
@@ -90,6 +106,10 @@ class SearchController extends StateNotifier<SearchState> {
       state = state.copyWith(isLoading: false, hasError: true, results: []);
     }
   }
+
+  void setSort(ProductSort sort) => state = state.copyWith(sort: sort);
+
+  void setInStockOnly(bool value) => state = state.copyWith(inStockOnly: value);
 
   Future<void> commitToRecentSearches(String query) async {
     if (query.trim().isEmpty) return;

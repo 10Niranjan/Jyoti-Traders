@@ -10,10 +10,12 @@ import '../../../domain/entities/product_entity.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/inline_toast.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../../shared/widgets/product_card.dart';
 import '../../../shared/widgets/quantity_picker.dart';
 import '../../../shared/widgets/weight_selector.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../cart/controllers/cart_controller.dart';
+import '../../wishlist/controllers/wishlist_controller.dart';
 import '../controllers/product_controller.dart';
 
 class ProductDetailScreen extends ConsumerStatefulWidget {
@@ -39,9 +41,33 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     final productAsync = ref.watch(productByIdProvider(widget.productId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
+    final isWishlisted = ref.watch(
+      wishlistControllerProvider.select((ids) => ids.contains(widget.productId)),
+    );
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.productDetailsTitle)),
+      appBar: AppBar(
+        title: Text(l10n.productDetailsTitle),
+        actions: [
+          IconButton(
+            icon: Icon(
+              isWishlisted ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+              color: isWishlisted ? AppColors.error : null,
+            ),
+            onPressed: () async {
+              await ref.read(wishlistControllerProvider.notifier).toggle(widget.productId);
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(isWishlisted ? l10n.wishlistRemoved : l10n.wishlistAdded),
+                  behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 1),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       // The Hero sits outside `productAsync.when()`, keyed on the route's
       // `productId` (known synchronously), so it's mounted on frame one —
       // `productByIdProvider` is a FutureProvider, and a Hero nested only
@@ -202,6 +228,7 @@ class _ProductDetailBody extends ConsumerWidget {
                     ],
                   ),
                 ),
+                _RelatedProductsRail(product: product),
               ],
             ),
           ),
@@ -254,6 +281,69 @@ class _ProductDetailBody extends ConsumerWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Other active products from the same category, excluding this one —
+/// reuses `ProductCard` as-is at a fixed rail width, the same trick Home's
+/// Buy Again rail already established, rather than a new tile widget.
+/// Renders nothing while the category is empty of other products.
+class _RelatedProductsRail extends ConsumerWidget {
+  final ProductEntity product;
+
+  const _RelatedProductsRail({required this.product});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final productsAsync = ref.watch(productsByCategoryProvider(product.categoryId));
+    final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return productsAsync.maybeWhen(
+      data: (products) {
+        final related = products.where((p) => p.id != product.id).take(10).toList();
+        if (related.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.productYouMayAlsoLike,
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                // Measured, not guessed — 246 overflowed ProductCard's
+                // internal layout by half a pixel at this 150px rail width
+                // (the same class of gap Home's own rail hit at Phase 9.7).
+                height: 260,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: related.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 10),
+                  itemBuilder: (context, index) {
+                    final other = related[index];
+                    return SizedBox(
+                      width: 150,
+                      child: ProductCard(
+                        product: other,
+                        onTap: () => context.push(RouteNames.productDetailPath(other.id)),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      orElse: () => const SizedBox.shrink(),
     );
   }
 }

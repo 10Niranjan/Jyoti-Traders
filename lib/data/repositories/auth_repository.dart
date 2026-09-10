@@ -37,6 +37,7 @@ abstract class AuthRepository {
     String? businessName,
     String? photoUrl,
     AddressEntity? address,
+    List<AddressEntity>? savedAddresses,
     String? gstNumber,
     BankDetailsEntity? bankDetails,
     BusinessHoursEntity? businessHours,

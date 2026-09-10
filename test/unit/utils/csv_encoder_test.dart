@@ -44,4 +44,56 @@ void main() {
       expect(csv, ',x');
     });
   });
+
+  group('decodeCsv', () {
+    test('splits plain rows on commas and newlines', () {
+      final rows = decodeCsv('a,b,c\nd,e,f');
+      expect(rows, [
+        ['a', 'b', 'c'],
+        ['d', 'e', 'f'],
+      ]);
+    });
+
+    test('handles a comma inside a quoted field', () {
+      final rows = decodeCsv('"Rice, Basmati",100');
+      expect(rows, [
+        ['Rice, Basmati', '100'],
+      ]);
+    });
+
+    test('handles a newline inside a quoted field', () {
+      final rows = decodeCsv('"Line1\nLine2",x');
+      expect(rows, [
+        ['Line1\nLine2', 'x'],
+      ]);
+    });
+
+    test('unescapes doubled quotes inside a quoted field', () {
+      final rows = decodeCsv('"5"" pipe",x');
+      expect(rows, [
+        ['5" pipe', 'x'],
+      ]);
+    });
+
+    test('is the inverse of encodeCsv for plain and quoted content', () {
+      final original = [
+        ['name', 'note'],
+        ['Rice, Basmati', 'has a "premium" tag'],
+      ];
+      final roundTripped = decodeCsv(encodeCsv(original));
+      expect(roundTripped, original);
+    });
+
+    test('handles CRLF line endings and a trailing newline without an extra blank row', () {
+      final rows = decodeCsv('a,b\r\nc,d\r\n');
+      expect(rows, [
+        ['a', 'b'],
+        ['c', 'd'],
+      ]);
+    });
+
+    test('empty input decodes to no rows', () {
+      expect(decodeCsv(''), isEmpty);
+    });
+  });
 }

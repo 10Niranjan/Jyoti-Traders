@@ -13,6 +13,7 @@ import '../../features/auth/screens/onboarding_screen.dart';
 import '../../data/datasources/local_storage_service.dart';
 import '../../features/admin/screens/add_edit_category_screen.dart';
 import '../../features/admin/screens/add_edit_product_screen.dart';
+import '../../features/admin/screens/bulk_import_products_screen.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
 import '../../features/admin/screens/admin_profile_screen.dart';
 import '../../features/admin/screens/approval_queue_screen.dart';
@@ -21,6 +22,7 @@ import '../../features/admin/screens/retailer_detail_screen.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../features/admin/screens/all_orders_screen.dart';
 import '../../features/admin/screens/delivery_settings_screen.dart';
+import '../../features/admin/screens/send_broadcast_screen.dart';
 import '../../features/admin/screens/manage_categories_screen.dart';
 import '../../features/admin/screens/manage_products_screen.dart';
 import '../../features/admin/screens/order_management_screen.dart';
@@ -33,6 +35,7 @@ import '../../features/checkout/screens/order_success_screen.dart';
 import '../../features/checkout/screens/upi_payment_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/notifications/screens/notifications_screen.dart';
+import '../../features/wishlist/screens/wishlist_screen.dart';
 import '../../features/orders/screens/order_detail_screen.dart';
 import '../../features/orders/screens/order_history_screen.dart';
 import '../../features/products/screens/category_products_screen.dart';
@@ -92,9 +95,17 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authControllerProvider);
       final location = state.matchedLocation;
 
-      // If we are still checking local token or auth status, wait on Splash
-      if (authState is AuthInitial || authState is AuthLoading) {
+      // If we are still checking local token or auth status at boot, wait on
+      // Splash. `AuthLoading` alone (without AuthInitial) means a screen
+      // triggered signIn/signUp/signOut mid-session — that screen already
+      // shows its own spinner and should stay mounted so it can react to the
+      // eventual AuthError itself; forcing a Splash round-trip here used to
+      // tear it down and lose the error before its SnackBar listener saw it.
+      if (authState is AuthInitial) {
         return location == RouteNames.splash ? null : RouteNames.splash;
+      }
+      if (authState is AuthLoading) {
+        return null;
       }
 
       // If user is not authenticated, force Auth screen — unless this is the
@@ -108,11 +119,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         return location == RouteNames.login ? null : RouteNames.login;
       }
 
-      // If user is pending manual admin approval, restrict to Pending Screen
+      // If user is pending manual admin approval, allow read-only catalog
+      // browsing (Home/Search/category/product-detail) so waiting isn't a
+      // dead end, but still gate everything that implies ordering (Cart,
+      // Checkout, Orders, Profile, ...) behind the Pending screen.
       if (authState is PendingApproval) {
-        return location == RouteNames.pendingApproval
-            ? null
-            : RouteNames.pendingApproval;
+        final canBrowse =
+            location == RouteNames.pendingApproval ||
+            location == RouteNames.home ||
+            location == RouteNames.search ||
+            location.startsWith('/product-category/') ||
+            location.startsWith('/product/');
+        return canBrowse ? null : RouteNames.pendingApproval;
       }
 
       // If user is Admin, route to Admin Panel
@@ -176,6 +194,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const AddEditProductScreen(),
       ),
       GoRoute(
+        path: RouteNames.adminBulkImportProducts,
+        builder: (context, state) => const BulkImportProductsScreen(),
+      ),
+      GoRoute(
         path: RouteNames.adminEditProduct,
         builder: (context, state) =>
             AddEditProductScreen(productId: state.pathParameters['productId']!),
@@ -197,6 +219,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.adminDeliverySettings,
         builder: (context, state) => const DeliverySettingsScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminBroadcast,
+        builder: (context, state) => const SendBroadcastScreen(),
       ),
       GoRoute(
         path: RouteNames.adminOrderManagement,
@@ -364,6 +390,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RouteNames.notifications,
         pageBuilder: (context, state) =>
             _fadeSlidePage(const NotificationsScreen(), state),
+      ),
+      GoRoute(
+        path: RouteNames.wishlist,
+        pageBuilder: (context, state) =>
+            _fadeSlidePage(const WishlistScreen(), state),
       ),
     ],
   );

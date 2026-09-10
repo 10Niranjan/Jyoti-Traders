@@ -3,10 +3,12 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../controllers/auth_controller.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/route_names.dart';
 import '../../../l10n/app_localizations.dart';
 
 class PendingApprovalScreen extends ConsumerWidget {
@@ -199,6 +201,23 @@ class PendingApprovalScreen extends ConsumerWidget {
                     elevation: 1,
                   ),
                 ).animate().fadeIn(delay: 350.ms),
+
+                const SizedBox(height: 12),
+
+                // Read-only catalog preview while waiting for approval.
+                OutlinedButton.icon(
+                  onPressed: () => context.go(RouteNames.home),
+                  icon: const Icon(Icons.storefront_outlined),
+                  label: Text(l10n.pendingBrowseCatalog),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.primary,
+                    side: const BorderSide(color: AppColors.primary),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                ).animate().fadeIn(delay: 400.ms),
 
                 const Spacer(),
 

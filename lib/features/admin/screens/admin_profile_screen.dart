@@ -6,6 +6,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/theme_controller.dart';
+import '../../../core/utils/date_formatter.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/edit_basic_info_sheet.dart';
 import '../../../shared/widgets/profile_header_card.dart';
 import '../../../shared/widgets/section_card.dart';
@@ -55,9 +57,10 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
       if (!mounted) return;
       final result = ref.read(profileControllerProvider);
       if (result.hasError) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Couldn\'t update photo: ${result.error}'),
+            content: Text(l10n.profileUpdatePhotoError(result.error.toString())),
             backgroundColor: AppColors.error,
           ),
         );
@@ -66,7 +69,7 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Couldn\'t open the gallery: $e'),
+          content: Text(AppLocalizations.of(context)!.upiGalleryError(e.toString())),
           backgroundColor: AppColors.error,
         ),
       );
@@ -79,6 +82,7 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
   /// `showModalBottomSheet` pattern this screen already uses for editing
   /// basic info.
   void _openDeliverySettings(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -92,7 +96,7 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
               child: Text(
-                'Delivery Settings',
+                l10n.profileDeliverySettings,
                 style: GoogleFonts.inter(
                   fontSize: 17,
                   fontWeight: FontWeight.bold,
@@ -107,25 +111,26 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
   }
 
   Future<void> _confirmChangePassword(String email) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(
-          'Change Password?',
+          l10n.profileChangePasswordDialogTitle,
           style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17),
         ),
         content: Text(
-          'We\'ll send a password reset link to $email.',
+          l10n.profileResetLinkMessage(email),
           style: GoogleFonts.inter(fontSize: 13),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancelButton),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Send Link'),
+            child: Text(l10n.profileSendLink),
           ),
         ],
       ),
@@ -137,39 +142,40 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
     if (result.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Couldn\'t send reset link: ${result.error}'),
+          content: Text(l10n.profileResetLinkFailed(result.error.toString())),
           backgroundColor: AppColors.error,
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Password reset link sent to $email')),
+        SnackBar(content: Text(l10n.profileResetLinkSent(email))),
       );
     }
   }
 
   Future<void> _confirmLogout() async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(
-          'Log out?',
+          l10n.profileLogoutDialogTitle,
           style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17),
         ),
         content: Text(
-          'You\'ll need to sign in again to access the admin panel.',
+          l10n.profileLogoutDialogContent,
           style: GoogleFonts.inter(fontSize: 13),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancelButton),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text(
-              'Log Out',
-              style: TextStyle(color: AppColors.error),
+            child: Text(
+              l10n.profileLogOut,
+              style: const TextStyle(color: AppColors.error),
             ),
           ),
         ],
@@ -192,11 +198,12 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
     final unselectedColor = Theme.of(
       context,
     ).colorScheme.onSurface.withOpacity(0.6);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Admin Profile',
+          l10n.adminProfileTitle,
           style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
         bottom: TabBar(
@@ -204,9 +211,9 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
           labelColor: AppColors.primary,
           unselectedLabelColor: unselectedColor,
           indicatorColor: AppColors.primary,
-          tabs: const [
-            Tab(icon: Icon(Icons.person_outline), text: 'Profile'),
-            Tab(icon: Icon(Icons.settings_outlined), text: 'Settings'),
+          tabs: [
+            Tab(icon: const Icon(Icons.person_outline), text: l10n.navProfile),
+            Tab(icon: const Icon(Icons.settings_outlined), text: l10n.profileSettingsTab),
           ],
         ),
       ),
@@ -234,30 +241,59 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
                 ),
                 onTapPhoto: () => _pickProfilePhoto(user.uid),
               ),
+              const SizedBox(height: 16),
+              SectionCard(
+                title: l10n.profileAccountInfo,
+                icon: Icons.badge_outlined,
+                child: Column(
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(
+                        Icons.shield_outlined,
+                        color: AppColors.primary,
+                      ),
+                      title: Text(l10n.profileRoleLabel),
+                      trailing: Text(
+                        l10n.profileRoleAdmin,
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(
+                        Icons.event_outlined,
+                        color: AppColors.primary,
+                      ),
+                      title: Text(l10n.profileMemberSince(formatOrderDate(user.createdAt))),
+                    ),
+                  ],
+                ),
+              ),
             ],
           ),
           ListView(
             padding: const EdgeInsets.all(16),
             children: [
               SectionCard(
-                title: 'Appearance',
+                title: l10n.profileAppearance,
                 icon: Icons.palette_outlined,
                 child: SegmentedButton<ThemeMode>(
-                  segments: const [
+                  segments: [
                     ButtonSegment(
                       value: ThemeMode.system,
-                      label: Text('System'),
-                      icon: Icon(Icons.brightness_auto_outlined),
+                      label: Text(l10n.themeSystem),
+                      icon: const Icon(Icons.brightness_auto_outlined),
                     ),
                     ButtonSegment(
                       value: ThemeMode.light,
-                      label: Text('Light'),
-                      icon: Icon(Icons.light_mode_outlined),
+                      label: Text(l10n.themeLight),
+                      icon: const Icon(Icons.light_mode_outlined),
                     ),
                     ButtonSegment(
                       value: ThemeMode.dark,
-                      label: Text('Dark'),
-                      icon: Icon(Icons.dark_mode_outlined),
+                      label: Text(l10n.themeDark),
+                      icon: const Icon(Icons.dark_mode_outlined),
                     ),
                   ],
                   selected: {ref.watch(themeModeProvider)},
@@ -266,8 +302,9 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
                       .setThemeMode(selection.first),
                 ),
               ),
+              const SizedBox(height: 16),
               SectionCard(
-                title: 'Store',
+                title: l10n.profileStoreSection,
                 icon: Icons.storefront_outlined,
                 child: ListTile(
                   contentPadding: EdgeInsets.zero,
@@ -275,16 +312,15 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
                     Icons.local_shipping_outlined,
                     color: AppColors.primary,
                   ),
-                  title: const Text('Delivery Settings'),
-                  subtitle: const Text(
-                    'Delivery radius, fees, and minimum order value',
-                  ),
+                  title: Text(l10n.profileDeliverySettings),
+                  subtitle: Text(l10n.profileDeliverySettingsSubtitle),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _openDeliverySettings(context),
                 ),
               ),
+              const SizedBox(height: 16),
               SectionCard(
-                title: 'Account',
+                title: l10n.profileAccountSection,
                 icon: Icons.lock_outline,
                 child: ListTile(
                   contentPadding: EdgeInsets.zero,
@@ -292,14 +328,15 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
                     Icons.password_outlined,
                     color: AppColors.primary,
                   ),
-                  title: const Text('Change Password'),
+                  title: Text(l10n.profileChangePassword),
                   subtitle: Text(user.email),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => _confirmChangePassword(user.email),
                 ),
               ),
+              const SizedBox(height: 16),
               SectionCard(
-                title: 'Support',
+                title: l10n.profileSupport,
                 icon: Icons.support_agent_outlined,
                 child: Column(
                   children: [
@@ -309,7 +346,7 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
                         Icons.call_outlined,
                         color: AppColors.primary,
                       ),
-                      title: const Text('Call Support'),
+                      title: Text(l10n.profileCallSupport),
                       subtitle: const Text(AppConstants.kSupportPhone),
                       onTap: () => launchUrl(
                         Uri(scheme: 'tel', path: AppConstants.kSupportPhone),
@@ -321,7 +358,7 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
                         Icons.email_outlined,
                         color: AppColors.primary,
                       ),
-                      title: const Text('Email Support'),
+                      title: Text(l10n.profileEmailSupport),
                       subtitle: const Text(AppConstants.kSupportEmail),
                       onTap: () => launchUrl(
                         Uri(scheme: 'mailto', path: AppConstants.kSupportEmail),
@@ -330,7 +367,7 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -339,9 +376,9 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
                     Icons.logout_rounded,
                     color: AppColors.error,
                   ),
-                  label: const Text(
-                    'Log Out',
-                    style: TextStyle(
+                  label: Text(
+                    l10n.profileLogOut,
+                    style: const TextStyle(
                       color: AppColors.error,
                       fontWeight: FontWeight.bold,
                     ),

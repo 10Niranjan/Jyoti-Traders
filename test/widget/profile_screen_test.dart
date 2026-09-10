@@ -57,6 +57,7 @@ class FakeAuthRepository implements AuthRepository {
     String? businessName,
     String? photoUrl,
     AddressEntity? address,
+    List<AddressEntity>? savedAddresses,
     String? gstNumber,
     BankDetailsEntity? bankDetails,
     BusinessHoursEntity? businessHours,
@@ -69,6 +70,7 @@ class FakeAuthRepository implements AuthRepository {
       'businessName': businessName,
       'photoUrl': photoUrl,
       'address': address,
+      'savedAddresses': savedAddresses,
       'gstNumber': gstNumber,
       'bankDetails': bankDetails,
       'businessHours': businessHours,
@@ -267,5 +269,38 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(repo.lastUpdate, isNull); // no file picked -> no upload attempted
+  });
+
+  testWidgets('shows saved addresses and confirming removal persists the shortened list', (tester) async {
+    final retailerWithAddresses = UserModel(
+      uid: 'u1',
+      name: 'Ramesh',
+      email: 'ramesh@test.com',
+      phone: '9876543210',
+      role: UserRole.customer,
+      status: UserStatus.approved,
+      businessName: 'Ramesh Kirana Store',
+      createdAt: DateTime(2026, 1, 1),
+      savedAddresses: const [
+        AddressEntity(street: '12 MG Road', city: 'Pune', pincode: '411001', id: 'a1', label: 'Shop'),
+        AddressEntity(street: '9 Industrial Estate', city: 'Pune', pincode: '411019', id: 'a2', label: 'Warehouse'),
+      ],
+    );
+    final repo = FakeAuthRepository(retailerWithAddresses);
+    await tester.pumpWidget(_wrap(repo));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Shop'), findsOneWidget);
+    expect(find.text('Warehouse'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.delete_outline).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Remove'));
+    await tester.pumpAndSettle();
+
+    final saved = repo.lastUpdate?['savedAddresses'] as List<AddressEntity>?;
+    expect(saved, hasLength(1));
+    expect(saved!.single.id, 'a2');
+    expect(find.text('Address removed'), findsOneWidget);
   });
 }

@@ -430,6 +430,18 @@ abstract class AppLocalizations {
   /// **'Sign Out & Try Another Account'**
   String get pendingSignOut;
 
+  /// No description provided for @pendingBrowseCatalog.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Catalog While You Wait'**
+  String get pendingBrowseCatalog;
+
+  /// No description provided for @homePendingBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview mode — you can order once your account is approved.'**
+  String get homePendingBanner;
+
   /// No description provided for @searchHint.
   ///
   /// In en, this message translates to:
@@ -466,11 +478,65 @@ abstract class AppLocalizations {
   /// **'No products found for \"{query}\"'**
   String searchNoResultsFor(String query);
 
+  /// No description provided for @searchSortRelevance.
+  ///
+  /// In en, this message translates to:
+  /// **'Relevance'**
+  String get searchSortRelevance;
+
+  /// No description provided for @searchSortPriceLowToHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Price: Low to High'**
+  String get searchSortPriceLowToHigh;
+
+  /// No description provided for @searchSortPriceHighToLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Price: High to Low'**
+  String get searchSortPriceHighToLow;
+
+  /// No description provided for @searchInStockOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'In stock only'**
+  String get searchInStockOnly;
+
   /// No description provided for @productDetailsTitle.
   ///
   /// In en, this message translates to:
   /// **'Product Details'**
   String get productDetailsTitle;
+
+  /// No description provided for @wishlistTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Wishlist'**
+  String get wishlistTitle;
+
+  /// No description provided for @wishlistEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing saved yet'**
+  String get wishlistEmptyTitle;
+
+  /// No description provided for @wishlistEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the heart on a product to save it for later.'**
+  String get wishlistEmptyMessage;
+
+  /// No description provided for @wishlistAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to wishlist'**
+  String get wishlistAdded;
+
+  /// No description provided for @wishlistRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from wishlist'**
+  String get wishlistRemoved;
 
   /// No description provided for @productNoLongerAvailable.
   ///
@@ -495,6 +561,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Description'**
   String get productDescription;
+
+  /// No description provided for @productYouMayAlsoLike.
+  ///
+  /// In en, this message translates to:
+  /// **'You may also like'**
+  String get productYouMayAlsoLike;
 
   /// No description provided for @productAddButtonLabel.
   ///
@@ -669,6 +741,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Place Order'**
   String get checkoutPlaceOrder;
+
+  /// No description provided for @checkoutSavedAddresses.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved addresses'**
+  String get checkoutSavedAddresses;
+
+  /// No description provided for @checkoutSaveAddressToggle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save this address for later'**
+  String get checkoutSaveAddressToggle;
+
+  /// No description provided for @checkoutSaveAddressLabelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Label (e.g. Shop, Warehouse)'**
+  String get checkoutSaveAddressLabelHint;
+
+  /// No description provided for @checkoutSaveAddressLabelRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a label to save this address'**
+  String get checkoutSaveAddressLabelRequired;
 
   /// No description provided for @upiGalleryError.
   ///
@@ -952,6 +1048,42 @@ abstract class AppLocalizations {
   /// **'Log Out'**
   String get profileLogOut;
 
+  /// No description provided for @profileSavedAddresses.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved Addresses'**
+  String get profileSavedAddresses;
+
+  /// No description provided for @profileNoSavedAddresses.
+  ///
+  /// In en, this message translates to:
+  /// **'Addresses you save at checkout will appear here.'**
+  String get profileNoSavedAddresses;
+
+  /// No description provided for @profileRemoveAddressAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get profileRemoveAddressAction;
+
+  /// No description provided for @profileRemoveAddressTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove address?'**
+  String get profileRemoveAddressTitle;
+
+  /// No description provided for @profileRemoveAddressContent.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove \"{label}\" from your saved addresses?'**
+  String profileRemoveAddressContent(String label);
+
+  /// No description provided for @profileAddressRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Address removed'**
+  String get profileAddressRemoved;
+
   /// No description provided for @profileBusinessDetails.
   ///
   /// In en, this message translates to:
@@ -1143,6 +1275,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'मराठी'**
   String get languageMarathi;
+
+  /// No description provided for @adminProfileTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin Profile'**
+  String get adminProfileTitle;
+
+  /// No description provided for @profileAccountInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Info'**
+  String get profileAccountInfo;
+
+  /// No description provided for @profileRoleLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Role'**
+  String get profileRoleLabel;
+
+  /// No description provided for @profileRoleAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Administrator'**
+  String get profileRoleAdmin;
+
+  /// No description provided for @profileMemberSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Member since {date}'**
+  String profileMemberSince(String date);
+
+  /// No description provided for @profileStoreSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Store'**
+  String get profileStoreSection;
+
+  /// No description provided for @profileDeliverySettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Settings'**
+  String get profileDeliverySettings;
+
+  /// No description provided for @broadcastTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Broadcast'**
+  String get broadcastTitle;
+
+  /// No description provided for @broadcastTitleFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get broadcastTitleFieldLabel;
+
+  /// No description provided for @broadcastBodyFieldLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get broadcastBodyFieldLabel;
+
+  /// No description provided for @broadcastSendButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Send to All Retailers'**
+  String get broadcastSendButton;
+
+  /// No description provided for @broadcastSentConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Broadcast sent'**
+  String get broadcastSentConfirmation;
+
+  /// No description provided for @broadcastHistoryEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No broadcasts sent yet'**
+  String get broadcastHistoryEmpty;
+
+  /// No description provided for @profileDeliverySettingsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery radius, fees, and minimum order value'**
+  String get profileDeliverySettingsSubtitle;
 
   /// No description provided for @notificationsTitle.
   ///
@@ -1371,6 +1587,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View Cart'**
   String get cartViewCart;
+
+  /// No description provided for @cartAddMoreShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {amount} more to order'**
+  String cartAddMoreShort(String amount);
 
   /// No description provided for @promoMinOrderTitle.
   ///

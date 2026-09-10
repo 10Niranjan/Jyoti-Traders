@@ -67,6 +67,11 @@ class HomeScreen extends ConsumerWidget {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border_rounded),
+            tooltip: l10n.wishlistTitle,
+            onPressed: () => context.push(RouteNames.wishlist),
+          ),
           const NotificationBellButton(),
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: AppColors.error),
@@ -85,6 +90,12 @@ class HomeScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const _HomeSearchBar(),
+              const SizedBox(height: 16),
+              if (authState is PendingApproval) ...[
+                const _PendingPreviewBanner(),
+                const SizedBox(height: 16),
+              ],
               const PromoBannerCarousel()
                   .animate()
                   .slideY(begin: 0.1, duration: 400.ms)
@@ -117,6 +128,53 @@ class HomeScreen extends ConsumerWidget {
               const _TodaysPicksSection(),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Tappable search bar living on Home itself (not just inside the Search
+/// tab) so retailers don't have to switch tabs to start typing — matches
+/// `SearchScreen`'s own pill styling so it reads as one search feature, not
+/// two. Not a real `TextField`: tapping switches to the Search tab (via
+/// `go`, not `push` — see the shell route comments above on why `push`
+/// can't correctly switch a `StatefulShellBranch`), where it autofocuses.
+class _HomeSearchBar extends StatelessWidget {
+  const _HomeSearchBar();
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
+
+    return InkWell(
+      onTap: () => context.go(RouteNames.search),
+      borderRadius: BorderRadius.circular(999),
+      child: Container(
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white10 : AppColors.backgroundLight,
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              Icons.search_rounded,
+              size: 20,
+              color: AppColors.textSecondaryLight,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              l10n.searchHint,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: AppColors.textSecondaryLight,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -157,6 +215,47 @@ class _CategoryGrid extends StatelessWidget {
               context.push(RouteNames.productCategoryPath(category.id)),
         ).animate().scale(delay: (50 * index).ms, duration: 250.ms);
       },
+    );
+  }
+}
+
+/// Shown only while the retailer's account is still pending admin approval —
+/// they can browse the catalog (see the widened `PendingApproval` redirect
+/// allow-list in `app_router.dart`), this just explains why Cart/Checkout
+/// still bounce them back to the Pending screen.
+class _PendingPreviewBanner extends StatelessWidget {
+  const _PendingPreviewBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.visibility_outlined,
+            color: AppColors.warning,
+            size: 20,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              l10n.homePendingBanner,
+              style: GoogleFonts.inter(
+                fontSize: 12.5,
+                fontWeight: FontWeight.w600,
+                color: AppColors.warning,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -296,7 +395,7 @@ class _BuyAgainTile extends ConsumerWidget {
         decoration: BoxDecoration(
           color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.primary.withOpacity(0.08)),
+          border: Border.all(color: AppColors.cardBorder),
           boxShadow: isDark ? null : AppShadows.card,
         ),
         clipBehavior: Clip.antiAlias,
@@ -311,7 +410,10 @@ class _BuyAgainTile extends ConsumerWidget {
                       color: isDark ? Colors.white12 : Colors.black12,
                       child: const Icon(Icons.image_outlined, size: 28),
                     )
-                  : CachedNetworkImage(imageUrl: product.imageUrl, fit: BoxFit.cover),
+                  : CachedNetworkImage(
+                      imageUrl: product.imageUrl,
+                      fit: BoxFit.cover,
+                    ),
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
@@ -322,12 +424,17 @@ class _BuyAgainTile extends ConsumerWidget {
                     product.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w600),
+                    style: GoogleFonts.inter(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     product.isWeighed
-                        ? l10n.homeFromRatePerKg(product.rateSlabs!.bestRatePerKg.toStringAsFixed(0))
+                        ? l10n.homeFromRatePerKg(
+                            product.rateSlabs!.bestRatePerKg.toStringAsFixed(0),
+                          )
                         : product.price.formatted,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -341,13 +448,18 @@ class _BuyAgainTile extends ConsumerWidget {
                   if (!product.isInStock)
                     OutOfStockPill(isDark: isDark)
                   else if (qtyInCart == 0)
-                    AddToCartPill(onTap: () => showQuantitySheet(context, product))
+                    AddToCartPill(
+                      filled: true,
+                      onTap: () => showQuantitySheet(context, product),
+                    )
                   else
                     QtyStepper(
+                      filled: true,
                       qty: qtyInCart,
                       max: product.maxQty,
-                      onChanged: (qty) =>
-                          ref.read(cartControllerProvider.notifier).updateQty(product.id, qty),
+                      onChanged: (qty) => ref
+                          .read(cartControllerProvider.notifier)
+                          .updateQty(product.id, qty),
                     ),
                 ],
               ),
@@ -387,14 +499,17 @@ class _TodaysPicksSection extends ConsumerWidget {
               style: GoogleFonts.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                color: isDark
+                    ? AppColors.textPrimaryDark
+                    : AppColors.textPrimaryLight,
               ),
             ),
             const SizedBox(height: 12),
             for (final product in picks) ...[
               _TodaysPickTile(
                 product: product,
-                onTap: () => context.push(RouteNames.productDetailPath(product.id)),
+                onTap: () =>
+                    context.push(RouteNames.productDetailPath(product.id)),
               ),
               const SizedBox(height: 10),
             ],
@@ -428,7 +543,7 @@ class _TodaysPickTile extends ConsumerWidget {
         decoration: BoxDecoration(
           color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.primary.withOpacity(0.08)),
+          border: Border.all(color: AppColors.cardBorder),
           boxShadow: isDark ? null : AppShadows.card,
         ),
         child: Row(
@@ -443,7 +558,10 @@ class _TodaysPickTile extends ConsumerWidget {
                         color: isDark ? Colors.white12 : Colors.black12,
                         child: const Icon(Icons.image_outlined),
                       )
-                    : CachedNetworkImage(imageUrl: product.imageUrl, fit: BoxFit.cover),
+                    : CachedNetworkImage(
+                        imageUrl: product.imageUrl,
+                        fit: BoxFit.cover,
+                      ),
               ),
             ),
             const SizedBox(width: 12),
@@ -455,24 +573,42 @@ class _TodaysPickTile extends ConsumerWidget {
                     product.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13),
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     product.isWeighed
-                        ? l10n.homeFromRatePerKg(product.rateSlabs!.bestRatePerKg.toStringAsFixed(0))
+                        ? l10n.homeFromRatePerKg(
+                            product.rateSlabs!.bestRatePerKg.toStringAsFixed(0),
+                          )
                         : product.price.formatted,
-                    style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 14),
+                    style: GoogleFonts.inter(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                   if (!product.isInStock)
                     Text(
                       l10n.homeOutOfStock,
-                      style: GoogleFonts.inter(fontSize: 10.5, color: AppColors.error),
+                      style: GoogleFonts.inter(
+                        fontSize: 10.5,
+                        color: AppColors.error,
+                      ),
                     )
                   else if (product.stock <= AppConstants.kLowStockThreshold)
                     Text(
-                      l10n.homeOnlyLeftInStock(product.stock, product.unit.value),
-                      style: GoogleFonts.inter(fontSize: 10.5, color: AppColors.warning),
+                      l10n.homeOnlyLeftInStock(
+                        product.stock,
+                        product.unit.value,
+                      ),
+                      style: GoogleFonts.inter(
+                        fontSize: 10.5,
+                        color: AppColors.warning,
+                      ),
                     ),
                 ],
               ),
@@ -481,12 +617,18 @@ class _TodaysPickTile extends ConsumerWidget {
             if (!product.isInStock)
               OutOfStockPill(isDark: isDark)
             else if (qtyInCart == 0)
-              AddToCartPill(onTap: () => showQuantitySheet(context, product))
+              AddToCartPill(
+                filled: true,
+                onTap: () => showQuantitySheet(context, product),
+              )
             else
               QtyStepper(
+                filled: true,
                 qty: qtyInCart,
                 max: product.maxQty,
-                onChanged: (qty) => ref.read(cartControllerProvider.notifier).updateQty(product.id, qty),
+                onChanged: (qty) => ref
+                    .read(cartControllerProvider.notifier)
+                    .updateQty(product.id, qty),
               ),
           ],
         ),

@@ -8,6 +8,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/route_names.dart';
 import '../../../core/services/geocoding_service.dart';
 import '../../../core/services/location_service.dart';
+import '../../../core/utils/saved_addresses.dart';
 import '../../../data/repositories/auth_repository_provider.dart';
 import '../../../domain/entities/address_entity.dart';
 import '../../../domain/entities/delivery_config_entity.dart';
@@ -37,11 +38,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _streetController = TextEditingController();
   final _cityController = TextEditingController();
   final _pincodeController = TextEditingController();
+  final _addressLabelController = TextEditingController();
   bool _prefilled = false;
   double? _latitude;
   double? _longitude;
   String? _resolvedAddress;
   bool _isLocating = false;
+  bool _saveAddress = false;
   PaymentMethod _paymentMethod = PaymentMethod.cod;
 
   @override
@@ -49,18 +52,26 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     _streetController.dispose();
     _cityController.dispose();
     _pincodeController.dispose();
+    _addressLabelController.dispose();
     super.dispose();
   }
 
   void _prefillAddress(AddressEntity? address) {
     if (_prefilled || address == null) return;
+    _applyAddress(address);
+    _prefilled = true;
+  }
+
+  /// Loads an address's fields into the form controllers — used both for
+  /// the one-time prefill above and for a retailer explicitly tapping a
+  /// saved-address chip to switch the form to a different saved address.
+  void _applyAddress(AddressEntity address) {
     _streetController.text = address.street;
     _cityController.text = address.city;
     _pincodeController.text = address.pincode;
     _latitude = address.latitude;
     _longitude = address.longitude;
     _resolvedAddress = address.formattedAddress;
-    _prefilled = true;
   }
 
   Future<void> _useCurrentLocation() async {
@@ -133,7 +144,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final address = _currentAddress();
 
     // Persist the address to the profile too, so it's pre-filled next time.
-    await ref.read(authRepositoryProvider).updateProfile(uid: user.uid, address: address);
+    // If the retailer opted to save it as a named saved address, merge it
+    // into their list too (dedupes against an existing match, see
+    // mergeSavedAddress) — the label field is required by the form's own
+    // validator whenever the toggle is on, so it's never empty here.
+    final label = _addressLabelController.text.trim();
+    await ref.read(authRepositoryProvider).updateProfile(
+          uid: user.uid,
+          address: address,
+          savedAddresses: _saveAddress
+              ? mergeSavedAddress(user.savedAddresses, address, label)
+              : null,
+        );
 
     final config = ref.read(deliveryConfigProvider).valueOrNull;
     final cart = ref.read(cartControllerProvider);
@@ -211,6 +233,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(l10n.checkoutDeliveryAddress, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+              if (authState is AuthenticatedCustomer && authState.user.savedAddresses.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                _SavedAddressChips(
+                  addresses: authState.user.savedAddresses,
+                  onSelected: (a) => setState(() => _applyAddress(a)),
+                ),
+              ],
               const SizedBox(height: 8),
               AddressFormFields(
                 streetController: _streetController,
@@ -220,6 +249,22 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 isLocating: _isLocating,
                 onUseCurrentLocation: _useCurrentLocation,
               ),
+              const SizedBox(height: 8),
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                value: _saveAddress,
+                title: Text(l10n.checkoutSaveAddressToggle, style: GoogleFonts.inter(fontSize: 13)),
+                onChanged: (v) => setState(() => _saveAddress = v ?? false),
+              ),
+              if (_saveAddress)
+                TextFormField(
+                  controller: _addressLabelController,
+                  decoration: InputDecoration(hintText: l10n.checkoutSaveAddressLabelHint),
+                  validator: (v) => _saveAddress && (v == null || v.trim().isEmpty)
+                      ? l10n.checkoutSaveAddressLabelRequired
+                      : null,
+                ),
               const SizedBox(height: 24),
               Text(l10n.checkoutPaymentMethod, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
@@ -314,6 +359,32 @@ class _PaymentMethodCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Quick-pick chips for a retailer's saved addresses — tapping one loads it
+/// into the form below (still editable, not locked), same "prefill, not
+/// commit" behavior as the default-address prefill this screen already did.
+class _SavedAddressChips extends StatelessWidget {
+  final List<AddressEntity> addresses;
+  final ValueChanged<AddressEntity> onSelected;
+
+  const _SavedAddressChips({required this.addresses, required this.onSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 4,
+      children: [
+        for (final address in addresses)
+          ActionChip(
+            avatar: const Icon(Icons.place_outlined, size: 16),
+            label: Text(address.label?.isNotEmpty == true ? address.label! : address.street),
+            onPressed: () => onSelected(address),
+          ),
+      ],
     );
   }
 }

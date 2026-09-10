@@ -1,7 +1,11 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:traders_retailer/data/datasources/local/broadcast_local_datasource.dart';
 import 'package:traders_retailer/data/datasources/local/cart_local_datasource.dart';
+import 'package:traders_retailer/data/datasources/local/wishlist_local_datasource.dart';
+import 'package:traders_retailer/data/repositories/broadcast_repository_impl.dart';
+import 'package:traders_retailer/data/repositories/wishlist_repository_impl.dart';
 import 'package:traders_retailer/data/datasources/remote/category_remote_datasource.dart';
 import 'package:traders_retailer/data/datasources/remote/order_remote_datasource.dart';
 import 'package:traders_retailer/data/datasources/remote/product_remote_datasource.dart';
@@ -195,6 +199,38 @@ void main() {
     await cartRepo.clearCart();
     cart = await cartRepo.watchCart().first;
     expect(cart.isEmpty, isTrue);
+  });
+
+  test('broadcast send round-trips through Hive, newest first', () async {
+    final broadcastRepo = BroadcastRepositoryImpl(BroadcastLocalDatasource(box: notificationsBox));
+
+    await broadcastRepo.send(title: 'New stock arrived', body: 'Fresh Basmati Rice.');
+    await broadcastRepo.send(title: 'Price drop on rice', body: '5% off this week.');
+
+    final broadcasts = await broadcastRepo.watchBroadcasts().first;
+    expect(broadcasts, hasLength(2));
+    expect(broadcasts.first.title, 'Price drop on rice'); // newest first
+    expect(broadcasts.last.title, 'New stock arrived');
+  });
+
+  test('wishlist toggle round-trips through Hive, add then remove', () async {
+    final wishlistRepo = WishlistRepositoryImpl(WishlistLocalDatasource(box: cartBox, uid: 'test_uid'));
+
+    var ids = await wishlistRepo.watchWishlist().first;
+    expect(ids, isEmpty);
+
+    await wishlistRepo.toggle('prod_rice_25kg');
+    ids = await wishlistRepo.watchWishlist().first;
+    expect(ids, {'prod_rice_25kg'});
+
+    await wishlistRepo.toggle('prod_sugar_5kg');
+    ids = await wishlistRepo.watchWishlist().first;
+    expect(ids, {'prod_rice_25kg', 'prod_sugar_5kg'});
+
+    // Toggling an id already in the set removes it.
+    await wishlistRepo.toggle('prod_rice_25kg');
+    ids = await wishlistRepo.watchWishlist().first;
+    expect(ids, {'prod_sugar_5kg'});
   });
 
   test('order placement and status update round-trip through the simulated orders store', () async {

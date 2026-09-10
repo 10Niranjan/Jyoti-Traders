@@ -75,6 +75,8 @@
   "pendingCallOwner": "Call Owner: +91 98604 60325",
   "pendingEmailSupport": "Email: vishvatejkatkar007@gmail.com",
   "pendingSignOut": "Sign Out & Try Another Account",
+  "pendingBrowseCatalog": "Browse Catalog While You Wait",
+  "homePendingBanner": "Preview mode — you can order once your account is approved.",
 
   "searchHint": "Search products...",
   "searchEmptyTitle": "Search for products",
@@ -82,11 +84,20 @@
   "searchRecentSearches": "Recent Searches",
   "searchClear": "Clear",
   "searchNoResultsFor": "No products found for \"{query}\"",
+  "searchSortRelevance": "Relevance",
+  "searchSortPriceLowToHigh": "Price: Low to High",
+  "searchSortPriceHighToLow": "Price: High to Low",
+  "searchInStockOnly": "In stock only",
   "@searchNoResultsFor": {
     "placeholders": { "query": { "type": "String" } }
   },
 
   "productDetailsTitle": "Product Details",
+  "wishlistTitle": "Wishlist",
+  "wishlistEmptyTitle": "Nothing saved yet",
+  "wishlistEmptyMessage": "Tap the heart on a product to save it for later.",
+  "wishlistAdded": "Added to wishlist",
+  "wishlistRemoved": "Removed from wishlist",
   "productNoLongerAvailable": "This product is no longer available.",
   "productSoldPer": "Sold per {unit}",
   "@productSoldPer": {
@@ -100,6 +111,7 @@
     }
   },
   "productDescription": "Description",
+  "productYouMayAlsoLike": "You may also like",
   "productAddButtonLabel": "Add {label} · {price}",
   "@productAddButtonLabel": {
     "placeholders": {
@@ -156,6 +168,10 @@
   "checkoutDeliveryChargeEstimated": "Delivery Charge (estimated)",
   "checkoutGrandTotal": "Grand Total",
   "checkoutPlaceOrder": "Place Order",
+  "checkoutSavedAddresses": "Saved addresses",
+  "checkoutSaveAddressToggle": "Save this address for later",
+  "checkoutSaveAddressLabelHint": "Label (e.g. Shop, Warehouse)",
+  "checkoutSaveAddressLabelRequired": "Add a label to save this address",
 
   "upiGalleryError": "Couldn't open the gallery: {error}",
   "@upiGalleryError": {
@@ -259,6 +275,15 @@
   "profileLogoutDialogTitle": "Log out?",
   "profileLogoutDialogContent": "You'll need to sign in again to access your account.",
   "profileLogOut": "Log Out",
+  "profileSavedAddresses": "Saved Addresses",
+  "profileNoSavedAddresses": "Addresses you save at checkout will appear here.",
+  "profileRemoveAddressAction": "Remove",
+  "profileRemoveAddressTitle": "Remove address?",
+  "profileRemoveAddressContent": "Remove \"{label}\" from your saved addresses?",
+  "@profileRemoveAddressContent": {
+    "placeholders": { "label": { "type": "String" } }
+  },
+  "profileAddressRemoved": "Address removed",
   "profileBusinessDetails": "Business Details",
   "profileGstNumber": "GST Number (optional)",
   "profileOpen24x7": "Open 24×7",
@@ -297,6 +322,24 @@
   "languageEnglish": "English",
   "languageHindi": "हिन्दी",
   "languageMarathi": "मराठी",
+
+  "adminProfileTitle": "Admin Profile",
+  "profileAccountInfo": "Account Info",
+  "profileRoleLabel": "Role",
+  "profileRoleAdmin": "Administrator",
+  "profileMemberSince": "Member since {date}",
+  "@profileMemberSince": {
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "profileStoreSection": "Store",
+  "profileDeliverySettings": "Delivery Settings",
+  "broadcastTitle": "Send Broadcast",
+  "broadcastTitleFieldLabel": "Title",
+  "broadcastBodyFieldLabel": "Message",
+  "broadcastSendButton": "Send to All Retailers",
+  "broadcastSentConfirmation": "Broadcast sent",
+  "broadcastHistoryEmpty": "No broadcasts sent yet",
+  "profileDeliverySettingsSubtitle": "Delivery radius, fees, and minimum order value",
 
   "notificationsTitle": "Notifications",
   "notificationsMarkAllRead": "Mark all read",
@@ -399,6 +442,10 @@
     "placeholders": { "count": { "type": "num" } }
   },
   "cartViewCart": "View Cart",
+  "cartAddMoreShort": "Add {amount} more to order",
+  "@cartAddMoreShort": {
+    "placeholders": { "amount": { "type": "String" } }
+  },
 
   "promoMinOrderTitle": "Wholesale Purchase Order Enforced",
   "promoMinOrderBody": "Minimum order value: {amount} at checkout.",

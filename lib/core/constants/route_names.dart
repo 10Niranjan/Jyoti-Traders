@@ -25,11 +25,13 @@ class RouteNames {
   static const String adminRetailerDetail = '/admin/approval-queue/:uid';
   static const String adminProducts = '/admin/products';
   static const String adminAddProduct = '/admin/products/new';
+  static const String adminBulkImportProducts = '/admin/products/bulk-import';
   static const String adminEditProduct = '/admin/products/:productId/edit';
   static const String adminCategories = '/admin/categories';
   static const String adminAddCategory = '/admin/categories/new';
   static const String adminEditCategory = '/admin/categories/:categoryId/edit';
   static const String adminDeliverySettings = '/admin/delivery-settings';
+  static const String adminBroadcast = '/admin/broadcast';
   static const String adminOrderManagement = '/admin/orders/:orderId';
   static const String adminRetailerOrders =
       '/admin/retailers/:retailerId/orders';
@@ -54,6 +56,7 @@ class RouteNames {
   static const String orderSuccess = '/order-success/:orderId';
   static const String orderDetail = '/order/:orderId';
   static const String notifications = '/notifications';
+  static const String wishlist = '/wishlist';
 
   static String adminEditProductPath(String productId) =>
       '/admin/products/$productId/edit';

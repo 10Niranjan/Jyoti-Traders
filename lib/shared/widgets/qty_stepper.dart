@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 
-/// +/- quantity control used on Product Detail and Cart.
+/// +/- quantity control used on Cart rows and Home's Buy Again/Today's Picks
+/// rows.
 ///
 /// Counts whole units by default; pass [step]/[label] to drive it in grams
-/// for a weight-priced line.
+/// for a weight-priced line. [filled] switches between Cart's neutral grey
+/// fill (default) and Home's solid-violet fill, matching the Polished
+/// reference's two different row-stepper looks.
 class QtyStepper extends StatelessWidget {
   final int qty;
   final ValueChanged<int> onChanged;
   final int min;
   final int max;
+  final bool filled;
 
   /// How much one tap moves [qty].
   final int step;
@@ -25,13 +29,19 @@ class QtyStepper extends StatelessWidget {
     this.max = 999,
     this.step = 1,
     this.label,
+    this.filled = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = filled
+        ? Colors.white
+        : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight);
+
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: AppColors.primary.withOpacity(0.3)),
+        color: filled ? AppColors.primary : AppColors.cardBorder,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
@@ -39,6 +49,7 @@ class QtyStepper extends StatelessWidget {
         children: [
           _StepperButton(
             icon: Icons.remove_rounded,
+            color: textColor,
             onTap: qty > min ? () => onChanged(qty - step) : null,
           ),
           Container(
@@ -47,12 +58,19 @@ class QtyStepper extends StatelessWidget {
             child: Text(
               label ?? '$qty',
               textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+                color: textColor,
+              ),
             ),
           ),
           _StepperButton(
             icon: Icons.add_rounded,
-            onTap: qty < max ? () => onChanged((qty + step).clamp(min, max)) : null,
+            color: textColor,
+            onTap: qty < max
+                ? () => onChanged((qty + step).clamp(min, max))
+                : null,
           ),
         ],
       ),
@@ -62,9 +80,14 @@ class QtyStepper extends StatelessWidget {
 
 class _StepperButton extends StatelessWidget {
   final IconData icon;
+  final Color color;
   final VoidCallback? onTap;
 
-  const _StepperButton({required this.icon, required this.onTap});
+  const _StepperButton({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +98,7 @@ class _StepperButton extends StatelessWidget {
         child: Icon(
           icon,
           size: 18,
-          color: onTap == null ? AppColors.textSecondaryLight.withOpacity(0.4) : AppColors.primary,
+          color: onTap == null ? color.withOpacity(0.4) : color,
         ),
       ),
     );

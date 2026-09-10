@@ -49,13 +49,19 @@ void main() {
     expect(find.byType(Image), findsOneWidget);
   });
 
-  testWidgets('ring color rotates through the category palette by displayOrder', (tester) async {
+  testWidgets('fill color rotates through the category palette by displayOrder', (tester) async {
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(body: CategoryCard(category: _category(displayOrder: 1), onTap: () {})),
     ));
     await tester.pumpAndSettle();
 
+    final circle = tester.widget<Container>(
+      find.ancestor(of: find.byIcon(Icons.opacity_outlined), matching: find.byType(Container)).first,
+    );
+    final decoration = circle.decoration as BoxDecoration;
+    expect(decoration.color, AppColors.categoryPalette[1 % AppColors.categoryPalette.length]);
+
     final icon = tester.widget<Icon>(find.byIcon(Icons.opacity_outlined));
-    expect(icon.color, AppColors.categoryPalette[1 % AppColors.categoryPalette.length]);
+    expect(icon.color, Colors.white);
   });
 }

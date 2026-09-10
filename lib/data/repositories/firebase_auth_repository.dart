@@ -240,6 +240,26 @@ class FirebaseAuthRepository implements AuthRepository {
         return retailer;
       }
 
+      // Pending-approval demo account, for testing the "browse while
+      // pending" flow without depending on a prior sign-up surviving a
+      // reinstall (Hive-simulated accounts don't).
+      if (email == 'nirmala.store@example.com' && password == 'Nirmala@123') {
+        final nirmala = UserModel(
+          uid: 'mock_nirmala_uid',
+          name: 'Nirmala Devi',
+          email: 'nirmala.store@example.com',
+          phone: '9876543210',
+          role: UserRole.customer,
+          status: UserStatus.pending,
+          businessName: 'Nirmala Provision Store',
+          createdAt: DateTime.now(),
+        );
+        _mockCurrentUser = nirmala;
+        await _userCacheBox.put('current_user', nirmala.toJson());
+        _mockStreamController.add(nirmala);
+        return nirmala;
+      }
+
       // Check simulated users list
       final List<dynamic> users = _userCacheBox.get(
         'simulated_users',
@@ -351,6 +371,7 @@ class FirebaseAuthRepository implements AuthRepository {
     String? businessName,
     String? photoUrl,
     AddressEntity? address,
+    List<AddressEntity>? savedAddresses,
     String? gstNumber,
     BankDetailsEntity? bankDetails,
     BusinessHoursEntity? businessHours,
@@ -366,26 +387,44 @@ class FirebaseAuthRepository implements AuthRepository {
       );
 
       UserModel? updated;
-      for (int i = 0; i < userMapList.length; i++) {
-        if (userMapList[i]['uid'] == uid) {
-          final current = UserModel.fromJson(userMapList[i]);
-          updated = current.copyWith(
-            name: name,
-            phone: phone,
-            businessName: businessName,
-            photoUrl: photoUrl,
-            address: address,
-            gstNumber: gstNumber,
-            bankDetails: bankDetails,
-            businessHours: businessHours,
-            notificationPreferences: notificationPreferences,
-          );
-          userMapList[i] = updated.toJson();
-        }
+      final index = userMapList.indexWhere((u) => u['uid'] == uid);
+      if (index != -1) {
+        final current = UserModel.fromJson(userMapList[index]);
+        updated = current.copyWith(
+          name: name,
+          phone: phone,
+          businessName: businessName,
+          photoUrl: photoUrl,
+          address: address,
+          savedAddresses: savedAddresses,
+          gstNumber: gstNumber,
+          bankDetails: bankDetails,
+          businessHours: businessHours,
+          notificationPreferences: notificationPreferences,
+        );
+        userMapList[index] = updated.toJson();
+        await _userCacheBox.put('simulated_users', userMapList);
+      } else if (_mockCurrentUser?.uid == uid) {
+        // The special-cased quick-login accounts (admin@jyoti.com,
+        // retailer@jyoti.com, ...) are synthesized fresh on every signIn and
+        // never land in simulated_users, so an index match never happens for
+        // them — update the in-memory session directly instead, or their
+        // profile edits (e.g. saving a checkout address) silently no-op.
+        updated = _mockCurrentUser!.copyWith(
+          name: name,
+          phone: phone,
+          businessName: businessName,
+          photoUrl: photoUrl,
+          address: address,
+          savedAddresses: savedAddresses,
+          gstNumber: gstNumber,
+          bankDetails: bankDetails,
+          businessHours: businessHours,
+          notificationPreferences: notificationPreferences,
+        );
       }
-      await _userCacheBox.put('simulated_users', userMapList);
 
-      if (updated != null && _mockCurrentUser?.uid == uid) {
+      if (updated != null) {
         _mockCurrentUser = updated;
         await _userCacheBox.put('current_user', updated.toJson());
         _mockStreamController.add(updated);
@@ -414,7 +453,23 @@ class FirebaseAuthRepository implements AuthRepository {
         'latitude': address.latitude,
         'longitude': address.longitude,
         'formattedAddress': address.formattedAddress,
+        'id': address.id,
+        'label': address.label,
       };
+    }
+    if (savedAddresses != null) {
+      updateData['savedAddresses'] = savedAddresses
+          .map((a) => {
+                'street': a.street,
+                'city': a.city,
+                'pincode': a.pincode,
+                'latitude': a.latitude,
+                'longitude': a.longitude,
+                'formattedAddress': a.formattedAddress,
+                'id': a.id,
+                'label': a.label,
+              })
+          .toList();
     }
     if (gstNumber != null) {
       updateData['gstNumber'] = gstNumber;

@@ -7,13 +7,11 @@ import '../../../core/constants/route_names.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../core/utils/order_share_formatter.dart';
-import '../../../data/repositories/repository_providers.dart';
-import '../../../domain/entities/cart_item_entity.dart';
 import '../../../domain/entities/order_entity.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/order_detail_body.dart';
-import '../../cart/controllers/cart_controller.dart';
 import '../../../l10n/app_localizations.dart';
+import '../controllers/buy_again.dart';
 import '../controllers/order_controller.dart';
 
 class OrderDetailScreen extends ConsumerStatefulWidget {
@@ -46,46 +44,20 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
   Future<void> _buyAgain(OrderEntity order) async {
     setState(() => _isReordering = true);
 
-    final productRepo = ref.read(productRepositoryProvider);
-    final cart = ref.read(cartControllerProvider.notifier);
-    var added = 0;
-    var unavailable = 0;
-
-    for (final item in order.items) {
-      // Re-priced off the live product, never the order's frozen price —
-      // a reorder is a new cart line, not a copy of an old invoice.
-      final product = await productRepo.getProductById(item.productId);
-      if (product == null || !product.isActive || !product.isInStock) {
-        unavailable++;
-        continue;
-      }
-      final qty = item.qty > product.maxQty ? product.maxQty : item.qty;
-      await cart.addItem(
-        CartItemEntity(
-          productId: product.id,
-          name: product.name,
-          imageUrl: product.imageUrl,
-          unitPrice: product.price,
-          unit: product.unit,
-          qty: qty,
-          rateSlabs: product.rateSlabs,
-        ),
-      );
-      added++;
-    }
+    final result = await buyAgainItems(ref, order);
 
     if (!mounted) return;
     setState(() => _isReordering = false);
 
     final l10n = AppLocalizations.of(context)!;
-    final message = unavailable == 0
-        ? '${l10n.buyAgainAddedCount(added)}.'
-        : '${l10n.buyAgainAddedCount(added)}${l10n.buyAgainUnavailableSuffix(unavailable)}';
+    final message = result.unavailable == 0
+        ? '${l10n.buyAgainAddedCount(result.added)}.'
+        : '${l10n.buyAgainAddedCount(result.added)}${l10n.buyAgainUnavailableSuffix(result.unavailable)}';
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,
-        action: added > 0
+        action: result.added > 0
             ? SnackBarAction(
                 label: l10n.productViewCartAction,
                 onPressed: () => context.push(RouteNames.viewCart),

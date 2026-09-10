@@ -196,6 +196,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get pendingSignOut => 'साइन आउट करें और दूसरा खाता आज़माएं';
 
   @override
+  String get pendingBrowseCatalog => 'प्रतीक्षा करते समय कैटलॉग देखें';
+
+  @override
+  String get homePendingBanner =>
+      'प्रीव्यू मोड — स्वीकृति मिलने के बाद आप ऑर्डर कर सकेंगे।';
+
+  @override
   String get searchHint => 'उत्पाद खोजें...';
 
   @override
@@ -217,7 +224,35 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
+  String get searchSortRelevance => 'प्रासंगिकता';
+
+  @override
+  String get searchSortPriceLowToHigh => 'कीमत: कम से ज्यादा';
+
+  @override
+  String get searchSortPriceHighToLow => 'कीमत: ज्यादा से कम';
+
+  @override
+  String get searchInStockOnly => 'केवल स्टॉक में';
+
+  @override
   String get productDetailsTitle => 'उत्पाद विवरण';
+
+  @override
+  String get wishlistTitle => 'पसंदीदा सूची';
+
+  @override
+  String get wishlistEmptyTitle => 'अभी तक कुछ भी सहेजा नहीं गया';
+
+  @override
+  String get wishlistEmptyMessage =>
+      'किसी उत्पाद को बाद के लिए सहेजने के लिए हार्ट पर टैप करें।';
+
+  @override
+  String get wishlistAdded => 'पसंदीदा सूची में जोड़ा गया';
+
+  @override
+  String get wishlistRemoved => 'पसंदीदा सूची से हटाया गया';
 
   @override
   String get productNoLongerAvailable => 'यह उत्पाद अब उपलब्ध नहीं है।';
@@ -234,6 +269,9 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get productDescription => 'विवरण';
+
+  @override
+  String get productYouMayAlsoLike => 'आपको यह भी पसंद आ सकता है';
 
   @override
   String productAddButtonLabel(String label, String price) {
@@ -332,6 +370,19 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get checkoutPlaceOrder => 'ऑर्डर करें';
+
+  @override
+  String get checkoutSavedAddresses => 'सहेजे गए पते';
+
+  @override
+  String get checkoutSaveAddressToggle => 'यह पता बाद के लिए सहेजें';
+
+  @override
+  String get checkoutSaveAddressLabelHint => 'लेबल (जैसे दुकान, गोदाम)';
+
+  @override
+  String get checkoutSaveAddressLabelRequired =>
+      'इस पते को सहेजने के लिए एक लेबल जोड़ें';
 
   @override
   String upiGalleryError(String error) {
@@ -518,6 +569,27 @@ class AppLocalizationsHi extends AppLocalizations {
   String get profileLogOut => 'लॉग आउट';
 
   @override
+  String get profileSavedAddresses => 'सहेजे गए पते';
+
+  @override
+  String get profileNoSavedAddresses =>
+      'चेकआउट पर आपके द्वारा सहेजे गए पते यहाँ दिखेंगे।';
+
+  @override
+  String get profileRemoveAddressAction => 'हटाएं';
+
+  @override
+  String get profileRemoveAddressTitle => 'पता हटाएं?';
+
+  @override
+  String profileRemoveAddressContent(String label) {
+    return '\"$label\" को अपने सहेजे गए पतों से हटाएं?';
+  }
+
+  @override
+  String get profileAddressRemoved => 'पता हटा दिया गया';
+
+  @override
   String get profileBusinessDetails => 'व्यवसाय विवरण';
 
   @override
@@ -617,6 +689,51 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get languageMarathi => 'मराठी';
+
+  @override
+  String get adminProfileTitle => 'एडमिन प्रोफ़ाइल';
+
+  @override
+  String get profileAccountInfo => 'खाता जानकारी';
+
+  @override
+  String get profileRoleLabel => 'भूमिका';
+
+  @override
+  String get profileRoleAdmin => 'प्रशासक';
+
+  @override
+  String profileMemberSince(String date) {
+    return 'सदस्य बने: $date';
+  }
+
+  @override
+  String get profileStoreSection => 'स्टोर';
+
+  @override
+  String get profileDeliverySettings => 'डिलीवरी सेटिंग्स';
+
+  @override
+  String get broadcastTitle => 'प्रसारण भेजें';
+
+  @override
+  String get broadcastTitleFieldLabel => 'शीर्षक';
+
+  @override
+  String get broadcastBodyFieldLabel => 'संदेश';
+
+  @override
+  String get broadcastSendButton => 'सभी रिटेलर्स को भेजें';
+
+  @override
+  String get broadcastSentConfirmation => 'प्रसारण भेजा गया';
+
+  @override
+  String get broadcastHistoryEmpty => 'अभी तक कोई प्रसारण नहीं भेजा गया';
+
+  @override
+  String get profileDeliverySettingsSubtitle =>
+      'डिलीवरी दायरा, शुल्क और न्यूनतम ऑर्डर राशि';
 
   @override
   String get notificationsTitle => 'सूचनाएं';
@@ -766,6 +883,11 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get cartViewCart => 'कार्ट देखें';
+
+  @override
+  String cartAddMoreShort(String amount) {
+    return 'ऑर्डर के लिए $amount और जोड़ें';
+  }
 
   @override
   String get promoMinOrderTitle => 'थोक खरीद ऑर्डर अनिवार्य';

@@ -13,6 +13,7 @@ import '../../../shared/widgets/order_status_badge.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
 import '../../../shared/widgets/status_filter_chip.dart';
 import '../../../l10n/app_localizations.dart';
+import '../controllers/buy_again.dart';
 import '../controllers/order_controller.dart';
 
 class OrderHistoryScreen extends ConsumerStatefulWidget {
@@ -24,6 +25,34 @@ class OrderHistoryScreen extends ConsumerStatefulWidget {
 
 class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
   OrderStatus? _filter;
+
+  // At most one reorder in flight at a time — tracked by order id so only
+  // the tapped row's button shows a spinner, not every row.
+  String? _reorderingOrderId;
+
+  Future<void> _buyAgain(OrderEntity order) async {
+    setState(() => _reorderingOrderId = order.id);
+    final result = await buyAgainItems(ref, order);
+    if (!mounted) return;
+    setState(() => _reorderingOrderId = null);
+
+    final l10n = AppLocalizations.of(context)!;
+    final message = result.unavailable == 0
+        ? '${l10n.buyAgainAddedCount(result.added)}.'
+        : '${l10n.buyAgainAddedCount(result.added)}${l10n.buyAgainUnavailableSuffix(result.unavailable)}';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        action: result.added > 0
+            ? SnackBarAction(
+                label: l10n.productViewCartAction,
+                onPressed: () => context.push(RouteNames.viewCart),
+              )
+            : null,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,13 +164,34 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 6),
-                                Text(
-                                  order.grandTotal.formatted,
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                    color: AppColors.primary,
-                                  ),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      order.grandTotal.formatted,
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                    TextButton.icon(
+                                      onPressed: _reorderingOrderId == null ? () => _buyAgain(order) : null,
+                                      icon: _reorderingOrderId == order.id
+                                          ? const SizedBox(
+                                              width: 14,
+                                              height: 14,
+                                              child: CircularProgressIndicator(strokeWidth: 2),
+                                            )
+                                          : const Icon(Icons.replay_rounded, size: 16),
+                                      label: Text(l10n.homeBuyAgain, style: const TextStyle(fontSize: 12)),
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                                        minimumSize: Size.zero,
+                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),

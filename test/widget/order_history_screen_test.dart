@@ -11,10 +11,14 @@ import 'package:traders_retailer/domain/entities/business_hours_entity.dart';
 import 'package:traders_retailer/domain/entities/notification_preferences_entity.dart';
 import 'package:traders_retailer/domain/entities/order_entity.dart';
 import 'package:traders_retailer/domain/entities/order_item_entity.dart';
+import 'package:traders_retailer/domain/entities/product_entity.dart';
 import 'package:traders_retailer/domain/repositories/order_repository.dart';
+import 'package:traders_retailer/domain/repositories/product_repository.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/orders/screens/order_history_screen.dart';
 import 'package:traders_retailer/l10n/app_localizations.dart';
+
+import '../helpers/fake_cart_repository.dart';
 
 /// Minimal fake, same shape as the one in order_detail_screen_test.dart —
 /// just enough of `AuthRepository` to reach `AuthenticatedCustomer`, which
@@ -59,6 +63,7 @@ class FakeAuthRepository implements AuthRepository {
     String? businessName,
     String? photoUrl,
     AddressEntity? address,
+    List<AddressEntity>? savedAddresses,
     String? gstNumber,
     BankDetailsEntity? bankDetails,
     BusinessHoursEntity? businessHours,
@@ -105,6 +110,43 @@ class FakeOrderRepository implements OrderRepository {
   ) async {}
 }
 
+class FakeProductRepository implements ProductRepository {
+  final Map<String, ProductEntity> products;
+  FakeProductRepository(this.products);
+
+  @override
+  Stream<List<ProductEntity>> watchProducts({String? categoryId}) => Stream.value(products.values.toList());
+
+  @override
+  Stream<List<ProductEntity>> watchAllProducts() => Stream.value(products.values.toList());
+
+  @override
+  Future<List<ProductEntity>> searchProducts(String query) async => [];
+
+  @override
+  Future<ProductEntity?> getProductById(String productId) async => products[productId];
+
+  @override
+  Future<void> createProduct(ProductEntity product) async {}
+
+  @override
+  Future<void> updateProduct(ProductEntity product) async {}
+
+  @override
+  Future<void> deleteProduct(String productId) async {}
+}
+
+final _product = ProductEntity(
+  id: 'p1',
+  name: 'Basmati Rice',
+  categoryId: 'c1',
+  imageUrl: '',
+  price: Money(1500),
+  unit: ProductUnit.box,
+  stock: 10,
+  isActive: true,
+);
+
 final _retailer = UserModel(
   uid: 'u1',
   name: 'Ramesh',
@@ -142,17 +184,20 @@ OrderEntity _order({required String id, required OrderStatus status}) =>
       createdAt: DateTime(2026, 7, 20),
     );
 
-Widget _wrap(FakeOrderRepository repo) => ProviderScope(
-  overrides: [
-    authRepositoryProvider.overrideWithValue(FakeAuthRepository(_retailer)),
-    orderRepositoryProvider.overrideWithValue(repo),
-  ],
-  child: const MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: OrderHistoryScreen(),
-  ),
-);
+Widget _wrap(FakeOrderRepository repo, {FakeProductRepository? productRepo, FakeCartRepository? cartRepo}) =>
+    ProviderScope(
+      overrides: [
+        authRepositoryProvider.overrideWithValue(FakeAuthRepository(_retailer)),
+        orderRepositoryProvider.overrideWithValue(repo),
+        productRepositoryProvider.overrideWithValue(productRepo ?? FakeProductRepository({'p1': _product})),
+        cartRepositoryProvider.overrideWithValue(cartRepo ?? FakeCartRepository()),
+      ],
+      child: const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: OrderHistoryScreen(),
+      ),
+    );
 
 void main() {
   testWidgets('shows an empty state when there are no orders', (tester) async {
@@ -213,4 +258,22 @@ void main() {
       expect(find.text('No delivered orders'), findsOneWidget);
     },
   );
+
+  testWidgets('tapping Reorder on a row adds the live-priced item to the cart', (tester) async {
+    final cartRepo = FakeCartRepository();
+    await tester.pumpWidget(
+      _wrap(
+        FakeOrderRepository([_order(id: 'o1', status: OrderStatus.delivered)]),
+        cartRepo: cartRepo,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Buy Again'));
+    await tester.pumpAndSettle();
+
+    expect(cartRepo.items, hasLength(1));
+    expect(cartRepo.items.single.productId, 'p1');
+    expect(find.textContaining('1 item added to cart'), findsOneWidget);
+  });
 }

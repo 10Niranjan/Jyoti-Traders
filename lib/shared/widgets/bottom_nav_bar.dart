@@ -1,7 +1,9 @@
+import 'package:badges/badges.dart' as badges;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_colors.dart';
+import '../../features/notifications/controllers/notification_controller.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Bottom navigation for the 4 retailer tab branches (Home/Search/Orders/
@@ -16,6 +18,7 @@ class BottomNavBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final unreadCount = ref.watch(unreadNotificationCountProvider);
     return NavigationBarTheme(
       data: NavigationBarThemeData(
         iconTheme: WidgetStateProperty.resolveWith(
@@ -27,39 +30,46 @@ class BottomNavBar extends ConsumerWidget {
         ),
       ),
       child: NavigationBar(
-      selectedIndex: navigationShell.currentIndex,
-      indicatorColor: Colors.transparent,
-      labelTextStyle: WidgetStateProperty.resolveWith(
-        (states) => TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-          color: states.contains(WidgetState.selected)
-              ? AppColors.primary
-              : AppColors.textSecondaryLight,
+        selectedIndex: navigationShell.currentIndex,
+        indicatorColor: Colors.transparent,
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) => TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: states.contains(WidgetState.selected)
+                ? AppColors.primary
+                : AppColors.textSecondaryLight,
+          ),
         ),
-      ),
-      onDestinationSelected: (index) => navigationShell.goBranch(
-        index,
-        initialLocation: index == navigationShell.currentIndex,
-      ),
-      destinations: [
-        NavigationDestination(
-          icon: const Icon(Icons.storefront_outlined),
-          label: l10n.navHome,
+        onDestinationSelected: (index) => navigationShell.goBranch(
+          index,
+          initialLocation: index == navigationShell.currentIndex,
         ),
-        NavigationDestination(
-          icon: const Icon(Icons.search_rounded),
-          label: l10n.navSearch,
-        ),
-        NavigationDestination(
-          icon: const Icon(Icons.receipt_long_outlined),
-          label: l10n.navOrders,
-        ),
-        NavigationDestination(
-          icon: const Icon(Icons.person_outline_rounded),
-          label: l10n.navProfile,
-        ),
-      ],
+        destinations: [
+          NavigationDestination(
+            icon: const Icon(Icons.storefront_outlined),
+            label: l10n.navHome,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.search_rounded),
+            label: l10n.navSearch,
+          ),
+          NavigationDestination(
+            icon: badges.Badge(
+              showBadge: unreadCount > 0,
+              badgeStyle: const badges.BadgeStyle(
+                badgeColor: AppColors.error,
+                padding: EdgeInsets.all(3),
+              ),
+              child: const Icon(Icons.receipt_long_outlined),
+            ),
+            label: l10n.navOrders,
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.person_outline_rounded),
+            label: l10n.navProfile,
+          ),
+        ],
       ),
     );
   }

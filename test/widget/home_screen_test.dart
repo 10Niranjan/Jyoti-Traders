@@ -64,6 +64,7 @@ class FakeAuthRepository implements AuthRepository {
     String? businessName,
     String? photoUrl,
     AddressEntity? address,
+    List<AddressEntity>? savedAddresses,
     String? gstNumber,
     BankDetailsEntity? bankDetails,
     BusinessHoursEntity? businessHours,
@@ -337,5 +338,15 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Grains'), findsOneWidget);
+  });
+
+  testWidgets('shows a search bar for searching without switching tabs', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_wrap(orders: const [], products: const []));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Search products...'), findsOneWidget);
+    expect(find.byIcon(Icons.search_rounded), findsOneWidget);
   });
 }

@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_shadows.dart';
 import '../../../core/constants/route_names.dart';
+import '../../../core/utils/product_sort.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../shared/widgets/add_to_cart_pill.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
@@ -51,7 +53,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           ),
           child: Row(
             children: [
-              Icon(Icons.search_rounded, size: 20, color: AppColors.textSecondaryLight),
+              Icon(
+                Icons.search_rounded,
+                size: 20,
+                color: AppColors.textSecondaryLight,
+              ),
               const SizedBox(width: 8),
               Expanded(
                 child: TextField(
@@ -76,7 +82,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     notifier.onQueryChanged('');
                     setState(() {});
                   },
-                  child: Icon(Icons.close_rounded, size: 18, color: AppColors.textSecondaryLight),
+                  child: Icon(
+                    Icons.close_rounded,
+                    size: 18,
+                    color: AppColors.textSecondaryLight,
+                  ),
                 ),
             ],
           ),
@@ -97,7 +107,12 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 query: state.query,
                 isLoading: state.isLoading,
                 hasError: state.hasError,
-                results: state.results,
+                results: state.visibleResults,
+                hasAnyResults: state.results.isNotEmpty,
+                sort: state.sort,
+                inStockOnly: state.inStockOnly,
+                onSortChanged: notifier.setSort,
+                onInStockOnlyChanged: notifier.setInStockOnly,
                 onRetry: notifier.retry,
                 onResultTap: (product) {
                   notifier.commitToRecentSearches(state.query);
@@ -172,6 +187,11 @@ class _SearchResults extends StatelessWidget {
   final bool isLoading;
   final bool hasError;
   final List<ProductEntity> results;
+  final bool hasAnyResults;
+  final ProductSort sort;
+  final bool inStockOnly;
+  final ValueChanged<ProductSort> onSortChanged;
+  final ValueChanged<bool> onInStockOnlyChanged;
   final Future<void> Function() onRetry;
   final ValueChanged<ProductEntity> onResultTap;
 
@@ -180,6 +200,11 @@ class _SearchResults extends StatelessWidget {
     required this.isLoading,
     required this.hasError,
     required this.results,
+    required this.hasAnyResults,
+    required this.sort,
+    required this.inStockOnly,
+    required this.onSortChanged,
+    required this.onInStockOnlyChanged,
     required this.onRetry,
     required this.onResultTap,
   });
@@ -187,31 +212,96 @@ class _SearchResults extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading) return const ListShimmerLoader(itemCount: 5);
-    return RefreshIndicator(
-      onRefresh: onRetry,
-      child: hasError
-          ? ListView(children: [ErrorStateWidget(onRetry: onRetry)])
-          : results.isEmpty
-          ? ListView(
-              children: [
-                EmptyStateWidget(
-                  icon: Icons.search_off_rounded,
-                  title: AppLocalizations.of(context)!.searchNoResultsFor(query),
-                ),
-              ],
-            )
-          : ListView.separated(
-              itemCount: results.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final product = results[index];
-                return _SearchResultTile(
-                  product: product,
-                  onTap: () => onResultTap(product),
-                  onAdd: () => showQuantitySheet(context, product),
-                );
-              },
+    return Column(
+      children: [
+        if (!hasError && hasAnyResults)
+          _SortFilterBar(
+            sort: sort,
+            inStockOnly: inStockOnly,
+            onSortChanged: onSortChanged,
+            onInStockOnlyChanged: onInStockOnlyChanged,
+          ),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: onRetry,
+            child: hasError
+                ? ListView(children: [ErrorStateWidget(onRetry: onRetry)])
+                : results.isEmpty
+                ? ListView(
+                    children: [
+                      EmptyStateWidget(
+                        icon: Icons.search_off_rounded,
+                        title: AppLocalizations.of(context)!.searchNoResultsFor(query),
+                      ),
+                    ],
+                  )
+                : ListView.separated(
+                    itemCount: results.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final product = results[index];
+                      return _SearchResultTile(
+                        product: product,
+                        onTap: () => onResultTap(product),
+                        onAdd: () => showQuantitySheet(context, product),
+                      );
+                    },
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Sort dropdown + in-stock-only toggle, shown above results whenever the
+/// raw search returned something to sort/filter — kept visible even if the
+/// current filter combination empties the visible list, so "In stock only"
+/// can be switched back off.
+class _SortFilterBar extends StatelessWidget {
+  final ProductSort sort;
+  final bool inStockOnly;
+  final ValueChanged<ProductSort> onSortChanged;
+  final ValueChanged<bool> onInStockOnlyChanged;
+
+  const _SortFilterBar({
+    required this.sort,
+    required this.inStockOnly,
+    required this.onSortChanged,
+    required this.onInStockOnlyChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<ProductSort>(
+                value: sort,
+                isDense: true,
+                icon: const Icon(Icons.sort_rounded, size: 18),
+                items: [
+                  DropdownMenuItem(value: ProductSort.relevance, child: Text(l10n.searchSortRelevance)),
+                  DropdownMenuItem(value: ProductSort.priceLowToHigh, child: Text(l10n.searchSortPriceLowToHigh)),
+                  DropdownMenuItem(value: ProductSort.priceHighToLow, child: Text(l10n.searchSortPriceHighToLow)),
+                ],
+                onChanged: (value) {
+                  if (value != null) onSortChanged(value);
+                },
+              ),
             ),
+          ),
+          FilterChip(
+            label: Text(l10n.searchInStockOnly, style: GoogleFonts.inter(fontSize: 12)),
+            selected: inStockOnly,
+            onSelected: onInStockOnlyChanged,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -225,7 +315,11 @@ class _SearchResultTile extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onAdd;
 
-  const _SearchResultTile({required this.product, required this.onTap, required this.onAdd});
+  const _SearchResultTile({
+    required this.product,
+    required this.onTap,
+    required this.onAdd,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -238,7 +332,8 @@ class _SearchResultTile extends StatelessWidget {
         decoration: BoxDecoration(
           color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.primary.withOpacity(0.08)),
+          border: Border.all(color: AppColors.cardBorder),
+          boxShadow: isDark ? null : AppShadows.card,
         ),
         child: Row(
           children: [
@@ -255,7 +350,8 @@ class _SearchResultTile extends StatelessWidget {
                   : CachedNetworkImage(
                       imageUrl: product.imageUrl,
                       fit: BoxFit.cover,
-                      errorWidget: (context, url, error) => const Icon(Icons.image_outlined),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.image_outlined),
                     ),
             ),
             const SizedBox(width: 12),
@@ -267,7 +363,10 @@ class _SearchResultTile extends StatelessWidget {
                     product.name,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 13),
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -276,10 +375,15 @@ class _SearchResultTile extends StatelessWidget {
                     // (e.g. "₹260") reads as the product costing ₹260, not
                     // ₹260/kg. Same "from ₹x/kg" treatment as ProductCard.
                     product.isWeighed
-                        ? AppLocalizations.of(context)!
-                            .homeFromRatePerKg(product.rateSlabs!.bestRatePerKg.toStringAsFixed(0))
+                        ? AppLocalizations.of(context)!.homeFromRatePerKg(
+                            product.rateSlabs!.bestRatePerKg.toStringAsFixed(0),
+                          )
                         : product.price.formatted,
-                    style: GoogleFonts.inter(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 14),
+                    style: GoogleFonts.inter(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
@@ -288,7 +392,7 @@ class _SearchResultTile extends StatelessWidget {
             if (!product.isInStock)
               OutOfStockPill(isDark: isDark)
             else
-              AddToCartPill(onTap: onAdd),
+              AddToCartPill(filled: true, onTap: onAdd),
           ],
         ),
       ),

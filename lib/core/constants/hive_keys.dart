@@ -24,6 +24,7 @@ class HiveKeys {
   static const String recentSearches = 'recent_searches';
   static const String currentUser = 'current_user';
   static const String simulatedUsers = 'simulated_users';
+  static const String retailerSeedVersion = 'retailer_seed_version';
 
   // catalog_cache
   static const String simulatedCategories = 'simulated_categories';
@@ -33,10 +34,15 @@ class HiveKeys {
 
   // orders_cache
   static const String simulatedOrders = 'simulated_orders';
+  static const String orderSeedVersion = 'order_seed_version';
 
   // cart_box
   static const String cartItems = 'cart_items';
+  static const String wishlistItems = 'wishlist_items';
 
   // notifications_cache
   static const String notificationItems = 'notification_items';
+  static const String notificationSeedVersion = 'notification_seed_version';
+  static const String broadcastMessages = 'broadcast_messages';
+  static const String seenBroadcastIds = 'seen_broadcast_ids';
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/route_names.dart';
 import 'manage_categories_screen.dart';
 import 'manage_products_screen.dart';
 
@@ -46,6 +48,14 @@ class _CatalogScreenState extends State<CatalogScreen>
           'Catalog',
           style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
+        actions: [
+          if (_tabController.index == 0)
+            IconButton(
+              icon: const Icon(Icons.upload_file_outlined),
+              tooltip: 'Bulk Import',
+              onPressed: () => context.push(RouteNames.adminBulkImportProducts),
+            ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColors.primary,

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_shadows.dart';
 import '../../../core/constants/route_names.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../core/utils/csv_encoder.dart';
@@ -209,8 +210,12 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
                         child: Container(
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
-                            border: Border.all(color: const Color(0xFFF1F5F9)),
+                            border: Border.all(color: AppColors.cardBorder),
                             borderRadius: BorderRadius.circular(16),
+                            boxShadow:
+                                Theme.of(context).brightness == Brightness.dark
+                                ? null
+                                : AppShadows.card,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,

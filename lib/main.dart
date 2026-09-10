@@ -12,7 +12,9 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/locale_controller.dart';
 import 'core/theme/theme_controller.dart';
 import 'l10n/app_localizations.dart';
+import 'data/datasources/seed/demo_activity_seeder.dart';
 import 'data/datasources/seed/demo_catalog_seeder.dart';
+import 'features/notifications/controllers/broadcast_ingestion_controller.dart';
 import 'features/notifications/controllers/fcm_controller.dart';
 import 'features/notifications/controllers/stock_alert_controller.dart';
 import 'firebase_options.dart';
@@ -57,13 +59,16 @@ void main() async {
   // Initialize local caching system (Hive)
   await Hive.initFlutter();
   await Hive.openBox(HiveBoxes.settingsCache);
-  await Hive.openBox(HiveBoxes.userCache);
+  final userCacheBox = await Hive.openBox(HiveBoxes.userCache);
   final catalogBox = await Hive.openBox(HiveBoxes.catalogCache);
-  await Hive.openBox(HiveBoxes.ordersCache);
+  final ordersBox = await Hive.openBox(HiveBoxes.ordersCache);
   await Hive.openBox(HiveBoxes.cartBox);
-  await Hive.openBox(HiveBoxes.notificationsCache);
+  final notificationsBox = await Hive.openBox(HiveBoxes.notificationsCache);
 
   await seedDemoCatalogIfEmpty(catalogBox);
+  await seedDemoRetailersIfEmpty(userCacheBox);
+  await seedDemoOrdersIfEmpty(ordersBox);
+  await seedDemoNotificationsIfEmpty(notificationsBox);
 
   runApp(const ProviderScope(child: JyotiTradersApp()));
 }
@@ -79,6 +84,9 @@ class JyotiTradersApp extends ConsumerWidget {
     // Same one-per-app-lifetime pattern — watches the retailer's order
     // history + live product stock and raises a local low-stock heads-up.
     ref.watch(stockAlertInitializerProvider);
+    // Same pattern again — copies any admin broadcast the retailer hasn't
+    // seen yet into their own notification history.
+    ref.watch(broadcastIngestionProvider);
     final router = ref.watch(appRouterProvider);
 
     return MaterialApp.router(

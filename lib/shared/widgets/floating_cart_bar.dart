@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_constants.dart';
 import '../../domain/entities/cart_entity.dart';
+import '../../domain/value_objects/money.dart';
 import '../../l10n/app_localizations.dart';
 
 /// Persistent "N items · ₹total · View Cart" pill, docked above the bottom
@@ -18,6 +20,12 @@ class FloatingCartBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final minimum = Money(AppConstants.kMinOrderAmount);
+    final belowMinimum = cart.subtotal < minimum;
+    // Browsing-time nudge toward the same ₹2,500 gate Cart/Checkout already
+    // enforce — clamped so the bar never overshoots 100% on the (impossible
+    // but not worth crashing over) subtotal > minimum edge.
+    final progress = (cart.subtotal.amount / minimum.amount).clamp(0.0, 1.0);
     return IgnorePointer(
       ignoring: cart.isEmpty,
       child: AnimatedSlide(
@@ -33,64 +41,120 @@ class FloatingCartBar extends StatelessWidget {
               onTap: onTap,
               borderRadius: BorderRadius.circular(14),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   // Deliberately a fixed dark pill in both themes (this app's
                   // white/light text on it is hardcoded, not theme-aware) —
-                  // `surfaceDark`, not `textPrimaryLight`, which is the exact
-                  // same hex as `backgroundDark` and so was invisible against
-                  // a dark-mode screen.
-                  color: AppColors.surfaceDark,
+                  // exact `slate-900` match to the Polished reference, not
+                  // `textPrimaryLight`, which is the exact same hex as
+                  // `backgroundDark` and so was invisible against a
+                  // dark-mode screen.
+                  color: const Color(0xFF0F172A),
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.25), blurRadius: 16, offset: const Offset(0, 6)),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.25),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
+                    ),
                   ],
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.cartItemCount(cart.itemCount),
-                          style: GoogleFonts.inter(fontSize: 10.5, color: Colors.white70, letterSpacing: 0.3),
-                        ),
-                        Text(
-                          cart.subtotal.formatted,
-                          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
-                        ),
-                      ],
-                    ),
-                    // A filled pill, not link-style text — reads as a tappable
-                    // button in its own right rather than a caption next to
-                    // the price, matching how Zepto's own cart/checkout CTAs
-                    // are always a solid, self-contained button.
-                    Container(
-                      key: ValueKey(cart.itemCount),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            l10n.cartViewCart,
-                            style: GoogleFonts.inter(fontSize: 12.5, fontWeight: FontWeight.w700, color: Colors.white),
+                    if (belowMinimum) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(999),
+                        child: LinearProgressIndicator(
+                          value: progress,
+                          minHeight: 3,
+                          backgroundColor: Colors.white24,
+                          valueColor: const AlwaysStoppedAnimation(
+                            AppColors.warning,
                           ),
-                          const SizedBox(width: 4),
-                          const Icon(Icons.arrow_forward_rounded, size: 15, color: Colors.white),
-                        ],
+                        ),
                       ),
-                    ).animate().scale(
+                      const SizedBox(height: 8),
+                    ],
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              belowMinimum
+                                  ? l10n.cartAddMoreShort(
+                                      (minimum - cart.subtotal).formatted,
+                                    )
+                                  : l10n.cartItemCount(cart.itemCount),
+                              style: GoogleFonts.inter(
+                                fontSize: 10.5,
+                                color: belowMinimum
+                                    ? AppColors.warning
+                                    : Colors.white70,
+                                fontWeight: belowMinimum
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            Text(
+                              cart.subtotal.formatted,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                        // A filled pill, not link-style text — reads as a tappable
+                        // button in its own right rather than a caption next to
+                        // the price, matching how Zepto's own cart/checkout CTAs
+                        // are always a solid, self-contained button.
+                        Container(
+                          key: ValueKey(cart.itemCount),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primary,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                l10n.cartViewCart,
+                                style: GoogleFonts.inter(
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Icon(
+                                Icons.arrow_forward_rounded,
+                                size: 15,
+                                color: Colors.white,
+                              ),
+                            ],
+                          ),
+                        ).animate().scale(
                           begin: const Offset(0.9, 0.9),
                           end: const Offset(1, 1),
                           duration: 180.ms,
                           curve: Curves.easeOutBack,
                         ),
+                      ],
+                    ),
                   ],
                 ),
               ),

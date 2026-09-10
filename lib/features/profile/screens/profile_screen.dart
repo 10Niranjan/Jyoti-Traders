@@ -311,6 +311,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
     }
   }
 
+  Future<void> _confirmRemoveAddress(String uid, List<AddressEntity> savedAddresses, AddressEntity address) async {
+    final l10n = AppLocalizations.of(context)!;
+    final label = address.label?.isNotEmpty == true ? address.label! : address.street;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.profileRemoveAddressTitle, style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17)),
+        content: Text(l10n.profileRemoveAddressContent(label), style: GoogleFonts.inter(fontSize: 13)),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(l10n.cancelButton)),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.profileRemoveAddressAction, style: const TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await ref.read(profileControllerProvider.notifier).updateProfile(
+          uid: uid,
+          savedAddresses: savedAddresses.where((a) => a.id != address.id).toList(),
+        );
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.profileAddressRemoved)));
+  }
+
   Future<void> _confirmLogout() async {
     final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
@@ -405,6 +431,36 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
               onUseCurrentLocation: _useCurrentLocation,
             ),
           ),
+          if (user.savedAddresses.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            SectionCard(
+              title: l10n.profileSavedAddresses,
+              icon: Icons.bookmark_border_rounded,
+              child: Column(
+                children: [
+                  for (final address in user.savedAddresses)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.place_outlined, color: AppColors.primary),
+                      title: Text(
+                        address.label?.isNotEmpty == true ? address.label! : address.street,
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                      ),
+                      subtitle: Text(
+                        '${address.street}, ${address.city} ${address.pincode}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.delete_outline, color: AppColors.error),
+                        onPressed: () => _confirmRemoveAddress(user.uid, user.savedAddresses, address),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
           SectionCard(
             title: l10n.profileBusinessDetails,
             icon: Icons.storefront_outlined,
@@ -447,6 +503,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
               ],
             ),
           ),
+          const SizedBox(height: 16),
           SectionCard(
             title: l10n.profilePayoutDetails,
             icon: Icons.account_balance_outlined,
@@ -484,7 +541,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
               ],
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 20),
           PrimaryButton(
             label: l10n.profileSaveChanges,
             isLoading: profileState.isLoading,
@@ -539,6 +596,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
             ],
           ),
         ),
+        const SizedBox(height: 16),
         SectionCard(
           title: l10n.profileAppearance,
           icon: Icons.palette_outlined,
@@ -565,6 +623,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                 ref.read(themeModeProvider.notifier).setThemeMode(selection.first),
           ),
         ),
+        const SizedBox(height: 16),
         SectionCard(
           title: l10n.profileLanguage,
           icon: Icons.language_outlined,
@@ -579,6 +638,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                 ref.read(localeProvider.notifier).setLocale(selection.first),
           ),
         ),
+        const SizedBox(height: 16),
         SectionCard(
           title: l10n.profileAccountSection,
           icon: Icons.lock_outline,
@@ -591,6 +651,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
             onTap: () => _confirmChangePassword(user.email),
           ),
         ),
+        const SizedBox(height: 16),
         SectionCard(
           title: l10n.profileSupport,
           icon: Icons.support_agent_outlined,
@@ -613,7 +674,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
           child: OutlinedButton.icon(

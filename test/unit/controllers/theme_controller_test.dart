@@ -21,9 +21,9 @@ class FakeLocalStorageService extends LocalStorageService {
 }
 
 void main() {
-  test('defaults to system when nothing is stored', () {
+  test('defaults to light when nothing is stored', () {
     final controller = ThemeModeController(FakeLocalStorageService());
-    expect(controller.state, ThemeMode.system);
+    expect(controller.state, ThemeMode.light);
   });
 
   test('loads dark mode from a stored true preference', () {

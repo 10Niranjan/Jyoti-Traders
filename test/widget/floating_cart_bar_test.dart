@@ -27,9 +27,12 @@ void main() {
     expect(find.text('View Cart'), findsOneWidget);
   });
 
-  testWidgets('singular "1 item" for exactly one unit', (tester) async {
+  testWidgets('singular "1 item" for exactly one unit at/above the minimum order amount', (tester) async {
+    // Priced above the ₹2,500 minimum specifically so this stays a pure
+    // pluralization check — a below-minimum cart shows the "add more"
+    // nudge in this same spot instead (see the belowMinimum group below).
     final cart = CartEntity(items: [
-      CartItemEntity(productId: 'p1', name: 'Rice', imageUrl: '', unitPrice: Money(1800), unit: ProductUnit.box, qty: 1),
+      CartItemEntity(productId: 'p1', name: 'Rice', imageUrl: '', unitPrice: Money(2800), unit: ProductUnit.box, qty: 1),
     ]);
     await tester.pumpWidget(_wrap(cart));
     await tester.pumpAndSettle();
@@ -78,5 +81,30 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.getSize(find.byType(FloatingCartBar)).height, lessThan(100));
+  });
+
+  group('minimum-order nudge', () {
+    testWidgets('shows "Add ₹X more" and a progress bar when below the ₹2,500 minimum', (tester) async {
+      final cart = CartEntity(items: [
+        CartItemEntity(productId: 'p1', name: 'Rice', imageUrl: '', unitPrice: Money(1800), unit: ProductUnit.box, qty: 1),
+      ]);
+      await tester.pumpWidget(_wrap(cart));
+      await tester.pumpAndSettle();
+
+      expect(find.text('1 item'), findsNothing);
+      expect(find.textContaining('more to order'), findsOneWidget);
+      expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    });
+
+    testWidgets('shows the plain item count with no progress bar once at/above the minimum', (tester) async {
+      final cart = CartEntity(items: [
+        CartItemEntity(productId: 'p1', name: 'Rice', imageUrl: '', unitPrice: Money(2800), unit: ProductUnit.box, qty: 1),
+      ]);
+      await tester.pumpWidget(_wrap(cart));
+      await tester.pumpAndSettle();
+
+      expect(find.text('1 item'), findsOneWidget);
+      expect(find.byType(LinearProgressIndicator), findsNothing);
+    });
   });
 }

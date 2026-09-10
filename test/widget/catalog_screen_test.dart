@@ -138,4 +138,16 @@ void main() {
 
     expect(find.text('No categories yet'), findsOneWidget);
   });
+
+  testWidgets('the Bulk Import action only shows on the Products segment', (tester) async {
+    await tester.pumpWidget(_wrap());
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.upload_file_outlined), findsOneWidget);
+
+    await tester.tap(find.text('Categories'));
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.upload_file_outlined), findsNothing);
+  });
 }

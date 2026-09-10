@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_shadows.dart';
 import '../../../core/services/location_service.dart';
 import '../../../domain/entities/delivery_config_entity.dart';
 import '../../../shared/widgets/error_state_widget.dart';
@@ -155,7 +156,8 @@ class _DeliveryConfigFormViewState
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: AppColors.cardBorder),
+                  boxShadow: AppShadows.card,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,7 +181,9 @@ class _DeliveryConfigFormViewState
                           child: TextFormField(
                             controller: _latController,
                             enabled: !isSaving,
-                            decoration: const InputDecoration(labelText: 'Latitude'),
+                            decoration: const InputDecoration(
+                              labelText: 'Latitude',
+                            ),
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                               signed: true,
@@ -192,7 +196,9 @@ class _DeliveryConfigFormViewState
                           child: TextFormField(
                             controller: _lngController,
                             enabled: !isSaving,
-                            decoration: const InputDecoration(labelText: 'Longitude'),
+                            decoration: const InputDecoration(
+                              labelText: 'Longitude',
+                            ),
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                               signed: true,
@@ -213,7 +219,9 @@ class _DeliveryConfigFormViewState
                             ? const SizedBox(
                                 width: 14,
                                 height: 14,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Icon(Icons.my_location_rounded, size: 16),
                         label: const Text('Use current location'),
@@ -229,7 +237,8 @@ class _DeliveryConfigFormViewState
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: AppColors.cardBorder),
+                  boxShadow: AppShadows.card,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,9 +287,7 @@ class _DeliveryConfigFormViewState
                         )
                       : Text(
                           'Save Changes',
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
                         ),
                 ),
               ),
