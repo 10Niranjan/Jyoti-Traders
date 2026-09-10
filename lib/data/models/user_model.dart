@@ -16,6 +16,7 @@ class UserModel {
   final UserStatus status;
   final String businessName;
   final AddressEntity? address;
+  final List<AddressEntity> savedAddresses;
   final String? gstNumber;
   final String? fcmToken;
   final String? photoUrl;
@@ -33,6 +34,7 @@ class UserModel {
     required this.status,
     required this.businessName,
     this.address,
+    this.savedAddresses = const [],
     this.gstNumber,
     this.fcmToken,
     this.photoUrl,
@@ -56,6 +58,7 @@ class UserModel {
       status: _statusFromJson(json),
       businessName: json['businessName'] as String? ?? '',
       address: _addressFromJson(json['address']),
+      savedAddresses: _savedAddressesFromJson(json['savedAddresses']),
       gstNumber: json['gstNumber'] as String?,
       fcmToken: json['fcmToken'] as String?,
       photoUrl: json['photoUrl'] as String?,
@@ -85,7 +88,30 @@ class UserModel {
       latitude: (map['latitude'] as num?)?.toDouble(),
       longitude: (map['longitude'] as num?)?.toDouble(),
       formattedAddress: map['formattedAddress'] as String?,
+      id: map['id'] as String?,
+      label: map['label'] as String?,
     );
+  }
+
+  static Map<String, dynamic> _addressToJson(AddressEntity address) {
+    return {
+      'street': address.street,
+      'city': address.city,
+      'pincode': address.pincode,
+      'latitude': address.latitude,
+      'longitude': address.longitude,
+      'formattedAddress': address.formattedAddress,
+      'id': address.id,
+      'label': address.label,
+    };
+  }
+
+  static List<AddressEntity> _savedAddressesFromJson(dynamic value) {
+    if (value is! List) return const [];
+    return value
+        .map((e) => _addressFromJson(e))
+        .whereType<AddressEntity>()
+        .toList();
   }
 
   static BankDetailsEntity? _bankDetailsFromJson(dynamic value) {
@@ -133,15 +159,9 @@ class UserModel {
       'status': status.value,
       'isApproved': isApproved,
       'businessName': businessName,
-      if (address != null)
-        'address': {
-          'street': address!.street,
-          'city': address!.city,
-          'pincode': address!.pincode,
-          'latitude': address!.latitude,
-          'longitude': address!.longitude,
-          'formattedAddress': address!.formattedAddress,
-        },
+      if (address != null) 'address': _addressToJson(address!),
+      if (savedAddresses.isNotEmpty)
+        'savedAddresses': savedAddresses.map(_addressToJson).toList(),
       'gstNumber': gstNumber,
       'fcmToken': fcmToken,
       'photoUrl': photoUrl,
@@ -182,6 +202,7 @@ class UserModel {
       role: role,
       status: status,
       address: address,
+      savedAddresses: savedAddresses,
       gstNumber: gstNumber,
       fcmToken: fcmToken,
       photoUrl: photoUrl,
@@ -201,6 +222,7 @@ class UserModel {
     UserStatus? status,
     String? businessName,
     AddressEntity? address,
+    List<AddressEntity>? savedAddresses,
     String? gstNumber,
     String? fcmToken,
     String? photoUrl,
@@ -218,6 +240,7 @@ class UserModel {
       status: status ?? this.status,
       businessName: businessName ?? this.businessName,
       address: address ?? this.address,
+      savedAddresses: savedAddresses ?? this.savedAddresses,
       gstNumber: gstNumber ?? this.gstNumber,
       fcmToken: fcmToken ?? this.fcmToken,
       photoUrl: photoUrl ?? this.photoUrl,

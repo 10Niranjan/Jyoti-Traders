@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/storage_paths.dart';
 import '../network/firebase_mode.dart';
+import '../utils/app_logger.dart';
 
 /// Uploads product images, category icons, and UPI payment screenshots to
 /// Firebase Storage, with the same
@@ -29,7 +29,7 @@ class ImageUploadService {
       final instance = storage ?? FirebaseStorage.instance;
       return ImageUploadService._(instance, isFirebasePlaceholder(Firebase.app()));
     } catch (e) {
-      debugPrint('ImageUploadService: Firebase Storage unavailable, using simulation mode: $e');
+      logWarning('ImageUploadService: Firebase Storage unavailable, using simulation mode', e);
       return ImageUploadService._(null, true);
     }
   }
@@ -53,7 +53,7 @@ class ImageUploadService {
     try {
       await _storage.ref(StoragePaths.productImage(productId)).delete();
     } catch (e) {
-      debugPrint('ImageUploadService: no stored image to delete for $productId ($e)');
+      logWarning('ImageUploadService: no stored image to delete for $productId', e);
     }
   }
 
@@ -73,7 +73,7 @@ class ImageUploadService {
     try {
       await _storage.ref(StoragePaths.categoryIcon(categoryId)).delete();
     } catch (e) {
-      debugPrint('ImageUploadService: no stored icon to delete for $categoryId ($e)');
+      logWarning('ImageUploadService: no stored icon to delete for $categoryId', e);
     }
   }
 

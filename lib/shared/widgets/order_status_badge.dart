@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/extensions.dart';
 import '../../domain/entities/order_entity.dart';
+import 'status_pill.dart';
 
 class OrderStatusBadge extends StatelessWidget {
   final OrderStatus status;
@@ -15,19 +16,9 @@ class OrderStatusBadge extends StatelessWidget {
       OrderStatus.confirmed => AppColors.info,
       OrderStatus.outForDelivery => AppColors.primary,
       OrderStatus.delivered => AppColors.success,
+      OrderStatus.cancelled => AppColors.error,
     };
-    final label = status.label;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(color: color, fontSize: 11, fontWeight: FontWeight.bold),
-      ),
-    );
+    return StatusPill(label: status.label, color: color);
   }
 }

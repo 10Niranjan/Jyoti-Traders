@@ -10,6 +10,7 @@ import '../../../shared/widgets/product_card.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
 import '../../cart/controllers/cart_controller.dart';
 import '../../home/controllers/home_controller.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/product_controller.dart';
 
 class CategoryProductsScreen extends ConsumerWidget {
@@ -32,7 +33,7 @@ class CategoryProductsScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: Text(categoryName ?? 'Products')),
+      appBar: AppBar(title: Text(categoryName ?? AppLocalizations.of(context)!.categoryProductsFallbackTitle)),
       // This screen is pushed *on top of* the retailer shell, so the shell's
       // own floating cart bar isn't on screen here — and this is the one
       // screen where "+" lives. Hosting it as `bottomNavigationBar` lets
@@ -84,10 +85,10 @@ class _ProductGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     if (products.isEmpty) {
       return ListView(
-        children: const [
+        children: [
           EmptyStateWidget(
             icon: Icons.inventory_2_outlined,
-            title: 'No products in this category yet',
+            title: AppLocalizations.of(context)!.categoryProductsEmptyTitle,
           ),
         ],
       );

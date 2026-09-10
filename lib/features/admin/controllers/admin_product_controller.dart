@@ -9,21 +9,22 @@ import '../../../domain/usecases/product/update_product_usecase.dart';
 
 /// Every product including inactive ones — the admin list must be able to
 /// see and re-activate what it deactivated, unlike retailer browsing.
-final allProductsProvider = StreamProvider.autoDispose<List<ProductEntity>>((ref) {
+final allProductsProvider = StreamProvider.autoDispose<List<ProductEntity>>((
+  ref,
+) {
   final useCase = GetAllProductsUseCase(ref.watch(productRepositoryProvider));
   return useCase();
 });
 
 /// Single product for the edit form, derived from the list stream rather
 /// than a separate fetch — the admin always arrives here from that list.
-final adminProductByIdProvider = Provider.autoDispose.family<AsyncValue<ProductEntity?>, String>((ref, productId) {
-  return ref.watch(allProductsProvider).whenData(
-        (products) {
-          final idx = products.indexWhere((p) => p.id == productId);
-          return idx == -1 ? null : products[idx];
-        },
-      );
-});
+final adminProductByIdProvider = Provider.autoDispose
+    .family<AsyncValue<ProductEntity?>, String>((ref, productId) {
+      return ref.watch(allProductsProvider).whenData((products) {
+        final idx = products.indexWhere((p) => p.id == productId);
+        return idx == -1 ? null : products[idx];
+      });
+    });
 
 class AdminProductController extends StateNotifier<AsyncValue<void>> {
   final CreateProductUseCase _createUseCase;
@@ -48,7 +49,11 @@ class AdminProductController extends StateNotifier<AsyncValue<void>> {
     return _save(product, localImagePath: localImagePath, isNew: false);
   }
 
-  Future<bool> _save(ProductEntity product, {String? localImagePath, required bool isNew}) async {
+  Future<bool> _save(
+    ProductEntity product, {
+    String? localImagePath,
+    required bool isNew,
+  }) async {
     state = const AsyncValue.loading();
     try {
       var toSave = product;
@@ -69,6 +74,30 @@ class AdminProductController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  /// Applies [transform] to each of [products] and saves it — reuses the
+  /// same [UpdateProductUseCase] a single edit would, just looped, rather
+  /// than a new batch-write repository method. A product that fails to save
+  /// doesn't block the rest; the caller gets back how many actually
+  /// succeeded so it can report a partial failure honestly.
+  Future<int> bulkUpdate(
+    List<ProductEntity> products,
+    ProductEntity Function(ProductEntity) transform,
+  ) async {
+    state = const AsyncValue.loading();
+    var successCount = 0;
+    for (final product in products) {
+      try {
+        await _updateUseCase(transform(product));
+        successCount++;
+      } catch (_) {
+        // Continue with the rest — one bad product shouldn't stall a bulk
+        // edit the admin applied to a dozen others.
+      }
+    }
+    state = const AsyncValue.data(null);
+    return successCount;
+  }
+
   Future<bool> delete(String productId) async {
     state = const AsyncValue.loading();
     try {
@@ -84,12 +113,14 @@ class AdminProductController extends StateNotifier<AsyncValue<void>> {
 }
 
 final adminProductControllerProvider =
-    StateNotifierProvider.autoDispose<AdminProductController, AsyncValue<void>>((ref) {
-  final repository = ref.watch(productRepositoryProvider);
-  return AdminProductController(
-    CreateProductUseCase(repository),
-    UpdateProductUseCase(repository),
-    DeleteProductUseCase(repository),
-    ref.watch(imageUploadServiceProvider),
-  );
-});
+    StateNotifierProvider.autoDispose<AdminProductController, AsyncValue<void>>(
+      (ref) {
+        final repository = ref.watch(productRepositoryProvider);
+        return AdminProductController(
+          CreateProductUseCase(repository),
+          UpdateProductUseCase(repository),
+          DeleteProductUseCase(repository),
+          ref.watch(imageUploadServiceProvider),
+        );
+      },
+    );

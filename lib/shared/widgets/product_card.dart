@@ -4,9 +4,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/constants/app_shadows.dart';
 import '../../core/utils/weight_formatter.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../features/cart/controllers/cart_controller.dart';
+import '../../l10n/app_localizations.dart';
 import 'add_to_cart_pill.dart';
 import 'quantity_sheet.dart';
 
@@ -29,6 +31,7 @@ class ProductCard extends ConsumerWidget {
     final qtyInCart = ref.watch(
       cartControllerProvider.select((cart) => cart.qtyFor(product.id)),
     );
+    final l10n = AppLocalizations.of(context)!;
 
     return InkWell(
       onTap: onTap,
@@ -37,7 +40,8 @@ class ProductCard extends ConsumerWidget {
         decoration: BoxDecoration(
           color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.primary.withOpacity(0.08)),
+          border: Border.all(color: AppColors.cardBorder),
+          boxShadow: isDark ? null : AppShadows.card,
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -69,7 +73,7 @@ class ProductCard extends ConsumerWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'per ${product.unit.value}',
+                    l10n.productPerUnit(product.unit.value),
                     style: GoogleFonts.inter(
                       fontSize: 10.5,
                       color: isDark
@@ -84,7 +88,10 @@ class ProductCard extends ConsumerWidget {
                       Expanded(
                         child: Text(
                           product.isWeighed
-                              ? 'from ₹${product.rateSlabs!.bestRatePerKg.toStringAsFixed(0)}/kg'
+                              ? l10n.homeFromRatePerKg(
+                                  product.rateSlabs!.bestRatePerKg
+                                      .toStringAsFixed(0),
+                                )
                               : product.price.formatted,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -98,7 +105,9 @@ class ProductCard extends ConsumerWidget {
                       if (!product.isInStock)
                         OutOfStockPill(isDark: isDark)
                       else if (qtyInCart == 0)
-                        AddToCartPill(onTap: () => showQuantitySheet(context, product))
+                        AddToCartPill(
+                          onTap: () => showQuantitySheet(context, product),
+                        )
                       else
                         _CompactQtyStepper(
                           key: ValueKey(qtyInCart),
@@ -117,7 +126,7 @@ class ProductCard extends ConsumerWidget {
                   if (!product.isInStock) ...[
                     const SizedBox(height: 4),
                     Text(
-                      'Out of stock',
+                      l10n.homeOutOfStock,
                       style: GoogleFonts.inter(
                         fontSize: 10,
                         color: AppColors.error,
@@ -166,37 +175,39 @@ class _CompactQtyStepper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.primary,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _StepperButton(
-            icon: Icons.remove_rounded,
-            onTap: () => onChanged(qty - step),
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            borderRadius: BorderRadius.circular(8),
           ),
-          Container(
-            constraints: const BoxConstraints(minWidth: 18),
-            padding: const EdgeInsets.symmetric(horizontal: 2),
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 12,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _StepperButton(
+                icon: Icons.remove_rounded,
+                onTap: () => onChanged(qty - step),
               ),
-            ),
+              Container(
+                constraints: const BoxConstraints(minWidth: 18),
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: Text(
+                  label,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              _StepperButton(
+                icon: Icons.add_rounded,
+                onTap: qty < max
+                    ? () => onChanged((qty + step).clamp(0, max))
+                    : null,
+              ),
+            ],
           ),
-          _StepperButton(
-            icon: Icons.add_rounded,
-            onTap: qty < max ? () => onChanged((qty + step).clamp(0, max)) : null,
-          ),
-        ],
-      ),
-    )
+        )
         .animate()
         .scale(
           begin: const Offset(0.85, 0.85),

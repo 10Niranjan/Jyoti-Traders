@@ -14,6 +14,14 @@ class AddressEntity extends Equatable {
   final double? longitude;
   final String? formattedAddress;
 
+  /// Only set for an entry saved into [UserEntity.savedAddresses] — a
+  /// checkout-frozen or single "current" address (the common case, e.g.
+  /// [OrderEntity.deliveryAddress]) never needs one.
+  final String? id;
+
+  /// Retailer-chosen name for a saved address, e.g. "Shop", "Warehouse".
+  final String? label;
+
   const AddressEntity({
     required this.street,
     required this.city,
@@ -21,6 +29,8 @@ class AddressEntity extends Equatable {
     this.latitude,
     this.longitude,
     this.formattedAddress,
+    this.id,
+    this.label,
   });
 
   bool get hasCoordinates => latitude != null && longitude != null;
@@ -32,6 +42,8 @@ class AddressEntity extends Equatable {
     double? latitude,
     double? longitude,
     String? formattedAddress,
+    String? id,
+    String? label,
   }) {
     return AddressEntity(
       street: street ?? this.street,
@@ -40,9 +52,20 @@ class AddressEntity extends Equatable {
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       formattedAddress: formattedAddress ?? this.formattedAddress,
+      id: id ?? this.id,
+      label: label ?? this.label,
     );
   }
 
   @override
-  List<Object?> get props => [street, city, pincode, latitude, longitude, formattedAddress];
+  List<Object?> get props => [
+    street,
+    city,
+    pincode,
+    latitude,
+    longitude,
+    formattedAddress,
+    id,
+    label,
+  ];
 }

@@ -4,14 +4,15 @@ import '../../data/datasources/local_storage_service.dart';
 
 /// The user's chosen appearance (System/Light/Dark), persisted via
 /// `LocalStorageService`, which already round-trips a nullable bool through
-/// Hive — `null` means system, `true` dark, `false` light.
+/// Hive — `null` means no saved preference (defaults to Light, matching the
+/// brand's Zepto Violet design), `true` dark, `false` light.
 class ThemeModeController extends StateNotifier<ThemeMode> {
   final LocalStorageService _storage;
 
   ThemeModeController(this._storage) : super(_fromPreference(_storage.getThemePreference()));
 
   static ThemeMode _fromPreference(bool? isDark) {
-    if (isDark == null) return ThemeMode.system;
+    if (isDark == null) return ThemeMode.light;
     return isDark ? ThemeMode.dark : ThemeMode.light;
   }
 

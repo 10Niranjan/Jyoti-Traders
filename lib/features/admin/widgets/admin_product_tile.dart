@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../domain/entities/product_entity.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/status_pill.dart';
 
 /// One row in the admin product list — thumbnail, name, price/unit, stock
 /// (highlighted when low), an inactive badge, and edit/delete actions.
@@ -25,6 +27,7 @@ class AdminProductTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isLowStock = product.stock <= AppConstants.kLowStockThreshold;
+    final l10n = AppLocalizations.of(context)!;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -53,43 +56,58 @@ class AdminProductTile extends StatelessWidget {
                           product.name,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13.5),
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13.5,
+                          ),
                         ),
                       ),
                       if (!product.isActive)
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.textSecondaryLight.withOpacity(0.15),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            'Inactive',
-                            style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600),
-                          ),
+                        StatusPill(
+                          label: l10n.adminInactiveBadge,
+                          color: AppColors.textSecondaryLight,
                         ),
                     ],
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${product.price.formatted} · per ${product.unit.value}',
-                    style: GoogleFonts.inter(fontSize: 12, color: AppColors.primary, fontWeight: FontWeight.w600),
+                    product.isWeighed
+                        ? l10n.homeFromRatePerKg(
+                            product.rateSlabs!.bestRatePerKg.toStringAsFixed(0),
+                          )
+                        : l10n.adminPricePerUnit(
+                            product.price.formatted,
+                            product.unit.value,
+                          ),
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Row(
                     children: [
                       if (isLowStock) ...[
-                        const Icon(Icons.warning_amber_rounded, size: 14, color: AppColors.error),
+                        const Icon(
+                          Icons.warning_amber_rounded,
+                          size: 14,
+                          color: AppColors.error,
+                        ),
                         const SizedBox(width: 4),
                       ],
                       Text(
-                        'Stock: ${product.stock}',
+                        l10n.adminStockLabel(product.stock),
                         style: GoogleFonts.inter(
                           fontSize: 12,
-                          fontWeight: isLowStock ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: isLowStock
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                           color: isLowStock
                               ? AppColors.error
-                              : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+                              : (isDark
+                                    ? AppColors.textSecondaryDark
+                                    : AppColors.textSecondaryLight),
                         ),
                       ),
                     ],
@@ -102,14 +120,22 @@ class AdminProductTile extends StatelessWidget {
                 IconButton(
                   onPressed: onEdit,
                   visualDensity: VisualDensity.compact,
-                  icon: const Icon(Icons.edit_outlined, size: 20, color: AppColors.primary),
-                  tooltip: 'Edit',
+                  icon: const Icon(
+                    Icons.edit_outlined,
+                    size: 20,
+                    color: AppColors.primary,
+                  ),
+                  tooltip: l10n.adminEditTooltip,
                 ),
                 IconButton(
                   onPressed: onDelete,
                   visualDensity: VisualDensity.compact,
-                  icon: const Icon(Icons.delete_outline_rounded, size: 20, color: AppColors.error),
-                  tooltip: 'Delete',
+                  icon: const Icon(
+                    Icons.delete_outline_rounded,
+                    size: 20,
+                    color: AppColors.error,
+                  ),
+                  tooltip: l10n.adminDeleteTooltip,
                 ),
               ],
             ),

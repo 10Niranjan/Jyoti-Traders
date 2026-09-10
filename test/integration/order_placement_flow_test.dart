@@ -36,7 +36,7 @@ void main() {
   late Directory tempDir;
 
   setUp(() async {
-    tempDir = Directory.systemTemp.createTempSync('jyoti_kirana_order_flow_test_');
+    tempDir = Directory.systemTemp.createTempSync('jyoti_traders_order_flow_test_');
     Hive.init(tempDir.path);
     catalogBox = await Hive.openBox('catalog_cache');
     ordersBox = await Hive.openBox('orders_cache');

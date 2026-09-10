@@ -7,6 +7,7 @@ import 'package:traders_retailer/domain/entities/product_entity.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/domain/value_objects/weight_rate_slabs.dart';
 import 'package:traders_retailer/features/cart/controllers/cart_controller.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 import 'package:traders_retailer/shared/widgets/quantity_sheet.dart';
 
 import '../helpers/fake_cart_repository.dart';
@@ -33,6 +34,8 @@ ProductEntity _weighed({int stock = 5}) => ProductEntity(
 Widget _wrap(FakeCartRepository repo, ProductEntity product) => ProviderScope(
       overrides: [cartRepositoryProvider.overrideWithValue(repo)],
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(
           body: Consumer(
             builder: (context, ref, _) {

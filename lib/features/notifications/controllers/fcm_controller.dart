@@ -14,7 +14,7 @@ final fcmServiceProvider = Provider<FcmService>((ref) => FcmService());
 /// foreground messages into the local notification history.
 ///
 /// A plain (non-autoDispose) `Provider<void>`, watched once from the app
-/// root (`JyotiKiranaApp`) so this initializes exactly once per app
+/// root (`JyotiTradersApp`) so this initializes exactly once per app
 /// lifetime — the `ref.watch` calls that follow read the cached value
 /// rather than re-running the body.
 final fcmInitializerProvider = Provider<void>((ref) {
@@ -30,7 +30,9 @@ final fcmInitializerProvider = Provider<void>((ref) {
       _ => null,
     };
     if (uid == null) return;
-    await ref.read(authRepositoryProvider).updateFcmToken(uid: uid, fcmToken: token);
+    await ref
+        .read(authRepositoryProvider)
+        .updateFcmToken(uid: uid, fcmToken: token);
   }
 
   fcm.requestPermissionAndGetToken().then(saveTokenForCurrentUser);
@@ -38,14 +40,18 @@ final fcmInitializerProvider = Provider<void>((ref) {
   final tokenSub = fcm.onTokenRefresh.listen(saveTokenForCurrentUser);
 
   final messageSub = fcm.onForegroundMessage.listen((message) {
-    notificationRepo.addNotification(NotificationEntity(
-      id: message.messageId ?? DateTime.now().microsecondsSinceEpoch.toString(),
-      title: message.notification?.title ?? 'Notification',
-      body: message.notification?.body ?? '',
-      orderId: message.data['orderId'] as String?,
-      receivedAt: DateTime.now(),
-      isRead: false,
-    ));
+    notificationRepo.addNotification(
+      NotificationEntity(
+        id:
+            message.messageId ??
+            DateTime.now().microsecondsSinceEpoch.toString(),
+        title: message.notification?.title ?? 'Notification',
+        body: message.notification?.body ?? '',
+        orderId: message.data['orderId'] as String?,
+        receivedAt: DateTime.now(),
+        isRead: false,
+      ),
+    );
   });
 
   // Covers the case where the token was already fetched before login (e.g.

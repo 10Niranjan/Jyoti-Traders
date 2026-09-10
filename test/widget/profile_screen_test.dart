@@ -11,6 +11,7 @@ import 'package:traders_retailer/domain/entities/bank_details_entity.dart';
 import 'package:traders_retailer/domain/entities/business_hours_entity.dart';
 import 'package:traders_retailer/domain/entities/notification_preferences_entity.dart';
 import 'package:traders_retailer/features/profile/screens/profile_screen.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 import '../helpers/test_viewport.dart';
 
@@ -19,6 +20,7 @@ import '../helpers/test_viewport.dart';
 class FakeAuthRepository implements AuthRepository {
   final UserModel user;
   Map<String, dynamic>? lastUpdate;
+  String? passwordResetSentTo;
   FakeAuthRepository(this.user);
 
   @override
@@ -55,6 +57,7 @@ class FakeAuthRepository implements AuthRepository {
     String? businessName,
     String? photoUrl,
     AddressEntity? address,
+    List<AddressEntity>? savedAddresses,
     String? gstNumber,
     BankDetailsEntity? bankDetails,
     BusinessHoursEntity? businessHours,
@@ -67,6 +70,7 @@ class FakeAuthRepository implements AuthRepository {
       'businessName': businessName,
       'photoUrl': photoUrl,
       'address': address,
+      'savedAddresses': savedAddresses,
       'gstNumber': gstNumber,
       'bankDetails': bankDetails,
       'businessHours': businessHours,
@@ -77,6 +81,11 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> updateFcmToken({required String uid, required String fcmToken}) async {}
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    passwordResetSentTo = email;
+  }
 }
 
 class FakeLocalStorageService extends LocalStorageService {
@@ -91,6 +100,15 @@ class FakeLocalStorageService extends LocalStorageService {
 
   @override
   Future<void> clearThemePreference() async => stored = null;
+
+  @override
+  String? getLanguagePreference() => null;
+
+  @override
+  Future<void> saveLanguagePreference(String languageCode) async {}
+
+  @override
+  Future<void> clearLanguagePreference() async {}
 }
 
 final _retailer = UserModel(
@@ -110,8 +128,13 @@ Widget _wrap(FakeAuthRepository repository, {ThemeMode initial = ThemeMode.syste
         themeModeProvider.overrideWith((ref) => ThemeModeController(FakeLocalStorageService(
               initial == ThemeMode.system ? null : initial == ThemeMode.dark,
             ))),
+        localStorageProvider.overrideWithValue(FakeLocalStorageService()),
       ],
-      child: const MaterialApp(home: ProfileScreen()),
+      child: const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: ProfileScreen(),
+      ),
     );
 
 void main() {
@@ -119,6 +142,8 @@ void main() {
 
   testWidgets('shows an Appearance section with System/Light/Dark segments', (tester) async {
     await tester.pumpWidget(_wrap(FakeAuthRepository(_retailer)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
 
     expect(find.text('Appearance'), findsOneWidget);
@@ -129,6 +154,8 @@ void main() {
 
   testWidgets('tapping Dark switches the app theme mode', (tester) async {
     await tester.pumpWidget(_wrap(FakeAuthRepository(_retailer)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Dark'));
@@ -186,14 +213,14 @@ void main() {
     expect(repo.lastUpdate?['businessName'], 'Suresh Kirana');
   });
 
-  testWidgets('toggling Open 24x7 hides the open/close time pickers', (tester) async {
+  testWidgets('toggling Open 24×7 hides the open/close time pickers', (tester) async {
     await tester.pumpWidget(_wrap(FakeAuthRepository(_retailer)));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Opens:'), findsOneWidget);
     expect(find.textContaining('Closes:'), findsOneWidget);
 
-    await tester.tap(find.text('Open 24x7'));
+    await tester.tap(find.text('Open 24×7'));
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Opens:'), findsNothing);
@@ -213,6 +240,22 @@ void main() {
     expect(repo.lastUpdate, isNull);
   });
 
+  testWidgets('Change Password sends a reset link to the account email', (tester) async {
+    final repo = FakeAuthRepository(_retailer);
+    await tester.pumpWidget(_wrap(repo));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Change Password'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Send Link'));
+    await tester.pumpAndSettle();
+
+    expect(repo.passwordResetSentTo, 'ramesh@test.com');
+    expect(find.text('Password reset link sent to ramesh@test.com'), findsOneWidget);
+  });
+
   testWidgets('tapping the avatar opens the image picker without crashing', (tester) async {
     // No real platform binding in a widget test — image_picker's test
     // channel just returns null (no file picked) — this confirms the tap
@@ -226,5 +269,38 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(repo.lastUpdate, isNull); // no file picked -> no upload attempted
+  });
+
+  testWidgets('shows saved addresses and confirming removal persists the shortened list', (tester) async {
+    final retailerWithAddresses = UserModel(
+      uid: 'u1',
+      name: 'Ramesh',
+      email: 'ramesh@test.com',
+      phone: '9876543210',
+      role: UserRole.customer,
+      status: UserStatus.approved,
+      businessName: 'Ramesh Kirana Store',
+      createdAt: DateTime(2026, 1, 1),
+      savedAddresses: const [
+        AddressEntity(street: '12 MG Road', city: 'Pune', pincode: '411001', id: 'a1', label: 'Shop'),
+        AddressEntity(street: '9 Industrial Estate', city: 'Pune', pincode: '411019', id: 'a2', label: 'Warehouse'),
+      ],
+    );
+    final repo = FakeAuthRepository(retailerWithAddresses);
+    await tester.pumpWidget(_wrap(repo));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Shop'), findsOneWidget);
+    expect(find.text('Warehouse'), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.delete_outline).first);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Remove'));
+    await tester.pumpAndSettle();
+
+    final saved = repo.lastUpdate?['savedAddresses'] as List<AddressEntity>?;
+    expect(saved, hasLength(1));
+    expect(saved!.single.id, 'a2');
+    expect(find.text('Address removed'), findsOneWidget);
   });
 }

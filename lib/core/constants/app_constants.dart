@@ -6,13 +6,21 @@ class AppConstants {
   /// without explicit client approval — see rules.md §11.
   static const double kMinOrderAmount = 2500.0;
 
-  static const String kAppName = 'Jyoti Kirana';
+  static const String kAppName = 'Jyoti Traders';
   static const String kSupportPhone = '9860460325';
   static const String kSupportEmail = 'vishvatejkatkar007@gmail.com';
 
   /// Stock at or below this level is flagged as "low" in the admin product
   /// list (phases.md §4.3).
   static const int kLowStockThreshold = 5;
+
+  /// A retailer may self-cancel a still-`pending` order within this many
+  /// minutes of placing it (phases.md §8).
+  static const int kOrderCancellationWindowMinutes = 10;
+
+  /// A product counts as "frequently bought" once it has appeared in at
+  /// least this many of a retailer's own past orders (phases.md §8).
+  static const int kFrequentOrderThreshold = 2;
 
   /// Flat placeholder delivery charge shown at checkout (Phase 3). Real
   /// per-km calculation via `geolocator` + warehouse coordinates + an
@@ -22,6 +30,16 @@ class AppConstants {
   /// **Placeholder UPI details** — the client hasn't provided the owner's
   /// real UPI ID/QR yet. Replace before launch; nothing else in the UPI
   /// payment flow needs to change once real values are set here.
-  static const String kUpiId = 'jyotikirana@upi';
-  static const String kUpiPayeeName = 'Jyoti Kirana Wholesale';
+  static const String kUpiId = 'jyotitraders@upi';
+  static const String kUpiPayeeName = 'Jyoti Traders Wholesale';
+
+  /// Same-day / next-day delivery radii and cutoff hour used to promise an
+  /// arrival window at checkout (own-fleet delivery, no external logistics
+  /// API — distance from the warehouse is the only signal available).
+  /// **Not a client-provided SLA** — a reasonable default pending real
+  /// operational data; adjust once the client has actual delivery-time
+  /// figures.
+  static const double kSameDayRadiusKm = 15.0;
+  static const int kSameDayCutoffHour = 15; // 3 PM local time
+  static const double kNextDayRadiusKm = 40.0;
 }

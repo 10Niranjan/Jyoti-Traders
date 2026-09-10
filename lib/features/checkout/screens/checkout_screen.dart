@@ -4,23 +4,28 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/route_names.dart';
 import '../../../core/services/geocoding_service.dart';
 import '../../../core/services/location_service.dart';
+import '../../../core/utils/delivery_eta.dart';
+import '../../../core/utils/distance_calculator.dart';
+import '../../../core/utils/saved_addresses.dart';
 import '../../../data/repositories/auth_repository_provider.dart';
 import '../../../domain/entities/address_entity.dart';
-import '../../../domain/entities/delivery_config_entity.dart';
 import '../../../domain/entities/order_entity.dart';
 import '../../../domain/entities/order_item_entity.dart';
 import '../../../domain/usecases/delivery/calculate_delivery_charge_usecase.dart';
 import '../../../domain/value_objects/money.dart';
 import '../../../shared/widgets/address_form_fields.dart';
+import '../../../shared/widgets/press_scale.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../../shared/widgets/summary_row.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../admin/controllers/admin_delivery_config_controller.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/controllers/auth_state.dart';
 import '../../cart/controllers/cart_controller.dart';
+import '../../cart/controllers/coupon_controller.dart';
 import '../controllers/checkout_controller.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
@@ -35,11 +40,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _streetController = TextEditingController();
   final _cityController = TextEditingController();
   final _pincodeController = TextEditingController();
+  final _addressLabelController = TextEditingController();
   bool _prefilled = false;
   double? _latitude;
   double? _longitude;
   String? _resolvedAddress;
   bool _isLocating = false;
+  bool _saveAddress = false;
   PaymentMethod _paymentMethod = PaymentMethod.cod;
 
   @override
@@ -47,30 +54,40 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     _streetController.dispose();
     _cityController.dispose();
     _pincodeController.dispose();
+    _addressLabelController.dispose();
     super.dispose();
   }
 
   void _prefillAddress(AddressEntity? address) {
     if (_prefilled || address == null) return;
+    _applyAddress(address);
+    _prefilled = true;
+  }
+
+  /// Loads an address's fields into the form controllers — used both for
+  /// the one-time prefill above and for a retailer explicitly tapping a
+  /// saved-address chip to switch the form to a different saved address.
+  void _applyAddress(AddressEntity address) {
     _streetController.text = address.street;
     _cityController.text = address.city;
     _pincodeController.text = address.pincode;
     _latitude = address.latitude;
     _longitude = address.longitude;
     _resolvedAddress = address.formattedAddress;
-    _prefilled = true;
   }
 
   Future<void> _useCurrentLocation() async {
     setState(() => _isLocating = true);
-    final position = await ref.read(locationServiceProvider).getCurrentPosition();
+    final position = await ref
+        .read(locationServiceProvider)
+        .getCurrentPosition();
     if (!mounted) return;
     if (position == null) {
       setState(() => _isLocating = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Couldn\'t get your location. Check location permission and try again.'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.checkoutLocationError),
             backgroundColor: AppColors.error,
           ),
         );
@@ -78,7 +95,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       return;
     }
 
-    final resolved = await ref.read(geocodingServiceProvider).reverseGeocode(
+    final resolved = await ref
+        .read(geocodingServiceProvider)
+        .reverseGeocode(
           latitude: position.latitude,
           longitude: position.longitude,
         );
@@ -95,7 +114,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         if (_cityController.text.trim().isEmpty && resolved.city != null) {
           _cityController.text = resolved.city!;
         }
-        if (_pincodeController.text.trim().isEmpty && resolved.pincode != null) {
+        if (_pincodeController.text.trim().isEmpty &&
+            resolved.pincode != null) {
           _pincodeController.text = resolved.pincode!;
         }
       }
@@ -103,23 +123,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   AddressEntity _currentAddress() => AddressEntity(
-        street: _streetController.text.trim(),
-        city: _cityController.text.trim(),
-        pincode: _pincodeController.text.trim(),
-        latitude: _latitude,
-        longitude: _longitude,
-        formattedAddress: _resolvedAddress,
-      );
-
-  /// Real per-km charge once the address has coordinates and the delivery
-  /// config has loaded; otherwise the flat placeholder — rules.md §10
-  /// requires a delivery charge is always calculated and shown, never left
-  /// blank while waiting on either.
-  Money _deliveryChargeFor(AddressEntity address, DeliveryConfigEntity? config) {
-    if (config == null) return Money(AppConstants.kStubDeliveryCharge);
-    return CalculateDeliveryChargeUseCase()(config: config, address: address) ??
-        Money(AppConstants.kStubDeliveryCharge);
-  }
+    street: _streetController.text.trim(),
+    city: _cityController.text.trim(),
+    pincode: _pincodeController.text.trim(),
+    latitude: _latitude,
+    longitude: _longitude,
+    formattedAddress: _resolvedAddress,
+  );
 
   Future<void> _placeOrder() async {
     if (!_formKey.currentState!.validate()) return;
@@ -131,33 +141,52 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final address = _currentAddress();
 
     // Persist the address to the profile too, so it's pre-filled next time.
-    await ref.read(authRepositoryProvider).updateProfile(uid: user.uid, address: address);
+    // If the retailer opted to save it as a named saved address, merge it
+    // into their list too (dedupes against an existing match, see
+    // mergeSavedAddress) — the label field is required by the form's own
+    // validator whenever the toggle is on, so it's never empty here.
+    final label = _addressLabelController.text.trim();
+    await ref
+        .read(authRepositoryProvider)
+        .updateProfile(
+          uid: user.uid,
+          address: address,
+          savedAddresses: _saveAddress
+              ? mergeSavedAddress(user.savedAddresses, address, label)
+              : null,
+        );
 
     final config = ref.read(deliveryConfigProvider).valueOrNull;
     final cart = ref.read(cartControllerProvider);
+    final coupon = ref.read(couponControllerProvider).coupon;
+    final discount = coupon?.discountFor(cart.subtotal);
     final order = OrderEntity(
       id: const Uuid().v4(),
       userId: user.uid,
       shopName: user.businessName,
       items: cart.items
-          .map((i) => OrderItemEntity(
-                productId: i.productId,
-                name: i.name,
-                qty: i.qty,
-                // For a weighed line this is the ₹/kg its band earned, so the
-                // invoice shows the rate actually charged.
-                unitPrice: i.isWeighed ? Money(i.ratePerKg!) : i.unitPrice,
-                unit: i.unit,
-                lineTotal: i.totalPrice,
-              ))
+          .map(
+            (i) => OrderItemEntity(
+              productId: i.productId,
+              name: i.name,
+              qty: i.qty,
+              // For a weighed line this is the ₹/kg its band earned, so the
+              // invoice shows the rate actually charged.
+              unitPrice: i.isWeighed ? Money(i.ratePerKg!) : i.unitPrice,
+              unit: i.unit,
+              lineTotal: i.totalPrice,
+            ),
+          )
           .toList(),
       subtotal: cart.subtotal,
-      deliveryCharge: _deliveryChargeFor(address, config),
+      deliveryCharge: resolveDeliveryCharge(address: address, config: config),
       paymentMethod: _paymentMethod,
       paymentStatus: PaymentStatus.pending,
       orderStatus: OrderStatus.pending,
       deliveryAddress: address,
       createdAt: DateTime.now(),
+      couponCode: coupon?.code,
+      discount: (discount != null && discount.amount > 0) ? discount : null,
     );
 
     await ref.read(checkoutControllerProvider.notifier).placeOrder(order);
@@ -173,13 +202,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       _prefillAddress(authState.user.address);
     }
 
-    ref.listen<AsyncValue<String?>>(checkoutControllerProvider, (previous, next) {
+    ref.listen<AsyncValue<String?>>(checkoutControllerProvider, (
+      previous,
+      next,
+    ) {
       next.whenOrNull(
         data: (orderId) {
           if (orderId == null) return;
           // COD goes straight to the success screen; UPI stops at the
           // payment screen first (PRD §7: "Order placed → UPI payment
           // screen shown → ... → Admin confirms order").
+          // Applied to this order already (see _placeOrder) — reset so a
+          // fresh cart doesn't inherit it into an unrelated future order.
+          ref.read(couponControllerProvider.notifier).remove();
           if (_paymentMethod == PaymentMethod.upi) {
             context.pushReplacement(RouteNames.upiPaymentPath(orderId));
           } else {
@@ -188,18 +223,49 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         },
         error: (error, stack) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error.toString()), backgroundColor: AppColors.error),
+            SnackBar(
+              content: Text(error.toString()),
+              backgroundColor: AppColors.error,
+            ),
           );
         },
       );
     });
 
     final config = ref.watch(deliveryConfigProvider).valueOrNull;
-    final deliveryCharge = _deliveryChargeFor(_currentAddress(), config);
-    final grandTotal = cart.subtotal + deliveryCharge;
+    final address = _currentAddress();
+    final deliveryCharge = resolveDeliveryCharge(
+      address: address,
+      config: config,
+    );
+    final coupon = ref.watch(couponControllerProvider).coupon;
+    final discount = coupon?.discountFor(cart.subtotal) ?? Money.zero;
+    final grandTotal = cart.subtotal - discount + deliveryCharge;
+    final l10n = AppLocalizations.of(context)!;
+
+    // Same distance the charge was computed from — null whenever the charge
+    // itself fell back to the flat placeholder (no coordinates yet).
+    final distanceKm = (address.hasCoordinates && config != null)
+        ? calculateDistanceKm(
+            config.warehouseLat,
+            config.warehouseLng,
+            address.latitude!,
+            address.longitude!,
+          )
+        : null;
+    final eta = estimateDeliveryEta(
+      distanceKm: distanceKm,
+      now: DateTime.now(),
+    );
+    final etaLabel = switch (eta) {
+      DeliveryEta.today => l10n.checkoutEtaToday,
+      DeliveryEta.tomorrow => l10n.checkoutEtaTomorrow,
+      DeliveryEta.fewDays => l10n.checkoutEtaFewDays,
+      DeliveryEta.unknown => l10n.checkoutEtaUnknown,
+    };
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Checkout')),
+      appBar: AppBar(title: Text(l10n.checkoutTitle)),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
@@ -207,7 +273,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Delivery Address', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+              Text(
+                l10n.checkoutDeliveryAddress,
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              ),
+              if (authState is AuthenticatedCustomer &&
+                  authState.user.savedAddresses.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                _SavedAddressChips(
+                  addresses: authState.user.savedAddresses,
+                  onSelected: (a) => setState(() => _applyAddress(a)),
+                ),
+              ],
               const SizedBox(height: 8),
               AddressFormFields(
                 streetController: _streetController,
@@ -217,38 +294,99 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 isLocating: _isLocating,
                 onUseCurrentLocation: _useCurrentLocation,
               ),
-              const SizedBox(height: 24),
-              Text('Payment Method', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
-              RadioListTile<PaymentMethod>(
+              CheckboxListTile(
                 contentPadding: EdgeInsets.zero,
+                controlAffinity: ListTileControlAffinity.leading,
+                value: _saveAddress,
+                title: Text(
+                  l10n.checkoutSaveAddressToggle,
+                  style: GoogleFonts.inter(fontSize: 13),
+                ),
+                onChanged: (v) => setState(() => _saveAddress = v ?? false),
+              ),
+              if (_saveAddress)
+                TextFormField(
+                  controller: _addressLabelController,
+                  decoration: InputDecoration(
+                    hintText: l10n.checkoutSaveAddressLabelHint,
+                  ),
+                  validator: (v) =>
+                      _saveAddress && (v == null || v.trim().isEmpty)
+                      ? l10n.checkoutSaveAddressLabelRequired
+                      : null,
+                ),
+              const SizedBox(height: 24),
+              Text(
+                l10n.checkoutPaymentMethod,
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              _PaymentMethodCard(
                 value: PaymentMethod.cod,
                 groupValue: _paymentMethod,
-                onChanged: (v) => setState(() => _paymentMethod = v ?? PaymentMethod.cod),
-                secondary: const Icon(Icons.payments_outlined, color: AppColors.primary),
-                title: const Text('Cash on Delivery (COD)'),
+                icon: Icons.payments_outlined,
+                label: l10n.checkoutCod,
+                onTap: () => setState(() => _paymentMethod = PaymentMethod.cod),
               ),
-              RadioListTile<PaymentMethod>(
-                contentPadding: EdgeInsets.zero,
+              const SizedBox(height: 8),
+              _PaymentMethodCard(
                 value: PaymentMethod.upi,
                 groupValue: _paymentMethod,
-                onChanged: (v) => setState(() => _paymentMethod = v ?? PaymentMethod.cod),
-                secondary: const Icon(Icons.qr_code_rounded, color: AppColors.primary),
-                title: const Text('UPI'),
+                icon: Icons.qr_code_rounded,
+                label: l10n.checkoutUpi,
+                onTap: () => setState(() => _paymentMethod = PaymentMethod.upi),
               ),
               const SizedBox(height: 24),
-              Text('Order Summary', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+              Text(
+                l10n.checkoutOrderSummary,
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              ),
               const SizedBox(height: 8),
-              _SummaryRow(label: 'Subtotal (${cart.items.length} items)', value: cart.subtotal.formatted),
-              _SummaryRow(
-                label: (_latitude != null && _longitude != null) ? 'Delivery Charge' : 'Delivery Charge (estimated)',
+              SummaryRow(
+                label: l10n.checkoutSubtotalItems(cart.items.length),
+                value: cart.subtotal.formatted,
+              ),
+              if (discount.amount > 0)
+                SummaryRow(
+                  label: l10n.cartDiscount,
+                  value: '-${discount.formatted}',
+                  valueColor: AppColors.success,
+                ),
+              SummaryRow(
+                label: (_latitude != null && _longitude != null)
+                    ? l10n.checkoutDeliveryCharge
+                    : l10n.checkoutDeliveryChargeEstimated,
                 value: deliveryCharge.formatted,
               ),
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.local_shipping_outlined,
+                    size: 14,
+                    color: AppColors.textSecondaryLight,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    etaLabel,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: AppColors.textSecondaryLight,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
               const Divider(),
-              _SummaryRow(label: 'Grand Total', value: grandTotal.formatted, bold: true),
+              SummaryRow(
+                label: l10n.checkoutGrandTotal,
+                value: grandTotal.formatted,
+                bold: true,
+              ),
               const SizedBox(height: 24),
               PrimaryButton(
-                label: 'Place Order',
+                label: l10n.checkoutPlaceOrder,
                 icon: Icons.check_circle_outline_rounded,
                 isLoading: checkoutState.isLoading,
                 onPressed: _placeOrder,
@@ -262,22 +400,89 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 }
 
-class _SummaryRow extends StatelessWidget {
+/// A selectable payment-method row styled as a bordered card that highlights
+/// violet when chosen, matching the Figma reference's selected-state
+/// treatment (used everywhere else in the app a choice needs to stand out).
+class _PaymentMethodCard extends StatelessWidget {
+  final PaymentMethod value;
+  final PaymentMethod groupValue;
+  final IconData icon;
   final String label;
-  final String value;
-  final bool bold;
+  final VoidCallback onTap;
 
-  const _SummaryRow({required this.label, required this.value, this.bold = false});
+  const _PaymentMethodCard({
+    required this.value,
+    required this.groupValue,
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final style = GoogleFonts.inter(fontSize: bold ? 15 : 13, fontWeight: bold ? FontWeight.bold : FontWeight.normal);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [Text(label, style: style), Text(value, style: style)],
+    final selected = value == groupValue;
+    return PressScale(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary.withOpacity(0.06) : null,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: selected ? AppColors.primary : const Color(0xFFE2E8F0),
+            width: selected ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: AppColors.primary),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+              ),
+            ),
+            Radio<PaymentMethod>(
+              value: value,
+              groupValue: groupValue,
+              onChanged: (_) => onTap(),
+              activeColor: AppColors.primary,
+            ),
+          ],
+        ),
       ),
+    );
+  }
+}
+
+/// Quick-pick chips for a retailer's saved addresses — tapping one loads it
+/// into the form below (still editable, not locked), same "prefill, not
+/// commit" behavior as the default-address prefill this screen already did.
+class _SavedAddressChips extends StatelessWidget {
+  final List<AddressEntity> addresses;
+  final ValueChanged<AddressEntity> onSelected;
+
+  const _SavedAddressChips({required this.addresses, required this.onSelected});
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 4,
+      children: [
+        for (final address in addresses)
+          ActionChip(
+            avatar: const Icon(Icons.place_outlined, size: 16),
+            label: Text(
+              address.label?.isNotEmpty == true
+                  ? address.label!
+                  : address.street,
+            ),
+            onPressed: () => onSelected(address),
+          ),
+      ],
     );
   }
 }

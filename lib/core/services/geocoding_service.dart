@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
+import '../utils/app_logger.dart';
 
 /// Resolved street/city/pincode plus a human-readable line, derived from a
 /// GPS coordinate. Distinct from [AddressEntity] — this is what the device's
@@ -50,7 +50,7 @@ class GeocodingService {
         formattedAddress: formatted,
       );
     } catch (e) {
-      debugPrint('GeocodingService: unable to resolve address, skipping: $e');
+      logWarning('GeocodingService: unable to resolve address, skipping', e);
       return null;
     }
   }

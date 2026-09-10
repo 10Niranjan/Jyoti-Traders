@@ -9,19 +9,24 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../features/auth/controllers/auth_controller.dart';
 import '../../features/auth/controllers/auth_state.dart';
 import '../../features/auth/screens/auth_screen.dart';
+import '../../features/auth/screens/onboarding_screen.dart';
+import '../../data/datasources/local_storage_service.dart';
 import '../../features/admin/screens/add_edit_category_screen.dart';
 import '../../features/admin/screens/add_edit_product_screen.dart';
+import '../../features/admin/screens/bulk_import_products_screen.dart';
 import '../../features/admin/screens/admin_dashboard_screen.dart';
 import '../../features/admin/screens/admin_profile_screen.dart';
 import '../../features/admin/screens/approval_queue_screen.dart';
+import '../../features/admin/screens/catalog_screen.dart';
 import '../../features/admin/screens/retailer_detail_screen.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../features/admin/screens/all_orders_screen.dart';
 import '../../features/admin/screens/delivery_settings_screen.dart';
+import '../../features/admin/screens/send_broadcast_screen.dart';
 import '../../features/admin/screens/manage_categories_screen.dart';
 import '../../features/admin/screens/manage_products_screen.dart';
 import '../../features/admin/screens/order_management_screen.dart';
-import '../../features/admin/screens/retailer_list_screen.dart';
+import '../../features/admin/screens/retailers_screen.dart';
 import '../../features/auth/screens/pending_approval_screen.dart';
 import '../../features/cart/controllers/cart_controller.dart';
 import '../../features/cart/screens/cart_screen.dart';
@@ -30,12 +35,14 @@ import '../../features/checkout/screens/order_success_screen.dart';
 import '../../features/checkout/screens/upi_payment_screen.dart';
 import '../../features/home/screens/home_screen.dart';
 import '../../features/notifications/screens/notifications_screen.dart';
+import '../../features/wishlist/screens/wishlist_screen.dart';
 import '../../features/orders/screens/order_detail_screen.dart';
 import '../../features/orders/screens/order_history_screen.dart';
 import '../../features/products/screens/category_products_screen.dart';
 import '../../features/products/screens/product_detail_screen.dart';
 import '../../features/products/screens/search_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
+import '../../shared/widgets/admin_bottom_nav_bar.dart';
 import '../../shared/widgets/bottom_nav_bar.dart';
 import '../../shared/widgets/floating_cart_bar.dart';
 import '../constants/app_colors.dart';
@@ -53,30 +60,24 @@ class _AuthRefreshNotifier extends ChangeNotifier {
   }
 }
 
-/// Shared fade+slide transition for retailer-facing push routes (Product
-/// Detail, Checkout, etc.) — replaces GoRouter's default platform transition
-/// with a single consistent, subtle motion used everywhere it's applied.
-/// Admin routes and the bottom-nav shell's own tab switches intentionally
-/// keep their existing (instant/native) transitions — out of 6.4's scope.
+/// Shared horizontal-slide transition for retailer-facing push routes
+/// (Product Detail, Checkout, etc.) — replaces GoRouter's default platform
+/// transition with a single consistent motion used everywhere it's applied,
+/// matching the Figma reference's 200ms slide-in-from-right (and, on pop,
+/// the same tween reversed — slide back out to the right).
 CustomTransitionPage<void> _fadeSlidePage(Widget child, GoRouterState state) {
   return CustomTransitionPage<void>(
     key: state.pageKey,
     child: child,
-    transitionDuration: const Duration(milliseconds: 300),
-    reverseTransitionDuration: const Duration(milliseconds: 250),
+    transitionDuration: const Duration(milliseconds: 200),
+    reverseTransitionDuration: const Duration(milliseconds: 200),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      return FadeTransition(
-        opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-        child: SlideTransition(
-          position:
-              Tween<Offset>(
-                begin: const Offset(0, 0.04),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-              ),
-          child: child,
-        ),
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(1, 0),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+        child: child,
       );
     },
   );
@@ -94,21 +95,42 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final authState = ref.read(authControllerProvider);
       final location = state.matchedLocation;
 
-      // If we are still checking local token or auth status, wait on Splash
-      if (authState is AuthInitial || authState is AuthLoading) {
+      // If we are still checking local token or auth status at boot, wait on
+      // Splash. `AuthLoading` alone (without AuthInitial) means a screen
+      // triggered signIn/signUp/signOut mid-session — that screen already
+      // shows its own spinner and should stay mounted so it can react to the
+      // eventual AuthError itself; forcing a Splash round-trip here used to
+      // tear it down and lose the error before its SnackBar listener saw it.
+      if (authState is AuthInitial) {
         return location == RouteNames.splash ? null : RouteNames.splash;
       }
+      if (authState is AuthLoading) {
+        return null;
+      }
 
-      // If user is not authenticated, force Auth screen
+      // If user is not authenticated, force Auth screen — unless this is the
+      // very first launch, in which case show the onboarding walkthrough
+      // first. `isFirstLaunch()` flips to false the moment onboarding calls
+      // setFirstLaunchCompleted(), so this only ever fires once per install.
       if (authState is Unauthenticated || authState is AuthError) {
+        if (ref.read(localStorageProvider).isFirstLaunch()) {
+          return location == RouteNames.onboarding ? null : RouteNames.onboarding;
+        }
         return location == RouteNames.login ? null : RouteNames.login;
       }
 
-      // If user is pending manual admin approval, restrict to Pending Screen
+      // If user is pending manual admin approval, allow read-only catalog
+      // browsing (Home/Search/category/product-detail) so waiting isn't a
+      // dead end, but still gate everything that implies ordering (Cart,
+      // Checkout, Orders, Profile, ...) behind the Pending screen.
       if (authState is PendingApproval) {
-        return location == RouteNames.pendingApproval
-            ? null
-            : RouteNames.pendingApproval;
+        final canBrowse =
+            location == RouteNames.pendingApproval ||
+            location == RouteNames.home ||
+            location == RouteNames.search ||
+            location.startsWith('/product-category/') ||
+            location.startsWith('/product/');
+        return canBrowse ? null : RouteNames.pendingApproval;
       }
 
       // If user is Admin, route to Admin Panel
@@ -143,6 +165,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(
+        path: RouteNames.onboarding,
+        builder: (context, state) => const OnboardingScreen(),
+      ),
+      GoRoute(
         path: RouteNames.login,
         builder: (context, state) => const AuthScreen(),
       ),
@@ -151,20 +177,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const PendingApprovalScreen(),
       ),
       GoRoute(
-        path: RouteNames.admin,
-        builder: (context, state) => const AdminDashboardScreen(),
-      ),
-      GoRoute(
-        path: RouteNames.adminProfile,
-        builder: (context, state) => const AdminProfileScreen(),
-      ),
-      GoRoute(
         path: RouteNames.adminApprovalQueue,
         builder: (context, state) => const ApprovalQueueScreen(),
       ),
       GoRoute(
         path: RouteNames.adminRetailerDetail,
-        builder: (context, state) => RetailerDetailScreen(user: state.extra as UserEntity),
+        builder: (context, state) =>
+            RetailerDetailScreen(user: state.extra as UserEntity),
       ),
       GoRoute(
         path: RouteNames.adminProducts,
@@ -173,6 +192,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.adminAddProduct,
         builder: (context, state) => const AddEditProductScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminBulkImportProducts,
+        builder: (context, state) => const BulkImportProductsScreen(),
       ),
       GoRoute(
         path: RouteNames.adminEditProduct,
@@ -198,8 +221,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const DeliverySettingsScreen(),
       ),
       GoRoute(
-        path: RouteNames.adminOrders,
-        builder: (context, state) => const AllOrdersScreen(),
+        path: RouteNames.adminBroadcast,
+        builder: (context, state) => const SendBroadcastScreen(),
       ),
       GoRoute(
         path: RouteNames.adminOrderManagement,
@@ -207,17 +230,67 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             OrderManagementScreen(orderId: state.pathParameters['orderId']!),
       ),
       GoRoute(
-        path: RouteNames.adminRetailers,
-        builder: (context, state) => const RetailerListScreen(),
-      ),
-      GoRoute(
         path: RouteNames.adminRetailerOrders,
         builder: (context, state) =>
             AllOrdersScreen(retailerId: state.pathParameters['retailerId']!),
       ),
 
-      // Retailer bottom-nav shell — Home/Search/Cart/Orders/Profile keep
-      // independent navigation state across tab switches.
+      // Admin bottom-nav shell (Phase 9.1) — Dashboard/Orders/Catalog/
+      // Retailers/Profile keep independent navigation state across tab
+      // switches, same pattern as the retailer shell below. Catalog and
+      // Retailers are placeholder single-screen tabs for now — 9.4/9.5 turn
+      // them into Products|Categories and Approved|Pending segmented hosts.
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            _AdminShell(navigationShell: navigationShell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.admin,
+                builder: (context, state) => const AdminDashboardScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.adminOrders,
+                builder: (context, state) => const AllOrdersScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.adminCatalog,
+                builder: (context, state) => const CatalogScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.adminRetailers,
+                builder: (context, state) => const RetailersScreen(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: RouteNames.adminProfile,
+                builder: (context, state) => const AdminProfileScreen(),
+              ),
+            ],
+          ),
+        ],
+      ),
+
+      // Retailer bottom-nav shell — Home/Search/Orders/Profile keep
+      // independent navigation state across tab switches. Cart is not a tab
+      // (matches the Figma reference) — it's reached via the floating cart
+      // bar this shell renders on top of every branch, pushing [viewCart].
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             _RetailerShell(navigationShell: navigationShell),
@@ -235,14 +308,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: RouteNames.search,
                 builder: (context, state) => const SearchScreen(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: RouteNames.cart,
-                builder: (context, state) => const CartScreen(),
               ),
             ],
           ),
@@ -284,17 +349,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           state,
         ),
       ),
-      // A *pushed* Cart, distinct from the Cart tab (`RouteNames.cart`,
-      // inside the shell below). "View Cart" from a pushed screen (category
-      // grid, product detail's add snackbar) used to `context.go` straight
-      // to the Cart tab, which discards whatever was pushed — so tapping it
-      // while browsing a category threw the retailer out of that category
-      // with no way back except re-navigating from Home. Same `CartScreen`
-      // widget either way; pushing it here instead gives GoRouter something
-      // to pop, which is what makes `AppBar`'s automatic back arrow appear.
+      // Cart is reached exclusively through this pushed route — no
+      // bottom-nav tab for it (matches the Figma reference) — from the
+      // shell's own floating cart bar, or from a pushed screen's (category
+      // grid, product detail's add snackbar) floating bar / "VIEW CART"
+      // action. Always pushed, never `go`, so it has something to pop back
+      // to and `AppBar` gets its automatic back arrow.
       GoRoute(
         path: RouteNames.viewCart,
-        pageBuilder: (context, state) => _fadeSlidePage(const CartScreen(), state),
+        pageBuilder: (context, state) =>
+            _fadeSlidePage(const CartScreen(), state),
       ),
       GoRoute(
         path: RouteNames.checkout,
@@ -327,19 +391,51 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         pageBuilder: (context, state) =>
             _fadeSlidePage(const NotificationsScreen(), state),
       ),
+      GoRoute(
+        path: RouteNames.wishlist,
+        pageBuilder: (context, state) =>
+            _fadeSlidePage(const WishlistScreen(), state),
+      ),
     ],
   );
 });
-
-/// Index of the Cart tab within the shell's branches — the floating cart
-/// bar hides on this one tab, since showing it on top of the cart itself
-/// would be redundant.
-const _cartBranchIndex = 2;
 
 // ponytail: fixed estimate of the pill's rendered height (padding + two text
 // rows) plus its 12px bottom margin; swap for a measured height via a
 // GlobalKey if the pill's content ever grows enough to under/over-reserve.
 const _kFloatingCartBarReservedHeight = 74.0;
+
+/// Shared "Exit app?" confirmation, used by both bottom-nav shells' root
+/// `PopScope` so the Android back button never silently kills the app from
+/// a tab root.
+Future<void> _confirmExitApp(BuildContext context) async {
+  final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) => AlertDialog(
+      title: Text(
+        'Exit app?',
+        style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17),
+      ),
+      content: Text(
+        'Are you sure you want to close the app?',
+        style: GoogleFonts.inter(fontSize: 13),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(false),
+          child: const Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(dialogContext).pop(true),
+          child: const Text('Exit', style: TextStyle(color: AppColors.error)),
+        ),
+      ],
+    ),
+  );
+  if (confirmed == true) {
+    SystemNavigator.pop();
+  }
+}
 
 class _RetailerShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
@@ -349,33 +445,13 @@ class _RetailerShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cart = ref.watch(cartControllerProvider);
-    final onCartTab = navigationShell.currentIndex == _cartBranchIndex;
-    final barVisible = !onCartTab && !cart.isEmpty;
+    final barVisible = !cart.isEmpty;
 
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: Text('Exit app?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17)),
-            content: Text(
-              'Are you sure you want to close the app?',
-              style: GoogleFonts.inter(fontSize: 13),
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancel')),
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(true),
-                child: const Text('Exit', style: TextStyle(color: AppColors.error)),
-              ),
-            ],
-          ),
-        );
-        if (confirmed == true) {
-          SystemNavigator.pop();
-        }
+        await _confirmExitApp(context);
       },
       child: Scaffold(
         body: Stack(
@@ -383,22 +459,49 @@ class _RetailerShell extends ConsumerWidget {
             AnimatedPadding(
               duration: const Duration(milliseconds: 250),
               curve: Curves.easeOut,
-              padding: EdgeInsets.only(bottom: barVisible ? _kFloatingCartBarReservedHeight : 0),
+              padding: EdgeInsets.only(
+                bottom: barVisible ? _kFloatingCartBarReservedHeight : 0,
+              ),
               child: navigationShell,
             ),
-            if (!onCartTab)
-              Positioned(
-                left: 16,
-                right: 16,
-                bottom: 12,
-                child: FloatingCartBar(
-                  cart: cart,
-                  onTap: () => navigationShell.goBranch(_cartBranchIndex),
-                ),
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: 12,
+              child: FloatingCartBar(
+                cart: cart,
+                onTap: () => context.push(RouteNames.viewCart),
               ),
+            ),
           ],
         ),
         bottomNavigationBar: BottomNavBar(navigationShell: navigationShell),
+      ),
+    );
+  }
+}
+
+/// Admin bottom-nav shell (Phase 9.1) — same `StatefulShellRoute` +
+/// `PopScope` exit-confirmation pattern as `_RetailerShell`, minus the
+/// retailer-only cart bar.
+class _AdminShell extends StatelessWidget {
+  final StatefulNavigationShell navigationShell;
+
+  const _AdminShell({required this.navigationShell});
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        await _confirmExitApp(context);
+      },
+      child: Scaffold(
+        body: navigationShell,
+        bottomNavigationBar: AdminBottomNavBar(
+          navigationShell: navigationShell,
+        ),
       ),
     );
   }
@@ -457,8 +560,8 @@ class SplashScreen extends ConsumerWidget {
               const SizedBox(height: 24),
 
               Text(
-                'Jyoti Kirana',
-                style: GoogleFonts.poppins(
+                'Jyoti Traders',
+                style: GoogleFonts.inter(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
                   color: isDark ? AppColors.textPrimaryDark : AppColors.primary,

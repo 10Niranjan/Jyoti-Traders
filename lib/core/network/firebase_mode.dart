@@ -8,8 +8,8 @@ import 'package:firebase_core/firebase_core.dart';
 /// mode — this keeps the app fully runnable/testable before a real Firebase
 /// project is wired up.
 bool isFirebasePlaceholder(FirebaseApp app) {
-  return app.options.projectId == 'jyoti-kirana-placeholder' ||
-      app.options.projectId == 'jyoti-kirana-demo' ||
+  return app.options.projectId == 'jyoti-traders-placeholder' ||
+      app.options.projectId == 'jyoti-traders-demo' ||
       app.options.apiKey.contains('YOUR-') ||
       app.options.apiKey.contains('DummyKey');
 }

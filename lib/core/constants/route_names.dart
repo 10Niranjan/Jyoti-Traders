@@ -3,28 +3,41 @@ class RouteNames {
   RouteNames._();
 
   static const String splash = '/';
+  static const String onboarding = '/onboarding';
   static const String login = '/login';
   static const String pendingApproval = '/pending-approval';
   static const String home = '/home';
+
+  // Admin bottom-nav tabs (Phase 9.1) — Dashboard/Orders/Catalog/Retailers/
+  // Profile keep independent navigation state across tab switches, same
+  // `StatefulShellRoute.indexedStack` pattern as the retailer tabs below.
   static const String admin = '/admin';
+  static const String adminOrders = '/admin/orders';
+
+  /// Hosts `ManageProductsScreen` for now; becomes a Products/Categories
+  /// segmented host in 9.4.
+  static const String adminCatalog = '/admin/catalog';
+  static const String adminRetailers = '/admin/retailers';
   static const String adminProfile = '/admin/profile';
+
+  // Admin push routes (Phase 4)
   static const String adminApprovalQueue = '/admin/approval-queue';
   static const String adminRetailerDetail = '/admin/approval-queue/:uid';
   static const String adminProducts = '/admin/products';
   static const String adminAddProduct = '/admin/products/new';
+  static const String adminBulkImportProducts = '/admin/products/bulk-import';
   static const String adminEditProduct = '/admin/products/:productId/edit';
   static const String adminCategories = '/admin/categories';
   static const String adminAddCategory = '/admin/categories/new';
   static const String adminEditCategory = '/admin/categories/:categoryId/edit';
   static const String adminDeliverySettings = '/admin/delivery-settings';
-  static const String adminOrders = '/admin/orders';
+  static const String adminBroadcast = '/admin/broadcast';
   static const String adminOrderManagement = '/admin/orders/:orderId';
-  static const String adminRetailers = '/admin/retailers';
-  static const String adminRetailerOrders = '/admin/retailers/:retailerId/orders';
+  static const String adminRetailerOrders =
+      '/admin/retailers/:retailerId/orders';
 
   // Retailer bottom-nav tabs (Phase 3)
   static const String search = '/search';
-  static const String cart = '/cart';
   static const String orders = '/orders';
   static const String profile = '/profile';
 
@@ -32,26 +45,34 @@ class RouteNames {
   static const String productCategory = '/product-category/:categoryId';
   static const String productDetail = '/product/:productId';
 
-  /// A *pushed* Cart with a back button, for "View Cart" tapped from
-  /// somewhere else (category grid, product detail) — distinct from [cart],
-  /// the bottom-nav tab, which has no back button and switches the whole
-  /// shell instead of returning to wherever the retailer was.
+  /// A pushed Cart with a back button — reached from the floating cart bar
+  /// (shown on the shell itself, and on pushed screens like Category
+  /// Products / Product Detail) rather than a bottom-nav tab, matching the
+  /// Figma reference's nav shape (Home/Search/Orders/Profile + a floating
+  /// bar, no separate Cart tab).
   static const String viewCart = '/view-cart';
   static const String checkout = '/checkout';
   static const String upiPayment = '/upi-payment/:orderId';
   static const String orderSuccess = '/order-success/:orderId';
   static const String orderDetail = '/order/:orderId';
   static const String notifications = '/notifications';
+  static const String wishlist = '/wishlist';
 
-  static String adminEditProductPath(String productId) => '/admin/products/$productId/edit';
-  static String adminEditCategoryPath(String categoryId) => '/admin/categories/$categoryId/edit';
-  static String adminOrderManagementPath(String orderId) => '/admin/orders/$orderId';
-  static String adminRetailerOrdersPath(String retailerId) => '/admin/retailers/$retailerId/orders';
-  static String adminRetailerDetailPath(String uid) => '/admin/approval-queue/$uid';
+  static String adminEditProductPath(String productId) =>
+      '/admin/products/$productId/edit';
+  static String adminEditCategoryPath(String categoryId) =>
+      '/admin/categories/$categoryId/edit';
+  static String adminOrderManagementPath(String orderId) =>
+      '/admin/orders/$orderId';
+  static String adminRetailerOrdersPath(String retailerId) =>
+      '/admin/retailers/$retailerId/orders';
+  static String adminRetailerDetailPath(String uid) =>
+      '/admin/approval-queue/$uid';
 
   static String upiPaymentPath(String orderId) => '/upi-payment/$orderId';
 
-  static String productCategoryPath(String categoryId) => '/product-category/$categoryId';
+  static String productCategoryPath(String categoryId) =>
+      '/product-category/$categoryId';
   static String productDetailPath(String productId) => '/product/$productId';
   static String orderSuccessPath(String orderId) => '/order-success/$orderId';
   static String orderDetailPath(String orderId) => '/order/$orderId';

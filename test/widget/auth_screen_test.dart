@@ -9,6 +9,7 @@ import 'package:traders_retailer/domain/entities/bank_details_entity.dart';
 import 'package:traders_retailer/domain/entities/business_hours_entity.dart';
 import 'package:traders_retailer/domain/entities/notification_preferences_entity.dart';
 import 'package:traders_retailer/features/auth/screens/auth_screen.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 import '../helpers/test_viewport.dart';
 
@@ -48,6 +49,7 @@ class FakeAuthRepository implements AuthRepository {
     String? businessName,
     String? photoUrl,
     AddressEntity? address,
+    List<AddressEntity>? savedAddresses,
     String? gstNumber,
     BankDetailsEntity? bankDetails,
     BusinessHoursEntity? businessHours,
@@ -56,6 +58,9 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<void> updateFcmToken({required String uid, required String fcmToken}) async {}
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {}
 }
 
 void main() {
@@ -65,7 +70,11 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [authRepositoryProvider.overrideWithValue(FakeAuthRepository())],
-        child: const MaterialApp(home: AuthScreen()),
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: AuthScreen(),
+        ),
       ),
     );
     await tester.pumpAndSettle();

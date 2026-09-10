@@ -5,32 +5,35 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_constants.dart';
+import '../../core/utils/currency_formatter.dart';
+import '../../l10n/app_localizations.dart';
 
 /// No promotional photography exists for this app yet, so the Home banner
 /// is a small carousel of informational slides instead of real images.
 class PromoBannerCarousel extends StatelessWidget {
   const PromoBannerCarousel({super.key});
 
-  static final List<(IconData, String, String)> _slides = [
-    (
-      Icons.info_outline_rounded,
-      'Wholesale Purchase Order Enforced',
-      'Minimum order value: ${AppConstants.kMinOrderAmount.toStringAsFixed(0)} at checkout.',
-    ),
-    (
-      Icons.local_shipping_outlined,
-      'Own Fleet Delivery',
-      'Delivered by our own delivery staff — no third-party logistics.',
-    ),
-    (
-      Icons.support_agent_rounded,
-      'Need Help?',
-      'Call ${AppConstants.kSupportPhone} for support with your order.',
-    ),
-  ];
+  List<(IconData, String, String)> _slides(AppLocalizations l10n) => [
+        (
+          Icons.info_outline_rounded,
+          l10n.promoMinOrderTitle,
+          l10n.promoMinOrderBody(formatRupees(AppConstants.kMinOrderAmount)),
+        ),
+        (
+          Icons.local_shipping_outlined,
+          l10n.promoDeliveryTitle,
+          l10n.promoDeliveryBody,
+        ),
+        (
+          Icons.support_agent_rounded,
+          l10n.promoHelpTitle,
+          l10n.promoHelpBody(AppConstants.kSupportPhone),
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return CarouselSlider(
       options: CarouselOptions(
         height: 92,
@@ -41,7 +44,7 @@ class PromoBannerCarousel extends StatelessWidget {
         autoPlay: kIsWeb || !Platform.environment.containsKey('FLUTTER_TEST'),
         autoPlayInterval: const Duration(seconds: 5),
       ),
-      items: _slides.map((slide) {
+      items: _slides(l10n).map((slide) {
         final (icon, title, body) = slide;
         return Container(
           padding: const EdgeInsets.all(16),

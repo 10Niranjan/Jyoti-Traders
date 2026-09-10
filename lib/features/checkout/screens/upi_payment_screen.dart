@@ -13,6 +13,7 @@ import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/image_picker_field.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../orders/controllers/order_controller.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/upi_payment_controller.dart';
 
 /// Shown right after a UPI order is placed (PRD §7): QR + UPI ID to pay,
@@ -39,7 +40,10 @@ class _UpiPaymentScreenState extends ConsumerState<UpiPaymentScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Couldn\'t open the gallery: $e'), backgroundColor: AppColors.error),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.upiGalleryError(e.toString())),
+          backgroundColor: AppColors.error,
+        ),
       );
     }
   }
@@ -47,7 +51,7 @@ class _UpiPaymentScreenState extends ConsumerState<UpiPaymentScreen> {
   void _copyUpiId() {
     Clipboard.setData(const ClipboardData(text: AppConstants.kUpiId));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('UPI ID copied.'), behavior: SnackBarBehavior.floating),
+      SnackBar(content: Text(AppLocalizations.of(context)!.upiIdCopied), behavior: SnackBarBehavior.floating),
     );
   }
 
@@ -62,7 +66,8 @@ class _UpiPaymentScreenState extends ConsumerState<UpiPaymentScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Couldn\'t confirm payment: ${ref.read(upiPaymentControllerProvider).error}'),
+          content: Text(AppLocalizations.of(context)!
+              .upiConfirmError(ref.read(upiPaymentControllerProvider).error.toString())),
           backgroundColor: AppColors.error,
         ),
       );
@@ -73,15 +78,16 @@ class _UpiPaymentScreenState extends ConsumerState<UpiPaymentScreen> {
   Widget build(BuildContext context) {
     final orderAsync = ref.watch(orderByIdProvider(widget.orderId));
     final isSaving = ref.watch(upiPaymentControllerProvider).isLoading;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text('UPI Payment', style: GoogleFonts.poppins(fontWeight: FontWeight.bold))),
+      appBar: AppBar(title: Text(l10n.upiPaymentTitle, style: GoogleFonts.inter(fontWeight: FontWeight.bold))),
       body: orderAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => ErrorStateWidget(message: 'Couldn\'t load order: $e'),
+        error: (e, _) => ErrorStateWidget(message: l10n.upiOrderLoadError(e.toString())),
         data: (order) {
           if (order == null) {
-            return const ErrorStateWidget(message: 'This order could not be found.');
+            return ErrorStateWidget(message: l10n.upiOrderNotFound);
           }
 
           final upiLink = 'upi://pay'
@@ -96,12 +102,12 @@ class _UpiPaymentScreenState extends ConsumerState<UpiPaymentScreen> {
             child: Column(
               children: [
                 Text(
-                  'Pay ${order.grandTotal.formatted}',
-                  style: GoogleFonts.poppins(fontSize: 20, fontWeight: FontWeight.bold),
+                  l10n.upiPayAmount(order.grandTotal.formatted),
+                  style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Scan with any UPI app, or use the ID below',
+                  l10n.upiScanInstructions,
                   style: GoogleFonts.inter(fontSize: 12.5, color: AppColors.textSecondaryLight),
                 ),
                 const SizedBox(height: 20),
@@ -110,21 +116,25 @@ class _UpiPaymentScreenState extends ConsumerState<UpiPaymentScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.primary.withOpacity(0.15)),
+                    border: Border.all(color: const Color(0xFFA78BFA), width: 2),
                   ),
                   child: QrImageView(data: upiLink, size: 200, backgroundColor: Colors.white),
                 ),
                 const SizedBox(height: 16),
                 InkWell(
                   onTap: _copyUpiId,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                    ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(AppConstants.kUpiId, style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 8),
                         const Icon(Icons.copy_rounded, size: 16, color: AppColors.primary),
                       ],
                     ),
@@ -133,7 +143,7 @@ class _UpiPaymentScreenState extends ConsumerState<UpiPaymentScreen> {
                 const SizedBox(height: 28),
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: Text('Payment Screenshot (optional)', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                  child: Text(l10n.upiScreenshotLabel, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
                 ),
                 const SizedBox(height: 8),
                 ImagePickerField(
@@ -143,14 +153,14 @@ class _UpiPaymentScreenState extends ConsumerState<UpiPaymentScreen> {
                 ),
                 const SizedBox(height: 28),
                 PrimaryButton(
-                  label: 'I Have Paid',
+                  label: l10n.upiIHavePaid,
                   icon: Icons.check_circle_outline_rounded,
                   isLoading: isSaving,
                   onPressed: _confirmPayment,
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'The admin will confirm your payment shortly after.',
+                  l10n.upiConfirmationNote,
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.textSecondaryLight),
                 ),

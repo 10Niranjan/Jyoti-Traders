@@ -19,6 +19,7 @@ class ProfileController extends StateNotifier<AsyncValue<void>> {
     String? phone,
     String? businessName,
     AddressEntity? address,
+    List<AddressEntity>? savedAddresses,
     String? gstNumber,
     BankDetailsEntity? bankDetails,
     BusinessHoursEntity? businessHours,
@@ -32,11 +33,22 @@ class ProfileController extends StateNotifier<AsyncValue<void>> {
             phone: phone,
             businessName: businessName,
             address: address,
+            savedAddresses: savedAddresses,
             gstNumber: gstNumber,
             bankDetails: bankDetails,
             businessHours: businessHours,
             notificationPreferences: notificationPreferences,
           );
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> sendPasswordReset(String email) async {
+    state = const AsyncValue.loading();
+    try {
+      await _ref.read(authRepositoryProvider).sendPasswordResetEmail(email);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);

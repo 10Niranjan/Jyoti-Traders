@@ -1,10 +1,10 @@
 # 📦 Product Requirements Document (PRD)
 
-## Jyoti Kirana — Wholesale Retailer Mobile App
+## Jyoti Traders — Wholesale Retailer Mobile App
 
 > **Version**: 1.0.0  
 > **Last Updated**: 2026-07-15  
-> **Owner**: Jyoti Kirana (Proprietor)  
+> **Owner**: Jyoti Traders (Proprietor)  
 > **Contact**: 📞 +91 98604 60325 | ✉️ vishvatejkatkar007@gmail.com  
 > **Platform**: Android (Flutter)  
 > **Target Audience Scale**: ~30 verified retailer/wholesale users
@@ -13,7 +13,7 @@
 
 ## 1. 🎯 Purpose & Vision
 
-**Jyoti Kirana** is a dedicated B2B mobile ordering application built for a local wholesale Kirana (grocery/FMCG) distributor. The app streamlines the ordering process between the owner and their trusted network of ~30 local retailers, replacing manual phone-call or WhatsApp-based ordering with a structured, trackable digital system.
+**Jyoti Traders** is a dedicated B2B mobile ordering application built for a local wholesale Kirana (grocery/FMCG) distributor. The app streamlines the ordering process between the owner and their trusted network of ~30 local retailers, replacing manual phone-call or WhatsApp-based ordering with a structured, trackable digital system.
 
 The app is **not** a public marketplace. It is a **closed, invite-like system** where every new user must be manually verified and approved by the admin (owner) before they can place orders.
 
@@ -23,7 +23,7 @@ The app is **not** a public marketplace. It is a **closed, invite-like system** 
 
 | Role                       | Count | Description                                                                                                   |
 | -------------------------- | ----- | ------------------------------------------------------------------------------------------------------------- |
-| **Admin (Owner)**          | 1     | The proprietor of Jyoti Kirana. Manages products, approves retailers, views and fulfills orders.              |
+| **Admin (Owner)**          | 1     | The proprietor of Jyoti Traders. Manages products, approves retailers, views and fulfills orders.              |
 | **Normal User (Retailer)** | ~30   | Local shop owners, kirana store retailers who buy wholesale goods. Must be approved by Admin before ordering. |
 
 ### 2.1 User Persona: Retailer (Normal User)
@@ -54,6 +54,7 @@ These are **hard requirements** enforced in the app at all times:
 | **Delivery Charges**     | Calculated per kilometer based on the retailer's registered delivery address distance from the warehouse.                    |
 | **Payment Methods**      | Cash on Delivery (COD) and Online UPI payment.                                                                               |
 | **Own Delivery**         | Deliveries are handled by the client's own delivery personnel. No third-party logistics.                                     |
+| **Order Cancellation**   | A retailer may self-cancel their own order only while it's still `Pending` and only within 10 minutes of placing it. Once the admin confirms it, or the window passes, cancellation is no longer available. |
 
 ---
 
@@ -88,7 +89,7 @@ These are **hard requirements** enforced in the app at all times:
 | **Retailer Approval Queue** | List of pending sign-ups with shop details; one-tap Approve / Reject                                            |
 | **Product Management**      | Add / Edit / Delete products with name, image, price (wholesale), unit (kg/piece/box), stock quantity, category. Per-kg products take a 4-band rate card instead of a flat price (§4.5) |
 | **Category Management**     | Create and manage 6–10 product categories (e.g., Spices, Oils, Pulses, Snacks, Beverages, Cleaning)             |
-| **Order Management**        | View all incoming orders sorted by date. Update status: `Pending → Confirmed → Out for Delivery → Delivered`    |
+| **Order Management**        | View all incoming orders, filterable by status. Update status: `Pending → Confirmed → Out for Delivery → Delivered`, or `Cancelled` (retailer-initiated). Export the current filtered list to CSV. |
 | **Delivery Assignment**     | Assign orders to delivery personnel and mark dispatch                                                           |
 | **Retailer List**           | View all approved retailers with their order history and total spend                                            |
 
@@ -103,8 +104,9 @@ These are **hard requirements** enforced in the app at all times:
 | **Product Detail**     | Product image, name, wholesale price, available stock, unit info. Per-kg products show the quantity rate card and a weight picker (§4.5) |
 | **Cart**               | Add/remove items, see real-time cart total, minimum order warning if below ₹2,500                      |
 | **Checkout**           | Review order summary, select payment method (COD / UPI), confirm delivery address, see delivery charge |
-| **Order Confirmation** | Order ID, summary, and estimated delivery info shown post-checkout                                     |
-| **Order History**      | List of past orders with status tracking (Pending / Confirmed / Delivered)                             |
+| **Order Confirmation** | Order ID, summary, and estimated delivery info shown post-checkout. Share the confirmation as text via the OS share sheet |
+| **Order History**      | List of past orders, filterable by status. Order Detail shows a visual tracking stepper (Placed → Confirmed → Out for Delivery → Delivered, or a distinct Cancelled state) instead of just a badge. Self-cancel within the window (§3). "Buy Again" re-adds every item from a past order at current prices/stock |
+| **Reorder**            | Home screen surfaces a "Buy Again" rail of individually frequently-bought products (one-tap add), plus a heads-up banner if any of those regulars are low/out of stock |
 | **Profile**            | View and edit shop info, registered address, contact details                                           |
 | **Support**            | Direct call/email button to contact admin                                                              |
 
@@ -182,19 +184,20 @@ App Launch
                ├── Admin → Admin Dashboard
                └── Approved User → Home Screen
 
-Home Screen
+Home Screen (bottom-nav tab)
+  ├── Buy Again rail + low-stock banner (frequently-bought products)
   ├── Category Grid → Category Product List → Product Detail → Add to Cart
-  ├── Search
-  ├── Cart → Checkout → Order Confirmation
-  ├── Order History
-  └── Profile & Support
+  ├── Search (bottom-nav tab)
+  ├── Cart → Checkout → Order Confirmation (bottom-nav tab)
+  ├── Order History (bottom-nav tab) → status filter chips → Order Detail (tracking stepper, Buy Again, Cancel)
+  └── Profile & Support (bottom-nav tab)
 
-Admin Dashboard
-  ├── Approval Queue
-  ├── Product Management
-  ├── Category Management
-  ├── Order Management
-  └── Retailer List
+Admin — persistent bottom-nav tabs (Phase 9), not a dashboard hub
+  ├── Dashboard — stats, chart, quick actions, approval-queue preview
+  ├── Orders — status filter chips, CSV export
+  ├── Catalog — Products | Categories (segmented)
+  ├── Retailers — Approved | Pending (segmented; approve/reject inline)
+  └── Profile — identity, Settings (incl. Delivery Settings sheet), Change Password
 ```
 
 ---
@@ -208,7 +211,7 @@ Admin Dashboard
 
 > **Note**: Full UPI payment gateway integration (Razorpay/PhonePe) can be added in Phase 2. Initial version may use a manual UPI QR code approach.
 >
-> **Implementation note**: the QR is generated client-side (`qr_flutter`) from a standard `upi://pay?...` deep link — no gateway integration, no API key. `AppConstants.kUpiId`/`kUpiPayeeName` are **placeholders** (`jyotikirana@upi`) — the client has not yet provided the owner's real UPI ID. Swap those two constants when real details arrive; nothing else needs to change.
+> **Implementation note**: the QR is generated client-side (`qr_flutter`) from a standard `upi://pay?...` deep link — no gateway integration, no API key. `AppConstants.kUpiId`/`kUpiPayeeName` are **placeholders** (`jyotitraders@upi`) — the client has not yet provided the owner's real UPI ID. Swap those two constants when real details arrive; nothing else needs to change.
 
 ---
 

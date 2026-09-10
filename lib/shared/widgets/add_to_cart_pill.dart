@@ -3,32 +3,33 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 
 /// Idle "add to cart" control — an outlined pill reading `ADD`, not a bare
-/// `+` icon. Styling (white fill, colored 1px border, and a hard-edged,
-/// same-color offset shadow with zero blur — a "sticker" outline rather than
-/// a soft Material shadow) matches Zepto's own grid-card add button,
-/// confirmed by inspecting its computed styles directly on zeptonow.com.
-///
-/// Shared by `ProductCard` and search's result tile so the two grids the app
-/// actually has can't drift into two different "add" looks.
+/// `+` icon. Two contexts, two looks (matching the Polished reference
+/// design): [filled] false is a plain outline for the 2-col product grid,
+/// [filled] true is a light-violet fill for horizontal rows (Buy Again,
+/// Today's Picks, Search) — never a soft Material shadow either way.
 class AddToCartPill extends StatelessWidget {
   final VoidCallback onTap;
+  final bool filled;
 
-  const AddToCartPill({super.key, required this.onTap});
+  const AddToCartPill({super.key, required this.onTap, this.filled = false});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(filled ? 8 : 12),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.primary, width: 1),
-          boxShadow: [
-            BoxShadow(color: AppColors.primary, offset: const Offset(1.5, 1.5)),
-          ],
+          color: filled
+              ? AppColors.primary.withOpacity(0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(filled ? 8 : 12),
+          border: Border.all(
+            color: filled
+                ? AppColors.primary.withOpacity(0.3)
+                : AppColors.primary,
+          ),
         ),
         child: Text(
           'ADD',
@@ -51,7 +52,9 @@ class OutOfStockPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final muted = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final muted = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(

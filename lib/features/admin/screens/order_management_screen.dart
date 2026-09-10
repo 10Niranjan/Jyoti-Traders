@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../domain/entities/order_entity.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/order_detail_body.dart';
 import '../controllers/admin_order_controller.dart';
@@ -13,18 +14,28 @@ class OrderManagementScreen extends ConsumerWidget {
 
   const OrderManagementScreen({super.key, required this.orderId});
 
-  Future<void> _changeStatus(BuildContext context, WidgetRef ref, OrderEntity order, OrderStatus? newStatus) async {
+  Future<void> _changeStatus(
+    BuildContext context,
+    WidgetRef ref,
+    OrderEntity order,
+    OrderStatus? newStatus,
+  ) async {
     if (newStatus == null || newStatus == order.orderStatus) return;
+    final l10n = AppLocalizations.of(context)!;
 
-    final success = await ref.read(adminOrderControllerProvider.notifier).updateStatus(order.id, newStatus);
+    final success = await ref
+        .read(adminOrderControllerProvider.notifier)
+        .updateStatus(order.id, newStatus);
     if (!context.mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           success
-              ? 'Status updated to ${newStatus.label}.'
-              : 'Update failed: ${ref.read(adminOrderControllerProvider).error}',
+              ? l10n.adminStatusUpdated(newStatus.label)
+              : l10n.adminUpdateFailed(
+                  '${ref.read(adminOrderControllerProvider).error}',
+                ),
         ),
         backgroundColor: success ? AppColors.success : AppColors.error,
         behavior: SnackBarBehavior.floating,
@@ -32,14 +43,25 @@ class OrderManagementScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _markAsPaid(BuildContext context, WidgetRef ref, OrderEntity order) async {
-    final success = await ref.read(adminOrderControllerProvider.notifier).markAsPaid(order.id);
+  Future<void> _markAsPaid(
+    BuildContext context,
+    WidgetRef ref,
+    OrderEntity order,
+  ) async {
+    final l10n = AppLocalizations.of(context)!;
+    final success = await ref
+        .read(adminOrderControllerProvider.notifier)
+        .markAsPaid(order.id);
     if (!context.mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success ? 'Payment confirmed.' : 'Update failed: ${ref.read(adminOrderControllerProvider).error}',
+          success
+              ? l10n.adminPaymentConfirmed
+              : l10n.adminUpdateFailed(
+                  '${ref.read(adminOrderControllerProvider).error}',
+                ),
         ),
         backgroundColor: success ? AppColors.success : AppColors.error,
         behavior: SnackBarBehavior.floating,
@@ -51,15 +73,22 @@ class OrderManagementScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final orderAsync = ref.watch(adminOrderByIdProvider(orderId));
     final isSaving = ref.watch(adminOrderControllerProvider).isLoading;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Manage Order', style: GoogleFonts.poppins(fontWeight: FontWeight.bold))),
+      appBar: AppBar(
+        title: Text(
+          l10n.adminManageOrderTitle,
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+        ),
+      ),
       body: orderAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => ErrorStateWidget(message: 'Couldn\'t load order: $e'),
+        error: (e, _) =>
+            ErrorStateWidget(message: l10n.adminCouldntLoadOrder('$e')),
         data: (order) {
           if (order == null) {
-            return const ErrorStateWidget(message: 'This order could not be found.');
+            return ErrorStateWidget(message: l10n.adminOrderNotFound);
           }
           return OrderDetailBody(
             order: order,
@@ -72,21 +101,41 @@ class OrderManagementScreen extends ConsumerWidget {
               ),
               child: DropdownButtonFormField<OrderStatus>(
                 initialValue: order.orderStatus,
-                decoration: const InputDecoration(labelText: 'Order status', border: InputBorder.none),
+                decoration: InputDecoration(
+                  labelText: l10n.adminOrderStatusLabel,
+                  border: InputBorder.none,
+                ),
                 items: [
                   for (final status in OrderStatus.values)
                     DropdownMenuItem(value: status, child: Text(status.label)),
                 ],
-                onChanged: isSaving ? null : (v) => _changeStatus(context, ref, order, v),
+                onChanged: isSaving
+                    ? null
+                    : (v) => _changeStatus(context, ref, order, v),
               ),
             ),
             paymentExtra: order.paymentStatus == PaymentStatus.paid
                 ? null
-                : OutlinedButton.icon(
-                    onPressed: isSaving ? null : () => _markAsPaid(context, ref, order),
-                    icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
-                    label: const Text('Mark as Paid'),
-                    style: OutlinedButton.styleFrom(foregroundColor: AppColors.success),
+                : SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: isSaving
+                          ? null
+                          : () => _markAsPaid(context, ref, order),
+                      icon: const Icon(
+                        Icons.check_circle_outline_rounded,
+                        size: 18,
+                      ),
+                      label: Text(l10n.adminMarkAsPaid),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.success,
+                        side: const BorderSide(color: AppColors.success),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
                   ),
           );
         },

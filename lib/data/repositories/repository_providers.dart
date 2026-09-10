@@ -7,17 +7,22 @@ import '../../domain/repositories/delivery_config_repository.dart';
 import '../../domain/repositories/order_repository.dart';
 import '../../domain/repositories/product_repository.dart';
 import '../../domain/repositories/user_repository.dart';
+import '../../domain/repositories/broadcast_repository.dart';
 import '../../domain/repositories/notification_repository.dart';
+import '../../domain/repositories/wishlist_repository.dart';
 import '../../features/auth/controllers/auth_controller.dart';
 import '../../features/auth/controllers/auth_state.dart';
+import '../datasources/local/broadcast_local_datasource.dart';
 import '../datasources/local/cart_local_datasource.dart';
 import '../datasources/local/notification_local_datasource.dart';
 import '../datasources/local/product_local_datasource.dart';
+import '../datasources/local/wishlist_local_datasource.dart';
 import '../datasources/remote/category_remote_datasource.dart';
 import '../datasources/remote/delivery_config_remote_datasource.dart';
 import '../datasources/remote/order_remote_datasource.dart';
 import '../datasources/remote/product_remote_datasource.dart';
 import '../datasources/remote/user_remote_datasource.dart';
+import 'broadcast_repository_impl.dart';
 import 'category_repository_impl.dart';
 import 'cart_repository_impl.dart';
 import 'delivery_config_repository_impl.dart';
@@ -25,6 +30,7 @@ import 'notification_repository_impl.dart';
 import 'order_repository_impl.dart';
 import 'product_repository_impl.dart';
 import 'user_repository_impl.dart';
+import 'wishlist_repository_impl.dart';
 
 final categoryRepositoryProvider = Provider<CategoryRepository>((ref) {
   final catalogBox = Hive.box(HiveBoxes.catalogCache);
@@ -64,9 +70,27 @@ final cartRepositoryProvider = Provider<CartRepository>((ref) {
   return CartRepositoryImpl(CartLocalDatasource(cartBox: cartBox, uid: uid));
 });
 
+/// Same auth-uid-scoping reason as [cartRepositoryProvider] above.
+final wishlistRepositoryProvider = Provider<WishlistRepository>((ref) {
+  final authState = ref.watch(authControllerProvider);
+  final uid = switch (authState) {
+    AuthenticatedAdmin(user: final u) => u.uid,
+    AuthenticatedCustomer(user: final u) => u.uid,
+    PendingApproval(user: final u) => u.uid,
+    _ => 'signed_out',
+  };
+  final cartBox = Hive.box(HiveBoxes.cartBox);
+  return WishlistRepositoryImpl(WishlistLocalDatasource(box: cartBox, uid: uid));
+});
+
 final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
   final box = Hive.box(HiveBoxes.notificationsCache);
   return NotificationRepositoryImpl(NotificationLocalDatasource(box: box));
+});
+
+final broadcastRepositoryProvider = Provider<BroadcastRepository>((ref) {
+  final box = Hive.box(HiveBoxes.notificationsCache);
+  return BroadcastRepositoryImpl(BroadcastLocalDatasource(box: box));
 });
 
 final deliveryConfigRepositoryProvider = Provider<DeliveryConfigRepository>((ref) {

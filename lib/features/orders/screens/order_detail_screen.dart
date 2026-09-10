@@ -1,28 +1,183 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/route_names.dart';
+import '../../../core/utils/extensions.dart';
+import '../../../core/utils/app_logger.dart';
+import '../../../core/utils/order_share_formatter.dart';
+import '../../../domain/entities/order_entity.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/order_detail_body.dart';
+import '../../../l10n/app_localizations.dart';
+import '../controllers/buy_again.dart';
 import '../controllers/order_controller.dart';
 
-class OrderDetailScreen extends ConsumerWidget {
+class OrderDetailScreen extends ConsumerStatefulWidget {
   final String orderId;
 
   const OrderDetailScreen({super.key, required this.orderId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final orderAsync = ref.watch(orderByIdProvider(orderId));
+  ConsumerState<OrderDetailScreen> createState() => _OrderDetailScreenState();
+}
+
+class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
+  bool _isReordering = false;
+  bool _isCancelling = false;
+
+  Future<void> _shareOrder(OrderEntity order) async {
+    // Wrapped defensively like every other platform-plugin call in this
+    // codebase (FcmService, LocationService, ImageUploadService) — the share
+    // sheet isn't available on every platform or in a test environment.
+    try {
+      await Share.share(
+        buildOrderShareText(order),
+        subject: AppLocalizations.of(context)!.orderNumber(order.id.shortId),
+      );
+    } catch (e) {
+      logWarning('OrderDetailScreen: share sheet unavailable', e);
+    }
+  }
+
+  Future<void> _buyAgain(OrderEntity order) async {
+    setState(() => _isReordering = true);
+
+    final result = await buyAgainItems(ref, order);
+
+    if (!mounted) return;
+    setState(() => _isReordering = false);
+
+    final l10n = AppLocalizations.of(context)!;
+    final message = result.unavailable == 0
+        ? '${l10n.buyAgainAddedCount(result.added)}.'
+        : '${l10n.buyAgainAddedCount(result.added)}${l10n.buyAgainUnavailableSuffix(result.unavailable)}';
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        action: result.added > 0
+            ? SnackBarAction(
+                label: l10n.productViewCartAction,
+                onPressed: () => context.push(RouteNames.viewCart),
+              )
+            : null,
+      ),
+    );
+  }
+
+  Future<void> _cancelOrder(OrderEntity order) async {
+    final l10n = AppLocalizations.of(context)!;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.orderCancelDialogTitle),
+        content: Text(l10n.orderCancelDialogContent),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.no),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.yesCancel),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    if (!mounted) return;
+
+    setState(() => _isCancelling = true);
+    final success = await ref
+        .read(retailerOrderControllerProvider.notifier)
+        .cancelOrder(order.id);
+    if (!mounted) return;
+    setState(() => _isCancelling = false);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          success
+              ? l10n.orderCancelledMessage
+              : l10n.orderCancelFailedMessage,
+        ),
+        backgroundColor: success ? AppColors.success : AppColors.error,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final orderAsync = ref.watch(orderByIdProvider(widget.orderId));
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Order Details')),
+      appBar: AppBar(
+        title: Text(l10n.orderDetailsTitle),
+        actions: [
+          orderAsync.maybeWhen(
+            data: (order) => order == null
+                ? const SizedBox.shrink()
+                : IconButton(
+                    icon: const Icon(Icons.ios_share_rounded),
+                    tooltip: l10n.orderShareTooltip,
+                    onPressed: () => _shareOrder(order),
+                  ),
+            orElse: () => const SizedBox.shrink(),
+          ),
+        ],
+      ),
       body: orderAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => const ErrorStateWidget(),
         data: (order) {
           if (order == null) {
-            return const ErrorStateWidget(message: 'This order could not be found.');
+            return ErrorStateWidget(
+              message: l10n.upiOrderNotFound,
+            );
           }
-          return OrderDetailBody(order: order);
+          return Column(
+            children: [
+              Expanded(child: OrderDetailBody(order: order)),
+              SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _isReordering
+                              ? null
+                              : () => _buyAgain(order),
+                          icon: const Icon(Icons.replay_rounded, size: 18),
+                          label: Text(l10n.homeBuyAgain),
+                        ),
+                      ),
+                      if (order.isCancellable) ...[
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _isCancelling
+                                ? null
+                                : () => _cancelOrder(order),
+                            icon: const Icon(Icons.cancel_outlined, size: 18),
+                            label: Text(l10n.cancelButton),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: AppColors.error,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
         },
       ),
     );

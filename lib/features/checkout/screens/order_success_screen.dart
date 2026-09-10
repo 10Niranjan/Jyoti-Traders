@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../../l10n/app_localizations.dart';
 
 class OrderSuccessScreen extends StatelessWidget {
   final String orderId;
@@ -14,6 +15,7 @@ class OrderSuccessScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -28,29 +30,29 @@ class OrderSuccessScreen extends StatelessWidget {
               ).animate().scale(duration: 450.ms, curve: Curves.easeOutBack),
               const SizedBox(height: 24),
               Text(
-                'Order Placed!',
-                style: GoogleFonts.poppins(fontSize: 22, fontWeight: FontWeight.bold),
+                l10n.orderSuccessTitle,
+                style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.bold),
               ).animate().fadeIn(delay: 150.ms),
               const SizedBox(height: 8),
               Text(
-                'Order #${orderId.shortId}',
-                style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondaryLight),
+                l10n.orderSuccessOrderNumber(orderId.shortId),
+                style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.bold, color: AppColors.primary),
               ).animate().fadeIn(delay: 200.ms),
               const SizedBox(height: 4),
               Text(
-                'The admin has been notified and will confirm your order shortly.',
+                l10n.orderSuccessMessage,
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondaryLight),
               ).animate().fadeIn(delay: 250.ms),
               const SizedBox(height: 32),
               PrimaryButton(
-                label: 'View Order',
+                label: l10n.orderSuccessViewOrder,
                 onPressed: () => context.pushReplacement(RouteNames.orderDetailPath(orderId)),
               ),
               const SizedBox(height: 12),
               TextButton(
                 onPressed: () => context.go(RouteNames.home),
-                child: const Text('Continue Shopping'),
+                child: Text(l10n.orderSuccessContinueShopping),
               ),
             ],
           ),
