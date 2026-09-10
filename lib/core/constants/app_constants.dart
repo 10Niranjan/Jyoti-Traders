@@ -32,4 +32,14 @@ class AppConstants {
   /// payment flow needs to change once real values are set here.
   static const String kUpiId = 'jyotitraders@upi';
   static const String kUpiPayeeName = 'Jyoti Traders Wholesale';
+
+  /// Same-day / next-day delivery radii and cutoff hour used to promise an
+  /// arrival window at checkout (own-fleet delivery, no external logistics
+  /// API — distance from the warehouse is the only signal available).
+  /// **Not a client-provided SLA** — a reasonable default pending real
+  /// operational data; adjust once the client has actual delivery-time
+  /// figures.
+  static const double kSameDayRadiusKm = 15.0;
+  static const int kSameDayCutoffHour = 15; // 3 PM local time
+  static const double kNextDayRadiusKm = 40.0;
 }

@@ -9,15 +9,22 @@ enum ProductSort { relevance, priceLowToHigh, priceHighToLow }
 double _sortPrice(ProductEntity product) =>
     product.isWeighed ? product.rateSlabs!.bestRatePerKg : product.price.amount;
 
-/// Applies [sort] and, if [inStockOnly], drops out-of-stock products —
-/// `relevance` (the default) returns [products] exactly as searched/fetched,
-/// since that ordering already reflects the underlying query's own ranking.
+/// Applies [sort], an optional [categoryId] filter, and, if [inStockOnly],
+/// drops out-of-stock products — `relevance` (the default) returns
+/// [products] exactly as searched/fetched, since that ordering already
+/// reflects the underlying query's own ranking.
 List<ProductEntity> sortAndFilterProducts(
   List<ProductEntity> products, {
   required ProductSort sort,
   required bool inStockOnly,
+  String? categoryId,
 }) {
-  final filtered = inStockOnly ? products.where((p) => p.isInStock).toList() : List.of(products);
+  var filtered = inStockOnly
+      ? products.where((p) => p.isInStock).toList()
+      : List.of(products);
+  if (categoryId != null) {
+    filtered = filtered.where((p) => p.categoryId == categoryId).toList();
+  }
 
   switch (sort) {
     case ProductSort.relevance:

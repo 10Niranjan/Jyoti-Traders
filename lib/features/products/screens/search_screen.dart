@@ -7,6 +7,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_shadows.dart';
 import '../../../core/constants/route_names.dart';
 import '../../../core/utils/product_sort.dart';
+import '../../../domain/entities/category_entity.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../shared/widgets/add_to_cart_pill.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
@@ -14,6 +15,7 @@ import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/quantity_sheet.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../home/controllers/home_controller.dart';
 import '../controllers/search_controller.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
@@ -111,8 +113,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 hasAnyResults: state.results.isNotEmpty,
                 sort: state.sort,
                 inStockOnly: state.inStockOnly,
+                categoryIds: state.resultCategoryIds,
+                selectedCategoryId: state.categoryId,
                 onSortChanged: notifier.setSort,
                 onInStockOnlyChanged: notifier.setInStockOnly,
+                onCategoryChanged: notifier.setCategory,
                 onRetry: notifier.retry,
                 onResultTap: (product) {
                   notifier.commitToRecentSearches(state.query);
@@ -182,7 +187,7 @@ class _RecentSearches extends StatelessWidget {
   }
 }
 
-class _SearchResults extends StatelessWidget {
+class _SearchResults extends ConsumerWidget {
   final String query;
   final bool isLoading;
   final bool hasError;
@@ -190,8 +195,11 @@ class _SearchResults extends StatelessWidget {
   final bool hasAnyResults;
   final ProductSort sort;
   final bool inStockOnly;
+  final Set<String> categoryIds;
+  final String? selectedCategoryId;
   final ValueChanged<ProductSort> onSortChanged;
   final ValueChanged<bool> onInStockOnlyChanged;
+  final ValueChanged<String?> onCategoryChanged;
   final Future<void> Function() onRetry;
   final ValueChanged<ProductEntity> onResultTap;
 
@@ -203,17 +211,32 @@ class _SearchResults extends StatelessWidget {
     required this.hasAnyResults,
     required this.sort,
     required this.inStockOnly,
+    required this.categoryIds,
+    required this.selectedCategoryId,
     required this.onSortChanged,
     required this.onInStockOnlyChanged,
+    required this.onCategoryChanged,
     required this.onRetry,
     required this.onResultTap,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (isLoading) return const ListShimmerLoader(itemCount: 5);
+    final categoriesAsync = ref.watch(categoriesProvider);
     return Column(
       children: [
+        if (!hasError && hasAnyResults && categoryIds.length > 1)
+          categoriesAsync.maybeWhen(
+            data: (categories) => _CategoryChipsRow(
+              categories: categories
+                  .where((c) => categoryIds.contains(c.id))
+                  .toList(),
+              selectedCategoryId: selectedCategoryId,
+              onChanged: onCategoryChanged,
+            ),
+            orElse: () => const SizedBox.shrink(),
+          ),
         if (!hasError && hasAnyResults)
           _SortFilterBar(
             sort: sort,
@@ -231,7 +254,9 @@ class _SearchResults extends StatelessWidget {
                     children: [
                       EmptyStateWidget(
                         icon: Icons.search_off_rounded,
-                        title: AppLocalizations.of(context)!.searchNoResultsFor(query),
+                        title: AppLocalizations.of(
+                          context,
+                        )!.searchNoResultsFor(query),
                       ),
                     ],
                   )
@@ -250,6 +275,50 @@ class _SearchResults extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// "All" + one chip per category this specific search actually spans (never
+/// the full app catalog — a query matching only 2 categories shouldn't offer
+/// 8 empty ones). Only rendered by the caller when there's more than one
+/// category to choose between.
+class _CategoryChipsRow extends StatelessWidget {
+  final List<CategoryEntity> categories;
+  final String? selectedCategoryId;
+  final ValueChanged<String?> onChanged;
+
+  const _CategoryChipsRow({
+    required this.categories,
+    required this.selectedCategoryId,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: [
+            ChoiceChip(
+              label: Text(l10n.searchAllCategories),
+              selected: selectedCategoryId == null,
+              onSelected: (_) => onChanged(null),
+            ),
+            for (final category in categories) ...[
+              const SizedBox(width: 8),
+              ChoiceChip(
+                label: Text(category.name),
+                selected: selectedCategoryId == category.id,
+                onSelected: (_) => onChanged(category.id),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }
@@ -285,9 +354,18 @@ class _SortFilterBar extends StatelessWidget {
                 isDense: true,
                 icon: const Icon(Icons.sort_rounded, size: 18),
                 items: [
-                  DropdownMenuItem(value: ProductSort.relevance, child: Text(l10n.searchSortRelevance)),
-                  DropdownMenuItem(value: ProductSort.priceLowToHigh, child: Text(l10n.searchSortPriceLowToHigh)),
-                  DropdownMenuItem(value: ProductSort.priceHighToLow, child: Text(l10n.searchSortPriceHighToLow)),
+                  DropdownMenuItem(
+                    value: ProductSort.relevance,
+                    child: Text(l10n.searchSortRelevance),
+                  ),
+                  DropdownMenuItem(
+                    value: ProductSort.priceLowToHigh,
+                    child: Text(l10n.searchSortPriceLowToHigh),
+                  ),
+                  DropdownMenuItem(
+                    value: ProductSort.priceHighToLow,
+                    child: Text(l10n.searchSortPriceHighToLow),
+                  ),
                 ],
                 onChanged: (value) {
                   if (value != null) onSortChanged(value);
@@ -296,7 +374,10 @@ class _SortFilterBar extends StatelessWidget {
             ),
           ),
           FilterChip(
-            label: Text(l10n.searchInStockOnly, style: GoogleFonts.inter(fontSize: 12)),
+            label: Text(
+              l10n.searchInStockOnly,
+              style: GoogleFonts.inter(fontSize: 12),
+            ),
             selected: inStockOnly,
             onSelected: onInStockOnlyChanged,
           ),

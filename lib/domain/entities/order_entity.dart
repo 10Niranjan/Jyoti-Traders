@@ -75,6 +75,11 @@ class OrderEntity extends Equatable {
   final String? paymentScreenshotUrl;
   final DateTime createdAt;
 
+  /// Absent on every order placed before the coupon feature shipped, and on
+  /// any order with no coupon applied.
+  final String? couponCode;
+  final Money? discount;
+
   const OrderEntity({
     required this.id,
     required this.userId,
@@ -89,9 +94,11 @@ class OrderEntity extends Equatable {
     this.notes,
     this.paymentScreenshotUrl,
     required this.createdAt,
+    this.couponCode,
+    this.discount,
   });
 
-  Money get grandTotal => subtotal + deliveryCharge;
+  Money get grandTotal => subtotal - (discount ?? Money.zero) + deliveryCharge;
 
   /// True while the retailer can still self-cancel: still `pending` (the
   /// admin hasn't acted on it yet) and within the cancellation window.
@@ -115,5 +122,7 @@ class OrderEntity extends Equatable {
     notes,
     paymentScreenshotUrl,
     createdAt,
+    couponCode,
+    discount,
   ];
 }

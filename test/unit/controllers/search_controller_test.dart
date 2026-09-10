@@ -173,40 +173,113 @@ void main() {
     verifyNever(() => productRepository.searchProducts(any()));
   });
 
-  test('setSort/setInStockOnly update state and visibleResults reflects them', () async {
+  test(
+    'setSort/setInStockOnly update state and visibleResults reflects them',
+    () async {
+      when(() => localStorage.getRecentSearches()).thenReturn([]);
+      final cheap = ProductEntity(
+        id: 'cheap',
+        name: 'Cheap',
+        categoryId: 'c1',
+        imageUrl: '',
+        price: Money(10),
+        unit: ProductUnit.piece,
+        stock: 0,
+        isActive: true,
+      );
+      final expensive = ProductEntity(
+        id: 'expensive',
+        name: 'Expensive',
+        categoryId: 'c1',
+        imageUrl: '',
+        price: Money(100),
+        unit: ProductUnit.piece,
+        stock: 5,
+        isActive: true,
+      );
+      when(
+        () => productRepository.searchProducts(any()),
+      ).thenAnswer((_) async => [expensive, cheap]);
+      final controller = buildController();
+
+      controller.onQueryChanged('x');
+      await Future.delayed(const Duration(milliseconds: 450));
+      expect(controller.state.visibleResults.map((p) => p.id), [
+        'expensive',
+        'cheap',
+      ]);
+
+      controller.setSort(ProductSort.priceLowToHigh);
+      expect(controller.state.sort, ProductSort.priceLowToHigh);
+      expect(controller.state.visibleResults.map((p) => p.id), [
+        'cheap',
+        'expensive',
+      ]);
+
+      controller.setInStockOnly(true);
+      expect(controller.state.visibleResults.map((p) => p.id), ['expensive']);
+    },
+  );
+
+  test(
+    'setCategory filters visibleResults and resultCategoryIds reflects the raw results',
+    () async {
+      when(() => localStorage.getRecentSearches()).thenReturn([]);
+      final rice = ProductEntity(
+        id: 'rice',
+        name: 'Rice',
+        categoryId: 'grains',
+        imageUrl: '',
+        price: Money(100),
+        unit: ProductUnit.piece,
+        stock: 5,
+        isActive: true,
+      );
+      final soap = ProductEntity(
+        id: 'soap',
+        name: 'Soap',
+        categoryId: 'staples',
+        imageUrl: '',
+        price: Money(50),
+        unit: ProductUnit.piece,
+        stock: 5,
+        isActive: true,
+      );
+      when(
+        () => productRepository.searchProducts(any()),
+      ).thenAnswer((_) async => [rice, soap]);
+      final controller = buildController();
+
+      controller.onQueryChanged('x');
+      await Future.delayed(const Duration(milliseconds: 450));
+      expect(controller.state.resultCategoryIds, {'grains', 'staples'});
+
+      controller.setCategory('grains');
+      expect(controller.state.categoryId, 'grains');
+      expect(controller.state.visibleResults.map((p) => p.id), ['rice']);
+
+      controller.setCategory(null);
+      expect(controller.state.categoryId, isNull);
+      expect(controller.state.visibleResults.map((p) => p.id), [
+        'rice',
+        'soap',
+      ]);
+    },
+  );
+
+  test('a new query resets a previously-picked category filter', () async {
     when(() => localStorage.getRecentSearches()).thenReturn([]);
-    final cheap = ProductEntity(
-      id: 'cheap',
-      name: 'Cheap',
-      categoryId: 'c1',
-      imageUrl: '',
-      price: Money(10),
-      unit: ProductUnit.piece,
-      stock: 0,
-      isActive: true,
-    );
-    final expensive = ProductEntity(
-      id: 'expensive',
-      name: 'Expensive',
-      categoryId: 'c1',
-      imageUrl: '',
-      price: Money(100),
-      unit: ProductUnit.piece,
-      stock: 5,
-      isActive: true,
-    );
-    when(() => productRepository.searchProducts(any())).thenAnswer((_) async => [expensive, cheap]);
+    when(
+      () => productRepository.searchProducts(any()),
+    ).thenAnswer((_) async => []);
     final controller = buildController();
 
-    controller.onQueryChanged('x');
+    controller.onQueryChanged('rice');
     await Future.delayed(const Duration(milliseconds: 450));
-    expect(controller.state.visibleResults.map((p) => p.id), ['expensive', 'cheap']);
+    controller.setCategory('grains');
+    expect(controller.state.categoryId, 'grains');
 
-    controller.setSort(ProductSort.priceLowToHigh);
-    expect(controller.state.sort, ProductSort.priceLowToHigh);
-    expect(controller.state.visibleResults.map((p) => p.id), ['cheap', 'expensive']);
-
-    controller.setInStockOnly(true);
-    expect(controller.state.visibleResults.map((p) => p.id), ['expensive']);
+    controller.onQueryChanged('soap');
+    expect(controller.state.categoryId, isNull);
   });
 }
