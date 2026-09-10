@@ -728,6 +728,34 @@ Continuing autonomously from the user's own standing instruction ("verify the 3 
 
 ---
 
+## 📅 Session Log: 2026-09-10 (continued) — Retailer Profile Screen visual revamp
+
+### 📋 Tasks completed:
+
+- **Retailer Profile Screen (`profile_screen.dart`) UI/UX Upgrade**: Implemented a comprehensive visual polish inspired by modern design references (Zepto/Blinkit/Skiper/GSAP-style cascade animations), strictly scoped to the retailer Profile screen without modifying shared widgets or admin screens.
+  - **Bento-style Stat Strip Header (`_RetailerProfileHeader`)**: Replaced the previous flat gradient card with a deep `primaryDark` container featuring soft radial glows, glowing avatar with camera badge, and a 3-pill live stat strip (`_StatPill`) displaying:
+    - **Orders**: Total orders placed (live from `orderHistoryProvider`).
+    - **Business**: Total ₹ spent (calculated via `grandTotal.amount`).
+    - **Since**: Retailer's membership joining date (`MMM yyyy`).
+  - **Staggered Entrance Animation (`_AnimatedSection`)**: Implemented index-based cascade animations using `flutter_animate` (`80 + index * 70 ms` delay, 350ms fade-in + 320ms slide-up) for all profile section cards as the tab loads.
+  - **Accent Section Headings (`_SectionLabel`)**: Elevated card headings out of cards into standalone bold labels (Inter w700, 16px) accented with a 3px vertical indicator bar (`primary` color).
+  - **Morphing "Save Changes" Button (`_MorphSaveButton`)**: Replaced the default snackbar with an in-place morphing transition using `AnimatedSwitcher`. On successful profile save, the button animates into a green `success` button with a checkmark (`✓ Saved!`) with an elastic spring animation for ~1.8 seconds before smoothly reverting.
+  - **Settings Tab Cascade**: Wrapped all 6 settings groups (Notifications, Appearance, Language, Change Password, etc.) in `_AnimatedSection` for smooth sequential entrance.
+- **Verification**:
+  - `flutter analyze` — zero issues found.
+  - `flutter test` — 380/380 tests passing (including `profile_screen_test.dart`).
+- **Release & Deployment**:
+  - Built release APK (`app-arm64-v8a-release.apk` / `app-release.apk`).
+  - Successfully installed directly onto connected physical device (Xiaomi `M2101K6I`, Android 13).
+
+### 💬 Latest Discussion Summary:
+
+1. User requested a walkthrough of what was implemented and how to see/test it on their phone.
+2. Provided full visual breakdown and step-by-step verification instructions on-device.
+3. User instructed to update `AGENTS.md` and push all changes to GitHub remote.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
