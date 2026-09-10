@@ -277,6 +277,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                             ? AppColors.textSecondaryDark
                                             : AppColors.textSecondaryLight,
                                       ),
+                                      tooltip: _obscurePassword
+                                          ? l10n.authShowPassword
+                                          : l10n.authHidePassword,
                                       onPressed: () => setState(
                                         () => _obscurePassword =
                                             !_obscurePassword,
@@ -374,9 +377,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          _isLogin
-                              ? l10n.authNoAccount
-                              : l10n.authHasAccount,
+                          _isLogin ? l10n.authNoAccount : l10n.authHasAccount,
                           style: GoogleFonts.inter(
                             color: isDark
                                 ? AppColors.textSecondaryDark

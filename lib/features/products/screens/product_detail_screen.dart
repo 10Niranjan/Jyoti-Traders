@@ -42,7 +42,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
     final isWishlisted = ref.watch(
-      wishlistControllerProvider.select((ids) => ids.contains(widget.productId)),
+      wishlistControllerProvider.select(
+        (ids) => ids.contains(widget.productId),
+      ),
     );
 
     return Scaffold(
@@ -51,15 +53,24 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
         actions: [
           IconButton(
             icon: Icon(
-              isWishlisted ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+              isWishlisted
+                  ? Icons.favorite_rounded
+                  : Icons.favorite_border_rounded,
               color: isWishlisted ? AppColors.error : null,
             ),
+            tooltip: isWishlisted
+                ? l10n.wishlistRemoveTooltip
+                : l10n.wishlistAddTooltip,
             onPressed: () async {
-              await ref.read(wishlistControllerProvider.notifier).toggle(widget.productId);
+              await ref
+                  .read(wishlistControllerProvider.notifier)
+                  .toggle(widget.productId);
               if (!context.mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text(isWishlisted ? l10n.wishlistRemoved : l10n.wishlistAdded),
+                  content: Text(
+                    isWishlisted ? l10n.wishlistRemoved : l10n.wishlistAdded,
+                  ),
                   behavior: SnackBarBehavior.floating,
                   duration: const Duration(seconds: 1),
                 ),
@@ -174,7 +185,10 @@ class _ProductDetailBody extends ConsumerWidget {
                       const SizedBox(height: 12),
                       Text(
                         product.isWeighed
-                            ? l10n.homeFromRatePerKg(product.rateSlabs!.bestRatePerKg.toStringAsFixed(0))
+                            ? l10n.homeFromRatePerKg(
+                                product.rateSlabs!.bestRatePerKg
+                                    .toStringAsFixed(0),
+                              )
                             : product.price.formatted,
                         style: GoogleFonts.inter(
                           fontSize: 26,
@@ -185,7 +199,10 @@ class _ProductDetailBody extends ConsumerWidget {
                       const SizedBox(height: 8),
                       Text(
                         product.isInStock
-                            ? l10n.productInStock(product.stock, product.unit.value)
+                            ? l10n.productInStock(
+                                product.stock,
+                                product.unit.value,
+                              )
                             : l10n.homeOutOfStock,
                         style: GoogleFonts.inter(
                           fontSize: 13,
@@ -215,9 +232,7 @@ class _ProductDetailBody extends ConsumerWidget {
                         const SizedBox(height: 20),
                         Text(
                           l10n.productDescription,
-                          style: GoogleFonts.inter(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 6),
                         Text(
@@ -243,10 +258,16 @@ class _ProductDetailBody extends ConsumerWidget {
                 InlineToast(key: toastKey),
                 PrimaryButton(
                   label: product.isInStock
-                      ? l10n.productAddButtonLabel(product.labelForQty(qty), product.priceForQty(qty).formatted)
+                      ? l10n.productAddButtonLabel(
+                          product.labelForQty(qty),
+                          product.priceForQty(qty).formatted,
+                        )
                       : l10n.productOutOfStockButton,
                   icon: Icons.shopping_cart_outlined,
-                  onPressed: (product.isInStock && qty >= product.minQty && qty <= product.maxQty)
+                  onPressed:
+                      (product.isInStock &&
+                          qty >= product.minQty &&
+                          qty <= product.maxQty)
                       ? () {
                           ref
                               .read(cartControllerProvider.notifier)
@@ -296,13 +317,18 @@ class _RelatedProductsRail extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final productsAsync = ref.watch(productsByCategoryProvider(product.categoryId));
+    final productsAsync = ref.watch(
+      productsByCategoryProvider(product.categoryId),
+    );
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return productsAsync.maybeWhen(
       data: (products) {
-        final related = products.where((p) => p.id != product.id).take(10).toList();
+        final related = products
+            .where((p) => p.id != product.id)
+            .take(10)
+            .toList();
         if (related.isEmpty) return const SizedBox.shrink();
         return Padding(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
@@ -314,7 +340,9 @@ class _RelatedProductsRail extends ConsumerWidget {
                 style: GoogleFonts.inter(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : AppColors.textPrimaryLight,
                 ),
               ),
               const SizedBox(height: 12),
@@ -333,7 +361,9 @@ class _RelatedProductsRail extends ConsumerWidget {
                       width: 150,
                       child: ProductCard(
                         product: other,
-                        onTap: () => context.push(RouteNames.productDetailPath(other.id)),
+                        onTap: () => context.push(
+                          RouteNames.productDetailPath(other.id),
+                        ),
                       ),
                     );
                   },

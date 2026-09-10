@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:traders_retailer/data/datasources/local_storage_service.dart';
 import 'package:traders_retailer/domain/entities/cart_entity.dart';
 import 'package:traders_retailer/domain/entities/cart_item_entity.dart';
 import 'package:traders_retailer/domain/entities/product_entity.dart';
@@ -7,18 +9,59 @@ import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/l10n/app_localizations.dart';
 import 'package:traders_retailer/shared/widgets/floating_cart_bar.dart';
 
-Widget _wrap(CartEntity cart, {VoidCallback? onTap}) => MaterialApp(
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(body: FloatingCartBar(cart: cart, onTap: onTap ?? () {})),
-    );
+class FakeLocalStorageService extends LocalStorageService {
+  Set<String> stored;
+  FakeLocalStorageService([this.stored = const {}]);
+
+  @override
+  Set<String> getSeenFirstRunHints() => stored;
+
+  @override
+  Future<void> markFirstRunHintSeen(String hintId) async =>
+      stored = {...stored, hintId};
+}
+
+Widget _wrap(CartEntity cart, {VoidCallback? onTap}) => ProviderScope(
+  // Seeded already-seen so pre-existing assertions below aren't coupled
+  // to the one-time "View Cart" pulse's extra animation frames.
+  overrides: [
+    localStorageProvider.overrideWithValue(
+      FakeLocalStorageService({'floating_cart_bar'}),
+    ),
+  ],
+  child: MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: Scaffold(
+      body: FloatingCartBar(cart: cart, onTap: onTap ?? () {}),
+    ),
+  ),
+);
 
 void main() {
-  testWidgets('shows item count and subtotal for a non-empty cart', (tester) async {
-    final cart = CartEntity(items: [
-      CartItemEntity(productId: 'p1', name: 'Rice', imageUrl: '', unitPrice: Money(1800), unit: ProductUnit.box, qty: 2),
-      CartItemEntity(productId: 'p2', name: 'Oil', imageUrl: '', unitPrice: Money(1950), unit: ProductUnit.litre, qty: 1),
-    ]);
+  testWidgets('shows item count and subtotal for a non-empty cart', (
+    tester,
+  ) async {
+    final cart = CartEntity(
+      items: [
+        CartItemEntity(
+          productId: 'p1',
+          name: 'Rice',
+          imageUrl: '',
+          unitPrice: Money(1800),
+          unit: ProductUnit.box,
+          qty: 2,
+        ),
+        CartItemEntity(
+          productId: 'p2',
+          name: 'Oil',
+          imageUrl: '',
+          unitPrice: Money(1950),
+          unit: ProductUnit.litre,
+          qty: 1,
+        ),
+      ],
+    );
     await tester.pumpWidget(_wrap(cart));
     await tester.pumpAndSettle();
 
@@ -27,22 +70,38 @@ void main() {
     expect(find.text('View Cart'), findsOneWidget);
   });
 
-  testWidgets('singular "1 item" for exactly one unit at/above the minimum order amount', (tester) async {
-    // Priced above the ₹2,500 minimum specifically so this stays a pure
-    // pluralization check — a below-minimum cart shows the "add more"
-    // nudge in this same spot instead (see the belowMinimum group below).
-    final cart = CartEntity(items: [
-      CartItemEntity(productId: 'p1', name: 'Rice', imageUrl: '', unitPrice: Money(2800), unit: ProductUnit.box, qty: 1),
-    ]);
-    await tester.pumpWidget(_wrap(cart));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'singular "1 item" for exactly one unit at/above the minimum order amount',
+    (tester) async {
+      // Priced above the ₹2,500 minimum specifically so this stays a pure
+      // pluralization check — a below-minimum cart shows the "add more"
+      // nudge in this same spot instead (see the belowMinimum group below).
+      final cart = CartEntity(
+        items: [
+          CartItemEntity(
+            productId: 'p1',
+            name: 'Rice',
+            imageUrl: '',
+            unitPrice: Money(2800),
+            unit: ProductUnit.box,
+            qty: 1,
+          ),
+        ],
+      );
+      await tester.pumpWidget(_wrap(cart));
+      await tester.pumpAndSettle();
 
-    expect(find.text('1 item'), findsOneWidget);
-  });
+      expect(find.text('1 item'), findsOneWidget);
+    },
+  );
 
-  testWidgets('is invisible to hit-testing when the cart is empty', (tester) async {
+  testWidgets('is invisible to hit-testing when the cart is empty', (
+    tester,
+  ) async {
     var tapped = false;
-    await tester.pumpWidget(_wrap(CartEntity.empty, onTap: () => tapped = true));
+    await tester.pumpWidget(
+      _wrap(CartEntity.empty, onTap: () => tapped = true),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.byType(FloatingCartBar), warnIfMissed: false);
@@ -51,11 +110,22 @@ void main() {
     expect(tapped, isFalse);
   });
 
-  testWidgets('tapping the bar calls onTap when the cart has items', (tester) async {
+  testWidgets('tapping the bar calls onTap when the cart has items', (
+    tester,
+  ) async {
     var tapped = false;
-    final cart = CartEntity(items: [
-      CartItemEntity(productId: 'p1', name: 'Rice', imageUrl: '', unitPrice: Money(1800), unit: ProductUnit.box, qty: 1),
-    ]);
+    final cart = CartEntity(
+      items: [
+        CartItemEntity(
+          productId: 'p1',
+          name: 'Rice',
+          imageUrl: '',
+          unitPrice: Money(1800),
+          unit: ProductUnit.box,
+          qty: 1,
+        ),
+      ],
+    );
     await tester.pumpWidget(_wrap(cart, onTap: () => tapped = true));
     await tester.pumpAndSettle();
 
@@ -73,38 +143,116 @@ void main() {
   // Scaffold.bottomNavigationBar, a ListView footer, etc. Asserting a real
   // pixel height (not just that the text exists) is what would have caught
   // this the first time.
-  testWidgets('hugs its content height instead of filling the available space', (tester) async {
-    final cart = CartEntity(items: [
-      CartItemEntity(productId: 'p1', name: 'Rice', imageUrl: '', unitPrice: Money(1800), unit: ProductUnit.box, qty: 1),
-    ]);
-    await tester.pumpWidget(_wrap(cart)); // Scaffold.body — a finite loose constraint
-    await tester.pumpAndSettle();
+  testWidgets(
+    'hugs its content height instead of filling the available space',
+    (tester) async {
+      final cart = CartEntity(
+        items: [
+          CartItemEntity(
+            productId: 'p1',
+            name: 'Rice',
+            imageUrl: '',
+            unitPrice: Money(1800),
+            unit: ProductUnit.box,
+            qty: 1,
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        _wrap(cart),
+      ); // Scaffold.body — a finite loose constraint
+      await tester.pumpAndSettle();
 
-    expect(tester.getSize(find.byType(FloatingCartBar)).height, lessThan(100));
-  });
+      expect(
+        tester.getSize(find.byType(FloatingCartBar)).height,
+        lessThan(100),
+      );
+    },
+  );
+
+  testWidgets(
+    'tapping the bar for the first time dismisses the first-run hint',
+    (tester) async {
+      final storage = FakeLocalStorageService();
+      final cart = CartEntity(
+        items: [
+          CartItemEntity(
+            productId: 'p1',
+            name: 'Rice',
+            imageUrl: '',
+            unitPrice: Money(2800),
+            unit: ProductUnit.box,
+            qty: 1,
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [localStorageProvider.overrideWithValue(storage)],
+          child: MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: FloatingCartBar(cart: cart, onTap: () {}),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byType(FloatingCartBar));
+      await tester.pumpAndSettle();
+
+      expect(storage.stored, {'floating_cart_bar'});
+    },
+  );
 
   group('minimum-order nudge', () {
-    testWidgets('shows "Add ₹X more" and a progress bar when below the ₹2,500 minimum', (tester) async {
-      final cart = CartEntity(items: [
-        CartItemEntity(productId: 'p1', name: 'Rice', imageUrl: '', unitPrice: Money(1800), unit: ProductUnit.box, qty: 1),
-      ]);
-      await tester.pumpWidget(_wrap(cart));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'shows "Add ₹X more" and a progress bar when below the ₹2,500 minimum',
+      (tester) async {
+        final cart = CartEntity(
+          items: [
+            CartItemEntity(
+              productId: 'p1',
+              name: 'Rice',
+              imageUrl: '',
+              unitPrice: Money(1800),
+              unit: ProductUnit.box,
+              qty: 1,
+            ),
+          ],
+        );
+        await tester.pumpWidget(_wrap(cart));
+        await tester.pumpAndSettle();
 
-      expect(find.text('1 item'), findsNothing);
-      expect(find.textContaining('more to order'), findsOneWidget);
-      expect(find.byType(LinearProgressIndicator), findsOneWidget);
-    });
+        expect(find.text('1 item'), findsNothing);
+        expect(find.textContaining('more to order'), findsOneWidget);
+        expect(find.byType(LinearProgressIndicator), findsOneWidget);
+      },
+    );
 
-    testWidgets('shows the plain item count with no progress bar once at/above the minimum', (tester) async {
-      final cart = CartEntity(items: [
-        CartItemEntity(productId: 'p1', name: 'Rice', imageUrl: '', unitPrice: Money(2800), unit: ProductUnit.box, qty: 1),
-      ]);
-      await tester.pumpWidget(_wrap(cart));
-      await tester.pumpAndSettle();
+    testWidgets(
+      'shows the plain item count with no progress bar once at/above the minimum',
+      (tester) async {
+        final cart = CartEntity(
+          items: [
+            CartItemEntity(
+              productId: 'p1',
+              name: 'Rice',
+              imageUrl: '',
+              unitPrice: Money(2800),
+              unit: ProductUnit.box,
+              qty: 1,
+            ),
+          ],
+        );
+        await tester.pumpWidget(_wrap(cart));
+        await tester.pumpAndSettle();
 
-      expect(find.text('1 item'), findsOneWidget);
-      expect(find.byType(LinearProgressIndicator), findsNothing);
-    });
+        expect(find.text('1 item'), findsOneWidget);
+        expect(find.byType(LinearProgressIndicator), findsNothing);
+      },
+    );
   });
 }

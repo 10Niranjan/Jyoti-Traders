@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:badges/badges.dart' as badges;
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/app_shadows.dart';
@@ -15,6 +16,7 @@ import '../../../shared/widgets/add_to_cart_pill.dart';
 import '../../../shared/widgets/category_card.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/error_state_widget.dart';
+import '../../../shared/widgets/first_run_hint.dart';
 import '../../../shared/widgets/notification_bell_button.dart';
 import '../../../shared/widgets/promo_banner_carousel.dart';
 import '../../../shared/widgets/qty_stepper.dart';
@@ -67,14 +69,30 @@ class HomeScreen extends ConsumerWidget {
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.favorite_border_rounded),
-            tooltip: l10n.wishlistTitle,
-            onPressed: () => context.push(RouteNames.wishlist),
+          badges.Badge(
+            showBadge: !ref
+                .watch(firstRunHintsProvider)
+                .contains('home_wishlist_icon'),
+            badgeStyle: const badges.BadgeStyle(
+              badgeColor: AppColors.error,
+              padding: EdgeInsets.all(4),
+            ),
+            position: badges.BadgePosition.topEnd(top: 4, end: 4),
+            child: IconButton(
+              icon: const Icon(Icons.favorite_border_rounded),
+              tooltip: l10n.wishlistTitle,
+              onPressed: () {
+                ref
+                    .read(firstRunHintsProvider.notifier)
+                    .dismiss('home_wishlist_icon');
+                context.push(RouteNames.wishlist);
+              },
+            ),
           ),
           const NotificationBellButton(),
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: AppColors.error),
+            tooltip: l10n.profileLogOut,
             onPressed: () =>
                 ref.read(authControllerProvider.notifier).signOut(),
           ),
@@ -332,39 +350,43 @@ class _BuyAgainRail extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            l10n.homeBuyAgain,
-            style: GoogleFonts.inter(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: isDark
-                  ? AppColors.textPrimaryDark
-                  : AppColors.textPrimaryLight,
+    return FirstRunHint(
+      hintId: 'home_buy_again_rail',
+      message: l10n.firstRunHintBuyAgain,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              l10n.homeBuyAgain,
+              style: GoogleFonts.inter(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: isDark
+                    ? AppColors.textPrimaryDark
+                    : AppColors.textPrimaryLight,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 196,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: products.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 10),
-              itemBuilder: (context, index) {
-                final product = products[index];
-                return _BuyAgainTile(
-                  product: product,
-                  onTap: () =>
-                      context.push(RouteNames.productDetailPath(product.id)),
-                );
-              },
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 196,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: products.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 10),
+                itemBuilder: (context, index) {
+                  final product = products[index];
+                  return _BuyAgainTile(
+                    product: product,
+                    onTap: () =>
+                        context.push(RouteNames.productDetailPath(product.id)),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

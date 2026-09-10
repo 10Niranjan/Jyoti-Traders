@@ -106,6 +106,22 @@ class JyotiTradersApp extends ConsumerWidget {
 
       // Navigation router
       routerConfig: router,
+
+      // Respect the device's font-scaling accessibility setting, but clamp
+      // it — this app's screens use fixed-height rows/cards throughout
+      // (product cards, summary rows, the floating cart bar) that were
+      // never laid out against arbitrarily large text, so an unclamped
+      // scaler (up to 3.0x on some devices) would overflow them. 1.3x still
+      // gives a real, useful size bump for low-vision users.
+      builder: (context, child) {
+        final scaler = MediaQuery.textScalerOf(
+          context,
+        ).clamp(minScaleFactor: 1.0, maxScaleFactor: 1.3);
+        return MediaQuery(
+          data: MediaQuery.of(context).copyWith(textScaler: scaler),
+          child: child!,
+        );
+      },
     );
   }
 }

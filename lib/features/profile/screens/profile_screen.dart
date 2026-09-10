@@ -32,7 +32,8 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTickerProviderStateMixin {
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
+    with SingleTickerProviderStateMixin {
   late final TabController _tabController;
 
   final _formKey = GlobalKey<FormState>();
@@ -117,7 +118,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
 
   Future<void> _useCurrentLocation() async {
     setState(() => _isLocating = true);
-    final position = await ref.read(locationServiceProvider).getCurrentPosition();
+    final position = await ref
+        .read(locationServiceProvider)
+        .getCurrentPosition();
     if (position == null) {
       if (mounted) {
         setState(() => _isLocating = false);
@@ -132,7 +135,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
     }
     final resolved = await ref
         .read(geocodingServiceProvider)
-        .reverseGeocode(latitude: position.latitude, longitude: position.longitude);
+        .reverseGeocode(
+          latitude: position.latitude,
+          longitude: position.longitude,
+        );
     if (!mounted) return;
     setState(() {
       _isLocating = false;
@@ -146,7 +152,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
         if (_cityController.text.trim().isEmpty && resolved.city != null) {
           _cityController.text = resolved.city!;
         }
-        if (_pincodeController.text.trim().isEmpty && resolved.pincode != null) {
+        if (_pincodeController.text.trim().isEmpty &&
+            resolved.pincode != null) {
           _pincodeController.text = resolved.pincode!;
         }
       }
@@ -161,13 +168,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
         imageQuality: 85,
       );
       if (picked == null || !mounted) return;
-      await ref.read(profileControllerProvider.notifier).updatePhoto(uid: uid, localFilePath: picked.path);
+      await ref
+          .read(profileControllerProvider.notifier)
+          .updatePhoto(uid: uid, localFilePath: picked.path);
       if (!mounted) return;
       final result = ref.read(profileControllerProvider);
       if (result.hasError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(AppLocalizations.of(context)!.profileUpdatePhotoError(result.error.toString())),
+            content: Text(
+              AppLocalizations.of(
+                context,
+              )!.profileUpdatePhotoError(result.error.toString()),
+            ),
             backgroundColor: AppColors.error,
           ),
         );
@@ -176,7 +189,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.upiGalleryError(e.toString())),
+          content: Text(
+            AppLocalizations.of(context)!.upiGalleryError(e.toString()),
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -201,7 +216,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
       initialTime: _parseTime(isOpen ? _openTime : _closeTime),
     );
     if (picked == null) return;
-    final formatted = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+    final formatted =
+        '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
     setState(() {
       if (isOpen) {
         _openTime = formatted;
@@ -214,13 +230,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
   Future<void> _save(String uid) async {
     if (!_formKey.currentState!.validate()) return;
 
-    final hasBankInput = _accountHolderController.text.trim().isNotEmpty ||
+    final hasBankInput =
+        _accountHolderController.text.trim().isNotEmpty ||
         _accountNumberController.text.trim().isNotEmpty ||
         _ifscController.text.trim().isNotEmpty ||
         _bankNameController.text.trim().isNotEmpty ||
         _upiController.text.trim().isNotEmpty;
 
-    await ref.read(profileControllerProvider.notifier).updateProfile(
+    await ref
+        .read(profileControllerProvider.notifier)
+        .updateProfile(
           uid: uid,
           address: AddressEntity(
             street: _streetController.text.trim(),
@@ -230,34 +249,50 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
             longitude: _longitude,
             formattedAddress: _resolvedAddress,
           ),
-          gstNumber: _gstController.text.trim().isEmpty ? null : _gstController.text.trim(),
+          gstNumber: _gstController.text.trim().isEmpty
+              ? null
+              : _gstController.text.trim(),
           bankDetails: hasBankInput
               ? BankDetailsEntity(
                   accountHolderName: _accountHolderController.text.trim(),
                   accountNumber: _accountNumberController.text.trim(),
                   ifscCode: _ifscController.text.trim().toUpperCase(),
                   bankName: _bankNameController.text.trim(),
-                  upiId: _upiController.text.trim().isEmpty ? null : _upiController.text.trim(),
+                  upiId: _upiController.text.trim().isEmpty
+                      ? null
+                      : _upiController.text.trim(),
                 )
               : null,
-          businessHours: BusinessHoursEntity(openTime: _openTime, closeTime: _closeTime, is24x7: _is24x7),
+          businessHours: BusinessHoursEntity(
+            openTime: _openTime,
+            closeTime: _closeTime,
+            is24x7: _is24x7,
+          ),
         );
     if (!mounted) return;
     final result = ref.read(profileControllerProvider);
     if (result.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.profileUpdateFailed(result.error.toString())),
+          content: Text(
+            AppLocalizations.of(
+              context,
+            )!.profileUpdateFailed(result.error.toString()),
+          ),
           backgroundColor: AppColors.error,
         ),
       );
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.profileUpdated)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.profileUpdated)),
+    );
   }
 
   Future<void> _saveNotificationPreferences(String uid) async {
-    await ref.read(profileControllerProvider.notifier).updateProfile(
+    await ref
+        .read(profileControllerProvider.notifier)
+        .updateProfile(
           uid: uid,
           notificationPreferences: NotificationPreferencesEntity(
             orderUpdates: _orderUpdates,
@@ -270,7 +305,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
     if (result.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.profileSaveFailed(result.error.toString())),
+          content: Text(
+            AppLocalizations.of(
+              context,
+            )!.profileSaveFailed(result.error.toString()),
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -282,14 +321,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.profileChangePasswordDialogTitle, style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17)),
+        title: Text(
+          l10n.profileChangePasswordDialogTitle,
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17),
+        ),
         content: Text(
           l10n.profileResetLinkMessage(email),
           style: GoogleFonts.inter(fontSize: 13),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(l10n.cancelButton)),
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: Text(l10n.profileSendLink)),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancelButton),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.profileSendLink),
+          ),
         ],
       ),
     );
@@ -305,36 +353,60 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
         ),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.profileResetLinkSent(email))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.profileResetLinkSent(email))));
     }
   }
 
-  Future<void> _confirmRemoveAddress(String uid, List<AddressEntity> savedAddresses, AddressEntity address) async {
+  Future<void> _confirmRemoveAddress(
+    String uid,
+    List<AddressEntity> savedAddresses,
+    AddressEntity address,
+  ) async {
     final l10n = AppLocalizations.of(context)!;
-    final label = address.label?.isNotEmpty == true ? address.label! : address.street;
+    final label = address.label?.isNotEmpty == true
+        ? address.label!
+        : address.street;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.profileRemoveAddressTitle, style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17)),
-        content: Text(l10n.profileRemoveAddressContent(label), style: GoogleFonts.inter(fontSize: 13)),
+        title: Text(
+          l10n.profileRemoveAddressTitle,
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17),
+        ),
+        content: Text(
+          l10n.profileRemoveAddressContent(label),
+          style: GoogleFonts.inter(fontSize: 13),
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(l10n.cancelButton)),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancelButton),
+          ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.profileRemoveAddressAction, style: const TextStyle(color: AppColors.error)),
+            child: Text(
+              l10n.profileRemoveAddressAction,
+              style: const TextStyle(color: AppColors.error),
+            ),
           ),
         ],
       ),
     );
     if (confirmed != true || !mounted) return;
-    await ref.read(profileControllerProvider.notifier).updateProfile(
+    await ref
+        .read(profileControllerProvider.notifier)
+        .updateProfile(
           uid: uid,
-          savedAddresses: savedAddresses.where((a) => a.id != address.id).toList(),
+          savedAddresses: savedAddresses
+              .where((a) => a.id != address.id)
+              .toList(),
         );
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.profileAddressRemoved)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.profileAddressRemoved)));
   }
 
   Future<void> _confirmLogout() async {
@@ -342,16 +414,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.profileLogoutDialogTitle, style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17)),
+        title: Text(
+          l10n.profileLogoutDialogTitle,
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17),
+        ),
         content: Text(
           l10n.profileLogoutDialogContent,
           style: GoogleFonts.inter(fontSize: 13),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: Text(l10n.cancelButton)),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancelButton),
+          ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.profileLogOut, style: const TextStyle(color: AppColors.error)),
+            child: Text(
+              l10n.profileLogOut,
+              style: const TextStyle(color: AppColors.error),
+            ),
           ),
         ],
       ),
@@ -371,20 +452,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
     }
     _prefill(authState);
     final user = authState.user;
-    final unselectedColor = Theme.of(context).colorScheme.onSurface.withOpacity(0.6);
+    final unselectedColor = Theme.of(
+      context,
+    ).colorScheme.onSurface.withOpacity(0.6);
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.navProfile, style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+        title: Text(
+          l10n.navProfile,
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+        ),
         bottom: TabBar(
           controller: _tabController,
           labelColor: AppColors.primary,
           unselectedLabelColor: unselectedColor,
           indicatorColor: AppColors.primary,
           tabs: [
-            Tab(icon: const Icon(Icons.storefront_outlined), text: l10n.navProfile),
-            Tab(icon: const Icon(Icons.settings_outlined), text: l10n.profileSettingsTab),
+            Tab(
+              icon: const Icon(Icons.storefront_outlined),
+              text: l10n.navProfile,
+            ),
+            Tab(
+              icon: const Icon(Icons.settings_outlined),
+              text: l10n.profileSettingsTab,
+            ),
           ],
         ),
       ),
@@ -413,7 +505,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
             onEdit: () => showModalBottomSheet(
               context: context,
               isScrollControlled: true,
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
               builder: (_) => EditBasicInfoSheet(user: user),
             ),
             onTapPhoto: () => _pickProfilePhoto(user.uid),
@@ -441,9 +535,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                   for (final address in user.savedAddresses)
                     ListTile(
                       contentPadding: EdgeInsets.zero,
-                      leading: const Icon(Icons.place_outlined, color: AppColors.primary),
+                      leading: const Icon(
+                        Icons.place_outlined,
+                        color: AppColors.primary,
+                      ),
                       title: Text(
-                        address.label?.isNotEmpty == true ? address.label! : address.street,
+                        address.label?.isNotEmpty == true
+                            ? address.label!
+                            : address.street,
                         style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                       ),
                       subtitle: Text(
@@ -452,8 +551,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                         overflow: TextOverflow.ellipsis,
                       ),
                       trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline, color: AppColors.error),
-                        onPressed: () => _confirmRemoveAddress(user.uid, user.savedAddresses, address),
+                        icon: const Icon(
+                          Icons.delete_outline,
+                          color: AppColors.error,
+                        ),
+                        tooltip: l10n.profileRemoveAddressAction,
+                        onPressed: () => _confirmRemoveAddress(
+                          user.uid,
+                          user.savedAddresses,
+                          address,
+                        ),
                       ),
                     ),
                 ],
@@ -487,14 +594,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () => _pickTime(true),
-                          child: Text(l10n.profileOpensAt(_formatTimeOfDay(_openTime))),
+                          child: Text(
+                            l10n.profileOpensAt(_formatTimeOfDay(_openTime)),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: OutlinedButton(
                           onPressed: () => _pickTime(false),
-                          child: Text(l10n.profileClosesAt(_formatTimeOfDay(_closeTime))),
+                          child: Text(
+                            l10n.profileClosesAt(_formatTimeOfDay(_closeTime)),
+                          ),
                         ),
                       ),
                     ],
@@ -511,12 +622,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
               children: [
                 TextFormField(
                   controller: _accountHolderController,
-                  decoration: InputDecoration(labelText: l10n.profileAccountHolderName),
+                  decoration: InputDecoration(
+                    labelText: l10n.profileAccountHolderName,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _accountNumberController,
-                  decoration: InputDecoration(labelText: l10n.profileAccountNumber),
+                  decoration: InputDecoration(
+                    labelText: l10n.profileAccountNumber,
+                  ),
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: Validators.bankAccountNumber,
@@ -536,7 +651,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _upiController,
-                  decoration: InputDecoration(labelText: l10n.profileUpiIdOptional),
+                  decoration: InputDecoration(
+                    labelText: l10n.profileUpiIdOptional,
+                  ),
                 ),
               ],
             ),
@@ -619,8 +736,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
               ),
             ],
             selected: {ref.watch(themeModeProvider)},
-            onSelectionChanged: (selection) =>
-                ref.read(themeModeProvider.notifier).setThemeMode(selection.first),
+            onSelectionChanged: (selection) => ref
+                .read(themeModeProvider.notifier)
+                .setThemeMode(selection.first),
           ),
         ),
         const SizedBox(height: 16),
@@ -630,8 +748,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
           child: SegmentedButton<Locale?>(
             segments: [
               ButtonSegment(value: null, label: Text(l10n.languageEnglish)),
-              ButtonSegment(value: const Locale('hi'), label: Text(l10n.languageHindi)),
-              ButtonSegment(value: const Locale('mr'), label: Text(l10n.languageMarathi)),
+              ButtonSegment(
+                value: const Locale('hi'),
+                label: Text(l10n.languageHindi),
+              ),
+              ButtonSegment(
+                value: const Locale('mr'),
+                label: Text(l10n.languageMarathi),
+              ),
             ],
             selected: {ref.watch(localeProvider)},
             onSelectionChanged: (selection) =>
@@ -644,7 +768,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
           icon: Icons.lock_outline,
           child: ListTile(
             contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.password_outlined, color: AppColors.primary),
+            leading: const Icon(
+              Icons.password_outlined,
+              color: AppColors.primary,
+            ),
             title: Text(l10n.profileChangePassword),
             subtitle: Text(user.email),
             trailing: const Icon(Icons.chevron_right),
@@ -659,17 +786,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
             children: [
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.call_outlined, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.call_outlined,
+                  color: AppColors.primary,
+                ),
                 title: Text(l10n.profileCallSupport),
                 subtitle: const Text(AppConstants.kSupportPhone),
-                onTap: () => launchUrl(Uri(scheme: 'tel', path: AppConstants.kSupportPhone)),
+                onTap: () => launchUrl(
+                  Uri(scheme: 'tel', path: AppConstants.kSupportPhone),
+                ),
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.email_outlined, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.email_outlined,
+                  color: AppColors.primary,
+                ),
                 title: Text(l10n.profileEmailSupport),
                 subtitle: const Text(AppConstants.kSupportEmail),
-                onTap: () => launchUrl(Uri(scheme: 'mailto', path: AppConstants.kSupportEmail)),
+                onTap: () => launchUrl(
+                  Uri(scheme: 'mailto', path: AppConstants.kSupportEmail),
+                ),
               ),
             ],
           ),
@@ -680,7 +817,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with SingleTicker
           child: OutlinedButton.icon(
             onPressed: _confirmLogout,
             icon: const Icon(Icons.logout_rounded, color: AppColors.error),
-            label: Text(l10n.profileLogOut, style: const TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
+            label: Text(
+              l10n.profileLogOut,
+              style: const TextStyle(
+                color: AppColors.error,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             style: OutlinedButton.styleFrom(
               side: const BorderSide(color: AppColors.error),
               padding: const EdgeInsets.symmetric(vertical: 14),

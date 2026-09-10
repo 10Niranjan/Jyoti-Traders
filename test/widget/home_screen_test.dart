@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:traders_retailer/data/datasources/local_storage_service.dart';
 import 'package:traders_retailer/data/models/user_model.dart';
 import 'package:traders_retailer/data/repositories/auth_repository.dart';
 import 'package:traders_retailer/data/repositories/auth_repository_provider.dart';
@@ -155,6 +156,14 @@ class FakeCategoryRepository implements CategoryRepository {
   Future<void> deleteCategory(String categoryId) async {}
 }
 
+class FakeLocalStorageService extends LocalStorageService {
+  @override
+  Set<String> getSeenFirstRunHints() => const {};
+
+  @override
+  Future<void> markFirstRunHintSeen(String hintId) async {}
+}
+
 class FakeNotificationRepository implements NotificationRepository {
   @override
   Stream<List<NotificationEntity>> watchNotifications() =>
@@ -236,6 +245,7 @@ Widget _wrap({
       FakeNotificationRepository(),
     ),
     cartRepositoryProvider.overrideWithValue(FakeCartRepository()),
+    localStorageProvider.overrideWithValue(FakeLocalStorageService()),
   ],
   child: const MaterialApp(
     localizationsDelegates: AppLocalizations.localizationsDelegates,

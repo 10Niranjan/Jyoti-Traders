@@ -17,7 +17,7 @@ class LocalStorageService {
   // ==========================================
   // Auth Token Management
   // ==========================================
-  
+
   Future<void> saveAuthToken(String token) async {
     await _userBox.put(HiveKeys.authToken, token);
   }
@@ -75,6 +75,22 @@ class LocalStorageService {
     await _settingsBox.put(HiveKeys.isFirstLaunch, false);
   }
 
+  /// One-time "first run" coachmark hints (wishlist, Buy Again rail, the
+  /// floating cart bar) — a hint id is added here the moment it's dismissed,
+  /// so it never shows again for this retailer on this device.
+  Set<String> getSeenFirstRunHints() {
+    return (_settingsBox.get(HiveKeys.seenFirstRunHints) as List?)
+            ?.cast<String>()
+            .toSet() ??
+        const {};
+  }
+
+  Future<void> markFirstRunHintSeen(String hintId) async {
+    final seen = getSeenFirstRunHints();
+    if (seen.contains(hintId)) return;
+    await _settingsBox.put(HiveKeys.seenFirstRunHints, [...seen, hintId]);
+  }
+
   // ==========================================
   // Search History
   // ==========================================
@@ -87,18 +103,18 @@ class LocalStorageService {
 
   Future<void> addRecentSearch(String query) async {
     if (query.trim().isEmpty) return;
-    
+
     final searches = getRecentSearches();
     // Remove if it already exists to move it to the top
     searches.remove(query);
     // Add to the beginning
     searches.insert(0, query);
-    
+
     // Keep only the last 10 searches
     if (searches.length > 10) {
       searches.removeLast();
     }
-    
+
     await _userBox.put(HiveKeys.recentSearches, searches);
   }
 

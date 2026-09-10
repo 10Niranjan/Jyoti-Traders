@@ -18,6 +18,7 @@ class HiveKeys {
   static const String isFirstLaunch = 'is_first_launch';
   static const String languageCode = 'language_code';
   static const String simulatedDeliveryConfig = 'simulated_delivery_config';
+  static const String seenFirstRunHints = 'seen_first_run_hints';
 
   // user_cache
   static const String authToken = 'auth_token';
