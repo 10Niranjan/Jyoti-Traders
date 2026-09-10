@@ -666,6 +666,37 @@ User asked what else could be added to the app, got a categorized list (low/medi
 
 ---
 
+## 📅 Session Log: 2026-08-15 → 2026-09-10 — Catch-up: undocumented commits + broadcast/bulk-import/wishlist/localization
+
+_A run of commits landed on `feature/change-password-settings-tab` without a matching `agents.md` entry each time. Logged here in one pass rather than reconstructed retroactively per-commit, plus this session's own new work (all of it committed and pushed together at the user's request)._
+
+### 📋 Previously uncommitted/undocumented work (commit history only, brief):
+
+- **2026-08-15 — Change Password + Settings tab** (`7fd9c62`): Profile split into Profile/Settings tabs; Settings holds a Change Password action (Firebase Auth password-reset email), notification preferences, and log out.
+- **2026-08-20 — README rewrite** (`306d23d`) and **Jyoti Kirana → Jyoti Traders rename** (`0f04bea`): project-wide rename across `firebase_options.dart`, `firebase_mode.dart`, `google-services.json`, test temp-dir prefixes, and doc references.
+- **2026-08-29 — Logging refactor** (`9d70816`): dropped the never-wired Phase-1 Dio scaffolding (`api_client.dart`/`api_exceptions.dart`/`logging_interceptor.dart` + the `dio` dependency — the app talks to Firestore directly and always did); added a Crashlytics-backed `logWarning()` so release-build warnings surface instead of vanishing into `debugPrint`. Also an animated count-up on `AdminStatCard`.
+- **2026-08-29 — Product-detail add-to-cart fix + QuantityPicker** (`0021f4c`): the add-to-cart confirmation used the app's single root `ScaffoldMessenger`, so it kept floating over whatever screen the retailer navigated to next. Replaced with `InlineToast`, scoped to the host screen's own widget tree. Also replaced the old chip+fixed-step quantity UI with `QuantityPicker` (presets + typed custom quantity + a doubling/halving stepper) for both weighed and unit-priced products; retired `WeightSelector`.
+- **2026-08-29 — Order tracking stepper animation** (`12c6bc2`): completed steps pop/fill in sequence instead of appearing instantly, replaying live if the order advances while the screen is open.
+- **2026-09-05 — Theme default + design snapshot** (`2f6fe67`): `ThemeModeController` now defaults to Light instead of System (matches the approved Zepto Violet mockup regardless of device theme); Figma design references and exported screen PNGs added to the repo.
+
+### 📋 This session's work (2026-09-10, investigated in full and pushed):
+
+- **Admin broadcast messaging** — send an announcement to all retailers (`BroadcastEntity`, `BroadcastRepository`/`BroadcastLocalDatasource`, `SendBroadcastScreen`, `BroadcastIngestionController` surfacing into the existing local `NotificationRepository`). Entry point: a button on `AdminDashboardScreen`.
+- **Admin bulk product CSV import** (`bulk_product_import.dart` + `BulkImportProductsScreen`). Entry point: a button on `CatalogScreen`.
+- **Retailer wishlist** (new `lib/features/wishlist/` module — controller + screen, `WishlistRepository`/`WishlistLocalDatasource`). Entry points: a heart icon on Product Detail and a link from Home; routed at `/wishlist`.
+- **Saved delivery addresses** (`core/utils/saved_addresses.dart`) wired into Checkout and Profile; **product sort** (`core/utils/product_sort.dart`) wired into Search; **Buy Again** logic extracted into a standalone `features/orders/controllers/buy_again.dart` shared by Home and Order History/Detail.
+- **Hindi + Marathi localization**: full `app_en`/`app_hi`/`app_mr.arb` (381 keys) + generated `AppLocalizations`, applied across the entire retailer flow (Home, Search, Cart, Checkout, UPI, Orders, Profile, Notifications, Wishlist, auth/onboarding) plus `AdminProfileScreen` and `SendBroadcastScreen`. **Left incomplete deliberately for now** (user said "let it be"): the rest of the admin panel — Dashboard, Catalog, Manage Products/Categories, All Orders, Order Management, Retailers (all 4 screens), Delivery Settings, Bulk Import — is still hardcoded English. Flagged as the one open gap if Hindi/Marathi-speaking staff (not just retailers) ever need the admin panel.
+- `demo_activity_seeder.dart` added to seed a realistic retailer/order/notification dataset for demoing.
+- **Verification before pushing**: `flutter analyze` — zero issues. `flutter test` — 331/331 passing. All new features confirmed wired end-to-end (routes registered, discoverable entry points, no dead/unreachable code, no leftover TODOs).
+- Committed as two commits (`1ff86eb` new features, `871e026` localization + wiring) and pushed to `origin/feature/change-password-settings-tab` alongside this doc update.
+
+### 💬 Latest Discussion Summary:
+
+1. User asked "what is incomplete" before pushing — answered from a real audit (grepped every screen for `AppLocalizations` usage, checked every new feature's route/entry-point wiring, searched for TODO/ponytail markers) rather than assuming. Only real gap found: admin-panel localization, which the user explicitly chose to leave for later.
+2. `phases.md`/`PRD.md` left untouched this round — none of this maps to an open phase-checklist item; it's the same "ad hoc feature work between phases" treatment as the 2026-07-29 through 2026-08-19 sessions.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
