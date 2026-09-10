@@ -697,6 +697,37 @@ _A run of commits landed on `feature/change-password-settings-tab` without a mat
 
 ---
 
+## 📅 Session Log: 2026-09-10 (continued) — Backlog closed out: bug fixes + full "Suggested improvements" list
+
+### 📋 Tasks completed:
+
+Continuing autonomously from the user's own standing instruction ("verify the 3 bug fixes live, fix anything found, then implement the rest of the list without waiting for me") — verified on the Android emulator, found and fixed nothing new, then implemented every remaining backlog item.
+
+**Bug fixes (verified live on `emulator-5554`, zero regressions found):**
+- Cart/Checkout delivery-charge mismatch — new `resolveDeliveryCharge()` (`calculate_delivery_charge_usecase.dart`) is now the single source of truth Cart and Checkout both call, replacing Cart's hardcoded stub and Checkout's private duplicate.
+- Admin catalog search/filter/sort — `AdminProductSort` + `filterAndSortAdminProducts()` (`core/utils/admin_product_filter.dart`), wired into `ManageProductsScreen`'s new search box/category dropdown/sort dropdown.
+- Notification → order deep link — `notificationTargetRoute()` (`features/notifications/utils/notification_target.dart`), wired into `NotificationsScreen`'s tap handler.
+
+**Retailer flow:** delivery ETA at checkout (`core/utils/delivery_eta.dart`, same-day/next-day/few-days bands off distance + a 3pm cutoff); category filter chips on Search; a coupon code field on Cart (`domain/value_objects/coupon.dart` — two demo codes, percent-off capped by `maxDiscount`/gated by `minOrderAmount` — `CouponController`, `OrderEntity.couponCode`/`discount`, `grandTotal` now nets the discount before adding delivery); `PressScale` tap-scale on `_PaymentMethodCard` (shimmer sweep needed no work — the `shimmer` package already animates).
+
+**Admin flow:** three new `fl_chart` dashboard widgets (category-revenue donut, retailer-growth line, order-status funnel); bulk edit (stock/price-%) on Manage Products, paired with the existing bulk import, via a `_BulkEditDialogContent` `StatefulWidget` that owns its own controllers (an inline `showDialog` + manual dispose raced the dialog's closing animation and threw — fixed by giving the dialog its own `State`) and a `productSelectionModeProvider` so `AddProductFab` gets out of the bulk-action bar's way (a real hit-test collision, caught by a widget test, not a cosmetic one); full localization of the 14 remaining admin screens + 7 supporting widgets (~180 new `admin*` keys across all 3 arb files) — the deliberate gap the previous entry flagged and the user explicitly asked to close now.
+
+**Cross-cutting:**
+- First-run coachmarks for the wishlist icon (red dot badge), the Buy Again rail (dismissible tip bubble), and the floating cart bar (a one-time pulse on the "View Cart" pill, deliberately not a text bubble — both its hosts reserve exactly its own content height, and a taller bubble would reintroduce the overlap bug fixed on 2026-07-29). New `lib/shared/widgets/first_run_hint.dart` (`FirstRunHintsController`/`firstRunHintsProvider`/`FirstRunHint`), backed by a new `HiveKeys.seenFirstRunHints` set so each hint shows once per device, ever.
+- Accessibility pass: `main.dart`'s `MaterialApp.router` now clamps `MediaQuery.textScaler` to `[1.0, 1.3]` via a `builder:` — this app's fixed-height rows/cards (product cards, summary rows, the floating cart bar) were never laid out against arbitrary system font scaling, so leaving it unclamped would overflow them; 1.3x still gives a real bump for low-vision users. Audited all 17 `IconButton` usages project-wide and added a `tooltip` (which Flutter also uses as the button's accessible/semantic label) to the 9 that had none: Home's logout icon, the notification bell, Cart's per-line delete icon, Profile's remove-saved-address icon, the auth screen's password-visibility toggle (dynamic show/hide), Product Detail's wishlist toggle (dynamic add/remove), Manage Products' clear-search icon, and Approval Queue's refresh icon.
+- **Real test-infra gap found while adding the above**: `FloatingCartBar` becoming a `ConsumerWidget` (to read `firstRunHintsProvider`) and `NotificationBellButton` gaining a localized tooltip both meant their existing widget tests — and `home_screen_test.dart`, whose `HomeScreen` already read `firstRunHintsProvider` for the wishlist badge — needed a `ProviderScope`/`localStorageProvider` override or `localizationsDelegates` they didn't have; all were failing before the fix (confirmed by running them, not assumed) and are fixed now.
+- Two runnable checks added per ponytail's rule for non-trivial logic: `test/unit/controllers/first_run_hints_controller_test.dart` (5 cases — load/dismiss/persist/no-op/keeps-siblings) and `test/widget/first_run_hint_test.dart` (3 — shows-when-unseen, bare-child-when-seen, dismiss-persists-and-hides), plus a new regression case in `floating_cart_bar_test.dart` asserting a first tap on the bar persists the dismissal.
+- `dart format` run only on the files this session's accumulated work actually touched (88 files) — not the whole tree, same precedent as Phase 9.9 — which exposed 4 more instances of the same recurring `curly_braces_in_flow_control_structures` lint (a one-line `if` unwrapped by the formatter's line-break) documented back in Phase 6.4; fixed the same way.
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 380/380 passing.
+
+### 💬 Latest Discussion Summary:
+
+1. This entire session ran without further user input after the standing instruction quoted above — the user said they'd be away and would verify results themselves later. Nothing was committed or pushed (per standing project convention: only commit/push on explicit request), so all of this — plus the still-uncommitted work from the two 2026-09-10 entries above it — is sitting in the working tree awaiting the user's return.
+2. `phases.md`/`PRD.md` left untouched — this whole backlog was ad hoc UX/bug-fix work requested directly by the user outside the phase checklist, same treatment as every other post-Phase-6 session.
+3. The one still-open, pre-existing item from earlier in the project: confirming the 1 kg–2.4 kg slab rate (₹39 default) with the client — untouched by this session, unrelated to this backlog.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
