@@ -10,6 +10,7 @@ import 'package:traders_retailer/domain/repositories/order_repository.dart';
 import 'package:traders_retailer/domain/repositories/user_repository.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/admin/screens/all_orders_screen.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 class FakeOrderRepository implements OrderRepository {
   final List<OrderEntity> orders;
@@ -90,7 +91,11 @@ OrderEntity _order({
 
 Widget _wrap(FakeOrderRepository repo) => ProviderScope(
   overrides: [orderRepositoryProvider.overrideWithValue(repo)],
-  child: const MaterialApp(home: AllOrdersScreen()),
+  child: const MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: AllOrdersScreen(),
+  ),
 );
 
 Widget _wrapScoped(
@@ -102,7 +107,11 @@ Widget _wrapScoped(
     orderRepositoryProvider.overrideWithValue(orderRepo),
     userRepositoryProvider.overrideWithValue(userRepo),
   ],
-  child: MaterialApp(home: AllOrdersScreen(retailerId: retailerId)),
+  child: MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: AllOrdersScreen(retailerId: retailerId),
+  ),
 );
 
 void main() {

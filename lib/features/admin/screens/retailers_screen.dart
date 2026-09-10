@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/admin_dashboard_controller.dart';
 import 'approval_queue_screen.dart';
 import 'approved_retailers_list_view.dart';
@@ -39,11 +40,12 @@ class _RetailersScreenState extends ConsumerState<RetailersScreen>
     ).colorScheme.onSurface.withOpacity(0.6);
     final pendingCount =
         ref.watch(pendingApprovalsCountProvider).valueOrNull ?? 0;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Retailers',
+          l10n.adminRetailersTitle,
           style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
         bottom: TabBar(
@@ -52,10 +54,15 @@ class _RetailersScreenState extends ConsumerState<RetailersScreen>
           unselectedLabelColor: unselectedColor,
           indicatorColor: AppColors.primary,
           tabs: [
-            const Tab(icon: Icon(Icons.storefront_outlined), text: 'Approved'),
+            Tab(
+              icon: const Icon(Icons.storefront_outlined),
+              text: l10n.adminApprovedTab,
+            ),
             Tab(
               icon: const Icon(Icons.pending_actions_outlined),
-              text: pendingCount > 0 ? 'Pending ($pendingCount)' : 'Pending',
+              text: pendingCount > 0
+                  ? l10n.adminPendingTabWithCount(pendingCount)
+                  : l10n.adminPendingTab,
             ),
           ],
         ),

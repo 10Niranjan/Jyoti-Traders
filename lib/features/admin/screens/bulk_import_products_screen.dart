@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/bulk_product_import.dart';
 import '../../../domain/entities/category_entity.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/admin_category_controller.dart';
 import '../controllers/admin_product_controller.dart';
 
@@ -15,10 +16,12 @@ class BulkImportProductsScreen extends ConsumerStatefulWidget {
   const BulkImportProductsScreen({super.key});
 
   @override
-  ConsumerState<BulkImportProductsScreen> createState() => _BulkImportProductsScreenState();
+  ConsumerState<BulkImportProductsScreen> createState() =>
+      _BulkImportProductsScreenState();
 }
 
-class _BulkImportProductsScreenState extends ConsumerState<BulkImportProductsScreen> {
+class _BulkImportProductsScreenState
+    extends ConsumerState<BulkImportProductsScreen> {
   final _csvController = TextEditingController();
   List<BulkImportRow>? _parsed;
   bool _isImporting = false;
@@ -42,7 +45,9 @@ class _BulkImportProductsScreenState extends ConsumerState<BulkImportProductsScr
     var created = 0;
     var failed = 0;
     for (final row in rows.where((r) => r.isValid)) {
-      final ok = await ref.read(adminProductControllerProvider.notifier).create(row.product!);
+      final ok = await ref
+          .read(adminProductControllerProvider.notifier)
+          .create(row.product!);
       if (ok) {
         created++;
       } else {
@@ -51,6 +56,7 @@ class _BulkImportProductsScreenState extends ConsumerState<BulkImportProductsScr
     }
 
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isImporting = false;
       _parsed = null;
@@ -59,7 +65,9 @@ class _BulkImportProductsScreenState extends ConsumerState<BulkImportProductsScr
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          failed == 0 ? '$created product(s) created.' : '$created product(s) created, $failed failed.',
+          failed == 0
+              ? l10n.adminProductsCreated(created)
+              : l10n.adminProductsCreatedWithFailures(created, failed),
         ),
       ),
     );
@@ -70,21 +78,26 @@ class _BulkImportProductsScreenState extends ConsumerState<BulkImportProductsScr
     final categoriesAsync = ref.watch(adminCategoriesProvider);
     final parsed = _parsed;
     final validCount = parsed?.where((r) => r.isValid).length ?? 0;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Bulk Import Products', style: GoogleFonts.inter(fontWeight: FontWeight.bold))),
+      appBar: AppBar(
+        title: Text(
+          l10n.adminBulkImportTitle,
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Paste rows copied from a spreadsheet. Header row required: '
-              'name, category, price, unit, stock, description (description optional). '
-              'Unit is one of: piece, box, litre, kg. For a kg product, add four more '
-              'columns to price it by weight: below240g, upto999g, upto2400g, above2400g '
-              '— leave them out for a flat per-unit price.',
-              style: GoogleFonts.inter(fontSize: 12, color: AppColors.textSecondaryLight),
+              l10n.adminBulkImportInstructions,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: AppColors.textSecondaryLight,
+              ),
             ),
             const SizedBox(height: 12),
             Expanded(
@@ -101,9 +114,9 @@ class _BulkImportProductsScreenState extends ConsumerState<BulkImportProductsScr
                 // this, editing the text after a Preview never re-enables
                 // it or clears results parsed from what used to be there.
                 onChanged: (_) => setState(() => _parsed = null),
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'name,category,price,unit,stock,description\nBasmati Rice 25kg,Rice,1800,box,10,Premium',
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  hintText: l10n.adminCsvHint,
                   alignLabelWithHint: true,
                 ),
               ),
@@ -111,26 +124,34 @@ class _BulkImportProductsScreenState extends ConsumerState<BulkImportProductsScr
             const SizedBox(height: 12),
             categoriesAsync.when(
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, st) => Text('Could not load categories: $e'),
+              error: (e, st) =>
+                  Text(l10n.adminCouldNotLoadCategoriesShort('$e')),
               data: (categories) => Row(
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: _csvController.text.trim().isEmpty ? null : () => _preview(categories),
-                      child: const Text('Preview'),
+                      onPressed: _csvController.text.trim().isEmpty
+                          ? null
+                          : () => _preview(categories),
+                      child: Text(l10n.adminPreview),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: FilledButton(
-                      onPressed: (validCount > 0 && !_isImporting) ? _import : null,
+                      onPressed: (validCount > 0 && !_isImporting)
+                          ? _import
+                          : null,
                       child: _isImporting
                           ? const SizedBox(
                               width: 18,
                               height: 18,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
-                          : Text('Import $validCount'),
+                          : Text(l10n.adminImportCount(validCount)),
                     ),
                   ),
                 ],
@@ -148,14 +169,25 @@ class _BulkImportProductsScreenState extends ConsumerState<BulkImportProductsScr
                     return ListTile(
                       dense: true,
                       leading: Icon(
-                        row.isValid ? Icons.check_circle_outline : Icons.error_outline,
-                        color: row.isValid ? AppColors.success : AppColors.error,
+                        row.isValid
+                            ? Icons.check_circle_outline
+                            : Icons.error_outline,
+                        color: row.isValid
+                            ? AppColors.success
+                            : AppColors.error,
                       ),
                       title: Text(
-                        row.isValid ? row.product!.name : 'Row ${row.rowNumber}',
+                        row.isValid
+                            ? row.product!.name
+                            : l10n.adminRowNumber(row.rowNumber),
                         style: GoogleFonts.inter(fontSize: 13),
                       ),
-                      subtitle: row.isValid ? null : Text(row.error!, style: const TextStyle(color: AppColors.error)),
+                      subtitle: row.isValid
+                          ? null
+                          : Text(
+                              row.error!,
+                              style: const TextStyle(color: AppColors.error),
+                            ),
                     );
                   },
                 ),

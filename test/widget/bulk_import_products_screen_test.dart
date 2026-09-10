@@ -7,6 +7,7 @@ import 'package:traders_retailer/domain/entities/product_entity.dart';
 import 'package:traders_retailer/domain/repositories/category_repository.dart';
 import 'package:traders_retailer/domain/repositories/product_repository.dart';
 import 'package:traders_retailer/features/admin/screens/bulk_import_products_screen.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 import '../helpers/test_viewport.dart';
 
@@ -17,7 +18,8 @@ class FakeProductRepository implements ProductRepository {
   Stream<List<ProductEntity>> watchAllProducts() => Stream.value(created);
 
   @override
-  Stream<List<ProductEntity>> watchProducts({String? categoryId}) => Stream.value(created);
+  Stream<List<ProductEntity>> watchProducts({String? categoryId}) =>
+      Stream.value(created);
 
   @override
   Future<List<ProductEntity>> searchProducts(String query) async => [];
@@ -26,7 +28,8 @@ class FakeProductRepository implements ProductRepository {
   Future<ProductEntity?> getProductById(String productId) async => null;
 
   @override
-  Future<void> createProduct(ProductEntity product) async => created.add(product);
+  Future<void> createProduct(ProductEntity product) async =>
+      created.add(product);
 
   @override
   Future<void> updateProduct(ProductEntity product) async {}
@@ -57,17 +60,29 @@ Widget _wrap(FakeProductRepository productRepo) => ProviderScope(
     productRepositoryProvider.overrideWithValue(productRepo),
     categoryRepositoryProvider.overrideWithValue(
       FakeCategoryRepository([
-        const CategoryEntity(id: 'c1', name: 'Rice', iconUrl: '', displayOrder: 0, isActive: true),
+        const CategoryEntity(
+          id: 'c1',
+          name: 'Rice',
+          iconUrl: '',
+          displayOrder: 0,
+          isActive: true,
+        ),
       ]),
     ),
   ],
-  child: const MaterialApp(home: BulkImportProductsScreen()),
+  child: const MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: BulkImportProductsScreen(),
+  ),
 );
 
 void main() {
   useTallTestViewport();
 
-  testWidgets('previewing valid CSV shows a row per product and enables Import', (tester) async {
+  testWidgets('previewing valid CSV shows a row per product and enables Import', (
+    tester,
+  ) async {
     final repo = FakeProductRepository();
     await tester.pumpWidget(_wrap(repo));
     await tester.pumpAndSettle();
@@ -84,7 +99,9 @@ void main() {
     expect(find.text('Import 1'), findsOneWidget);
   });
 
-  testWidgets('an invalid row is flagged and excluded from the import count', (tester) async {
+  testWidgets('an invalid row is flagged and excluded from the import count', (
+    tester,
+  ) async {
     final repo = FakeProductRepository();
     await tester.pumpWidget(_wrap(repo));
     await tester.pumpAndSettle();
@@ -101,7 +118,9 @@ void main() {
     expect(find.text('Import 0'), findsOneWidget);
   });
 
-  testWidgets('tapping Import creates the valid products and shows a summary', (tester) async {
+  testWidgets('tapping Import creates the valid products and shows a summary', (
+    tester,
+  ) async {
     final repo = FakeProductRepository();
     await tester.pumpWidget(_wrap(repo));
     await tester.pumpAndSettle();

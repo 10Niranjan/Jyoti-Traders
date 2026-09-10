@@ -13,6 +13,7 @@ import '../../../core/utils/csv_encoder.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/utils/extensions.dart';
 import '../../../domain/entities/order_entity.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/order_status_badge.dart';
@@ -51,8 +52,8 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
   Future<void> _exportCsv(List<OrderEntity> orders) async {
     if (orders.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No orders to export.'),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.adminNoOrdersToExport),
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -106,19 +107,20 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
   Widget build(BuildContext context) {
     final ordersAsync = ref.watch(allOrdersProvider);
     final retailerId = widget.retailerId;
+    final l10n = AppLocalizations.of(context)!;
 
     final title = retailerId == null
-        ? 'All Orders'
+        ? l10n.adminAllOrdersTitle
         : ref
               .watch(approvedUsersProvider)
               .maybeWhen(
                 data: (users) {
                   final match = users.where((u) => u.uid == retailerId);
                   return match.isEmpty
-                      ? 'Retailer Orders'
-                      : '${match.first.shopName} — Orders';
+                      ? l10n.adminRetailerOrders
+                      : l10n.adminRetailerOrdersTitle(match.first.shopName);
                 },
-                orElse: () => 'Retailer Orders',
+                orElse: () => l10n.adminRetailerOrders,
               );
 
     return Scaffold(
@@ -130,7 +132,7 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.ios_share_rounded),
-            tooltip: 'Export as CSV',
+            tooltip: l10n.adminExportCsvTooltip,
             onPressed: () => _exportCsv(
               _filteredOrders(ordersAsync.valueOrNull ?? const []),
             ),
@@ -146,7 +148,7 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
               child: Row(
                 children: [
                   StatusFilterChip(
-                    label: 'All',
+                    label: l10n.adminAllFilter,
                     selected: _filter == null,
                     onTap: () => setState(() => _filter = null),
                   ),
@@ -174,7 +176,7 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
                   padding: const EdgeInsets.all(16.0),
                   children: [
                     ErrorStateWidget(
-                      message: 'Couldn\'t load orders: $e',
+                      message: l10n.adminCouldntLoadOrders('$e'),
                       onRetry: () => ref.invalidate(allOrdersProvider),
                     ),
                   ],
@@ -189,8 +191,10 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
                         EmptyStateWidget(
                           icon: Icons.receipt_long_outlined,
                           title: _filter == null
-                              ? 'No orders yet'
-                              : 'No ${_filter!.label.toLowerCase()} orders',
+                              ? l10n.adminNoOrdersYet
+                              : l10n.adminNoStatusOrders(
+                                  _filter!.label.toLowerCase(),
+                                ),
                         ),
                       ],
                     );
@@ -225,7 +229,7 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Order #${order.id.shortId}',
+                                    l10n.orderNumber(order.id.shortId),
                                     style: GoogleFonts.inter(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 13,
@@ -247,7 +251,10 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
                               ],
                               const SizedBox(height: 4),
                               Text(
-                                '${order.items.length} items · ${formatOrderDate(order.createdAt)}',
+                                l10n.orderItemsAndDate(
+                                  order.items.length,
+                                  formatOrderDate(order.createdAt),
+                                ),
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
                                   color: AppColors.textSecondaryLight,

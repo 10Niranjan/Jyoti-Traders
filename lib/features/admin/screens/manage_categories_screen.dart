@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
 import '../../../domain/entities/category_entity.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
@@ -23,7 +24,7 @@ class ManageCategoriesScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Manage Categories',
+          AppLocalizations.of(context)!.adminManageCategoriesTitle,
           style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
       ),
@@ -43,7 +44,7 @@ class AddCategoryFab extends StatelessWidget {
     return FloatingActionButton.extended(
       onPressed: () => context.push(RouteNames.adminAddCategory),
       icon: const Icon(Icons.add_rounded),
-      label: const Text('Add Category'),
+      label: Text(AppLocalizations.of(context)!.adminAddCategory),
     );
   }
 }
@@ -59,29 +60,28 @@ class CategoriesListView extends ConsumerWidget {
     WidgetRef ref,
     CategoryEntity category,
   ) async {
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(
-          'Delete category?',
+          l10n.adminDeleteCategoryTitle,
           style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17),
         ),
         content: Text(
-          '"${category.name}" will be permanently removed. Products already assigned to it will keep '
-          'their category id but won\'t show up under any visible category. To hide it from retailers '
-          'without losing it, edit the category and turn off "Active" instead.',
+          l10n.adminDeleteCategoryContent(category.name),
           style: GoogleFonts.inter(fontSize: 13),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.adminCancel),
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: AppColors.error),
+            child: Text(
+              l10n.adminDelete,
+              style: const TextStyle(color: AppColors.error),
             ),
           ),
         ],
@@ -98,8 +98,10 @@ class CategoriesListView extends ConsumerWidget {
       SnackBar(
         content: Text(
           success
-              ? '${category.name} deleted.'
-              : 'Delete failed: ${ref.read(adminCategoryControllerProvider).error}',
+              ? l10n.adminCategoryDeletedMessage(category.name)
+              : l10n.adminDeleteFailed(
+                  '${ref.read(adminCategoryControllerProvider).error}',
+                ),
         ),
         backgroundColor: success ? AppColors.success : AppColors.error,
         behavior: SnackBarBehavior.floating,
@@ -110,6 +112,7 @@ class CategoriesListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final categories = ref.watch(adminCategoriesProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return RefreshIndicator(
       onRefresh: () async => ref.invalidate(adminCategoriesProvider),
@@ -122,7 +125,7 @@ class CategoriesListView extends ConsumerWidget {
           padding: const EdgeInsets.all(18.0),
           children: [
             ErrorStateWidget(
-              message: 'Couldn\'t load categories: $e',
+              message: l10n.adminCouldntLoadCategories('$e'),
               onRetry: () => ref.invalidate(adminCategoriesProvider),
             ),
           ],
@@ -131,11 +134,11 @@ class CategoriesListView extends ConsumerWidget {
           if (list.isEmpty) {
             return ListView(
               padding: const EdgeInsets.all(18.0),
-              children: const [
+              children: [
                 EmptyStateWidget(
                   icon: Icons.category_outlined,
-                  title: 'No categories yet',
-                  message: 'Tap "Add Category" to create your first one.',
+                  title: l10n.adminNoCategoriesYetTitle,
+                  message: l10n.adminNoCategoriesYetMessage,
                 ),
               ],
             );

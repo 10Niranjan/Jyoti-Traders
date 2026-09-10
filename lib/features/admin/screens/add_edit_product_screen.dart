@@ -8,6 +8,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../domain/value_objects/money.dart';
 import '../../../domain/value_objects/weight_rate_slabs.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/admin_category_controller.dart';
 import '../controllers/admin_product_controller.dart';
 import '../../../shared/widgets/image_picker_field.dart';
@@ -21,7 +22,8 @@ class AddEditProductScreen extends ConsumerStatefulWidget {
   bool get isEditing => productId != null;
 
   @override
-  ConsumerState<AddEditProductScreen> createState() => _AddEditProductScreenState();
+  ConsumerState<AddEditProductScreen> createState() =>
+      _AddEditProductScreenState();
 }
 
 class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
@@ -33,10 +35,18 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
 
   /// The four per-kg rates, in band order, shown only for kg products.
   late final List<TextEditingController> _rateControllers = [
-    TextEditingController(text: WeightRateSlabs.defaults.below240g.toStringAsFixed(0)),
-    TextEditingController(text: WeightRateSlabs.defaults.upto999g.toStringAsFixed(0)),
-    TextEditingController(text: WeightRateSlabs.defaults.upto2400g.toStringAsFixed(0)),
-    TextEditingController(text: WeightRateSlabs.defaults.above2400g.toStringAsFixed(0)),
+    TextEditingController(
+      text: WeightRateSlabs.defaults.below240g.toStringAsFixed(0),
+    ),
+    TextEditingController(
+      text: WeightRateSlabs.defaults.upto999g.toStringAsFixed(0),
+    ),
+    TextEditingController(
+      text: WeightRateSlabs.defaults.upto2400g.toStringAsFixed(0),
+    ),
+    TextEditingController(
+      text: WeightRateSlabs.defaults.above2400g.toStringAsFixed(0),
+    ),
   ];
 
   String? _categoryId;
@@ -72,7 +82,12 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
     _existingImageUrl = product.imageUrl;
     final slabs = product.rateSlabs;
     if (slabs != null) {
-      final rates = [slabs.below240g, slabs.upto999g, slabs.upto2400g, slabs.above2400g];
+      final rates = [
+        slabs.below240g,
+        slabs.upto999g,
+        slabs.upto2400g,
+        slabs.above2400g,
+      ];
       for (var i = 0; i < rates.length; i++) {
         _rateControllers[i].text = rates[i].toStringAsFixed(
           rates[i] == rates[i].roundToDouble() ? 0 : 2,
@@ -110,7 +125,12 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Couldn\'t open the gallery: $e'), backgroundColor: AppColors.error),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.adminCouldntOpenGallery('$e'),
+          ),
+          backgroundColor: AppColors.error,
+        ),
       );
     }
   }
@@ -119,7 +139,10 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
     if (!(_formKey.currentState?.validate() ?? false)) return;
     if (_categoryId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please choose a category.'), backgroundColor: AppColors.error),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.adminChooseCategory),
+          backgroundColor: AppColors.error,
+        ),
       );
       return;
     }
@@ -137,7 +160,9 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
           : Money(double.parse(_priceController.text.trim())),
       unit: _unit,
       stock: int.parse(_stockController.text.trim()),
-      description: _descriptionController.text.trim().isEmpty ? null : _descriptionController.text.trim(),
+      description: _descriptionController.text.trim().isEmpty
+          ? null
+          : _descriptionController.text.trim(),
       isActive: _isActive,
       rateSlabs: slabs,
     );
@@ -148,11 +173,16 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
         : await controller.create(product, localImagePath: _pickedImagePath);
 
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     if (success) {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(widget.isEditing ? '${product.name} updated.' : '${product.name} added.'),
+          content: Text(
+            widget.isEditing
+                ? l10n.adminUpdatedMessage(product.name)
+                : l10n.adminAddedMessage(product.name),
+          ),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
         ),
@@ -160,14 +190,19 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Save failed: ${ref.read(adminProductControllerProvider).error}'),
+          content: Text(
+            l10n.adminSaveFailed(
+              '${ref.read(adminProductControllerProvider).error}',
+            ),
+          ),
           backgroundColor: AppColors.error,
         ),
       );
     }
   }
 
-  String _pluralUnit(ProductUnit unit) => unit == ProductUnit.box ? 'boxes' : '${unit.value}s';
+  String _pluralUnit(ProductUnit unit) =>
+      unit == ProductUnit.box ? 'boxes' : '${unit.value}s';
 
   @override
   Widget build(BuildContext context) {
@@ -177,17 +212,20 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
     final categories = ref.watch(adminCategoriesProvider);
     final saveState = ref.watch(adminProductControllerProvider);
     final isSaving = saveState.isLoading;
+    final l10n = AppLocalizations.of(context)!;
 
     // Seed once from the live product when editing.
     if (widget.isEditing && !_seeded) {
-      final product = ref.watch(adminProductByIdProvider(widget.productId!)).valueOrNull;
+      final product = ref
+          .watch(adminProductByIdProvider(widget.productId!))
+          .valueOrNull;
       if (product != null) _seedFrom(product);
     }
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.isEditing ? 'Edit Product' : 'Add Product',
+          widget.isEditing ? l10n.adminEditProduct : l10n.adminAddProduct,
           style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
       ),
@@ -208,22 +246,34 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
               TextFormField(
                 controller: _nameController,
                 enabled: !isSaving,
-                decoration: const InputDecoration(labelText: 'Product name', hintText: 'e.g. Basmati Rice Premium 25kg'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Product name is required' : null,
+                decoration: InputDecoration(
+                  labelText: l10n.adminProductName,
+                  hintText: l10n.adminProductNameHint,
+                ),
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? l10n.adminProductNameRequired
+                    : null,
               ),
               const SizedBox(height: 16),
 
               categories.when(
                 loading: () => const LinearProgressIndicator(),
-                error: (e, _) => Text('Couldn\'t load categories: $e', style: GoogleFonts.inter(color: AppColors.error)),
+                error: (e, _) => Text(
+                  l10n.adminCouldntLoadCategories('$e'),
+                  style: GoogleFonts.inter(color: AppColors.error),
+                ),
                 data: (list) => DropdownButtonFormField<String>(
                   initialValue: _categoryId,
-                  decoration: const InputDecoration(labelText: 'Category'),
+                  decoration: InputDecoration(labelText: l10n.adminCategory),
                   items: [
-                    for (final c in list) DropdownMenuItem(value: c.id, child: Text(c.name)),
+                    for (final c in list)
+                      DropdownMenuItem(value: c.id, child: Text(c.name)),
                   ],
-                  onChanged: isSaving ? null : (v) => setState(() => _categoryId = v),
-                  validator: (v) => v == null ? 'Category is required' : null,
+                  onChanged: isSaving
+                      ? null
+                      : (v) => setState(() => _categoryId = v),
+                  validator: (v) =>
+                      v == null ? l10n.adminCategoryRequired : null,
                 ),
               ),
               const SizedBox(height: 16),
@@ -239,13 +289,22 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                       child: TextFormField(
                         controller: _priceController,
                         enabled: !isSaving,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
-                        decoration: const InputDecoration(labelText: 'Price (₹)', prefixText: '₹ '),
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'^\d*\.?\d{0,2}'),
+                          ),
+                        ],
+                        decoration: InputDecoration(
+                          labelText: l10n.adminPriceLabel,
+                          prefixText: '₹ ',
+                        ),
                         validator: (v) {
                           final parsed = double.tryParse(v?.trim() ?? '');
-                          if (parsed == null) return 'Enter a valid price';
-                          if (parsed <= 0) return 'Price must be above ₹0';
+                          if (parsed == null) return l10n.adminEnterValidPrice;
+                          if (parsed <= 0) return l10n.adminPriceMustBeAbove0;
                           return null;
                         },
                       ),
@@ -255,11 +314,18 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                   Expanded(
                     child: DropdownButtonFormField<ProductUnit>(
                       initialValue: _unit,
-                      decoration: const InputDecoration(labelText: 'Unit'),
+                      decoration: InputDecoration(labelText: l10n.adminUnit),
                       items: [
-                        for (final u in ProductUnit.values) DropdownMenuItem(value: u, child: Text('per ${u.value}')),
+                        for (final u in ProductUnit.values)
+                          DropdownMenuItem(
+                            value: u,
+                            child: Text(l10n.adminPerUnit(u.value)),
+                          ),
                       ],
-                      onChanged: isSaving ? null : (v) => setState(() => _unit = v ?? ProductUnit.piece),
+                      onChanged: isSaving
+                          ? null
+                          : (v) =>
+                                setState(() => _unit = v ?? ProductUnit.piece),
                     ),
                   ),
                 ],
@@ -268,26 +334,38 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
 
               if (_unit == ProductUnit.kg) ...[
                 Text(
-                  'Rate by quantity (₹ per kg)',
-                  style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
+                  l10n.adminRateByQuantity,
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'The whole weight is billed at the one rate its band earns.',
-                  style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.textSecondaryLight),
+                  l10n.adminRateByQuantityHint,
+                  style: GoogleFonts.inter(
+                    fontSize: 11.5,
+                    color: AppColors.textSecondaryLight,
+                  ),
                 ),
                 const SizedBox(height: 10),
-                for (final (i, label) in const [
-                  'Below 240g',
-                  '240g – 999g',
-                  '1kg – 2.4kg',
-                  'Above 2.4kg',
+                for (final (i, label) in [
+                  l10n.adminBandBelow240g,
+                  l10n.adminBand240to999g,
+                  l10n.adminBand1to2400g,
+                  l10n.adminBandAbove2400g,
                 ].indexed) ...[
                   TextFormField(
                     controller: _rateControllers[i],
                     enabled: !isSaving,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}'))],
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d*\.?\d{0,2}'),
+                      ),
+                    ],
                     decoration: InputDecoration(
                       labelText: label,
                       prefixText: '₹ ',
@@ -296,8 +374,8 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                     ),
                     validator: (v) {
                       final parsed = double.tryParse(v?.trim() ?? '');
-                      if (parsed == null) return 'Enter a rate for $label';
-                      if (parsed <= 0) return 'Rate must be above ₹0';
+                      if (parsed == null) return l10n.adminEnterRateFor(label);
+                      if (parsed <= 0) return l10n.adminRateMustBeAbove0;
                       return null;
                     },
                   ),
@@ -312,13 +390,15 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                 keyboardType: TextInputType.number,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 decoration: InputDecoration(
-                  labelText: 'Stock quantity',
-                  helperText: _unit == ProductUnit.kg ? 'In kilograms' : 'In ${_pluralUnit(_unit)}',
+                  labelText: l10n.adminStockQuantity,
+                  helperText: _unit == ProductUnit.kg
+                      ? l10n.adminInKilograms
+                      : l10n.adminInUnits(_pluralUnit(_unit)),
                 ),
                 validator: (v) {
                   final parsed = int.tryParse(v?.trim() ?? '');
-                  if (parsed == null) return 'Enter a valid stock quantity';
-                  if (parsed < 0) return 'Stock cannot be negative';
+                  if (parsed == null) return l10n.adminEnterValidStock;
+                  if (parsed < 0) return l10n.adminStockCannotBeNegative;
                   return null;
                 },
               ),
@@ -328,8 +408,8 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                 controller: _descriptionController,
                 enabled: !isSaving,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Description (optional)',
+                decoration: InputDecoration(
+                  labelText: l10n.adminDescriptionOptional,
                   alignLabelWithHint: true,
                 ),
               ),
@@ -345,10 +425,18 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                   ),
                   child: SwitchListTile(
                     value: _isActive,
-                    onChanged: isSaving ? null : (v) => setState(() => _isActive = v),
-                    title: Text('Active', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
+                    onChanged: isSaving
+                        ? null
+                        : (v) => setState(() => _isActive = v),
+                    title: Text(
+                      l10n.adminActive,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
                     subtitle: Text(
-                      'Inactive products stay in your catalog but are hidden from retailers.',
+                      l10n.adminInactiveProductsHint,
                       style: GoogleFonts.inter(fontSize: 11.5),
                     ),
                   ),
@@ -360,15 +448,22 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: isSaving ? null : _submit,
-                  style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 15)),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 15),
+                  ),
                   child: isSaving
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : Text(
-                          widget.isEditing ? 'Save Changes' : 'Add Product',
+                          widget.isEditing
+                              ? l10n.adminSaveChanges
+                              : l10n.adminAddProduct,
                           style: GoogleFonts.inter(fontWeight: FontWeight.bold),
                         ),
                 ),
@@ -380,4 +475,3 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
     );
   }
 }
-

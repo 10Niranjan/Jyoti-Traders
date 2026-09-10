@@ -2,13 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:traders_retailer/data/models/user_model.dart';
-import 'package:traders_retailer/data/repositories/auth_repository.dart';
 import 'package:traders_retailer/data/repositories/auth_repository_provider.dart';
 import 'package:traders_retailer/data/repositories/repository_providers.dart';
 import 'package:traders_retailer/domain/entities/address_entity.dart';
-import 'package:traders_retailer/domain/entities/bank_details_entity.dart';
-import 'package:traders_retailer/domain/entities/business_hours_entity.dart';
-import 'package:traders_retailer/domain/entities/notification_preferences_entity.dart';
 import 'package:traders_retailer/domain/entities/order_entity.dart';
 import 'package:traders_retailer/domain/entities/order_item_entity.dart';
 import 'package:traders_retailer/domain/repositories/order_repository.dart';
@@ -16,66 +12,7 @@ import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/checkout/screens/upi_payment_screen.dart';
 import 'package:traders_retailer/l10n/app_localizations.dart';
 
-/// Backs `authControllerProvider` with an already-signed-in retailer so
-/// `orderByIdProvider` (retailer-scoped) resolves — no test in this codebase
-/// has needed a signed-in auth state before, so this is a new but minimal
-/// fake: just enough of `AuthRepository` to reach `AuthenticatedCustomer`.
-class FakeAuthRepository implements AuthRepository {
-  final UserModel user;
-  FakeAuthRepository(this.user);
-
-  @override
-  Stream<UserModel?> get authStateChanges => Stream.value(user);
-
-  @override
-  Future<UserModel?> signUp({
-    required String name,
-    required String email,
-    required String password,
-    required String phone,
-    required UserRole role,
-    required String businessName,
-  }) async => user;
-
-  @override
-  Future<UserModel?> signIn({
-    required String email,
-    required String password,
-  }) async => user;
-
-  @override
-  Future<void> signOut() async {}
-
-  @override
-  Future<UserModel?> getCurrentUser() async => user;
-
-  @override
-  Future<UserModel?> refreshUserStatus(String uid) async => user;
-
-  @override
-  Future<UserModel?> updateProfile({
-    required String uid,
-    String? name,
-    String? phone,
-    String? businessName,
-    String? photoUrl,
-    AddressEntity? address,
-    List<AddressEntity>? savedAddresses,
-    String? gstNumber,
-    BankDetailsEntity? bankDetails,
-    BusinessHoursEntity? businessHours,
-    NotificationPreferencesEntity? notificationPreferences,
-  }) async => user;
-
-  @override
-  Future<void> updateFcmToken({
-    required String uid,
-    required String fcmToken,
-  }) async {}
-
-  @override
-  Future<void> sendPasswordResetEmail(String email) async {}
-}
+import '../helpers/fake_auth_repository.dart';
 
 class FakeOrderRepository implements OrderRepository {
   final List<OrderEntity> orders;

@@ -7,6 +7,7 @@ import 'package:traders_retailer/domain/entities/user_entity.dart';
 import 'package:traders_retailer/domain/repositories/order_repository.dart';
 import 'package:traders_retailer/domain/repositories/user_repository.dart';
 import 'package:traders_retailer/features/admin/screens/retailers_screen.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 class FakeUserRepository implements UserRepository {
   final List<UserEntity> pending;
@@ -80,7 +81,11 @@ Widget _wrap(FakeUserRepository userRepo) => ProviderScope(
     userRepositoryProvider.overrideWithValue(userRepo),
     orderRepositoryProvider.overrideWithValue(FakeOrderRepository()),
   ],
-  child: const MaterialApp(home: RetailersScreen()),
+  child: const MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: RetailersScreen(),
+  ),
 );
 
 void main() {

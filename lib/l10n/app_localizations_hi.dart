@@ -236,6 +236,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get searchInStockOnly => 'केवल स्टॉक में';
 
   @override
+  String get searchAllCategories => 'सभी';
+
+  @override
   String get productDetailsTitle => 'उत्पाद विवरण';
 
   @override
@@ -253,6 +256,12 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get wishlistRemoved => 'पसंदीदा सूची से हटाया गया';
+
+  @override
+  String get wishlistAddTooltip => 'पसंदीदा सूची में जोड़ें';
+
+  @override
+  String get wishlistRemoveTooltip => 'पसंदीदा सूची से हटाएं';
 
   @override
   String get productNoLongerAvailable => 'यह उत्पाद अब उपलब्ध नहीं है।';
@@ -333,6 +342,23 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
+  String get cartCouponHint => 'कूपन कोड डालें';
+
+  @override
+  String get cartCouponApply => 'लागू करें';
+
+  @override
+  String get cartCouponRemove => 'हटाएं';
+
+  @override
+  String cartCouponApplied(String code) {
+    return '\"$code\" लागू किया गया';
+  }
+
+  @override
+  String get cartDiscount => 'छूट';
+
+  @override
   String get checkoutLocationError =>
       'आपकी लोकेशन नहीं मिल सकी। लोकेशन अनुमति जांचें और फिर से प्रयास करें।';
 
@@ -364,6 +390,18 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get checkoutDeliveryChargeEstimated => 'डिलीवरी शुल्क (अनुमानित)';
+
+  @override
+  String get checkoutEtaToday => 'आज पहुंचेगा';
+
+  @override
+  String get checkoutEtaTomorrow => 'कल तक पहुंचेगा';
+
+  @override
+  String get checkoutEtaFewDays => '2–3 दिनों में पहुंचेगा';
+
+  @override
+  String get checkoutEtaUnknown => '1–2 दिनों में पहुंचेगा';
 
   @override
   String get checkoutGrandTotal => 'कुल योग';
@@ -890,6 +928,25 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
+  String get firstRunHintBuyAgain =>
+      'जल्दी दोबारा ऑर्डर करने के लिए यहां किसी भी आइटम पर टैप करें';
+
+  @override
+  String get cartRemoveItemTooltip => 'आइटम हटाएं';
+
+  @override
+  String get authShowPassword => 'पासवर्ड दिखाएं';
+
+  @override
+  String get authHidePassword => 'पासवर्ड छिपाएं';
+
+  @override
+  String get adminClearSearchTooltip => 'खोज साफ़ करें';
+
+  @override
+  String get adminRefreshTooltip => 'रीफ़्रेश करें';
+
+  @override
   String get promoMinOrderTitle => 'थोक खरीद ऑर्डर अनिवार्य';
 
   @override
@@ -926,4 +983,654 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get retry => 'फिर से प्रयास करें';
+
+  @override
+  String get adminCancel => 'रद्द करें';
+
+  @override
+  String get adminDelete => 'हटाएं';
+
+  @override
+  String get adminEdit => 'संपादित करें';
+
+  @override
+  String get adminActive => 'सक्रिय';
+
+  @override
+  String get adminSaveChanges => 'बदलाव सहेजें';
+
+  @override
+  String get adminApply => 'लागू करें';
+
+  @override
+  String get adminPreview => 'पूर्वावलोकन';
+
+  @override
+  String get adminDashboardTitle => 'ज्योति ट्रेडर्स एडमिन';
+
+  @override
+  String get adminPendingApprovals => 'लंबित स्वीकृतियां';
+
+  @override
+  String get adminTotalRetailers => 'कुल रिटेलर्स';
+
+  @override
+  String get adminTodaysOrders => 'आज के ऑर्डर';
+
+  @override
+  String get adminTodaysRevenue => 'आज की आय';
+
+  @override
+  String get adminTopProducts => 'टॉप प्रोडक्ट्स';
+
+  @override
+  String adminCouldntLoadTopProducts(String error) {
+    return 'टॉप प्रोडक्ट्स लोड नहीं हो सके: $error';
+  }
+
+  @override
+  String get adminNoSalesYet => 'अभी तक कोई बिक्री नहीं';
+
+  @override
+  String get adminSendBroadcast => 'ब्रॉडकास्ट भेजें';
+
+  @override
+  String get adminRetailerApprovalQueue => 'रिटेलर स्वीकृति सूची';
+
+  @override
+  String get adminViewAll => 'सभी देखें';
+
+  @override
+  String adminCouldntLoadApprovalQueue(String error) {
+    return 'स्वीकृति सूची लोड नहीं हो सकी: $error';
+  }
+
+  @override
+  String adminMoreWaiting(int count) {
+    return '+$count और प्रतीक्षा में — \"सभी देखें\" पर टैप करें';
+  }
+
+  @override
+  String get adminCatalogTitle => 'कैटलॉग';
+
+  @override
+  String get adminProductsTab => 'प्रोडक्ट्स';
+
+  @override
+  String get adminCategoriesTab => 'श्रेणियां';
+
+  @override
+  String get adminBulkImportTooltip => 'बल्क इम्पोर्ट';
+
+  @override
+  String get adminManageProductsTitle => 'प्रोडक्ट्स प्रबंधित करें';
+
+  @override
+  String get adminAddProduct => 'प्रोडक्ट जोड़ें';
+
+  @override
+  String get adminSearchProducts => 'प्रोडक्ट्स खोजें';
+
+  @override
+  String get adminAllCategories => 'सभी श्रेणियां';
+
+  @override
+  String get adminSortNameAZ => 'नाम (A–Z)';
+
+  @override
+  String get adminSortStockLow => 'स्टॉक (कम पहले)';
+
+  @override
+  String get adminSortPriceLow => 'कीमत (कम पहले)';
+
+  @override
+  String get adminSortPriceHigh => 'कीमत (ज्यादा पहले)';
+
+  @override
+  String get adminSelect => 'चुनें';
+
+  @override
+  String adminCouldntLoadProducts(String error) {
+    return 'प्रोडक्ट्स लोड नहीं हो सके: $error';
+  }
+
+  @override
+  String get adminNoProductsYetTitle => 'अभी तक कोई प्रोडक्ट नहीं';
+
+  @override
+  String get adminNoProductsYetMessage =>
+      'अपना पहला कैटलॉग आइटम बनाने के लिए \"प्रोडक्ट जोड़ें\" पर टैप करें।';
+
+  @override
+  String get adminNoProductsMatchTitle => 'कोई प्रोडक्ट मेल नहीं खाता';
+
+  @override
+  String get adminNoProductsMatchMessage =>
+      'एक अलग खोज शब्द या फ़िल्टर आज़माएं।';
+
+  @override
+  String adminLowStockBanner(int count, int threshold) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count प्रोडक्ट्स का स्टॉक कम है (≤ $threshold).',
+      one: '1 प्रोडक्ट का स्टॉक कम है (≤ $threshold).',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminDeleteProductTitle => 'प्रोडक्ट हटाएं?';
+
+  @override
+  String adminDeleteProductContent(String name) {
+    return '\"$name\" को कैटलॉग से हमेशा के लिए हटा दिया जाएगा। इसे रिटेलर्स से बिना खोए छिपाने के लिए, प्रोडक्ट संपादित करें और \"सक्रिय\" बंद करें।';
+  }
+
+  @override
+  String adminProductDeletedMessage(String name) {
+    return '$name हटा दिया गया।';
+  }
+
+  @override
+  String adminDeleteFailed(String error) {
+    return 'हटाना विफल: $error';
+  }
+
+  @override
+  String adminBulkEditTitle(int count) {
+    return '$count प्रोडक्ट्स बल्क एडिट करें';
+  }
+
+  @override
+  String get adminBulkEditHint =>
+      'वैल्यू अपरिवर्तित रखने के लिए फ़ील्ड खाली छोड़ें।';
+
+  @override
+  String get adminSetStockTo => 'स्टॉक इतना सेट करें';
+
+  @override
+  String get adminEnterWholeNumber => 'पूर्ण संख्या दर्ज करें';
+
+  @override
+  String get adminAdjustPriceByPercent => 'कीमत % से समायोजित करें';
+
+  @override
+  String get adminAdjustPriceHint => 'उदा. +10% के लिए 10, -5% के लिए -5';
+
+  @override
+  String get adminEnterNumber => 'एक संख्या दर्ज करें';
+
+  @override
+  String adminSelectedCount(int count) {
+    return '$count चयनित';
+  }
+
+  @override
+  String get adminBulkEdit => 'बल्क एडिट';
+
+  @override
+  String adminBulkEditResult(int success, int total) {
+    return '$total में से $success प्रोडक्ट अपडेट हुए।';
+  }
+
+  @override
+  String get adminEditProduct => 'प्रोडक्ट संपादित करें';
+
+  @override
+  String get adminProductName => 'प्रोडक्ट का नाम';
+
+  @override
+  String get adminProductNameHint => 'उदा. बासमती चावल प्रीमियम 25kg';
+
+  @override
+  String get adminProductNameRequired => 'प्रोडक्ट का नाम आवश्यक है';
+
+  @override
+  String get adminCategory => 'श्रेणी';
+
+  @override
+  String adminCouldntLoadCategories(String error) {
+    return 'श्रेणियां लोड नहीं हो सकीं: $error';
+  }
+
+  @override
+  String get adminCategoryRequired => 'श्रेणी आवश्यक है';
+
+  @override
+  String get adminPriceLabel => 'कीमत (₹)';
+
+  @override
+  String get adminEnterValidPrice => 'मान्य कीमत दर्ज करें';
+
+  @override
+  String get adminPriceMustBeAbove0 => 'कीमत ₹0 से अधिक होनी चाहिए';
+
+  @override
+  String get adminUnit => 'इकाई';
+
+  @override
+  String adminPerUnit(String unit) {
+    return 'प्रति $unit';
+  }
+
+  @override
+  String get adminRateByQuantity => 'मात्रा के अनुसार दर (₹ प्रति किलो)';
+
+  @override
+  String get adminRateByQuantityHint =>
+      'पूरा वजन उसके बैंड की एक दर पर बिल किया जाता है।';
+
+  @override
+  String get adminBandBelow240g => '240g से कम';
+
+  @override
+  String get adminBand240to999g => '240g – 999g';
+
+  @override
+  String get adminBand1to2400g => '1kg – 2.4kg';
+
+  @override
+  String get adminBandAbove2400g => '2.4kg से अधिक';
+
+  @override
+  String adminEnterRateFor(String label) {
+    return '$label के लिए दर दर्ज करें';
+  }
+
+  @override
+  String get adminRateMustBeAbove0 => 'दर ₹0 से अधिक होनी चाहिए';
+
+  @override
+  String get adminStockQuantity => 'स्टॉक मात्रा';
+
+  @override
+  String get adminInKilograms => 'किलोग्राम में';
+
+  @override
+  String adminInUnits(String unit) {
+    return '$unit में';
+  }
+
+  @override
+  String get adminEnterValidStock => 'मान्य स्टॉक मात्रा दर्ज करें';
+
+  @override
+  String get adminStockCannotBeNegative => 'स्टॉक नकारात्मक नहीं हो सकता';
+
+  @override
+  String get adminDescriptionOptional => 'विवरण (वैकल्पिक)';
+
+  @override
+  String get adminInactiveProductsHint =>
+      'निष्क्रिय प्रोडक्ट्स आपके कैटलॉग में रहते हैं लेकिन रिटेलर्स से छिपे रहते हैं।';
+
+  @override
+  String get adminChooseCategory => 'कृपया एक श्रेणी चुनें।';
+
+  @override
+  String adminCouldntOpenGallery(String error) {
+    return 'गैलरी नहीं खुल सकी: $error';
+  }
+
+  @override
+  String adminUpdatedMessage(String name) {
+    return '$name अपडेट हुआ।';
+  }
+
+  @override
+  String adminAddedMessage(String name) {
+    return '$name जोड़ा गया।';
+  }
+
+  @override
+  String adminSaveFailed(String error) {
+    return 'सहेजना विफल: $error';
+  }
+
+  @override
+  String get adminManageCategoriesTitle => 'श्रेणियां प्रबंधित करें';
+
+  @override
+  String get adminAddCategory => 'श्रेणी जोड़ें';
+
+  @override
+  String get adminDeleteCategoryTitle => 'श्रेणी हटाएं?';
+
+  @override
+  String adminDeleteCategoryContent(String name) {
+    return '\"$name\" को हमेशा के लिए हटा दिया जाएगा। इसे सौंपे गए प्रोडक्ट्स अपनी श्रेणी आईडी रखेंगे लेकिन किसी भी दिखाई देने वाली श्रेणी में नहीं दिखेंगे। इसे रिटेलर्स से बिना खोए छिपाने के लिए, श्रेणी संपादित करें और \"सक्रिय\" बंद करें।';
+  }
+
+  @override
+  String adminCategoryDeletedMessage(String name) {
+    return '$name हटा दिया गया।';
+  }
+
+  @override
+  String get adminNoCategoriesYetTitle => 'अभी तक कोई श्रेणी नहीं';
+
+  @override
+  String get adminNoCategoriesYetMessage =>
+      'अपनी पहली श्रेणी बनाने के लिए \"श्रेणी जोड़ें\" पर टैप करें।';
+
+  @override
+  String get adminEditCategory => 'श्रेणी संपादित करें';
+
+  @override
+  String get adminCategoryName => 'श्रेणी का नाम';
+
+  @override
+  String get adminCategoryNameHint => 'उदा. खाद्य तेल';
+
+  @override
+  String get adminCategoryNameRequired => 'श्रेणी का नाम आवश्यक है';
+
+  @override
+  String get adminInactiveCategoriesHint =>
+      'निष्क्रिय श्रेणियां आपके कैटलॉग में रहती हैं लेकिन रिटेलर्स से छिपी रहती हैं।';
+
+  @override
+  String get adminAllOrdersTitle => 'सभी ऑर्डर';
+
+  @override
+  String get adminRetailerOrders => 'रिटेलर ऑर्डर';
+
+  @override
+  String adminRetailerOrdersTitle(String shopName) {
+    return '$shopName — ऑर्डर';
+  }
+
+  @override
+  String get adminExportCsvTooltip => 'CSV के रूप में एक्सपोर्ट करें';
+
+  @override
+  String get adminNoOrdersToExport => 'एक्सपोर्ट करने के लिए कोई ऑर्डर नहीं।';
+
+  @override
+  String get adminAllFilter => 'सभी';
+
+  @override
+  String adminCouldntLoadOrders(String error) {
+    return 'ऑर्डर लोड नहीं हो सके: $error';
+  }
+
+  @override
+  String get adminNoOrdersYet => 'अभी तक कोई ऑर्डर नहीं';
+
+  @override
+  String adminNoStatusOrders(String status) {
+    return 'कोई $status ऑर्डर नहीं';
+  }
+
+  @override
+  String get adminManageOrderTitle => 'ऑर्डर प्रबंधित करें';
+
+  @override
+  String adminStatusUpdated(String status) {
+    return 'स्थिति $status में अपडेट हुई।';
+  }
+
+  @override
+  String adminUpdateFailed(String error) {
+    return 'अपडेट विफल: $error';
+  }
+
+  @override
+  String get adminPaymentConfirmed => 'भुगतान की पुष्टि हुई।';
+
+  @override
+  String adminCouldntLoadOrder(String error) {
+    return 'ऑर्डर लोड नहीं हो सका: $error';
+  }
+
+  @override
+  String get adminOrderNotFound => 'यह ऑर्डर नहीं मिल सका।';
+
+  @override
+  String get adminOrderStatusLabel => 'ऑर्डर स्थिति';
+
+  @override
+  String get adminMarkAsPaid => 'भुगतान हुआ चिह्नित करें';
+
+  @override
+  String get adminRetailersTitle => 'रिटेलर्स';
+
+  @override
+  String get adminApprovedTab => 'स्वीकृत';
+
+  @override
+  String get adminPendingTab => 'लंबित';
+
+  @override
+  String adminPendingTabWithCount(int count) {
+    return 'लंबित ($count)';
+  }
+
+  @override
+  String adminCouldntLoadRetailers(String error) {
+    return 'रिटेलर्स लोड नहीं हो सके: $error';
+  }
+
+  @override
+  String get adminNoApprovedRetailersTitle => 'अभी तक कोई स्वीकृत रिटेलर नहीं';
+
+  @override
+  String get adminNoApprovedRetailersMessage =>
+      'आपके स्वीकृत किए गए रिटेलर्स यहां उनके ऑर्डर इतिहास के साथ दिखेंगे।';
+
+  @override
+  String get adminOwnerSection => 'मालिक';
+
+  @override
+  String get adminFullNameLabel => 'पूरा नाम';
+
+  @override
+  String get adminContactSection => 'संपर्क';
+
+  @override
+  String get adminEmailLabel => 'ईमेल';
+
+  @override
+  String get adminPhoneLabel => 'फ़ोन';
+
+  @override
+  String get adminAddressSection => 'पता';
+
+  @override
+  String get adminStreetLabel => 'गली';
+
+  @override
+  String get adminCityLabel => 'शहर';
+
+  @override
+  String get adminPincodeLabel => 'पिनकोड';
+
+  @override
+  String get adminLocationLabel => 'स्थान';
+
+  @override
+  String get adminAddressNotProvided => 'पता अभी उपलब्ध नहीं है';
+
+  @override
+  String get adminGstSection => 'GST';
+
+  @override
+  String get adminGstNumberLabel => 'GST नंबर';
+
+  @override
+  String get adminBusinessHoursSection => 'व्यापार समय';
+
+  @override
+  String get adminOpenLabel => 'खुला';
+
+  @override
+  String get adminOpen24x7 => '24×7 खुला';
+
+  @override
+  String get adminBankDetailsSection => 'बैंक विवरण';
+
+  @override
+  String get adminAccountHolderLabel => 'खाताधारक';
+
+  @override
+  String get adminAccountNumberLabel => 'खाता संख्या';
+
+  @override
+  String get adminIfscLabel => 'IFSC';
+
+  @override
+  String get adminBankNameLabel => 'बैंक';
+
+  @override
+  String get adminUpiIdLabel => 'UPI ID';
+
+  @override
+  String get adminRegisteredOnSection => 'पंजीकरण तिथि';
+
+  @override
+  String get adminDateLabel => 'तारीख';
+
+  @override
+  String get adminDeliverySettingsTitle => 'डिलीवरी सेटिंग्स';
+
+  @override
+  String get adminWarehouseLocation => 'गोदाम स्थान';
+
+  @override
+  String get adminWarehouseLocationHint =>
+      'हर डिलीवरी शुल्क इस स्थान से सीधी दूरी के आधार पर गणना की जाती है।';
+
+  @override
+  String get adminLatitude => 'अक्षांश';
+
+  @override
+  String get adminLongitude => 'देशांतर';
+
+  @override
+  String get adminEnterValidCoordinate => 'मान्य निर्देशांक दर्ज करें';
+
+  @override
+  String get adminUseCurrentLocation => 'वर्तमान स्थान का उपयोग करें';
+
+  @override
+  String get adminDeliverySavedSuccess =>
+      '✓ डिलीवरी सेटिंग्स सफलतापूर्वक सहेजी गईं';
+
+  @override
+  String get adminPerKmRate => 'प्रति-किमी दर';
+
+  @override
+  String get adminRateLabelPerKm => 'दर (₹ प्रति किमी)';
+
+  @override
+  String get adminEnterValidRate => 'मान्य दर दर्ज करें';
+
+  @override
+  String adminCouldntLoadDeliverySettings(String error) {
+    return 'डिलीवरी सेटिंग्स लोड नहीं हो सकीं: $error';
+  }
+
+  @override
+  String get adminBulkImportTitle => 'प्रोडक्ट्स बल्क इम्पोर्ट करें';
+
+  @override
+  String get adminBulkImportInstructions =>
+      'स्प्रेडशीट से कॉपी की गई पंक्तियां पेस्ट करें। हेडर पंक्ति आवश्यक: name, category, price, unit, stock, description (description वैकल्पिक है)। Unit इनमें से एक है: piece, box, litre, kg। kg प्रोडक्ट के लिए, वजन के अनुसार कीमत तय करने हेतु चार और कॉलम जोड़ें: below240g, upto999g, upto2400g, above2400g — फ्लैट प्रति-यूनिट कीमत के लिए इन्हें छोड़ दें।';
+
+  @override
+  String get adminCsvHint =>
+      'name,category,price,unit,stock,description\nBasmati Rice 25kg,Rice,1800,box,10,Premium';
+
+  @override
+  String adminCouldNotLoadCategoriesShort(String error) {
+    return 'श्रेणियां लोड नहीं हो सकीं: $error';
+  }
+
+  @override
+  String adminImportCount(int count) {
+    return '$count इम्पोर्ट करें';
+  }
+
+  @override
+  String adminRowNumber(int number) {
+    return 'पंक्ति $number';
+  }
+
+  @override
+  String adminProductsCreated(int count) {
+    return '$count प्रोडक्ट बनाए गए।';
+  }
+
+  @override
+  String adminProductsCreatedWithFailures(int created, int failed) {
+    return '$created प्रोडक्ट बनाए गए, $failed विफल।';
+  }
+
+  @override
+  String adminOwnerNameValue(String name) {
+    return 'मालिक: $name';
+  }
+
+  @override
+  String adminPhoneValue(String phone) {
+    return 'फ़ोन: $phone';
+  }
+
+  @override
+  String get adminApprovalQueueClear => 'स्वीकृति सूची खाली है!';
+
+  @override
+  String get adminAllRetailersVerified => 'सभी पंजीकृत रिटेलर्स सत्यापित हैं।';
+
+  @override
+  String adminOrderCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ऑर्डर',
+      one: '1 ऑर्डर',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminInactiveBadge => 'निष्क्रिय';
+
+  @override
+  String get adminEditTooltip => 'संपादित करें';
+
+  @override
+  String get adminDeleteTooltip => 'हटाएं';
+
+  @override
+  String adminPricePerUnit(String price, String unit) {
+    return '$price · प्रति $unit';
+  }
+
+  @override
+  String adminStockLabel(int count) {
+    return 'स्टॉक: $count';
+  }
+
+  @override
+  String adminActionFailed(String error) {
+    return 'कार्रवाई विफल: $error';
+  }
+
+  @override
+  String get adminReject => 'अस्वीकार करें';
+
+  @override
+  String get adminApprove => 'स्वीकृत करें';
+
+  @override
+  String adminRejectedMessage(String name) {
+    return '$name अस्वीकृत किया गया।';
+  }
+
+  @override
+  String adminApprovedMessage(String name) {
+    return '$name सफलतापूर्वक स्वीकृत हुआ!';
+  }
 }

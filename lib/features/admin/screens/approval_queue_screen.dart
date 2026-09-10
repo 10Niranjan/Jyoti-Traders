@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
 import '../controllers/admin_dashboard_controller.dart';
@@ -20,13 +21,14 @@ class ApprovalQueueScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Retailer Approval Queue',
+          AppLocalizations.of(context)!.adminRetailerApprovalQueue,
           style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
             onPressed: () => ref.invalidate(pendingUsersProvider),
             icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
+            tooltip: AppLocalizations.of(context)!.adminRefreshTooltip,
           ),
         ],
       ),
@@ -46,6 +48,7 @@ class PendingRetailersListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pendingUsers = ref.watch(pendingUsersProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return RefreshIndicator(
       onRefresh: () async => ref.invalidate(pendingUsersProvider),
@@ -58,7 +61,7 @@ class PendingRetailersListView extends ConsumerWidget {
           padding: const EdgeInsets.all(18.0),
           children: [
             ErrorStateWidget(
-              message: 'Couldn\'t load approval queue: $e',
+              message: l10n.adminCouldntLoadApprovalQueue('$e'),
               onRetry: () => ref.invalidate(pendingUsersProvider),
             ),
           ],

@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/category_entity.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/admin_category_controller.dart';
 import '../../../shared/widgets/image_picker_field.dart';
 
@@ -17,7 +18,8 @@ class AddEditCategoryScreen extends ConsumerStatefulWidget {
   bool get isEditing => categoryId != null;
 
   @override
-  ConsumerState<AddEditCategoryScreen> createState() => _AddEditCategoryScreenState();
+  ConsumerState<AddEditCategoryScreen> createState() =>
+      _AddEditCategoryScreenState();
 }
 
 class _AddEditCategoryScreenState extends ConsumerState<AddEditCategoryScreen> {
@@ -60,7 +62,12 @@ class _AddEditCategoryScreenState extends ConsumerState<AddEditCategoryScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Couldn\'t open the gallery: $e'), backgroundColor: AppColors.error),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.adminCouldntOpenGallery('$e'),
+          ),
+          backgroundColor: AppColors.error,
+        ),
       );
     }
   }
@@ -82,11 +89,16 @@ class _AddEditCategoryScreenState extends ConsumerState<AddEditCategoryScreen> {
         : await controller.create(category, localIconPath: _pickedIconPath);
 
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
     if (success) {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(widget.isEditing ? '${category.name} updated.' : '${category.name} added.'),
+          content: Text(
+            widget.isEditing
+                ? l10n.adminUpdatedMessage(category.name)
+                : l10n.adminAddedMessage(category.name),
+          ),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
         ),
@@ -94,7 +106,11 @@ class _AddEditCategoryScreenState extends ConsumerState<AddEditCategoryScreen> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Save failed: ${ref.read(adminCategoryControllerProvider).error}'),
+          content: Text(
+            l10n.adminSaveFailed(
+              '${ref.read(adminCategoryControllerProvider).error}',
+            ),
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -106,6 +122,7 @@ class _AddEditCategoryScreenState extends ConsumerState<AddEditCategoryScreen> {
     final categoriesAsync = ref.watch(adminCategoriesProvider);
     final saveState = ref.watch(adminCategoryControllerProvider);
     final isSaving = saveState.isLoading;
+    final l10n = AppLocalizations.of(context)!;
 
     if (!widget.isEditing) {
       // New categories go to the end of the list by default; reordering
@@ -114,14 +131,16 @@ class _AddEditCategoryScreenState extends ConsumerState<AddEditCategoryScreen> {
       if (categories != null) _displayOrder = categories.length;
     } else if (!_seeded) {
       // Seed once from the live category when editing.
-      final category = ref.watch(adminCategoryByIdProvider(widget.categoryId!)).valueOrNull;
+      final category = ref
+          .watch(adminCategoryByIdProvider(widget.categoryId!))
+          .valueOrNull;
       if (category != null) _seedFrom(category);
     }
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.isEditing ? 'Edit Category' : 'Add Category',
+          widget.isEditing ? l10n.adminEditCategory : l10n.adminAddCategory,
           style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
       ),
@@ -142,8 +161,13 @@ class _AddEditCategoryScreenState extends ConsumerState<AddEditCategoryScreen> {
               TextFormField(
                 controller: _nameController,
                 enabled: !isSaving,
-                decoration: const InputDecoration(labelText: 'Category name', hintText: 'e.g. Edible Oils'),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Category name is required' : null,
+                decoration: InputDecoration(
+                  labelText: l10n.adminCategoryName,
+                  hintText: l10n.adminCategoryNameHint,
+                ),
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? l10n.adminCategoryNameRequired
+                    : null,
               ),
               const SizedBox(height: 8),
 
@@ -157,10 +181,18 @@ class _AddEditCategoryScreenState extends ConsumerState<AddEditCategoryScreen> {
                   ),
                   child: SwitchListTile(
                     value: _isActive,
-                    onChanged: isSaving ? null : (v) => setState(() => _isActive = v),
-                    title: Text('Active', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
+                    onChanged: isSaving
+                        ? null
+                        : (v) => setState(() => _isActive = v),
+                    title: Text(
+                      l10n.adminActive,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
                     subtitle: Text(
-                      'Inactive categories stay in your catalog but are hidden from retailers.',
+                      l10n.adminInactiveCategoriesHint,
                       style: GoogleFonts.inter(fontSize: 11.5),
                     ),
                   ),
@@ -171,21 +203,31 @@ class _AddEditCategoryScreenState extends ConsumerState<AddEditCategoryScreen> {
               AnimatedBuilder(
                 animation: _nameController,
                 builder: (context, _) {
-                  final canSave = !isSaving && _nameController.text.trim().isNotEmpty;
+                  final canSave =
+                      !isSaving && _nameController.text.trim().isNotEmpty;
                   return SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: canSave ? _submit : null,
-                      style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 15)),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                      ),
                       child: isSaving
                           ? const SizedBox(
                               width: 20,
                               height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
                           : Text(
-                              widget.isEditing ? 'Save Changes' : 'Add Category',
-                              style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                              widget.isEditing
+                                  ? l10n.adminSaveChanges
+                                  : l10n.adminAddCategory,
+                              style: GoogleFonts.inter(
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                     ),
                   );

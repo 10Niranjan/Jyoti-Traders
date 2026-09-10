@@ -502,6 +502,12 @@ abstract class AppLocalizations {
   /// **'In stock only'**
   String get searchInStockOnly;
 
+  /// No description provided for @searchAllCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get searchAllCategories;
+
   /// No description provided for @productDetailsTitle.
   ///
   /// In en, this message translates to:
@@ -537,6 +543,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Removed from wishlist'**
   String get wishlistRemoved;
+
+  /// No description provided for @wishlistAddTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to wishlist'**
+  String get wishlistAddTooltip;
+
+  /// No description provided for @wishlistRemoveTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from wishlist'**
+  String get wishlistRemoveTooltip;
 
   /// No description provided for @productNoLongerAvailable.
   ///
@@ -670,6 +688,36 @@ abstract class AppLocalizations {
   /// **'{weight} @ ₹{rate}/kg'**
   String cartWeightAtRate(String weight, String rate);
 
+  /// No description provided for @cartCouponHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter coupon code'**
+  String get cartCouponHint;
+
+  /// No description provided for @cartCouponApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get cartCouponApply;
+
+  /// No description provided for @cartCouponRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get cartCouponRemove;
+
+  /// No description provided for @cartCouponApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{code}\" applied'**
+  String cartCouponApplied(String code);
+
+  /// No description provided for @cartDiscount.
+  ///
+  /// In en, this message translates to:
+  /// **'Discount'**
+  String get cartDiscount;
+
   /// No description provided for @checkoutLocationError.
   ///
   /// In en, this message translates to:
@@ -729,6 +777,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delivery Charge (estimated)'**
   String get checkoutDeliveryChargeEstimated;
+
+  /// No description provided for @checkoutEtaToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrives today'**
+  String get checkoutEtaToday;
+
+  /// No description provided for @checkoutEtaTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrives by tomorrow'**
+  String get checkoutEtaTomorrow;
+
+  /// No description provided for @checkoutEtaFewDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrives in 2–3 days'**
+  String get checkoutEtaFewDays;
+
+  /// No description provided for @checkoutEtaUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrives in 1–2 days'**
+  String get checkoutEtaUnknown;
 
   /// No description provided for @checkoutGrandTotal.
   ///
@@ -1594,6 +1666,42 @@ abstract class AppLocalizations {
   /// **'Add {amount} more to order'**
   String cartAddMoreShort(String amount);
 
+  /// No description provided for @firstRunHintBuyAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap any item here to quickly reorder it'**
+  String get firstRunHintBuyAgain;
+
+  /// No description provided for @cartRemoveItemTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove item'**
+  String get cartRemoveItemTooltip;
+
+  /// No description provided for @authShowPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get authShowPassword;
+
+  /// No description provided for @authHidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get authHidePassword;
+
+  /// No description provided for @adminClearSearchTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get adminClearSearchTooltip;
+
+  /// No description provided for @adminRefreshTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh'**
+  String get adminRefreshTooltip;
+
   /// No description provided for @promoMinOrderTitle.
   ///
   /// In en, this message translates to:
@@ -1659,6 +1767,1086 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Retry'**
   String get retry;
+
+  /// No description provided for @adminCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get adminCancel;
+
+  /// No description provided for @adminDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get adminDelete;
+
+  /// No description provided for @adminEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get adminEdit;
+
+  /// No description provided for @adminActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get adminActive;
+
+  /// No description provided for @adminSaveChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Changes'**
+  String get adminSaveChanges;
+
+  /// No description provided for @adminApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get adminApply;
+
+  /// No description provided for @adminPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get adminPreview;
+
+  /// No description provided for @adminDashboardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Jyoti Traders Admin'**
+  String get adminDashboardTitle;
+
+  /// No description provided for @adminPendingApprovals.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending Approvals'**
+  String get adminPendingApprovals;
+
+  /// No description provided for @adminTotalRetailers.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Retailers'**
+  String get adminTotalRetailers;
+
+  /// No description provided for @adminTodaysOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Orders'**
+  String get adminTodaysOrders;
+
+  /// No description provided for @adminTodaysRevenue.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Revenue'**
+  String get adminTodaysRevenue;
+
+  /// No description provided for @adminTopProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Products'**
+  String get adminTopProducts;
+
+  /// No description provided for @adminCouldntLoadTopProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load top products: {error}'**
+  String adminCouldntLoadTopProducts(String error);
+
+  /// No description provided for @adminNoSalesYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No sales yet'**
+  String get adminNoSalesYet;
+
+  /// No description provided for @adminSendBroadcast.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Broadcast'**
+  String get adminSendBroadcast;
+
+  /// No description provided for @adminRetailerApprovalQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Retailer Approval Queue'**
+  String get adminRetailerApprovalQueue;
+
+  /// No description provided for @adminViewAll.
+  ///
+  /// In en, this message translates to:
+  /// **'View All'**
+  String get adminViewAll;
+
+  /// No description provided for @adminCouldntLoadApprovalQueue.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load approval queue: {error}'**
+  String adminCouldntLoadApprovalQueue(String error);
+
+  /// No description provided for @adminMoreWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} more waiting — tap \"View All\"'**
+  String adminMoreWaiting(int count);
+
+  /// No description provided for @adminCatalogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Catalog'**
+  String get adminCatalogTitle;
+
+  /// No description provided for @adminProductsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Products'**
+  String get adminProductsTab;
+
+  /// No description provided for @adminCategoriesTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Categories'**
+  String get adminCategoriesTab;
+
+  /// No description provided for @adminBulkImportTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Bulk Import'**
+  String get adminBulkImportTooltip;
+
+  /// No description provided for @adminManageProductsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Products'**
+  String get adminManageProductsTitle;
+
+  /// No description provided for @adminAddProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Product'**
+  String get adminAddProduct;
+
+  /// No description provided for @adminSearchProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Search products'**
+  String get adminSearchProducts;
+
+  /// No description provided for @adminAllCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'All Categories'**
+  String get adminAllCategories;
+
+  /// No description provided for @adminSortNameAZ.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (A–Z)'**
+  String get adminSortNameAZ;
+
+  /// No description provided for @adminSortStockLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock (low first)'**
+  String get adminSortStockLow;
+
+  /// No description provided for @adminSortPriceLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Price (low first)'**
+  String get adminSortPriceLow;
+
+  /// No description provided for @adminSortPriceHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Price (high first)'**
+  String get adminSortPriceHigh;
+
+  /// No description provided for @adminSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get adminSelect;
+
+  /// No description provided for @adminCouldntLoadProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load products: {error}'**
+  String adminCouldntLoadProducts(String error);
+
+  /// No description provided for @adminNoProductsYetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No products yet'**
+  String get adminNoProductsYetTitle;
+
+  /// No description provided for @adminNoProductsYetMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap \"Add Product\" to create your first catalog item.'**
+  String get adminNoProductsYetMessage;
+
+  /// No description provided for @adminNoProductsMatchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No products match'**
+  String get adminNoProductsMatchTitle;
+
+  /// No description provided for @adminNoProductsMatchMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Try a different search term or filter.'**
+  String get adminNoProductsMatchMessage;
+
+  /// No description provided for @adminLowStockBanner.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 product is low on stock (≤ {threshold}).} other{{count} products are low on stock (≤ {threshold}).}}'**
+  String adminLowStockBanner(int count, int threshold);
+
+  /// No description provided for @adminDeleteProductTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete product?'**
+  String get adminDeleteProductTitle;
+
+  /// No description provided for @adminDeleteProductContent.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{name}\" will be permanently removed from the catalog. To hide it from retailers without losing it, edit the product and turn off \"Active\" instead.'**
+  String adminDeleteProductContent(String name);
+
+  /// No description provided for @adminProductDeletedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} deleted.'**
+  String adminProductDeletedMessage(String name);
+
+  /// No description provided for @adminDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete failed: {error}'**
+  String adminDeleteFailed(String error);
+
+  /// No description provided for @adminBulkEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bulk edit {count} products'**
+  String adminBulkEditTitle(int count);
+
+  /// No description provided for @adminBulkEditHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave a field blank to leave that value unchanged.'**
+  String get adminBulkEditHint;
+
+  /// No description provided for @adminSetStockTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Set stock to'**
+  String get adminSetStockTo;
+
+  /// No description provided for @adminEnterWholeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number'**
+  String get adminEnterWholeNumber;
+
+  /// No description provided for @adminAdjustPriceByPercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust price by %'**
+  String get adminAdjustPriceByPercent;
+
+  /// No description provided for @adminAdjustPriceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 10 for +10%, -5 for -5%'**
+  String get adminAdjustPriceHint;
+
+  /// No description provided for @adminEnterNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a number'**
+  String get adminEnterNumber;
+
+  /// No description provided for @adminSelectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String adminSelectedCount(int count);
+
+  /// No description provided for @adminBulkEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Bulk Edit'**
+  String get adminBulkEdit;
+
+  /// No description provided for @adminBulkEditResult.
+  ///
+  /// In en, this message translates to:
+  /// **'{success} of {total} products updated.'**
+  String adminBulkEditResult(int success, int total);
+
+  /// No description provided for @adminEditProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Product'**
+  String get adminEditProduct;
+
+  /// No description provided for @adminProductName.
+  ///
+  /// In en, this message translates to:
+  /// **'Product name'**
+  String get adminProductName;
+
+  /// No description provided for @adminProductNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Basmati Rice Premium 25kg'**
+  String get adminProductNameHint;
+
+  /// No description provided for @adminProductNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Product name is required'**
+  String get adminProductNameRequired;
+
+  /// No description provided for @adminCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get adminCategory;
+
+  /// No description provided for @adminCouldntLoadCategories.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load categories: {error}'**
+  String adminCouldntLoadCategories(String error);
+
+  /// No description provided for @adminCategoryRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Category is required'**
+  String get adminCategoryRequired;
+
+  /// No description provided for @adminPriceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Price (₹)'**
+  String get adminPriceLabel;
+
+  /// No description provided for @adminEnterValidPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid price'**
+  String get adminEnterValidPrice;
+
+  /// No description provided for @adminPriceMustBeAbove0.
+  ///
+  /// In en, this message translates to:
+  /// **'Price must be above ₹0'**
+  String get adminPriceMustBeAbove0;
+
+  /// No description provided for @adminUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'Unit'**
+  String get adminUnit;
+
+  /// No description provided for @adminPerUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'per {unit}'**
+  String adminPerUnit(String unit);
+
+  /// No description provided for @adminRateByQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate by quantity (₹ per kg)'**
+  String get adminRateByQuantity;
+
+  /// No description provided for @adminRateByQuantityHint.
+  ///
+  /// In en, this message translates to:
+  /// **'The whole weight is billed at the one rate its band earns.'**
+  String get adminRateByQuantityHint;
+
+  /// No description provided for @adminBandBelow240g.
+  ///
+  /// In en, this message translates to:
+  /// **'Below 240g'**
+  String get adminBandBelow240g;
+
+  /// No description provided for @adminBand240to999g.
+  ///
+  /// In en, this message translates to:
+  /// **'240g – 999g'**
+  String get adminBand240to999g;
+
+  /// No description provided for @adminBand1to2400g.
+  ///
+  /// In en, this message translates to:
+  /// **'1kg – 2.4kg'**
+  String get adminBand1to2400g;
+
+  /// No description provided for @adminBandAbove2400g.
+  ///
+  /// In en, this message translates to:
+  /// **'Above 2.4kg'**
+  String get adminBandAbove2400g;
+
+  /// No description provided for @adminEnterRateFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a rate for {label}'**
+  String adminEnterRateFor(String label);
+
+  /// No description provided for @adminRateMustBeAbove0.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate must be above ₹0'**
+  String get adminRateMustBeAbove0;
+
+  /// No description provided for @adminStockQuantity.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock quantity'**
+  String get adminStockQuantity;
+
+  /// No description provided for @adminInKilograms.
+  ///
+  /// In en, this message translates to:
+  /// **'In kilograms'**
+  String get adminInKilograms;
+
+  /// No description provided for @adminInUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'In {unit}'**
+  String adminInUnits(String unit);
+
+  /// No description provided for @adminEnterValidStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid stock quantity'**
+  String get adminEnterValidStock;
+
+  /// No description provided for @adminStockCannotBeNegative.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock cannot be negative'**
+  String get adminStockCannotBeNegative;
+
+  /// No description provided for @adminDescriptionOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Description (optional)'**
+  String get adminDescriptionOptional;
+
+  /// No description provided for @adminInactiveProductsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive products stay in your catalog but are hidden from retailers.'**
+  String get adminInactiveProductsHint;
+
+  /// No description provided for @adminChooseCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Please choose a category.'**
+  String get adminChooseCategory;
+
+  /// No description provided for @adminCouldntOpenGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the gallery: {error}'**
+  String adminCouldntOpenGallery(String error);
+
+  /// No description provided for @adminUpdatedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} updated.'**
+  String adminUpdatedMessage(String name);
+
+  /// No description provided for @adminAddedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} added.'**
+  String adminAddedMessage(String name);
+
+  /// No description provided for @adminSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Save failed: {error}'**
+  String adminSaveFailed(String error);
+
+  /// No description provided for @adminManageCategoriesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Categories'**
+  String get adminManageCategoriesTitle;
+
+  /// No description provided for @adminAddCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Category'**
+  String get adminAddCategory;
+
+  /// No description provided for @adminDeleteCategoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete category?'**
+  String get adminDeleteCategoryTitle;
+
+  /// No description provided for @adminDeleteCategoryContent.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{name}\" will be permanently removed. Products already assigned to it will keep their category id but won\'t show up under any visible category. To hide it from retailers without losing it, edit the category and turn off \"Active\" instead.'**
+  String adminDeleteCategoryContent(String name);
+
+  /// No description provided for @adminCategoryDeletedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} deleted.'**
+  String adminCategoryDeletedMessage(String name);
+
+  /// No description provided for @adminNoCategoriesYetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No categories yet'**
+  String get adminNoCategoriesYetTitle;
+
+  /// No description provided for @adminNoCategoriesYetMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap \"Add Category\" to create your first one.'**
+  String get adminNoCategoriesYetMessage;
+
+  /// No description provided for @adminEditCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Category'**
+  String get adminEditCategory;
+
+  /// No description provided for @adminCategoryName.
+  ///
+  /// In en, this message translates to:
+  /// **'Category name'**
+  String get adminCategoryName;
+
+  /// No description provided for @adminCategoryNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. Edible Oils'**
+  String get adminCategoryNameHint;
+
+  /// No description provided for @adminCategoryNameRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Category name is required'**
+  String get adminCategoryNameRequired;
+
+  /// No description provided for @adminInactiveCategoriesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive categories stay in your catalog but are hidden from retailers.'**
+  String get adminInactiveCategoriesHint;
+
+  /// No description provided for @adminAllOrdersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All Orders'**
+  String get adminAllOrdersTitle;
+
+  /// No description provided for @adminRetailerOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Retailer Orders'**
+  String get adminRetailerOrders;
+
+  /// No description provided for @adminRetailerOrdersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{shopName} — Orders'**
+  String adminRetailerOrdersTitle(String shopName);
+
+  /// No description provided for @adminExportCsvTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Export as CSV'**
+  String get adminExportCsvTooltip;
+
+  /// No description provided for @adminNoOrdersToExport.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders to export.'**
+  String get adminNoOrdersToExport;
+
+  /// No description provided for @adminAllFilter.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get adminAllFilter;
+
+  /// No description provided for @adminCouldntLoadOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load orders: {error}'**
+  String adminCouldntLoadOrders(String error);
+
+  /// No description provided for @adminNoOrdersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders yet'**
+  String get adminNoOrdersYet;
+
+  /// No description provided for @adminNoStatusOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'No {status} orders'**
+  String adminNoStatusOrders(String status);
+
+  /// No description provided for @adminManageOrderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Order'**
+  String get adminManageOrderTitle;
+
+  /// No description provided for @adminStatusUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Status updated to {status}.'**
+  String adminStatusUpdated(String status);
+
+  /// No description provided for @adminUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Update failed: {error}'**
+  String adminUpdateFailed(String error);
+
+  /// No description provided for @adminPaymentConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment confirmed.'**
+  String get adminPaymentConfirmed;
+
+  /// No description provided for @adminCouldntLoadOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load order: {error}'**
+  String adminCouldntLoadOrder(String error);
+
+  /// No description provided for @adminOrderNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This order could not be found.'**
+  String get adminOrderNotFound;
+
+  /// No description provided for @adminOrderStatusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Order status'**
+  String get adminOrderStatusLabel;
+
+  /// No description provided for @adminMarkAsPaid.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as Paid'**
+  String get adminMarkAsPaid;
+
+  /// No description provided for @adminRetailersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Retailers'**
+  String get adminRetailersTitle;
+
+  /// No description provided for @adminApprovedTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get adminApprovedTab;
+
+  /// No description provided for @adminPendingTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get adminPendingTab;
+
+  /// No description provided for @adminPendingTabWithCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending ({count})'**
+  String adminPendingTabWithCount(int count);
+
+  /// No description provided for @adminCouldntLoadRetailers.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load retailers: {error}'**
+  String adminCouldntLoadRetailers(String error);
+
+  /// No description provided for @adminNoApprovedRetailersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No approved retailers yet'**
+  String get adminNoApprovedRetailersTitle;
+
+  /// No description provided for @adminNoApprovedRetailersMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Retailers you approve will show up here with their order history.'**
+  String get adminNoApprovedRetailersMessage;
+
+  /// No description provided for @adminOwnerSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner'**
+  String get adminOwnerSection;
+
+  /// No description provided for @adminFullNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Full name'**
+  String get adminFullNameLabel;
+
+  /// No description provided for @adminContactSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact'**
+  String get adminContactSection;
+
+  /// No description provided for @adminEmailLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get adminEmailLabel;
+
+  /// No description provided for @adminPhoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get adminPhoneLabel;
+
+  /// No description provided for @adminAddressSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get adminAddressSection;
+
+  /// No description provided for @adminStreetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Street'**
+  String get adminStreetLabel;
+
+  /// No description provided for @adminCityLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'City'**
+  String get adminCityLabel;
+
+  /// No description provided for @adminPincodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pincode'**
+  String get adminPincodeLabel;
+
+  /// No description provided for @adminLocationLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Location'**
+  String get adminLocationLabel;
+
+  /// No description provided for @adminAddressNotProvided.
+  ///
+  /// In en, this message translates to:
+  /// **'Address not provided yet'**
+  String get adminAddressNotProvided;
+
+  /// No description provided for @adminGstSection.
+  ///
+  /// In en, this message translates to:
+  /// **'GST'**
+  String get adminGstSection;
+
+  /// No description provided for @adminGstNumberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'GST Number'**
+  String get adminGstNumberLabel;
+
+  /// No description provided for @adminBusinessHoursSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Hours'**
+  String get adminBusinessHoursSection;
+
+  /// No description provided for @adminOpenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get adminOpenLabel;
+
+  /// No description provided for @adminOpen24x7.
+  ///
+  /// In en, this message translates to:
+  /// **'Open 24×7'**
+  String get adminOpen24x7;
+
+  /// No description provided for @adminBankDetailsSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank Details'**
+  String get adminBankDetailsSection;
+
+  /// No description provided for @adminAccountHolderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Account holder'**
+  String get adminAccountHolderLabel;
+
+  /// No description provided for @adminAccountNumberLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Account number'**
+  String get adminAccountNumberLabel;
+
+  /// No description provided for @adminIfscLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'IFSC'**
+  String get adminIfscLabel;
+
+  /// No description provided for @adminBankNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Bank'**
+  String get adminBankNameLabel;
+
+  /// No description provided for @adminUpiIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'UPI ID'**
+  String get adminUpiIdLabel;
+
+  /// No description provided for @adminRegisteredOnSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered On'**
+  String get adminRegisteredOnSection;
+
+  /// No description provided for @adminDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get adminDateLabel;
+
+  /// No description provided for @adminDeliverySettingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delivery Settings'**
+  String get adminDeliverySettingsTitle;
+
+  /// No description provided for @adminWarehouseLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Warehouse Location'**
+  String get adminWarehouseLocation;
+
+  /// No description provided for @adminWarehouseLocationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Every delivery charge is calculated as straight-line distance from this point.'**
+  String get adminWarehouseLocationHint;
+
+  /// No description provided for @adminLatitude.
+  ///
+  /// In en, this message translates to:
+  /// **'Latitude'**
+  String get adminLatitude;
+
+  /// No description provided for @adminLongitude.
+  ///
+  /// In en, this message translates to:
+  /// **'Longitude'**
+  String get adminLongitude;
+
+  /// No description provided for @adminEnterValidCoordinate.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid coordinate'**
+  String get adminEnterValidCoordinate;
+
+  /// No description provided for @adminUseCurrentLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Use current location'**
+  String get adminUseCurrentLocation;
+
+  /// No description provided for @adminDeliverySavedSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'✓ Delivery settings saved successfully'**
+  String get adminDeliverySavedSuccess;
+
+  /// No description provided for @adminPerKmRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Per-km Rate'**
+  String get adminPerKmRate;
+
+  /// No description provided for @adminRateLabelPerKm.
+  ///
+  /// In en, this message translates to:
+  /// **'Rate (₹ per km)'**
+  String get adminRateLabelPerKm;
+
+  /// No description provided for @adminEnterValidRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a valid rate'**
+  String get adminEnterValidRate;
+
+  /// No description provided for @adminCouldntLoadDeliverySettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load delivery settings: {error}'**
+  String adminCouldntLoadDeliverySettings(String error);
+
+  /// No description provided for @adminBulkImportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Bulk Import Products'**
+  String get adminBulkImportTitle;
+
+  /// No description provided for @adminBulkImportInstructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste rows copied from a spreadsheet. Header row required: name, category, price, unit, stock, description (description optional). Unit is one of: piece, box, litre, kg. For a kg product, add four more columns to price it by weight: below240g, upto999g, upto2400g, above2400g — leave them out for a flat per-unit price.'**
+  String get adminBulkImportInstructions;
+
+  /// No description provided for @adminCsvHint.
+  ///
+  /// In en, this message translates to:
+  /// **'name,category,price,unit,stock,description\nBasmati Rice 25kg,Rice,1800,box,10,Premium'**
+  String get adminCsvHint;
+
+  /// No description provided for @adminCouldNotLoadCategoriesShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load categories: {error}'**
+  String adminCouldNotLoadCategoriesShort(String error);
+
+  /// No description provided for @adminImportCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Import {count}'**
+  String adminImportCount(int count);
+
+  /// No description provided for @adminRowNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Row {number}'**
+  String adminRowNumber(int number);
+
+  /// No description provided for @adminProductsCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} product(s) created.'**
+  String adminProductsCreated(int count);
+
+  /// No description provided for @adminProductsCreatedWithFailures.
+  ///
+  /// In en, this message translates to:
+  /// **'{created} product(s) created, {failed} failed.'**
+  String adminProductsCreatedWithFailures(int created, int failed);
+
+  /// No description provided for @adminOwnerNameValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Owner: {name}'**
+  String adminOwnerNameValue(String name);
+
+  /// No description provided for @adminPhoneValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone: {phone}'**
+  String adminPhoneValue(String phone);
+
+  /// No description provided for @adminApprovalQueueClear.
+  ///
+  /// In en, this message translates to:
+  /// **'Approval queue is clear!'**
+  String get adminApprovalQueueClear;
+
+  /// No description provided for @adminAllRetailersVerified.
+  ///
+  /// In en, this message translates to:
+  /// **'All registered retailers are verified.'**
+  String get adminAllRetailersVerified;
+
+  /// No description provided for @adminOrderCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, one{1 order} other{{count} orders}}'**
+  String adminOrderCount(int count);
+
+  /// No description provided for @adminInactiveBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get adminInactiveBadge;
+
+  /// No description provided for @adminEditTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get adminEditTooltip;
+
+  /// No description provided for @adminDeleteTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get adminDeleteTooltip;
+
+  /// No description provided for @adminPricePerUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'{price} · per {unit}'**
+  String adminPricePerUnit(String price, String unit);
+
+  /// No description provided for @adminStockLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock: {count}'**
+  String adminStockLabel(int count);
+
+  /// No description provided for @adminActionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Action failed: {error}'**
+  String adminActionFailed(String error);
+
+  /// No description provided for @adminReject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get adminReject;
+
+  /// No description provided for @adminApprove.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get adminApprove;
+
+  /// No description provided for @adminRejectedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} rejected.'**
+  String adminRejectedMessage(String name);
+
+  /// No description provided for @adminApprovedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} approved successfully!'**
+  String adminApprovedMessage(String name);
 }
 
 class _AppLocalizationsDelegate

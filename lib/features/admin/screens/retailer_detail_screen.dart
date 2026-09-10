@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_shadows.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../domain/entities/user_entity.dart';
+import '../../../l10n/app_localizations.dart';
 import '../widgets/approval_actions_row.dart';
 
 /// Full retailer profile — everything [RetailerApprovalCard] can't fit on
@@ -19,6 +20,7 @@ class RetailerDetailScreen extends StatelessWidget {
     final address = user.address;
     final bank = user.bankDetails;
     final hours = user.businessHours;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
@@ -88,24 +90,24 @@ class RetailerDetailScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _Section(
-                  title: 'Owner',
-                  child: _KV('Full name', user.fullName),
+                  title: l10n.adminOwnerSection,
+                  child: _KV(l10n.adminFullNameLabel, user.fullName),
                 ),
                 _Section(
-                  title: 'Contact',
+                  title: l10n.adminContactSection,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _KV('Email', user.email),
-                      _KV('Phone', user.phone),
+                      _KV(l10n.adminEmailLabel, user.email),
+                      _KV(l10n.adminPhoneLabel, user.phone),
                     ],
                   ),
                 ),
                 _Section(
-                  title: 'Address',
+                  title: l10n.adminAddressSection,
                   child: address == null
                       ? Text(
-                          'Address not provided yet',
+                          l10n.adminAddressNotProvided,
                           style: GoogleFonts.inter(
                             fontSize: 13,
                             fontStyle: FontStyle.italic,
@@ -114,51 +116,63 @@ class RetailerDetailScreen extends StatelessWidget {
                       : Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _KV('Street', address.street),
-                            _KV('City', address.city),
-                            _KV('Pincode', address.pincode),
+                            _KV(l10n.adminStreetLabel, address.street),
+                            _KV(l10n.adminCityLabel, address.city),
+                            _KV(l10n.adminPincodeLabel, address.pincode),
                             if (address.formattedAddress != null)
-                              _KV('Location', address.formattedAddress!),
+                              _KV(
+                                l10n.adminLocationLabel,
+                                address.formattedAddress!,
+                              ),
                           ],
                         ),
                 ),
                 _Section(
-                  title: 'GST',
+                  title: l10n.adminGstSection,
                   child: _KV(
-                    'GST Number',
+                    l10n.adminGstNumberLabel,
                     user.gstNumber != null && user.gstNumber!.isNotEmpty
                         ? user.gstNumber!
                         : '—',
                   ),
                 ),
                 _Section(
-                  title: 'Business Hours',
+                  title: l10n.adminBusinessHoursSection,
                   child: _KV(
-                    'Open',
+                    l10n.adminOpenLabel,
                     hours == null || hours.is24x7
-                        ? 'Open 24×7'
+                        ? l10n.adminOpen24x7
                         : '${hours.openTime} – ${hours.closeTime}',
                   ),
                 ),
                 if (bank != null)
                   _Section(
-                    title: 'Bank Details',
+                    title: l10n.adminBankDetailsSection,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _KV('Account holder', bank.accountHolderName),
-                        _KV('Account number', bank.maskedAccountNumber),
-                        _KV('IFSC', bank.ifscCode),
-                        _KV('Bank', bank.bankName),
+                        _KV(
+                          l10n.adminAccountHolderLabel,
+                          bank.accountHolderName,
+                        ),
+                        _KV(
+                          l10n.adminAccountNumberLabel,
+                          bank.maskedAccountNumber,
+                        ),
+                        _KV(l10n.adminIfscLabel, bank.ifscCode),
+                        _KV(l10n.adminBankNameLabel, bank.bankName),
                         if (bank.upiId != null && bank.upiId!.isNotEmpty)
-                          _KV('UPI ID', bank.upiId!),
+                          _KV(l10n.adminUpiIdLabel, bank.upiId!),
                       ],
                     ),
                   ),
                 _Section(
-                  title: 'Registered On',
+                  title: l10n.adminRegisteredOnSection,
                   last: true,
-                  child: _KV('Date', formatOrderDateTime(user.createdAt)),
+                  child: _KV(
+                    l10n.adminDateLabel,
+                    formatOrderDateTime(user.createdAt),
+                  ),
                 ),
               ],
             ),

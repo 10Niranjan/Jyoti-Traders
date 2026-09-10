@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
@@ -18,6 +19,7 @@ class ApprovedRetailersListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final summariesAsync = ref.watch(retailerSummariesProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return RefreshIndicator(
       onRefresh: () async {
@@ -33,7 +35,7 @@ class ApprovedRetailersListView extends ConsumerWidget {
           padding: const EdgeInsets.all(18.0),
           children: [
             ErrorStateWidget(
-              message: 'Couldn\'t load retailers: $e',
+              message: l10n.adminCouldntLoadRetailers('$e'),
               onRetry: () {
                 ref.invalidate(approvedUsersProvider);
                 ref.invalidate(allOrdersProvider);
@@ -45,12 +47,11 @@ class ApprovedRetailersListView extends ConsumerWidget {
           if (summaries.isEmpty) {
             return ListView(
               padding: const EdgeInsets.all(18.0),
-              children: const [
+              children: [
                 EmptyStateWidget(
                   icon: Icons.storefront_outlined,
-                  title: 'No approved retailers yet',
-                  message:
-                      'Retailers you approve will show up here with their order history.',
+                  title: l10n.adminNoApprovedRetailersTitle,
+                  message: l10n.adminNoApprovedRetailersMessage,
                 ),
               ],
             );

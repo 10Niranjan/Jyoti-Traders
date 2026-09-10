@@ -70,17 +70,18 @@ class ProductEntity extends Equatable {
   int get minQty => isWeighed ? 100 : 1;
 
   /// How [qty] reads in prose: `2.5 kg`, or `3 box`.
-  String labelForQty(int qty) => isWeighed ? formatGrams(qty) : '$qty ${unit.value}';
+  String labelForQty(int qty) =>
+      isWeighed ? formatGrams(qty) : '$qty ${unit.value}';
 
-  ProductEntity copyWith({String? imageUrl}) {
+  ProductEntity copyWith({String? imageUrl, Money? price, int? stock}) {
     return ProductEntity(
       id: id,
       name: name,
       categoryId: categoryId,
       imageUrl: imageUrl ?? this.imageUrl,
-      price: price,
+      price: price ?? this.price,
       unit: unit,
-      stock: stock,
+      stock: stock ?? this.stock,
       description: description,
       isActive: isActive,
       rateSlabs: rateSlabs,
@@ -88,6 +89,16 @@ class ProductEntity extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [id, name, categoryId, imageUrl, price, unit, stock, description, isActive, rateSlabs];
+  List<Object?> get props => [
+    id,
+    name,
+    categoryId,
+    imageUrl,
+    price,
+    unit,
+    stock,
+    description,
+    isActive,
+    rateSlabs,
+  ];
 }

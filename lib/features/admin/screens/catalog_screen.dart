@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
+import '../../../l10n/app_localizations.dart';
 import 'manage_categories_screen.dart';
 import 'manage_products_screen.dart';
 
@@ -41,18 +42,19 @@ class _CatalogScreenState extends State<CatalogScreen>
     final unselectedColor = Theme.of(
       context,
     ).colorScheme.onSurface.withOpacity(0.6);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Catalog',
+          l10n.adminCatalogTitle,
           style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
         actions: [
           if (_tabController.index == 0)
             IconButton(
               icon: const Icon(Icons.upload_file_outlined),
-              tooltip: 'Bulk Import',
+              tooltip: l10n.adminBulkImportTooltip,
               onPressed: () => context.push(RouteNames.adminBulkImportProducts),
             ),
         ],
@@ -61,9 +63,15 @@ class _CatalogScreenState extends State<CatalogScreen>
           labelColor: AppColors.primary,
           unselectedLabelColor: unselectedColor,
           indicatorColor: AppColors.primary,
-          tabs: const [
-            Tab(icon: Icon(Icons.inventory_2_outlined), text: 'Products'),
-            Tab(icon: Icon(Icons.category_outlined), text: 'Categories'),
+          tabs: [
+            Tab(
+              icon: const Icon(Icons.inventory_2_outlined),
+              text: l10n.adminProductsTab,
+            ),
+            Tab(
+              icon: const Icon(Icons.category_outlined),
+              text: l10n.adminCategoriesTab,
+            ),
           ],
         ),
       ),

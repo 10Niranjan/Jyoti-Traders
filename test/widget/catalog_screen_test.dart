@@ -8,6 +8,7 @@ import 'package:traders_retailer/domain/repositories/category_repository.dart';
 import 'package:traders_retailer/domain/repositories/product_repository.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/admin/screens/catalog_screen.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 class FakeProductRepository implements ProductRepository {
   final List<ProductEntity> products;
@@ -86,7 +87,11 @@ Widget _wrap({
       FakeCategoryRepository(categories),
     ),
   ],
-  child: const MaterialApp(home: CatalogScreen()),
+  child: const MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: CatalogScreen(),
+  ),
 );
 
 void main() {
@@ -139,7 +144,9 @@ void main() {
     expect(find.text('No categories yet'), findsOneWidget);
   });
 
-  testWidgets('the Bulk Import action only shows on the Products segment', (tester) async {
+  testWidgets('the Bulk Import action only shows on the Products segment', (
+    tester,
+  ) async {
     await tester.pumpWidget(_wrap());
     await tester.pumpAndSettle();
 

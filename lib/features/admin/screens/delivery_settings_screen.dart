@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_shadows.dart';
 import '../../../core/services/location_service.dart';
 import '../../../domain/entities/delivery_config_entity.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../controllers/admin_delivery_config_controller.dart';
 
@@ -20,7 +21,7 @@ class DeliverySettingsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Delivery Settings',
+          AppLocalizations.of(context)!.adminDeliverySettingsTitle,
           style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
       ),
@@ -81,10 +82,8 @@ class _DeliveryConfigFormViewState
     });
     if (position == null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Couldn\'t get your location. Check location permission and try again.',
-          ),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.checkoutLocationError),
           backgroundColor: AppColors.error,
         ),
       );
@@ -93,7 +92,7 @@ class _DeliveryConfigFormViewState
 
   String? _validateCoordinate(String? v) {
     return double.tryParse(v?.trim() ?? '') == null
-        ? 'Enter a valid coordinate'
+        ? AppLocalizations.of(context)!.adminEnterValidCoordinate
         : null;
   }
 
@@ -110,13 +109,16 @@ class _DeliveryConfigFormViewState
         .read(adminDeliveryConfigControllerProvider.notifier)
         .updateConfig(config);
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           success
-              ? '✓ Delivery settings saved successfully'
-              : 'Save failed: ${ref.read(adminDeliveryConfigControllerProvider).error}',
+              ? l10n.adminDeliverySavedSuccess
+              : l10n.adminSaveFailed(
+                  '${ref.read(adminDeliveryConfigControllerProvider).error}',
+                ),
         ),
         backgroundColor: success ? AppColors.success : AppColors.error,
         behavior: SnackBarBehavior.floating,
@@ -128,6 +130,7 @@ class _DeliveryConfigFormViewState
   Widget build(BuildContext context) {
     final configAsync = ref.watch(deliveryConfigProvider);
     final isSaving = ref.watch(adminDeliveryConfigControllerProvider).isLoading;
+    final l10n = AppLocalizations.of(context)!;
 
     if (!_seeded) {
       final config = configAsync.valueOrNull;
@@ -139,7 +142,7 @@ class _DeliveryConfigFormViewState
       error: (e, _) => Padding(
         padding: const EdgeInsets.all(18.0),
         child: ErrorStateWidget(
-          message: 'Couldn\'t load delivery settings: $e',
+          message: l10n.adminCouldntLoadDeliverySettings('$e'),
           onRetry: () => ref.invalidate(deliveryConfigProvider),
         ),
       ),
@@ -163,12 +166,12 @@ class _DeliveryConfigFormViewState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Warehouse Location',
+                      l10n.adminWarehouseLocation,
                       style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Every delivery charge is calculated as straight-line distance from this point.',
+                      l10n.adminWarehouseLocationHint,
                       style: GoogleFonts.inter(
                         fontSize: 11.5,
                         color: AppColors.textSecondaryLight,
@@ -181,8 +184,8 @@ class _DeliveryConfigFormViewState
                           child: TextFormField(
                             controller: _latController,
                             enabled: !isSaving,
-                            decoration: const InputDecoration(
-                              labelText: 'Latitude',
+                            decoration: InputDecoration(
+                              labelText: l10n.adminLatitude,
                             ),
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
@@ -196,8 +199,8 @@ class _DeliveryConfigFormViewState
                           child: TextFormField(
                             controller: _lngController,
                             enabled: !isSaving,
-                            decoration: const InputDecoration(
-                              labelText: 'Longitude',
+                            decoration: InputDecoration(
+                              labelText: l10n.adminLongitude,
                             ),
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
@@ -224,7 +227,7 @@ class _DeliveryConfigFormViewState
                                 ),
                               )
                             : const Icon(Icons.my_location_rounded, size: 16),
-                        label: const Text('Use current location'),
+                        label: Text(l10n.adminUseCurrentLocation),
                       ),
                     ),
                   ],
@@ -244,15 +247,15 @@ class _DeliveryConfigFormViewState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Per-km Rate',
+                      l10n.adminPerKmRate,
                       style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 8),
                     TextFormField(
                       controller: _rateController,
                       enabled: !isSaving,
-                      decoration: const InputDecoration(
-                        labelText: 'Rate (₹ per km)',
+                      decoration: InputDecoration(
+                        labelText: l10n.adminRateLabelPerKm,
                         prefixText: '₹ ',
                       ),
                       keyboardType: const TextInputType.numberWithOptions(
@@ -260,8 +263,8 @@ class _DeliveryConfigFormViewState
                       ),
                       validator: (v) {
                         final parsed = double.tryParse(v?.trim() ?? '');
-                        if (parsed == null) return 'Enter a valid rate';
-                        if (parsed <= 0) return 'Rate must be above ₹0';
+                        if (parsed == null) return l10n.adminEnterValidRate;
+                        if (parsed <= 0) return l10n.adminRateMustBeAbove0;
                         return null;
                       },
                     ),
@@ -286,7 +289,7 @@ class _DeliveryConfigFormViewState
                           ),
                         )
                       : Text(
-                          'Save Changes',
+                          l10n.adminSaveChanges,
                           style: GoogleFonts.inter(fontWeight: FontWeight.bold),
                         ),
                 ),

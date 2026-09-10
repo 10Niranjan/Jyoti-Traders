@@ -10,6 +10,7 @@ import 'package:traders_retailer/domain/repositories/order_repository.dart';
 import 'package:traders_retailer/domain/repositories/user_repository.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/admin/screens/approved_retailers_list_view.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
 
 class FakeUserRepository implements UserRepository {
   final List<UserEntity> approved;
@@ -108,6 +109,8 @@ Widget _wrap(FakeUserRepository userRepo, FakeOrderRepository orderRepo) =>
       // Wrapped in a bare Scaffold, matching how RetailersScreen actually
       // hosts this widget in production (inside a TabBarView).
       child: const MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: Scaffold(body: ApprovedRetailersListView()),
       ),
     );

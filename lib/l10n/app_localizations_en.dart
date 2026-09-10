@@ -237,6 +237,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchInStockOnly => 'In stock only';
 
   @override
+  String get searchAllCategories => 'All';
+
+  @override
   String get productDetailsTitle => 'Product Details';
 
   @override
@@ -254,6 +257,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get wishlistRemoved => 'Removed from wishlist';
+
+  @override
+  String get wishlistAddTooltip => 'Add to wishlist';
+
+  @override
+  String get wishlistRemoveTooltip => 'Remove from wishlist';
 
   @override
   String get productNoLongerAvailable => 'This product is no longer available.';
@@ -334,6 +343,23 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get cartCouponHint => 'Enter coupon code';
+
+  @override
+  String get cartCouponApply => 'Apply';
+
+  @override
+  String get cartCouponRemove => 'Remove';
+
+  @override
+  String cartCouponApplied(String code) {
+    return '\"$code\" applied';
+  }
+
+  @override
+  String get cartDiscount => 'Discount';
+
+  @override
   String get checkoutLocationError =>
       'Couldn\'t get your location. Check location permission and try again.';
 
@@ -365,6 +391,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get checkoutDeliveryChargeEstimated => 'Delivery Charge (estimated)';
+
+  @override
+  String get checkoutEtaToday => 'Arrives today';
+
+  @override
+  String get checkoutEtaTomorrow => 'Arrives by tomorrow';
+
+  @override
+  String get checkoutEtaFewDays => 'Arrives in 2–3 days';
+
+  @override
+  String get checkoutEtaUnknown => 'Arrives in 1–2 days';
 
   @override
   String get checkoutGrandTotal => 'Grand Total';
@@ -892,6 +930,24 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get firstRunHintBuyAgain => 'Tap any item here to quickly reorder it';
+
+  @override
+  String get cartRemoveItemTooltip => 'Remove item';
+
+  @override
+  String get authShowPassword => 'Show password';
+
+  @override
+  String get authHidePassword => 'Hide password';
+
+  @override
+  String get adminClearSearchTooltip => 'Clear search';
+
+  @override
+  String get adminRefreshTooltip => 'Refresh';
+
+  @override
   String get promoMinOrderTitle => 'Wholesale Purchase Order Enforced';
 
   @override
@@ -928,4 +984,655 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get retry => 'Retry';
+
+  @override
+  String get adminCancel => 'Cancel';
+
+  @override
+  String get adminDelete => 'Delete';
+
+  @override
+  String get adminEdit => 'Edit';
+
+  @override
+  String get adminActive => 'Active';
+
+  @override
+  String get adminSaveChanges => 'Save Changes';
+
+  @override
+  String get adminApply => 'Apply';
+
+  @override
+  String get adminPreview => 'Preview';
+
+  @override
+  String get adminDashboardTitle => 'Jyoti Traders Admin';
+
+  @override
+  String get adminPendingApprovals => 'Pending Approvals';
+
+  @override
+  String get adminTotalRetailers => 'Total Retailers';
+
+  @override
+  String get adminTodaysOrders => 'Today\'s Orders';
+
+  @override
+  String get adminTodaysRevenue => 'Today\'s Revenue';
+
+  @override
+  String get adminTopProducts => 'Top Products';
+
+  @override
+  String adminCouldntLoadTopProducts(String error) {
+    return 'Couldn\'t load top products: $error';
+  }
+
+  @override
+  String get adminNoSalesYet => 'No sales yet';
+
+  @override
+  String get adminSendBroadcast => 'Send Broadcast';
+
+  @override
+  String get adminRetailerApprovalQueue => 'Retailer Approval Queue';
+
+  @override
+  String get adminViewAll => 'View All';
+
+  @override
+  String adminCouldntLoadApprovalQueue(String error) {
+    return 'Couldn\'t load approval queue: $error';
+  }
+
+  @override
+  String adminMoreWaiting(int count) {
+    return '+$count more waiting — tap \"View All\"';
+  }
+
+  @override
+  String get adminCatalogTitle => 'Catalog';
+
+  @override
+  String get adminProductsTab => 'Products';
+
+  @override
+  String get adminCategoriesTab => 'Categories';
+
+  @override
+  String get adminBulkImportTooltip => 'Bulk Import';
+
+  @override
+  String get adminManageProductsTitle => 'Manage Products';
+
+  @override
+  String get adminAddProduct => 'Add Product';
+
+  @override
+  String get adminSearchProducts => 'Search products';
+
+  @override
+  String get adminAllCategories => 'All Categories';
+
+  @override
+  String get adminSortNameAZ => 'Name (A–Z)';
+
+  @override
+  String get adminSortStockLow => 'Stock (low first)';
+
+  @override
+  String get adminSortPriceLow => 'Price (low first)';
+
+  @override
+  String get adminSortPriceHigh => 'Price (high first)';
+
+  @override
+  String get adminSelect => 'Select';
+
+  @override
+  String adminCouldntLoadProducts(String error) {
+    return 'Couldn\'t load products: $error';
+  }
+
+  @override
+  String get adminNoProductsYetTitle => 'No products yet';
+
+  @override
+  String get adminNoProductsYetMessage =>
+      'Tap \"Add Product\" to create your first catalog item.';
+
+  @override
+  String get adminNoProductsMatchTitle => 'No products match';
+
+  @override
+  String get adminNoProductsMatchMessage =>
+      'Try a different search term or filter.';
+
+  @override
+  String adminLowStockBanner(int count, int threshold) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count products are low on stock (≤ $threshold).',
+      one: '1 product is low on stock (≤ $threshold).',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminDeleteProductTitle => 'Delete product?';
+
+  @override
+  String adminDeleteProductContent(String name) {
+    return '\"$name\" will be permanently removed from the catalog. To hide it from retailers without losing it, edit the product and turn off \"Active\" instead.';
+  }
+
+  @override
+  String adminProductDeletedMessage(String name) {
+    return '$name deleted.';
+  }
+
+  @override
+  String adminDeleteFailed(String error) {
+    return 'Delete failed: $error';
+  }
+
+  @override
+  String adminBulkEditTitle(int count) {
+    return 'Bulk edit $count products';
+  }
+
+  @override
+  String get adminBulkEditHint =>
+      'Leave a field blank to leave that value unchanged.';
+
+  @override
+  String get adminSetStockTo => 'Set stock to';
+
+  @override
+  String get adminEnterWholeNumber => 'Enter a whole number';
+
+  @override
+  String get adminAdjustPriceByPercent => 'Adjust price by %';
+
+  @override
+  String get adminAdjustPriceHint => 'e.g. 10 for +10%, -5 for -5%';
+
+  @override
+  String get adminEnterNumber => 'Enter a number';
+
+  @override
+  String adminSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get adminBulkEdit => 'Bulk Edit';
+
+  @override
+  String adminBulkEditResult(int success, int total) {
+    return '$success of $total products updated.';
+  }
+
+  @override
+  String get adminEditProduct => 'Edit Product';
+
+  @override
+  String get adminProductName => 'Product name';
+
+  @override
+  String get adminProductNameHint => 'e.g. Basmati Rice Premium 25kg';
+
+  @override
+  String get adminProductNameRequired => 'Product name is required';
+
+  @override
+  String get adminCategory => 'Category';
+
+  @override
+  String adminCouldntLoadCategories(String error) {
+    return 'Couldn\'t load categories: $error';
+  }
+
+  @override
+  String get adminCategoryRequired => 'Category is required';
+
+  @override
+  String get adminPriceLabel => 'Price (₹)';
+
+  @override
+  String get adminEnterValidPrice => 'Enter a valid price';
+
+  @override
+  String get adminPriceMustBeAbove0 => 'Price must be above ₹0';
+
+  @override
+  String get adminUnit => 'Unit';
+
+  @override
+  String adminPerUnit(String unit) {
+    return 'per $unit';
+  }
+
+  @override
+  String get adminRateByQuantity => 'Rate by quantity (₹ per kg)';
+
+  @override
+  String get adminRateByQuantityHint =>
+      'The whole weight is billed at the one rate its band earns.';
+
+  @override
+  String get adminBandBelow240g => 'Below 240g';
+
+  @override
+  String get adminBand240to999g => '240g – 999g';
+
+  @override
+  String get adminBand1to2400g => '1kg – 2.4kg';
+
+  @override
+  String get adminBandAbove2400g => 'Above 2.4kg';
+
+  @override
+  String adminEnterRateFor(String label) {
+    return 'Enter a rate for $label';
+  }
+
+  @override
+  String get adminRateMustBeAbove0 => 'Rate must be above ₹0';
+
+  @override
+  String get adminStockQuantity => 'Stock quantity';
+
+  @override
+  String get adminInKilograms => 'In kilograms';
+
+  @override
+  String adminInUnits(String unit) {
+    return 'In $unit';
+  }
+
+  @override
+  String get adminEnterValidStock => 'Enter a valid stock quantity';
+
+  @override
+  String get adminStockCannotBeNegative => 'Stock cannot be negative';
+
+  @override
+  String get adminDescriptionOptional => 'Description (optional)';
+
+  @override
+  String get adminInactiveProductsHint =>
+      'Inactive products stay in your catalog but are hidden from retailers.';
+
+  @override
+  String get adminChooseCategory => 'Please choose a category.';
+
+  @override
+  String adminCouldntOpenGallery(String error) {
+    return 'Couldn\'t open the gallery: $error';
+  }
+
+  @override
+  String adminUpdatedMessage(String name) {
+    return '$name updated.';
+  }
+
+  @override
+  String adminAddedMessage(String name) {
+    return '$name added.';
+  }
+
+  @override
+  String adminSaveFailed(String error) {
+    return 'Save failed: $error';
+  }
+
+  @override
+  String get adminManageCategoriesTitle => 'Manage Categories';
+
+  @override
+  String get adminAddCategory => 'Add Category';
+
+  @override
+  String get adminDeleteCategoryTitle => 'Delete category?';
+
+  @override
+  String adminDeleteCategoryContent(String name) {
+    return '\"$name\" will be permanently removed. Products already assigned to it will keep their category id but won\'t show up under any visible category. To hide it from retailers without losing it, edit the category and turn off \"Active\" instead.';
+  }
+
+  @override
+  String adminCategoryDeletedMessage(String name) {
+    return '$name deleted.';
+  }
+
+  @override
+  String get adminNoCategoriesYetTitle => 'No categories yet';
+
+  @override
+  String get adminNoCategoriesYetMessage =>
+      'Tap \"Add Category\" to create your first one.';
+
+  @override
+  String get adminEditCategory => 'Edit Category';
+
+  @override
+  String get adminCategoryName => 'Category name';
+
+  @override
+  String get adminCategoryNameHint => 'e.g. Edible Oils';
+
+  @override
+  String get adminCategoryNameRequired => 'Category name is required';
+
+  @override
+  String get adminInactiveCategoriesHint =>
+      'Inactive categories stay in your catalog but are hidden from retailers.';
+
+  @override
+  String get adminAllOrdersTitle => 'All Orders';
+
+  @override
+  String get adminRetailerOrders => 'Retailer Orders';
+
+  @override
+  String adminRetailerOrdersTitle(String shopName) {
+    return '$shopName — Orders';
+  }
+
+  @override
+  String get adminExportCsvTooltip => 'Export as CSV';
+
+  @override
+  String get adminNoOrdersToExport => 'No orders to export.';
+
+  @override
+  String get adminAllFilter => 'All';
+
+  @override
+  String adminCouldntLoadOrders(String error) {
+    return 'Couldn\'t load orders: $error';
+  }
+
+  @override
+  String get adminNoOrdersYet => 'No orders yet';
+
+  @override
+  String adminNoStatusOrders(String status) {
+    return 'No $status orders';
+  }
+
+  @override
+  String get adminManageOrderTitle => 'Manage Order';
+
+  @override
+  String adminStatusUpdated(String status) {
+    return 'Status updated to $status.';
+  }
+
+  @override
+  String adminUpdateFailed(String error) {
+    return 'Update failed: $error';
+  }
+
+  @override
+  String get adminPaymentConfirmed => 'Payment confirmed.';
+
+  @override
+  String adminCouldntLoadOrder(String error) {
+    return 'Couldn\'t load order: $error';
+  }
+
+  @override
+  String get adminOrderNotFound => 'This order could not be found.';
+
+  @override
+  String get adminOrderStatusLabel => 'Order status';
+
+  @override
+  String get adminMarkAsPaid => 'Mark as Paid';
+
+  @override
+  String get adminRetailersTitle => 'Retailers';
+
+  @override
+  String get adminApprovedTab => 'Approved';
+
+  @override
+  String get adminPendingTab => 'Pending';
+
+  @override
+  String adminPendingTabWithCount(int count) {
+    return 'Pending ($count)';
+  }
+
+  @override
+  String adminCouldntLoadRetailers(String error) {
+    return 'Couldn\'t load retailers: $error';
+  }
+
+  @override
+  String get adminNoApprovedRetailersTitle => 'No approved retailers yet';
+
+  @override
+  String get adminNoApprovedRetailersMessage =>
+      'Retailers you approve will show up here with their order history.';
+
+  @override
+  String get adminOwnerSection => 'Owner';
+
+  @override
+  String get adminFullNameLabel => 'Full name';
+
+  @override
+  String get adminContactSection => 'Contact';
+
+  @override
+  String get adminEmailLabel => 'Email';
+
+  @override
+  String get adminPhoneLabel => 'Phone';
+
+  @override
+  String get adminAddressSection => 'Address';
+
+  @override
+  String get adminStreetLabel => 'Street';
+
+  @override
+  String get adminCityLabel => 'City';
+
+  @override
+  String get adminPincodeLabel => 'Pincode';
+
+  @override
+  String get adminLocationLabel => 'Location';
+
+  @override
+  String get adminAddressNotProvided => 'Address not provided yet';
+
+  @override
+  String get adminGstSection => 'GST';
+
+  @override
+  String get adminGstNumberLabel => 'GST Number';
+
+  @override
+  String get adminBusinessHoursSection => 'Business Hours';
+
+  @override
+  String get adminOpenLabel => 'Open';
+
+  @override
+  String get adminOpen24x7 => 'Open 24×7';
+
+  @override
+  String get adminBankDetailsSection => 'Bank Details';
+
+  @override
+  String get adminAccountHolderLabel => 'Account holder';
+
+  @override
+  String get adminAccountNumberLabel => 'Account number';
+
+  @override
+  String get adminIfscLabel => 'IFSC';
+
+  @override
+  String get adminBankNameLabel => 'Bank';
+
+  @override
+  String get adminUpiIdLabel => 'UPI ID';
+
+  @override
+  String get adminRegisteredOnSection => 'Registered On';
+
+  @override
+  String get adminDateLabel => 'Date';
+
+  @override
+  String get adminDeliverySettingsTitle => 'Delivery Settings';
+
+  @override
+  String get adminWarehouseLocation => 'Warehouse Location';
+
+  @override
+  String get adminWarehouseLocationHint =>
+      'Every delivery charge is calculated as straight-line distance from this point.';
+
+  @override
+  String get adminLatitude => 'Latitude';
+
+  @override
+  String get adminLongitude => 'Longitude';
+
+  @override
+  String get adminEnterValidCoordinate => 'Enter a valid coordinate';
+
+  @override
+  String get adminUseCurrentLocation => 'Use current location';
+
+  @override
+  String get adminDeliverySavedSuccess =>
+      '✓ Delivery settings saved successfully';
+
+  @override
+  String get adminPerKmRate => 'Per-km Rate';
+
+  @override
+  String get adminRateLabelPerKm => 'Rate (₹ per km)';
+
+  @override
+  String get adminEnterValidRate => 'Enter a valid rate';
+
+  @override
+  String adminCouldntLoadDeliverySettings(String error) {
+    return 'Couldn\'t load delivery settings: $error';
+  }
+
+  @override
+  String get adminBulkImportTitle => 'Bulk Import Products';
+
+  @override
+  String get adminBulkImportInstructions =>
+      'Paste rows copied from a spreadsheet. Header row required: name, category, price, unit, stock, description (description optional). Unit is one of: piece, box, litre, kg. For a kg product, add four more columns to price it by weight: below240g, upto999g, upto2400g, above2400g — leave them out for a flat per-unit price.';
+
+  @override
+  String get adminCsvHint =>
+      'name,category,price,unit,stock,description\nBasmati Rice 25kg,Rice,1800,box,10,Premium';
+
+  @override
+  String adminCouldNotLoadCategoriesShort(String error) {
+    return 'Could not load categories: $error';
+  }
+
+  @override
+  String adminImportCount(int count) {
+    return 'Import $count';
+  }
+
+  @override
+  String adminRowNumber(int number) {
+    return 'Row $number';
+  }
+
+  @override
+  String adminProductsCreated(int count) {
+    return '$count product(s) created.';
+  }
+
+  @override
+  String adminProductsCreatedWithFailures(int created, int failed) {
+    return '$created product(s) created, $failed failed.';
+  }
+
+  @override
+  String adminOwnerNameValue(String name) {
+    return 'Owner: $name';
+  }
+
+  @override
+  String adminPhoneValue(String phone) {
+    return 'Phone: $phone';
+  }
+
+  @override
+  String get adminApprovalQueueClear => 'Approval queue is clear!';
+
+  @override
+  String get adminAllRetailersVerified =>
+      'All registered retailers are verified.';
+
+  @override
+  String adminOrderCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count orders',
+      one: '1 order',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get adminInactiveBadge => 'Inactive';
+
+  @override
+  String get adminEditTooltip => 'Edit';
+
+  @override
+  String get adminDeleteTooltip => 'Delete';
+
+  @override
+  String adminPricePerUnit(String price, String unit) {
+    return '$price · per $unit';
+  }
+
+  @override
+  String adminStockLabel(int count) {
+    return 'Stock: $count';
+  }
+
+  @override
+  String adminActionFailed(String error) {
+    return 'Action failed: $error';
+  }
+
+  @override
+  String get adminReject => 'Reject';
+
+  @override
+  String get adminApprove => 'Approve';
+
+  @override
+  String adminRejectedMessage(String name) {
+    return '$name rejected.';
+  }
+
+  @override
+  String adminApprovedMessage(String name) {
+    return '$name approved successfully!';
+  }
 }
