@@ -92,6 +92,13 @@ void main() {
     expect(find.text('₹3,050'), findsOneWidget); // grand total
   });
 
+  testWidgets('offers the invoice PDF to the admin', (tester) async {
+    await tester.pumpWidget(_wrap(FakeOrderRepository([_order])));
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Share invoice (PDF)'), findsOneWidget);
+  });
+
   testWidgets('shows a not-found state for an unknown order id', (
     tester,
   ) async {

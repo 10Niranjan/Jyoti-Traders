@@ -70,6 +70,20 @@ class LocalStorageService {
     await _settingsBox.delete(HiveKeys.languageCode);
   }
 
+  /// The chosen text size (a `TextSize` enum name). Null means "auto" —
+  /// follow the device's font-size setting.
+  String? getTextSizePreference() {
+    return _settingsBox.get(HiveKeys.textSize) as String?;
+  }
+
+  Future<void> saveTextSizePreference(String name) async {
+    await _settingsBox.put(HiveKeys.textSize, name);
+  }
+
+  Future<void> clearTextSizePreference() async {
+    await _settingsBox.delete(HiveKeys.textSize);
+  }
+
   /// Marks the onboarding as completed
   Future<void> setFirstLaunchCompleted() async {
     await _settingsBox.put(HiveKeys.isFirstLaunch, false);

@@ -12,19 +12,30 @@ void main() {
   setUp(() {
     repository = MockOrderRepository();
     useCase = RecordPaymentClaimUseCase(repository);
-    when(() => repository.recordPaymentClaim(any(), screenshotUrl: any(named: 'screenshotUrl')))
-        .thenAnswer((_) async {});
+    when(
+      () => repository.recordPaymentClaim(
+        any(),
+        screenshotUrl: any(named: 'screenshotUrl'),
+      ),
+    ).thenAnswer((_) async {});
   });
 
   test('records a claim with no screenshot', () async {
     await useCase('order_1');
 
-    verify(() => repository.recordPaymentClaim('order_1', screenshotUrl: null)).called(1);
+    verify(
+      () => repository.recordPaymentClaim('order_1', screenshotUrl: null),
+    ).called(1);
   });
 
   test('records a claim with an uploaded screenshot URL', () async {
     await useCase('order_1', screenshotUrl: 'https://example.com/shot.jpg');
 
-    verify(() => repository.recordPaymentClaim('order_1', screenshotUrl: 'https://example.com/shot.jpg')).called(1);
+    verify(
+      () => repository.recordPaymentClaim(
+        'order_1',
+        screenshotUrl: 'https://example.com/shot.jpg',
+      ),
+    ).called(1);
   });
 }

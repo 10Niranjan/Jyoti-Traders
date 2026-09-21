@@ -20,7 +20,10 @@ class FcmService {
       await messaging.requestPermission(alert: true, badge: true, sound: true);
       return await messaging.getToken();
     } catch (e) {
-      logWarning('FcmService: permission/token request unavailable, skipping', e);
+      logWarning(
+        'FcmService: permission/token request unavailable, skipping',
+        e,
+      );
       return null;
     }
   }
@@ -60,7 +63,9 @@ class FcmService {
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   } catch (e) {
     logWarning('firebaseMessagingBackgroundHandler: Firebase init failed', e);
   }

@@ -20,7 +20,11 @@ class FakeProductRepository implements ProductRepository {
 
   @override
   Stream<List<ProductEntity>> watchProducts({String? categoryId}) =>
-      Stream.value(products.values.where((p) => categoryId == null || p.categoryId == categoryId).toList());
+      Stream.value(
+        products.values
+            .where((p) => categoryId == null || p.categoryId == categoryId)
+            .toList(),
+      );
 
   @override
   Stream<List<ProductEntity>> watchAllProducts() => watchProducts();
@@ -29,7 +33,8 @@ class FakeProductRepository implements ProductRepository {
   Future<List<ProductEntity>> searchProducts(String query) async => [];
 
   @override
-  Future<ProductEntity?> getProductById(String productId) async => products[productId];
+  Future<ProductEntity?> getProductById(String productId) async =>
+      products[productId];
 
   @override
   Future<void> createProduct(ProductEntity product) async {}
@@ -55,48 +60,61 @@ class FakeWishlistRepository implements WishlistRepository {
   }
 }
 
-ProductEntity _product({required String id, required String name, String categoryId = 'c1'}) => ProductEntity(
+ProductEntity _product({
+  required String id,
+  required String name,
+  String categoryId = 'c1',
+  String imageUrl = '',
+}) => ProductEntity(
   id: id,
   name: name,
   categoryId: categoryId,
-  imageUrl: '',
+  imageUrl: imageUrl,
   price: Money(500),
   unit: ProductUnit.box,
   stock: 10,
   isActive: true,
 );
 
-Widget _wrap(Map<String, ProductEntity> products, {String productId = 'p1'}) => ProviderScope(
-  overrides: [
-    productRepositoryProvider.overrideWithValue(FakeProductRepository(products)),
-    cartRepositoryProvider.overrideWithValue(FakeCartRepository()),
-    wishlistRepositoryProvider.overrideWithValue(FakeWishlistRepository()),
-  ],
-  child: MaterialApp(
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-    home: ProductDetailScreen(productId: productId),
-  ),
-);
+Widget _wrap(Map<String, ProductEntity> products, {String productId = 'p1'}) =>
+    ProviderScope(
+      overrides: [
+        productRepositoryProvider.overrideWithValue(
+          FakeProductRepository(products),
+        ),
+        cartRepositoryProvider.overrideWithValue(FakeCartRepository()),
+        wishlistRepositoryProvider.overrideWithValue(FakeWishlistRepository()),
+      ],
+      child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: ProductDetailScreen(productId: productId),
+      ),
+    );
 
 void main() {
   useTallTestViewport();
 
-  testWidgets('shows a "You may also like" rail with other products from the same category', (tester) async {
-    await tester.pumpWidget(
-      _wrap({
-        'p1': _product(id: 'p1', name: 'Basmati Rice'),
-        'p2': _product(id: 'p2', name: 'Sona Masoori Rice'),
-        'p3': _product(id: 'p3', name: 'Sunflower Oil', categoryId: 'c2'),
-      }),
-    );
-    await tester.pumpAndSettle();
+  testWidgets(
+    'shows a "You may also like" rail with other products from the same category',
+    (tester) async {
+      await tester.pumpWidget(
+        _wrap({
+          'p1': _product(id: 'p1', name: 'Basmati Rice'),
+          'p2': _product(id: 'p2', name: 'Sona Masoori Rice'),
+          'p3': _product(id: 'p3', name: 'Sunflower Oil', categoryId: 'c2'),
+        }),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text('You may also like'), findsOneWidget);
-    expect(find.text('Sona Masoori Rice'), findsOneWidget);
-  });
+      expect(find.text('You may also like'), findsOneWidget);
+      expect(find.text('Sona Masoori Rice'), findsOneWidget);
+    },
+  );
 
-  testWidgets('excludes the current product from its own recommendations', (tester) async {
+  testWidgets('excludes the current product from its own recommendations', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       _wrap({
         'p1': _product(id: 'p1', name: 'Basmati Rice'),
@@ -110,10 +128,52 @@ void main() {
     expect(find.text('Basmati Rice'), findsOneWidget);
   });
 
-  testWidgets('shows no rail when no other product shares the category', (tester) async {
-    await tester.pumpWidget(_wrap({'p1': _product(id: 'p1', name: 'Basmati Rice')}));
+  testWidgets('shows no rail when no other product shares the category', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap({'p1': _product(id: 'p1', name: 'Basmati Rice')}),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('You may also like'), findsNothing);
+  });
+
+  testWidgets('tapping the product photo opens a zoomable full-screen viewer', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap({
+        'p1': _product(
+          id: 'p1',
+          name: 'Basmati Rice',
+          imageUrl: 'https://example.invalid/rice.png',
+        ),
+      }),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byType(InteractiveViewer), findsNothing);
+
+    await tester.tap(find.byIcon(Icons.zoom_out_map_rounded));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.byType(InteractiveViewer), findsOneWidget);
+
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.byType(InteractiveViewer), findsNothing);
+  });
+
+  testWidgets('a product with no photo offers no zoom', (tester) async {
+    await tester.pumpWidget(
+      _wrap({'p1': _product(id: 'p1', name: 'Basmati Rice')}),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byIcon(Icons.zoom_out_map_rounded), findsNothing);
   });
 }

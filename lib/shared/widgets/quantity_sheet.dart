@@ -10,6 +10,7 @@ import '../../domain/entities/cart_item_entity.dart';
 import '../../domain/entities/product_entity.dart';
 import '../../features/cart/controllers/cart_controller.dart';
 import '../../l10n/app_localizations.dart';
+import 'fly_to_cart.dart';
 import 'primary_button.dart';
 
 /// The "how much?" step a `+` tap now leads to, instead of silently dropping
@@ -20,15 +21,29 @@ import 'primary_button.dart';
 /// Sets the line to exactly what's picked — it seeds from whatever is already
 /// in the cart, so re-opening it reads as editing that line, not stacking a
 /// second one on top.
-Future<void> showQuantitySheet(BuildContext context, ProductEntity product) {
-  return showModalBottomSheet<void>(
+Future<void> showQuantitySheet(
+  BuildContext context,
+  ProductEntity product,
+) async {
+  // Captured up front: this is where the retailer tapped (the ADD pill), and
+  // the root overlay is what a flight draws on — both are gone or stale by
+  // the time the sheet closes.
+  final origin = globalRectOf(context);
+  final overlay = Overlay.maybeOf(context, rootOverlay: true);
+
+  final added = await showModalBottomSheet<bool>(
     context: context,
+    useRootNavigator: true,
     // Without this the sheet is capped at half the screen and the keyboard
     // covers the very field this sheet exists for.
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (_) => _QuantitySheet(product: product),
   );
+
+  if (added == true && origin != null && overlay != null && overlay.mounted) {
+    flyToCart(overlay, from: origin, imageUrl: product.imageUrl);
+  }
 }
 
 class _QuantitySheet extends ConsumerStatefulWidget {
@@ -53,7 +68,9 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
   void initState() {
     super.initState();
     final inCart = ref.read(cartControllerProvider).qtyFor(_p.id);
-    _qty = inCart > 0 ? inCart : (_p.isWeighed ? defaultAddGrams(_p.maxQty) : 1);
+    _qty = inCart > 0
+        ? inCart
+        : (_p.isWeighed ? defaultAddGrams(_p.maxQty) : 1);
     _field = TextEditingController(text: _fieldText(_qty));
   }
 
@@ -78,7 +95,9 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
   /// each rate on the card is one tap away; unit presets are just common
   /// counts. Capped at what's actually in stock.
   List<int> get _presets =>
-      (_p.isWeighed ? const [250, 500, 1000, 2500, 5000, 10000] : const [1, 2, 5, 10, 25])
+      (_p.isWeighed
+              ? const [250, 500, 1000, 2500, 5000, 10000]
+              : const [1, 2, 5, 10, 25])
           .where((q) => q <= _p.maxQty)
           .toList();
 
@@ -95,16 +114,21 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
     setState(() {
       _qty = value == null
           ? 0
-          : (_p.isWeighed ? (value * 1000).round() : value.round()).clamp(0, _p.maxQty);
+          : (_p.isWeighed ? (value * 1000).round() : value.round()).clamp(
+              0,
+              _p.maxQty,
+            );
     });
   }
 
   void _confirm() {
+    HapticFeedback.lightImpact();
     final notifier = ref.read(cartControllerProvider.notifier);
+    final previous = ref.read(cartControllerProvider).qtyFor(_p.id);
     // `addItem` *sums* into an existing line; this sheet sets an exact amount,
     // so anything already in the cart has to go through updateQty instead or
     // picking "2 kg" on a line that already holds 2 kg would silently make 4.
-    if (ref.read(cartControllerProvider).qtyFor(_p.id) > 0) {
+    if (previous > 0) {
       notifier.updateQty(_p.id, _qty);
     } else {
       notifier.addItem(
@@ -119,7 +143,9 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
         ),
       );
     }
-    Navigator.pop(context);
+    // `true` = more went in than was there, which is what earns the
+    // fly-to-cart animation (lowering a quantity shouldn't celebrate).
+    Navigator.pop(context, _qty > previous);
   }
 
   @override
@@ -130,8 +156,9 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
     );
     final valid = _qty >= _p.minQty && _qty <= _p.maxQty;
     final total = valid ? _p.priceForQty(_qty) : null;
-    final secondary =
-        isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final secondary = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final l10n = AppLocalizations.of(context)!;
 
     return Padding(
@@ -203,7 +230,9 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
                         labelStyle: GoogleFonts.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
-                          color: preset == _qty ? Colors.white : AppColors.primary,
+                          color: preset == _qty
+                              ? Colors.white
+                              : AppColors.primary,
                         ),
                         selected: preset == _qty,
                         selectedColor: AppColors.primary,
@@ -212,7 +241,9 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                           side: BorderSide(
-                            color: preset == _qty ? AppColors.primary : AppColors.primary.withOpacity(0.4),
+                            color: preset == _qty
+                                ? AppColors.primary
+                                : AppColors.primary.withOpacity(0.4),
                           ),
                         ),
                         onSelected: (_) => _pick(preset),
@@ -229,22 +260,33 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
                         _p.isWeighed
                             ? (valid
                                   ? l10n.quantitySheetRateAtBand(
-                                      _p.rateSlabs!.ratePerKgFor(_qty).toStringAsFixed(0),
+                                      _p.rateSlabs!
+                                          .ratePerKgFor(_qty)
+                                          .toStringAsFixed(0),
                                       _p.rateSlabs!.bandLabelFor(_qty),
                                     )
-                                  : l10n.homeFromRatePerKg(_p.rateSlabs!.bestRatePerKg.toStringAsFixed(0)))
-                            : l10n.quantitySheetPricePerUnit(_p.price.formatted, _p.unit.value),
-                        style: GoogleFonts.inter(fontSize: 11.5, color: secondary),
+                                  : l10n.homeFromRatePerKg(
+                                      _p.rateSlabs!.bestRatePerKg
+                                          .toStringAsFixed(0),
+                                    ))
+                            : l10n.quantitySheetPricePerUnit(
+                                _p.price.formatted,
+                                _p.unit.value,
+                              ),
+                        style: GoogleFonts.inter(
+                          fontSize: 11.5,
+                          color: secondary,
+                        ),
                       ),
                     ),
                     Text(
-                      total?.formatted ?? '—',
-                      style: GoogleFonts.inter(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    )
+                          total?.formatted ?? '—',
+                          style: GoogleFonts.inter(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primary,
+                          ),
+                        )
                         // A quantity change re-prices the line — a quick pop
                         // is the same "it moved" feedback the preset chips'
                         // own selected-color transition already gives, so the
@@ -326,8 +368,12 @@ class _Header extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 product.isWeighed
-                    ? AppLocalizations.of(context)!.homeFromRatePerKg(product.rateSlabs!.bestRatePerKg.toStringAsFixed(0))
-                    : AppLocalizations.of(context)!.productSoldPer(product.unit.value),
+                    ? AppLocalizations.of(context)!.homeFromRatePerKg(
+                        product.rateSlabs!.bestRatePerKg.toStringAsFixed(0),
+                      )
+                    : AppLocalizations.of(
+                        context,
+                      )!.productSoldPer(product.unit.value),
                 style: GoogleFonts.inter(fontSize: 11.5, color: secondary),
               ),
             ],

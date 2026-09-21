@@ -10,9 +10,23 @@ class AppConstants {
   static const String kSupportPhone = '9860460325';
   static const String kSupportEmail = 'vishvatejkatkar007@gmail.com';
 
+  /// wa.me needs the country code; the support number is stored without one.
+  static const String kSupportWhatsAppUrl = 'https://wa.me/91$kSupportPhone';
+
+  /// Public privacy-policy page (Google Play requires one for any app with
+  /// accounts). **Empty on purpose** — the client hasn't published one yet, and
+  /// a link to a page that doesn't exist is worse than no link. Set it and the
+  /// Settings row appears; the same URL goes in the Play Console listing.
+  static const String kPrivacyPolicyUrl = '';
+
   /// Stock at or below this level is flagged as "low" in the admin product
   /// list (phases.md §4.3).
   static const int kLowStockThreshold = 5;
+
+  /// A still-`pending` order older than this is flagged on the admin
+  /// dashboard's "Needs attention" strip — the retailer is waiting on a
+  /// confirmation nobody has given.
+  static const int kUnconfirmedOrderMinutes = 30;
 
   /// A retailer may self-cancel a still-`pending` order within this many
   /// minutes of placing it (phases.md §8).
@@ -32,6 +46,13 @@ class AppConstants {
   /// payment flow needs to change once real values are set here.
   static const String kUpiId = 'jyotitraders@upi';
   static const String kUpiPayeeName = 'Jyoti Traders Wholesale';
+
+  /// Seller block printed on invoices. Address and GSTIN are **empty on
+  /// purpose** — the client hasn't supplied them yet (they're on the launch
+  /// checklist), and an invoice must never carry an invented GSTIN. Once set
+  /// here they print automatically; while empty those lines are left out.
+  static const String kInvoiceSellerAddress = '';
+  static const String kInvoiceSellerGstin = '';
 
   /// Same-day / next-day delivery radii and cutoff hour used to promise an
   /// arrival window at checkout (own-fleet delivery, no external logistics

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -431,7 +432,7 @@ class _BulkEditDialogContentState extends State<_BulkEditDialogContent> {
               l10n.adminBulkEditHint,
               style: GoogleFonts.inter(
                 fontSize: 12.5,
-                color: AppColors.textSecondaryLight,
+                color: context.textSecondary,
               ),
             ),
             const SizedBox(height: 16),
@@ -499,7 +500,7 @@ class _BulkActionBar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(18, 10, 18, 10),
       decoration: BoxDecoration(
         color: AppColors.primary.withOpacity(0.06),
-        border: const Border(top: BorderSide(color: AppColors.cardBorder)),
+        border: Border(top: BorderSide(color: context.border)),
       ),
       child: Row(
         children: [

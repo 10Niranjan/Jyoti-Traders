@@ -26,21 +26,33 @@ class ResolvedPlacemark {
 /// always have a graceful "couldn't resolve it" path instead of a thrown
 /// exception.
 class GeocodingService {
-  Future<ResolvedPlacemark?> reverseGeocode({required double latitude, required double longitude}) async {
+  Future<ResolvedPlacemark?> reverseGeocode({
+    required double latitude,
+    required double longitude,
+  }) async {
     try {
-      final placemarks = await geocoding.placemarkFromCoordinates(latitude, longitude);
+      final placemarks = await geocoding.placemarkFromCoordinates(
+        latitude,
+        longitude,
+      );
       if (placemarks.isEmpty) return null;
       final place = placemarks.first;
 
-      final street = [place.subThoroughfare, place.thoroughfare, place.subLocality]
-          .where((p) => p != null && p.trim().isNotEmpty)
-          .join(', ');
-      final city = place.locality?.trim().isNotEmpty == true ? place.locality! : place.subAdministrativeArea ?? '';
+      final street = [
+        place.subThoroughfare,
+        place.thoroughfare,
+        place.subLocality,
+      ].where((p) => p != null && p.trim().isNotEmpty).join(', ');
+      final city = place.locality?.trim().isNotEmpty == true
+          ? place.locality!
+          : place.subAdministrativeArea ?? '';
       final pincode = place.postalCode ?? '';
 
-      final formatted = [street, city, if (pincode.isNotEmpty) pincode]
-          .where((p) => p.trim().isNotEmpty)
-          .join(', ');
+      final formatted = [
+        street,
+        city,
+        if (pincode.isNotEmpty) pincode,
+      ].where((p) => p.trim().isNotEmpty).join(', ');
       if (formatted.trim().isEmpty) return null;
 
       return ResolvedPlacemark(
@@ -56,4 +68,6 @@ class GeocodingService {
   }
 }
 
-final geocodingServiceProvider = Provider<GeocodingService>((ref) => GeocodingService());
+final geocodingServiceProvider = Provider<GeocodingService>(
+  (ref) => GeocodingService(),
+);

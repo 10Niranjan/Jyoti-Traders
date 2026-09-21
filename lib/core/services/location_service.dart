@@ -19,16 +19,24 @@ class LocationService {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
-      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
         return null;
       }
 
-      return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+      );
     } catch (e) {
-      logWarning('LocationService: unable to get current position, skipping', e);
+      logWarning(
+        'LocationService: unable to get current position, skipping',
+        e,
+      );
       return null;
     }
   }
 }
 
-final locationServiceProvider = Provider<LocationService>((ref) => LocationService());
+final locationServiceProvider = Provider<LocationService>(
+  (ref) => LocationService(),
+);

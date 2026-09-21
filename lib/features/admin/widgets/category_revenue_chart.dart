@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -38,7 +39,7 @@ class CategoryRevenueChart extends ConsumerWidget {
             style: GoogleFonts.inter(
               fontSize: 15,
               fontWeight: FontWeight.bold,
-              color: textColor,
+              color: context.textPrimary,
             ),
           ),
           const SizedBox(height: 16),

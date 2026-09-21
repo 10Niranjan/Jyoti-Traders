@@ -1,12 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_shadows.dart';
 import '../../../core/constants/route_names.dart';
 import '../../../core/utils/app_logger.dart';
 import '../../../core/utils/csv_encoder.dart';
@@ -213,14 +213,7 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
                         borderRadius: BorderRadius.circular(16),
                         child: Container(
                           padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: AppColors.cardBorder),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow:
-                                Theme.of(context).brightness == Brightness.dark
-                                ? null
-                                : AppShadows.card,
-                          ),
+                          decoration: context.cardDecoration(),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -257,7 +250,7 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
                                 ),
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
-                                  color: AppColors.textSecondaryLight,
+                                  color: context.textSecondary,
                                 ),
                               ),
                               const SizedBox(height: 6),

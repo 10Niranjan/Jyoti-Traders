@@ -19,7 +19,14 @@ class BulkImportRow {
   bool get isValid => product != null;
 }
 
-const _expectedHeader = ['name', 'category', 'price', 'unit', 'stock', 'description'];
+const _expectedHeader = [
+  'name',
+  'category',
+  'price',
+  'unit',
+  'stock',
+  'description',
+];
 
 /// Parses pasted CSV/TSV product rows against the live [categories] list (so
 /// a typo'd or since-renamed category name is caught here, not as a silent
@@ -27,15 +34,23 @@ const _expectedHeader = ['name', 'category', 'price', 'unit', 'stock', 'descript
 /// name, category, price, unit, stock, description (description optional) —
 /// plus, only for kg products, four optional rate-slab columns:
 /// below240g, upto999g, upto2400g, above2400g. Blank lines are skipped.
-List<BulkImportRow> parseBulkProductCsv(String csv, List<CategoryEntity> categories) {
+List<BulkImportRow> parseBulkProductCsv(
+  String csv,
+  List<CategoryEntity> categories,
+) {
   final rows = decodeCsv(csv.trim());
   if (rows.isEmpty) return const [];
 
   final header = rows.first.map((h) => h.trim().toLowerCase()).toList();
-  final missing = _expectedHeader.where((h) => h != 'description' && !header.contains(h));
+  final missing = _expectedHeader.where(
+    (h) => h != 'description' && !header.contains(h),
+  );
   if (missing.isNotEmpty) {
     return [
-      BulkImportRow(rowNumber: 1, error: 'Missing required column(s): ${missing.join(', ')}'),
+      BulkImportRow(
+        rowNumber: 1,
+        error: 'Missing required column(s): ${missing.join(', ')}',
+      ),
     ];
   }
   int colIndex(String name) => header.indexOf(name);
@@ -53,31 +68,48 @@ List<BulkImportRow> parseBulkProductCsv(String csv, List<CategoryEntity> categor
 
     final name = cell('name');
     if (name.isEmpty) {
-      results.add(BulkImportRow(rowNumber: rowNumber, error: 'Name is required'));
+      results.add(
+        BulkImportRow(rowNumber: rowNumber, error: 'Name is required'),
+      );
       continue;
     }
 
     final categoryName = cell('category');
-    final categoryMatches = categories.where((c) => c.name.toLowerCase() == categoryName.toLowerCase());
+    final categoryMatches = categories.where(
+      (c) => c.name.toLowerCase() == categoryName.toLowerCase(),
+    );
     final category = categoryMatches.isEmpty ? null : categoryMatches.first;
     if (category == null) {
-      results.add(BulkImportRow(rowNumber: rowNumber, error: 'Unknown category "$categoryName"'));
+      results.add(
+        BulkImportRow(
+          rowNumber: rowNumber,
+          error: 'Unknown category "$categoryName"',
+        ),
+      );
       continue;
     }
 
     final price = double.tryParse(cell('price'));
     if (price == null || price <= 0) {
-      results.add(BulkImportRow(rowNumber: rowNumber, error: 'Price must be a positive number'));
+      results.add(
+        BulkImportRow(
+          rowNumber: rowNumber,
+          error: 'Price must be a positive number',
+        ),
+      );
       continue;
     }
 
-    final unitMatches = ProductUnit.values.where((u) => u.value == cell('unit').toLowerCase());
+    final unitMatches = ProductUnit.values.where(
+      (u) => u.value == cell('unit').toLowerCase(),
+    );
     final unit = unitMatches.isEmpty ? null : unitMatches.first;
     if (unit == null) {
       results.add(
         BulkImportRow(
           rowNumber: rowNumber,
-          error: 'Unit must be one of: ${ProductUnit.values.map((u) => u.value).join(', ')}',
+          error:
+              'Unit must be one of: ${ProductUnit.values.map((u) => u.value).join(', ')}',
         ),
       );
       continue;
@@ -85,7 +117,12 @@ List<BulkImportRow> parseBulkProductCsv(String csv, List<CategoryEntity> categor
 
     final stock = int.tryParse(cell('stock'));
     if (stock == null || stock < 0) {
-      results.add(BulkImportRow(rowNumber: rowNumber, error: 'Stock must be a whole number ≥ 0'));
+      results.add(
+        BulkImportRow(
+          rowNumber: rowNumber,
+          error: 'Stock must be a whole number ≥ 0',
+        ),
+      );
       continue;
     }
 
@@ -95,7 +132,10 @@ List<BulkImportRow> parseBulkProductCsv(String csv, List<CategoryEntity> categor
       final upto999g = double.tryParse(cell('upto999g'));
       final upto2400g = double.tryParse(cell('upto2400g'));
       final above2400g = double.tryParse(cell('above2400g'));
-      if (below240g != null && upto999g != null && upto2400g != null && above2400g != null) {
+      if (below240g != null &&
+          upto999g != null &&
+          upto2400g != null &&
+          above2400g != null) {
         rateSlabs = WeightRateSlabs(
           below240g: below240g,
           upto999g: upto999g,

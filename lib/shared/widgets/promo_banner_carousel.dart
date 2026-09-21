@@ -2,18 +2,26 @@ import 'dart:io' show Platform;
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/currency_formatter.dart';
+import '../../domain/entities/promo_banner_entity.dart';
+import '../../features/admin/controllers/admin_banner_controller.dart';
 import '../../l10n/app_localizations.dart';
 
 /// No promotional photography exists for this app yet, so the Home banner
-/// is a small carousel of informational slides instead of real images.
-class PromoBannerCarousel extends StatelessWidget {
+/// is a carousel of text slides instead of real images: the admin's own
+/// offers first (newest leading), then the fixed informational slides.
+class PromoBannerCarousel extends ConsumerWidget {
   const PromoBannerCarousel({super.key});
 
-  List<(IconData, String, String)> _slides(AppLocalizations l10n) => [
+  List<(IconData, String, String)> _slides(
+    AppLocalizations l10n,
+    List<PromoBannerEntity> offers,
+  ) => [
+        for (final offer in offers) (Icons.campaign_rounded, offer.title, offer.body),
         (
           Icons.info_outline_rounded,
           l10n.promoMinOrderTitle,
@@ -32,8 +40,9 @@ class PromoBannerCarousel extends StatelessWidget {
       ];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final offers = ref.watch(activePromoBannersProvider);
     return CarouselSlider(
       options: CarouselOptions(
         height: 92,
@@ -44,7 +53,7 @@ class PromoBannerCarousel extends StatelessWidget {
         autoPlay: kIsWeb || !Platform.environment.containsKey('FLUTTER_TEST'),
         autoPlayInterval: const Duration(seconds: 5),
       ),
-      items: _slides(l10n).map((slide) {
+      items: _slides(l10n, offers).map((slide) {
         final (icon, title, body) = slide;
         return Container(
           padding: const EdgeInsets.all(16),
@@ -67,13 +76,19 @@ class PromoBannerCarousel extends StatelessWidget {
                   children: [
                     Text(
                       title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      body,
-                      style: GoogleFonts.inter(color: Colors.white.withOpacity(0.9), fontSize: 11, height: 1.4),
-                    ),
+                    if (body.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        body,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(color: Colors.white.withOpacity(0.9), fontSize: 11, height: 1.4),
+                      ),
+                    ],
                   ],
                 ),
               ),

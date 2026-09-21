@@ -9,6 +9,7 @@ import '../../../domain/entities/business_hours_entity.dart';
 import '../../models/order_model.dart';
 import '../../models/user_model.dart';
 import '../../models/notification_model.dart';
+import '../../../domain/entities/notification_entity.dart';
 
 /// Companion to `demo_catalog_seeder.dart` — same versioned,
 /// simulation-mode-only pattern, but for retailers/orders/notifications
@@ -373,6 +374,7 @@ Future<void> seedDemoNotificationsIfEmpty(Box notificationsBox) async {
       id: 'demo_notif_2',
       title: 'Low Stock Alert',
       body: 'Toor Dal is running low on stock at Jyoti Traders.',
+      kind: NotificationKind.stock,
       receivedAt: now.subtract(const Duration(hours: 5)),
       isRead: false,
     ),

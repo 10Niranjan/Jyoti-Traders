@@ -77,6 +77,9 @@ class FakeAuthRepository implements AuthRepository {
   }) async {}
 
   @override
+  Future<void> deleteAccount({required String uid, String? password}) async {}
+
+  @override
   Future<void> sendPasswordResetEmail(String email) async {}
 }
 
@@ -115,16 +118,19 @@ class FakeProductRepository implements ProductRepository {
   FakeProductRepository(this.products);
 
   @override
-  Stream<List<ProductEntity>> watchProducts({String? categoryId}) => Stream.value(products.values.toList());
+  Stream<List<ProductEntity>> watchProducts({String? categoryId}) =>
+      Stream.value(products.values.toList());
 
   @override
-  Stream<List<ProductEntity>> watchAllProducts() => Stream.value(products.values.toList());
+  Stream<List<ProductEntity>> watchAllProducts() =>
+      Stream.value(products.values.toList());
 
   @override
   Future<List<ProductEntity>> searchProducts(String query) async => [];
 
   @override
-  Future<ProductEntity?> getProductById(String productId) async => products[productId];
+  Future<ProductEntity?> getProductById(String productId) async =>
+      products[productId];
 
   @override
   Future<void> createProduct(ProductEntity product) async {}
@@ -184,20 +190,25 @@ OrderEntity _order({required String id, required OrderStatus status}) =>
       createdAt: DateTime(2026, 7, 20),
     );
 
-Widget _wrap(FakeOrderRepository repo, {FakeProductRepository? productRepo, FakeCartRepository? cartRepo}) =>
-    ProviderScope(
-      overrides: [
-        authRepositoryProvider.overrideWithValue(FakeAuthRepository(_retailer)),
-        orderRepositoryProvider.overrideWithValue(repo),
-        productRepositoryProvider.overrideWithValue(productRepo ?? FakeProductRepository({'p1': _product})),
-        cartRepositoryProvider.overrideWithValue(cartRepo ?? FakeCartRepository()),
-      ],
-      child: const MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: OrderHistoryScreen(),
-      ),
-    );
+Widget _wrap(
+  FakeOrderRepository repo, {
+  FakeProductRepository? productRepo,
+  FakeCartRepository? cartRepo,
+}) => ProviderScope(
+  overrides: [
+    authRepositoryProvider.overrideWithValue(FakeAuthRepository(_retailer)),
+    orderRepositoryProvider.overrideWithValue(repo),
+    productRepositoryProvider.overrideWithValue(
+      productRepo ?? FakeProductRepository({'p1': _product}),
+    ),
+    cartRepositoryProvider.overrideWithValue(cartRepo ?? FakeCartRepository()),
+  ],
+  child: const MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: OrderHistoryScreen(),
+  ),
+);
 
 void main() {
   testWidgets('shows an empty state when there are no orders', (tester) async {
@@ -259,21 +270,26 @@ void main() {
     },
   );
 
-  testWidgets('tapping Reorder on a row adds the live-priced item to the cart', (tester) async {
-    final cartRepo = FakeCartRepository();
-    await tester.pumpWidget(
-      _wrap(
-        FakeOrderRepository([_order(id: 'o1', status: OrderStatus.delivered)]),
-        cartRepo: cartRepo,
-      ),
-    );
-    await tester.pumpAndSettle();
+  testWidgets(
+    'tapping Reorder on a row adds the live-priced item to the cart',
+    (tester) async {
+      final cartRepo = FakeCartRepository();
+      await tester.pumpWidget(
+        _wrap(
+          FakeOrderRepository([
+            _order(id: 'o1', status: OrderStatus.delivered),
+          ]),
+          cartRepo: cartRepo,
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Buy Again'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Buy Again'));
+      await tester.pumpAndSettle();
 
-    expect(cartRepo.items, hasLength(1));
-    expect(cartRepo.items.single.productId, 'p1');
-    expect(find.textContaining('1 item added to cart'), findsOneWidget);
-  });
+      expect(cartRepo.items, hasLength(1));
+      expect(cartRepo.items.single.productId, 'p1');
+      expect(find.textContaining('1 item added to cart'), findsOneWidget);
+    },
+  );
 }

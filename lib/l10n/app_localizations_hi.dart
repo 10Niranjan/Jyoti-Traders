@@ -147,7 +147,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get homeBuyAgain => 'फिर से खरीदें';
 
   @override
-  String get homeTodaysPicks => 'आज की पसंद';
+  String get homeTopProducts => 'टॉप प्रोडक्ट्स';
 
   @override
   String homeFromRatePerKg(String rate) {
@@ -156,11 +156,6 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get homeOutOfStock => 'स्टॉक खत्म';
-
-  @override
-  String homeOnlyLeftInStock(int stock, String unit) {
-    return 'केवल $stock $unit बचे हैं';
-  }
 
   @override
   String get pendingUnableToDialPhone => 'फ़ोन डायल नहीं हो सका: 9860460325';
@@ -610,8 +605,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get profileSavedAddresses => 'सहेजे गए पते';
 
   @override
-  String get profileNoSavedAddresses =>
-      'चेकआउट पर आपके द्वारा सहेजे गए पते यहाँ दिखेंगे।';
+  String get profileNoSavedAddresses => 'अभी कोई सहेजा हुआ पता नहीं है।';
 
   @override
   String get profileRemoveAddressAction => 'हटाएं';
@@ -995,6 +989,13 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get adminActive => 'सक्रिय';
+
+  @override
+  String get adminTopProductLabel => 'टॉप प्रोडक्ट';
+
+  @override
+  String get adminTopProductHint =>
+      'रिटेलर होम स्क्रीन के टॉप प्रोडक्ट्स सेक्शन में दिखाया जाएगा।';
 
   @override
   String get adminSaveChanges => 'बदलाव सहेजें';
@@ -1633,4 +1634,380 @@ class AppLocalizationsHi extends AppLocalizations {
   String adminApprovedMessage(String name) {
     return '$name सफलतापूर्वक स्वीकृत हुआ!';
   }
+
+  @override
+  String cartNudgeRailTitle(String minimum) {
+    return '$minimum तक पहुँचने के लिए सुझाव';
+  }
+
+  @override
+  String get adminBannersTitle => 'होम बैनर';
+
+  @override
+  String get adminBannersEmptyTitle => 'अभी कोई बैनर नहीं';
+
+  @override
+  String get adminBannersEmptyMessage =>
+      'कोई ऑफ़र या घोषणा जोड़ें। रिटेलर इसे होम के ऊपर देखते हैं।';
+
+  @override
+  String get adminBannerAdd => 'बैनर जोड़ें';
+
+  @override
+  String get adminBannerEditTitle => 'बैनर संपादित करें';
+
+  @override
+  String get adminBannerBodyOptional => 'संदेश (वैकल्पिक)';
+
+  @override
+  String get adminBannerTitleRequired => 'शीर्षक दर्ज करें';
+
+  @override
+  String get adminBannerShowOnHome => 'होम पर दिखाएँ';
+
+  @override
+  String get adminBannerNoEndDate => 'कोई अंतिम तिथि नहीं';
+
+  @override
+  String get adminBannerPickEndDate => 'इस तारीख तक दिखाएँ (वैकल्पिक)';
+
+  @override
+  String get adminBannerClearDate => 'तारीख हटाएँ';
+
+  @override
+  String adminBannerUntil(String date) {
+    return '$date तक';
+  }
+
+  @override
+  String get adminBannerExpired => 'समाप्त';
+
+  @override
+  String get adminBannerSaved => 'बैनर सहेजा गया';
+
+  @override
+  String get adminBannerDeleted => 'बैनर हटाया गया';
+
+  @override
+  String get adminBannerDeleteTitle => 'बैनर हटाएँ?';
+
+  @override
+  String adminBannerDeleteContent(String title) {
+    return '\"$title\" होम पर तुरंत दिखना बंद हो जाएगा।';
+  }
+
+  @override
+  String get orderInvoiceTooltip => 'इनवॉइस साझा करें (PDF)';
+
+  @override
+  String get orderInvoiceFailed => 'इनवॉइस नहीं बन सका। कृपया फिर कोशिश करें।';
+
+  @override
+  String get settingsTextSize => 'टेक्स्ट का आकार';
+
+  @override
+  String get settingsTextSizeAuto => 'ऑटो';
+
+  @override
+  String get settingsTextSizeSmall => 'छोटा';
+
+  @override
+  String get settingsTextSizeMedium => 'मध्यम';
+
+  @override
+  String get settingsTextSizeLarge => 'बड़ा';
+
+  @override
+  String get settingsTextSizeAutoHint =>
+      'ऑटो आपके फ़ोन की फ़ॉन्ट साइज़ सेटिंग के अनुसार चलता है।';
+
+  @override
+  String get settingsWhatsAppSupport => 'व्हाट्सऐप पर चैट करें';
+
+  @override
+  String get settingsClearCache => 'इमेज कैश साफ़ करें';
+
+  @override
+  String get settingsClearCacheSubtitle =>
+      'स्टोरेज खाली होता है। ज़रूरत पड़ने पर इमेज दोबारा लोड हो जाती हैं।';
+
+  @override
+  String get settingsCacheCleared => 'इमेज कैश साफ़ हो गया';
+
+  @override
+  String get settingsAbout => 'ऐप के बारे में';
+
+  @override
+  String settingsVersion(String version, String build) {
+    return 'संस्करण $version ($build)';
+  }
+
+  @override
+  String cartItemRemoved(String name) {
+    return '$name हटाया गया';
+  }
+
+  @override
+  String get cartUndo => 'पूर्ववत करें';
+
+  @override
+  String homeOrderPending(String id) {
+    return 'ऑर्डर #$id पुष्टि की प्रतीक्षा में है';
+  }
+
+  @override
+  String homeOrderConfirmed(String id) {
+    return 'ऑर्डर #$id की पुष्टि हो गई है';
+  }
+
+  @override
+  String homeOrderOutForDelivery(String id) {
+    return 'ऑर्डर #$id डिलीवरी के लिए निकल चुका है';
+  }
+
+  @override
+  String get homeOrderTrack => 'ट्रैक करें';
+
+  @override
+  String get adminAttentionTitle => 'ध्यान देने योग्य';
+
+  @override
+  String get adminAttentionAllClear => 'सब कुछ संभला हुआ है';
+
+  @override
+  String get adminAttentionApprovals => 'रिटेलर अनुमोदन';
+
+  @override
+  String get adminAttentionPayments => 'UPI भुगतान की पुष्टि बाकी';
+
+  @override
+  String get adminAttentionLowStock => 'कम स्टॉक';
+
+  @override
+  String adminAttentionStaleOrders(int minutes) {
+    return '$minutes+ मिनट से अपुष्ट ऑर्डर';
+  }
+
+  @override
+  String adminTrendVsLastWeek(String percent) {
+    return 'पिछले सप्ताह से $percent%';
+  }
+
+  @override
+  String get profileDiscardTitle => 'बदलाव छोड़ें?';
+
+  @override
+  String get profileDiscardMessage => 'आपके बिना सहेजे बदलाव खो जाएँगे।';
+
+  @override
+  String get profileKeepEditing => 'संपादन जारी रखें';
+
+  @override
+  String get profileDiscardAction => 'छोड़ें';
+
+  @override
+  String get profileSectionSaved => 'सहेजा गया';
+
+  @override
+  String get profileValueNotSet => 'सेट नहीं है';
+
+  @override
+  String get profileAddressLabel => 'लेबल';
+
+  @override
+  String get profileLabelHome => 'घर';
+
+  @override
+  String get profileLabelShop => 'दुकान';
+
+  @override
+  String get profileLabelWarehouse => 'गोदाम';
+
+  @override
+  String get profileSetDefault => 'डिफ़ॉल्ट बनाएँ';
+
+  @override
+  String get profileDefaultBadge => 'डिफ़ॉल्ट';
+
+  @override
+  String get profileDefaultUpdated => 'डिफ़ॉल्ट पता अपडेट हुआ';
+
+  @override
+  String profileCompleteTitle(int percent) {
+    return '$percent% पूरा';
+  }
+
+  @override
+  String get profileCompleteSubtitle => 'अपनी दुकान की प्रोफ़ाइल पूरी करें';
+
+  @override
+  String get profileTaskPhoto => 'दुकान की फ़ोटो जोड़ें';
+
+  @override
+  String get profileTaskLocation => 'डिलीवरी लोकेशन सेट करें';
+
+  @override
+  String get profileTaskGst => 'GST नंबर जोड़ें';
+
+  @override
+  String get profileTaskPayout => 'पेआउट विवरण जोड़ें';
+
+  @override
+  String get profileInsightsTitle => 'आपका व्यवसाय';
+
+  @override
+  String get profileInsightsThisMonth => 'इस महीने का खर्च';
+
+  @override
+  String profileInsightsOrdersThisMonth(int count) {
+    return 'इस महीने के ऑर्डर: $count';
+  }
+
+  @override
+  String profileInsightsVsLastMonth(String percent) {
+    return 'पिछले महीने के इन्हीं दिनों से $percent%';
+  }
+
+  @override
+  String get profileInsightsMostBought => 'सबसे ज़्यादा खरीदा';
+
+  @override
+  String get profileInsightsFavCategory => 'पसंदीदा श्रेणी';
+
+  @override
+  String get profileQuickAddresses => 'पते';
+
+  @override
+  String get adminBusinessLegalName => 'कानूनी नाम';
+
+  @override
+  String get adminBusinessAddress => 'पंजीकृत पता';
+
+  @override
+  String get adminBusinessPrintedOnInvoices => 'हर इनवॉइस पर छपता है';
+
+  @override
+  String get settingsPrivacyPolicy => 'गोपनीयता नीति';
+
+  @override
+  String get settingsDeleteAccount => 'खाता हटाएँ';
+
+  @override
+  String get settingsDeleteAccountSubtitle =>
+      'अपनी प्रोफ़ाइल हमेशा के लिए हटाएँ';
+
+  @override
+  String get settingsDeleteTitle => 'अपना खाता हटाएँ?';
+
+  @override
+  String get settingsDeleteMessage =>
+      'आपकी प्रोफ़ाइल, सहेजे हुए पते और पसंद हमेशा के लिए हटा दिए जाएँगे। पुराने ऑर्डर लेखा-जोखा के लिए दुकान के रिकॉर्ड में रहेंगे। इसे वापस नहीं किया जा सकता।';
+
+  @override
+  String get settingsDeletePasswordLabel => 'पासवर्ड से पुष्टि करें';
+
+  @override
+  String get settingsDeleteAction => 'हमेशा के लिए हटाएँ';
+
+  @override
+  String settingsDeleteFailed(String error) {
+    return 'खाता नहीं हटाया जा सका: $error';
+  }
+
+  @override
+  String get notificationsFilterAll => 'सभी';
+
+  @override
+  String notificationsFilterUnread(int count) {
+    return 'अपठित ($count)';
+  }
+
+  @override
+  String notificationsHeroUnread(int count) {
+    return '$count नई';
+  }
+
+  @override
+  String get notificationsHeroCaughtUp => 'सब देख लिया';
+
+  @override
+  String notificationsHeroSubtitle(int count) {
+    return 'इनबॉक्स में $count';
+  }
+
+  @override
+  String get notificationsSectionToday => 'आज';
+
+  @override
+  String get notificationsSectionYesterday => 'कल';
+
+  @override
+  String get notificationsSectionThisWeek => 'इस सप्ताह';
+
+  @override
+  String get notificationsSectionEarlier => 'पहले';
+
+  @override
+  String get notificationsViewOrder => 'ऑर्डर देखें';
+
+  @override
+  String get notificationsUnreadEmptyTitle => 'आप पूरी तरह अपडेट हैं';
+
+  @override
+  String get notificationsUnreadEmptyMessage => 'अभी कोई अपठित सूचना नहीं है।';
+
+  @override
+  String get adminDeliveryHeroSubtitle =>
+      'आपके गोदाम से हर किलोमीटर के लिए रिटेलर्स यह शुल्क देते हैं';
+
+  @override
+  String get adminDeliveryPerKm => 'प्रति किमी';
+
+  @override
+  String get adminDeliveryQuickRates => 'त्वरित दर';
+
+  @override
+  String get adminDeliverySamplesTitle => 'रिटेलर्स कितना देंगे';
+
+  @override
+  String adminDeliverySampleKm(int km) {
+    return '$km किमी';
+  }
+
+  @override
+  String get adminDeliveryUnsaved => 'बिना सहेजे बदलाव';
+
+  @override
+  String get adminDeliveryAllSaved => 'सभी बदलाव सहेजे गए';
+
+  @override
+  String get adminDeliveryRateDecrease => 'दर घटाएँ';
+
+  @override
+  String get adminDeliveryRateIncrease => 'दर बढ़ाएँ';
+
+  @override
+  String get settingsDone => 'हो गया';
+
+  @override
+  String get settingsAppearanceSubtitle => 'ऐप कैसा दिखे, चुनें';
+
+  @override
+  String get settingsLanguageSubtitle => 'वह भाषा चुनें जिसमें पढ़ना आसान हो';
+
+  @override
+  String get settingsTextSizeSubtitle => 'टेक्स्ट को पढ़ने में आसान बनाएँ';
+
+  @override
+  String get settingsSupportSubtitle => 'हम आपकी मदद के लिए हैं';
+
+  @override
+  String get settingsAboutSubtitle => 'इस ऐप के बारे में';
+
+  @override
+  String get settingsNotificationsSubtitle =>
+      'चुनें कि आप किस बारे में जानना चाहते हैं';
+
+  @override
+  String get settingsTextSizePreview => 'ताज़ा माल, बेहतरीन दाम, तेज़ डिलीवरी।';
 }

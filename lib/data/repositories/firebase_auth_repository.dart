@@ -550,6 +550,38 @@ class FirebaseAuthRepository implements AuthRepository {
     await _firebaseAuth!.sendPasswordResetEmail(email: email);
   }
 
+  @override
+  Future<void> deleteAccount({required String uid, String? password}) async {
+    if (_useMock) {
+      await Future.delayed(const Duration(milliseconds: 600));
+      final List<dynamic> users = _userCacheBox.get(
+        'simulated_users',
+        defaultValue: [],
+      );
+      final remaining = users
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .where((u) => u['uid'] != uid)
+          .toList();
+      await _userCacheBox.put('simulated_users', remaining);
+      await signOut();
+      return;
+    }
+
+    final fbUser = _firebaseAuth!.currentUser;
+    if (fbUser == null) throw Exception('Not signed in.');
+    final email = fbUser.email;
+    if (password != null && email != null) {
+      await fbUser.reauthenticateWithCredential(
+        fb.EmailAuthProvider.credential(email: email, password: password),
+      );
+    }
+    // Profile document first, while the session can still authorise it; the
+    // login last, since deleting it signs everyone out.
+    await _firestore!.collection('users').doc(uid).delete();
+    await fbUser.delete();
+    await _userCacheBox.delete('current_user');
+  }
+
   // Simulation-only helper to toggle approval status of a user (useful for admin testing screen)
   Future<void> simulateToggleApproval(String uid, bool approve) async {
     final status = approve ? UserStatus.approved : UserStatus.pending;

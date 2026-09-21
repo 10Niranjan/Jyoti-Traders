@@ -5,6 +5,7 @@ import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/entities/notification_entity.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/controllers/auth_state.dart';
+import 'notification_controller.dart';
 
 final fcmServiceProvider = Provider<FcmService>((ref) => FcmService());
 
@@ -40,6 +41,11 @@ final fcmInitializerProvider = Provider<void>((ref) {
   final tokenSub = fcm.onTokenRefresh.listen(saveTokenForCurrentUser);
 
   final messageSub = fcm.onForegroundMessage.listen((message) {
+    // A message carrying an orderId is an order update; honour the switch.
+    if (message.data['orderId'] != null &&
+        !ref.read(notificationPreferencesProvider).orderUpdates) {
+      return;
+    }
     notificationRepo.addNotification(
       NotificationEntity(
         id:

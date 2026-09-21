@@ -89,7 +89,9 @@ These are **hard requirements** enforced in the app at all times:
 | **Retailer Approval Queue** | List of pending sign-ups with shop details; one-tap Approve / Reject                                            |
 | **Product Management**      | Add / Edit / Delete products with name, image, price (wholesale), unit (kg/piece/box), stock quantity, category. Per-kg products take a 4-band rate card instead of a flat price (§4.5) |
 | **Category Management**     | Create and manage 6–10 product categories (e.g., Spices, Oils, Pulses, Snacks, Beverages, Cleaning)             |
-| **Order Management**        | View all incoming orders, filterable by status. Update status: `Pending → Confirmed → Out for Delivery → Delivered`, or `Cancelled` (retailer-initiated). Export the current filtered list to CSV. |
+| **Order Management**        | View all incoming orders, filterable by status. Update status: `Pending → Confirmed → Out for Delivery → Delivered`, or `Cancelled` (retailer-initiated). Export the current filtered list to CSV. Share a PDF invoice for any non-cancelled order (§4.6). |
+| **Home Banners**            | Add / edit / switch off / delete the offers shown at the top of the retailer Home screen (title, optional message, optional end date). Stored in `config/banners` — no app update needed to run a festival offer |
+| **Business Details**        | Legal name, registered address and GSTIN printed as the seller block on every invoice (blank fields fall back to defaults; nothing is invented) |
 | **Delivery Assignment**     | Assign orders to delivery personnel and mark dispatch                                                           |
 | **Retailer List**           | View all approved retailers with their order history and total spend                                            |
 
@@ -99,15 +101,15 @@ These are **hard requirements** enforced in the app at all times:
 
 | Feature                | Description                                                                                            |
 | ---------------------- | ------------------------------------------------------------------------------------------------------ |
-| **Home Screen**        | Category-wise product grid with promotional banners                                                    |
+| **Home Screen**        | Category-wise product grid with promotional banners — the admin's own offers lead the carousel (§4.2)  |
 | **Product Browsing**   | Browse by category, search by name, filter by price/availability                                       |
 | **Product Detail**     | Product image, name, wholesale price, available stock, unit info. Per-kg products show the quantity rate card and a weight picker (§4.5) |
-| **Cart**               | Add/remove items, see real-time cart total, minimum order warning if below ₹2,500                      |
+| **Cart**               | Add/remove items, see real-time cart total. Below ₹2,500: a progress bar toward the minimum plus suggested products (regulars first) that would close the gap |
 | **Checkout**           | Review order summary, select payment method (COD / UPI), confirm delivery address, see delivery charge |
-| **Order Confirmation** | Order ID, summary, and estimated delivery info shown post-checkout. Share the confirmation as text via the OS share sheet |
+| **Order Confirmation** | Order ID, summary, and estimated delivery info shown post-checkout, with an animated success check. Share the confirmation as text, or share a PDF invoice (§4.6), via the OS share sheet |
 | **Order History**      | List of past orders, filterable by status. Order Detail shows a visual tracking stepper (Placed → Confirmed → Out for Delivery → Delivered, or a distinct Cancelled state) instead of just a badge. Self-cancel within the window (§3). "Buy Again" re-adds every item from a past order at current prices/stock |
 | **Reorder**            | Home screen surfaces a "Buy Again" rail of individually frequently-bought products (one-tap add), plus a heads-up banner if any of those regulars are low/out of stock |
-| **Profile**            | View and edit shop info, registered address, contact details                                           |
+| **Profile**            | Overview (completeness meter, shortcuts, monthly business insights) with each section — delivery address (Home/Shop/Warehouse label, default), business details (GST, hours), payout details — edited in its own sheet with an unsaved-changes guard. Settings: notifications (which now gate what is delivered), appearance, language, text size, support (call / WhatsApp / email), About, clear image cache, privacy policy (once a URL is set) and **Delete account** (Google Play requirement) |
 | **Support**            | Direct call/email button to contact admin                                                              |
 
 ---
@@ -142,6 +144,19 @@ Rules:
 - Products saved before this feature carry no rate card and keep flat per-kilo pricing, so no data migration was required.
 
 > **Rate values are client-set business rules.** The ₹39 rate for the 1 kg – 2.4 kg band is a default pending final client confirmation.
+
+---
+
+### 4.6 Invoice ✅ Implemented
+
+A one-page PDF invoice, built on the phone and shared through the OS share sheet (WhatsApp, email, print). Available to both the admin and the retailer for any order that isn't cancelled.
+
+- Contains: seller block, order number and date, bill-to (shop name, delivery address, buyer GSTIN when on file), line items with quantity / rate / amount, subtotal, discount, delivery charge, total, and payment method/status.
+- **Plain invoice, no tax split.** The catalogue carries no per-product GST rate or HSN code, so a CGST/SGST breakdown can't be computed honestly yet. It is titled "Invoice", not "Tax Invoice".
+- Seller **address and GSTIN print only once set** in `AppConstants` (`kInvoiceSellerAddress`, `kInvoiceSellerGstin`) — both are empty until the client supplies them, so an invoice never carries an invented GSTIN.
+- The invoice number is the order number, not a separate sequential series.
+
+> **Open items for the client.** Whether prices already include GST, and per-product GST rates / HSN codes, before a compliant tax invoice can be produced. Also the seller GSTIN and registered address.
 
 ---
 

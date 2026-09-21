@@ -7,6 +7,9 @@ import '../../../domain/entities/order_entity.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/order_detail_body.dart';
+import '../../../shared/widgets/share_invoice_button.dart';
+import '../controllers/admin_dashboard_controller.dart';
+import '../../settings/controllers/business_profile_controller.dart';
 import '../controllers/admin_order_controller.dart';
 
 class OrderManagementScreen extends ConsumerWidget {
@@ -69,6 +72,16 @@ class OrderManagementScreen extends ConsumerWidget {
     );
   }
 
+  /// GST number on the retailer's profile, if they gave one — the order
+  /// itself doesn't snapshot it. Null while the retailer list is loading.
+  String? _buyerGstin(WidgetRef ref, OrderEntity order) {
+    final users = ref.watch(approvedUsersProvider).valueOrNull ?? const [];
+    for (final user in users) {
+      if (user.uid == order.userId) return user.gstNumber;
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final orderAsync = ref.watch(adminOrderByIdProvider(orderId));
@@ -81,6 +94,18 @@ class OrderManagementScreen extends ConsumerWidget {
           l10n.adminManageOrderTitle,
           style: GoogleFonts.inter(fontWeight: FontWeight.bold),
         ),
+        actions: [
+          orderAsync.maybeWhen(
+            data: (order) => order == null
+                ? const SizedBox.shrink()
+                : ShareInvoiceButton(
+                    order: order,
+                    buyerGstin: _buyerGstin(ref, order),
+                    seller: ref.watch(businessProfileProvider).valueOrNull,
+                  ),
+            orElse: () => const SizedBox.shrink(),
+          ),
+        ],
       ),
       body: orderAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

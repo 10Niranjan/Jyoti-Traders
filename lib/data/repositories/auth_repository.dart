@@ -52,4 +52,13 @@ abstract class AuthRepository {
   /// Password" from Settings) — no-op success in simulation mode, where
   /// there's no real inbox to deliver to.
   Future<void> sendPasswordResetEmail(String email);
+
+  /// Permanently deletes the signed-in retailer's account (Google Play
+  /// requires an in-app way to do this). Removes the profile document and the
+  /// login; orders stay on record with the shop for accounting.
+  ///
+  /// [password] re-authenticates first — Firebase refuses a delete on a stale
+  /// session (`requires-recent-login`). Simulation mode has no real password to
+  /// check, so it ignores it.
+  Future<void> deleteAccount({required String uid, String? password});
 }

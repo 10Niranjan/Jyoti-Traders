@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
@@ -65,7 +66,7 @@ class AdminProductTile extends StatelessWidget {
                       if (!product.isActive)
                         StatusPill(
                           label: l10n.adminInactiveBadge,
-                          color: AppColors.textSecondaryLight,
+                          color: context.textSecondary,
                         ),
                     ],
                   ),

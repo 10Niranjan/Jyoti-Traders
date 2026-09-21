@@ -15,16 +15,16 @@ import '../helpers/fake_cart_repository.dart';
 /// Stock is counted in kilos for a weighed product, so `stock: 5` is a 5 kg
 /// (5000 g) ceiling.
 ProductEntity _weighed({int stock = 5}) => ProductEntity(
-      id: 'p1',
-      name: 'Toor Dal',
-      categoryId: 'cat_pulses',
-      imageUrl: '',
-      price: Money(44),
-      unit: ProductUnit.kg,
-      stock: stock,
-      isActive: true,
-      rateSlabs: WeightRateSlabs.defaults,
-    );
+  id: 'p1',
+  name: 'Toor Dal',
+  categoryId: 'cat_pulses',
+  imageUrl: '',
+  price: Money(44),
+  unit: ProductUnit.kg,
+  stock: stock,
+  isActive: true,
+  rateSlabs: WeightRateSlabs.defaults,
+);
 
 /// The `Consumer` is not decoration: `cartControllerProvider` fills from a
 /// stream, so its very first reader sees an empty cart for one microtask. In
@@ -32,23 +32,23 @@ ProductEntity _weighed({int stock = 5}) => ProductEntity(
 /// keeps the test on that same footing rather than making the sheet the
 /// provider's first reader.
 Widget _wrap(FakeCartRepository repo, ProductEntity product) => ProviderScope(
-      overrides: [cartRepositoryProvider.overrideWithValue(repo)],
-      child: MaterialApp(
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: Consumer(
-            builder: (context, ref, _) {
-              ref.watch(cartControllerProvider);
-              return ElevatedButton(
-                onPressed: () => showQuantitySheet(context, product),
-                child: const Text('open'),
-              );
-            },
-          ),
-        ),
+  overrides: [cartRepositoryProvider.overrideWithValue(repo)],
+  child: MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: Scaffold(
+      body: Consumer(
+        builder: (context, ref, _) {
+          ref.watch(cartControllerProvider);
+          return ElevatedButton(
+            onPressed: () => showQuantitySheet(context, product),
+            child: const Text('open'),
+          );
+        },
       ),
-    );
+    ),
+  ),
+);
 
 Future<void> _openSheet(WidgetTester tester) async {
   await tester.tap(find.text('open'));
@@ -56,7 +56,9 @@ Future<void> _openSheet(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('a typed weight is read as kilos and stored as grams', (tester) async {
+  testWidgets('a typed weight is read as kilos and stored as grams', (
+    tester,
+  ) async {
     final repo = FakeCartRepository();
     await tester.pumpWidget(_wrap(repo, _weighed()));
     await _openSheet(tester);
@@ -72,7 +74,9 @@ void main() {
     expect(repo.items.single.qty, 2500);
   });
 
-  testWidgets('a typed quantity above stock is capped at what is in stock', (tester) async {
+  testWidgets('a typed quantity above stock is capped at what is in stock', (
+    tester,
+  ) async {
     final repo = FakeCartRepository();
     await tester.pumpWidget(_wrap(repo, _weighed(stock: 5)));
     await _openSheet(tester);
@@ -93,7 +97,10 @@ void main() {
     await tester.pumpWidget(_wrap(repo, _weighed()));
     await _openSheet(tester);
 
-    await tester.enterText(find.byType(TextField), '0.05'); // 50 g, min is 100 g
+    await tester.enterText(
+      find.byType(TextField),
+      '0.05',
+    ); // 50 g, min is 100 g
     await tester.pumpAndSettle();
 
     expect(find.text('Minimum 100 g'), findsOneWidget);
@@ -103,29 +110,32 @@ void main() {
     expect(repo.items, isEmpty);
   });
 
-  testWidgets('re-opening for a line already in the cart sets the quantity instead of summing it', (tester) async {
-    final repo = FakeCartRepository([
-      CartItemEntity(
-        productId: 'p1',
-        name: 'Toor Dal',
-        imageUrl: '',
-        unitPrice: Money(44),
-        unit: ProductUnit.kg,
-        qty: 2000,
-        rateSlabs: WeightRateSlabs.defaults,
-      ),
-    ]);
-    await tester.pumpWidget(_wrap(repo, _weighed()));
-    await _openSheet(tester);
+  testWidgets(
+    're-opening for a line already in the cart sets the quantity instead of summing it',
+    (tester) async {
+      final repo = FakeCartRepository([
+        CartItemEntity(
+          productId: 'p1',
+          name: 'Toor Dal',
+          imageUrl: '',
+          unitPrice: Money(44),
+          unit: ProductUnit.kg,
+          qty: 2000,
+          rateSlabs: WeightRateSlabs.defaults,
+        ),
+      ]);
+      await tester.pumpWidget(_wrap(repo, _weighed()));
+      await _openSheet(tester);
 
-    // Seeded from the cart, so the sheet opens on the line's current weight.
-    expect(find.text('Update to 2 kg'), findsOneWidget);
+      // Seeded from the cart, so the sheet opens on the line's current weight.
+      expect(find.text('Update to 2 kg'), findsOneWidget);
 
-    await tester.tap(find.text('1 kg')); // preset chip
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Update to 1 kg'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('1 kg')); // preset chip
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Update to 1 kg'));
+      await tester.pumpAndSettle();
 
-    expect(repo.items.single.qty, 1000);
-  });
+      expect(repo.items.single.qty, 1000);
+    },
+  );
 }

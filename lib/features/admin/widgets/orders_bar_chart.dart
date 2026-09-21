@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -16,7 +17,9 @@ class OrdersBarChart extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight;
+    final textColor = isDark
+        ? AppColors.textSecondaryDark
+        : AppColors.textSecondaryLight;
     final buckets = ref.watch(last7DaysOrderCountsProvider);
 
     return Container(
@@ -32,7 +35,11 @@ class OrdersBarChart extends ConsumerWidget {
         children: [
           Text(
             'Orders — Last 7 Days',
-            style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.bold, color: textColor),
+            style: GoogleFonts.inter(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: context.textPrimary,
+            ),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -41,11 +48,17 @@ class OrdersBarChart extends ConsumerWidget {
               data: (days) {
                 if (days.every((d) => d.count == 0)) {
                   return Center(
-                    child: Text('No orders yet this week', style: GoogleFonts.inter(fontSize: 12, color: textColor)),
+                    child: Text(
+                      'No orders yet this week',
+                      style: GoogleFonts.inter(fontSize: 12, color: textColor),
+                    ),
                   );
                 }
-                final maxCount = days.map((d) => d.count).reduce((a, b) => a > b ? a : b);
-                final maxY = (maxCount < 4 ? 4 : maxCount + (maxCount ~/ 4) + 1).toDouble();
+                final maxCount = days
+                    .map((d) => d.count)
+                    .reduce((a, b) => a > b ? a : b);
+                final maxY = (maxCount < 4 ? 4 : maxCount + (maxCount ~/ 4) + 1)
+                    .toDouble();
 
                 return BarChart(
                   BarChartData(
@@ -56,27 +69,43 @@ class OrdersBarChart extends ConsumerWidget {
                     barTouchData: BarTouchData(
                       touchTooltipData: BarTouchTooltipData(
                         getTooltipColor: (_) => AppColors.primary,
-                        getTooltipItem: (group, groupIndex, rod, rodIndex) => BarTooltipItem(
-                          '${rod.toY.round()} orders',
-                          const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                        ),
+                        getTooltipItem: (group, groupIndex, rod, rodIndex) =>
+                            BarTooltipItem(
+                              '${rod.toY.round()} orders',
+                              const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                       ),
                     ),
                     titlesData: FlTitlesData(
-                      leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      leftTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
                       bottomTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
                           getTitlesWidget: (value, meta) {
                             final idx = value.toInt();
-                            if (idx < 0 || idx >= days.length) return const SizedBox.shrink();
+                            if (idx < 0 || idx >= days.length) {
+                              return const SizedBox.shrink();
+                            }
                             return Padding(
                               padding: const EdgeInsets.only(top: 6),
                               child: Text(
                                 _weekdayLabels[days[idx].day.weekday - 1],
-                                style: GoogleFonts.inter(fontSize: 10, color: textColor),
+                                style: GoogleFonts.inter(
+                                  fontSize: 10,
+                                  color: textColor,
+                                ),
                               ),
                             );
                           },
@@ -107,7 +136,13 @@ class OrdersBarChart extends ConsumerWidget {
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (_, _) => Center(
-                child: Text('Couldn\'t load chart data', style: GoogleFonts.inter(fontSize: 12, color: AppColors.error)),
+                child: Text(
+                  'Couldn\'t load chart data',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: AppColors.error,
+                  ),
+                ),
               ),
             ),
           ),

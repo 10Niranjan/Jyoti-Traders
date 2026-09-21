@@ -27,6 +27,9 @@ List<AddressEntity> mergeSavedAddress(
   }
 
   final updated = [...existing];
-  updated[matchIndex] = address.copyWith(id: existing[matchIndex].id, label: label);
+  updated[matchIndex] = address.copyWith(
+    id: existing[matchIndex].id,
+    label: label,
+  );
   return updated;
 }

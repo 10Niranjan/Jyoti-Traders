@@ -5,10 +5,18 @@ import 'package:traders_retailer/domain/usecases/delivery/calculate_delivery_cha
 
 void main() {
   final useCase = CalculateDeliveryChargeUseCase();
-  const config = DeliveryConfigEntity(warehouseLat: 19.0760, warehouseLng: 72.8777, perKmRate: 10.0);
+  const config = DeliveryConfigEntity(
+    warehouseLat: 19.0760,
+    warehouseLng: 72.8777,
+    perKmRate: 10.0,
+  );
 
   test('returns null when the address has no coordinates', () {
-    const address = AddressEntity(street: 'St', city: 'City', pincode: '123456');
+    const address = AddressEntity(
+      street: 'St',
+      city: 'City',
+      pincode: '123456',
+    );
 
     expect(useCase(config: config, address: address), isNull);
   });

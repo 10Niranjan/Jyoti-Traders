@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -134,10 +135,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                           borderRadius: BorderRadius.circular(16),
                           child: Container(
                             padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: const Color(0xFFF1F5F9)),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
+                            decoration: context.cardDecoration(),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -160,7 +158,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                                   l10n.orderItemsAndDate(order.items.length, formatOrderDate(order.createdAt)),
                                   style: GoogleFonts.inter(
                                     fontSize: 12,
-                                    color: AppColors.textSecondaryLight,
+                                    color: context.textSecondary,
                                   ),
                                 ),
                                 const SizedBox(height: 6),

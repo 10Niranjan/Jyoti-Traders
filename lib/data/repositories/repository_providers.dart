@@ -6,6 +6,8 @@ import '../../domain/repositories/category_repository.dart';
 import '../../domain/repositories/delivery_config_repository.dart';
 import '../../domain/repositories/order_repository.dart';
 import '../../domain/repositories/product_repository.dart';
+import '../../domain/repositories/business_profile_repository.dart';
+import '../../domain/repositories/promo_banner_repository.dart';
 import '../../domain/repositories/user_repository.dart';
 import '../../domain/repositories/broadcast_repository.dart';
 import '../../domain/repositories/notification_repository.dart';
@@ -21,6 +23,8 @@ import '../datasources/remote/category_remote_datasource.dart';
 import '../datasources/remote/delivery_config_remote_datasource.dart';
 import '../datasources/remote/order_remote_datasource.dart';
 import '../datasources/remote/product_remote_datasource.dart';
+import '../datasources/remote/business_profile_remote_datasource.dart';
+import '../datasources/remote/promo_banner_remote_datasource.dart';
 import '../datasources/remote/user_remote_datasource.dart';
 import 'broadcast_repository_impl.dart';
 import 'category_repository_impl.dart';
@@ -29,6 +33,8 @@ import 'delivery_config_repository_impl.dart';
 import 'notification_repository_impl.dart';
 import 'order_repository_impl.dart';
 import 'product_repository_impl.dart';
+import 'business_profile_repository_impl.dart';
+import 'promo_banner_repository_impl.dart';
 import 'user_repository_impl.dart';
 import 'wishlist_repository_impl.dart';
 
@@ -96,4 +102,18 @@ final broadcastRepositoryProvider = Provider<BroadcastRepository>((ref) {
 final deliveryConfigRepositoryProvider = Provider<DeliveryConfigRepository>((ref) {
   final settingsBox = Hive.box(HiveBoxes.settingsCache);
   return DeliveryConfigRepositoryImpl(DeliveryConfigRemoteDatasource(settingsBox: settingsBox));
+});
+
+final promoBannerRepositoryProvider = Provider<PromoBannerRepository>((ref) {
+  final settingsBox = Hive.box(HiveBoxes.settingsCache);
+  return PromoBannerRepositoryImpl(PromoBannerRemoteDatasource(settingsBox: settingsBox));
+});
+
+final businessProfileRepositoryProvider = Provider<BusinessProfileRepository>((
+  ref,
+) {
+  final settingsBox = Hive.box(HiveBoxes.settingsCache);
+  return BusinessProfileRepositoryImpl(
+    BusinessProfileRemoteDatasource(settingsBox: settingsBox),
+  );
 });

@@ -8,7 +8,10 @@ import '../../auth/controllers/auth_state.dart';
 /// so the destination depends on who's signed in right now, not on the
 /// notification itself: the admin's editable order screen, or the
 /// retailer's read-only one.
-String? notificationTargetRoute(NotificationEntity notification, AuthState authState) {
+String? notificationTargetRoute(
+  NotificationEntity notification,
+  AuthState authState,
+) {
   final orderId = notification.orderId;
   if (orderId == null) return null;
   return authState is AuthenticatedAdmin

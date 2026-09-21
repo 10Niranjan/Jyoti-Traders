@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
@@ -96,7 +97,7 @@ class _BulkImportProductsScreenState
               l10n.adminBulkImportInstructions,
               style: GoogleFonts.inter(
                 fontSize: 12,
-                color: AppColors.textSecondaryLight,
+                color: context.textSecondary,
               ),
             ),
             const SizedBox(height: 12),

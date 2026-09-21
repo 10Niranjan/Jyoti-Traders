@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_colors.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
@@ -89,10 +90,7 @@ class RetailerSummaryTile extends StatelessWidget {
                   ),
                 ],
               ),
-              const Icon(
-                Icons.chevron_right_rounded,
-                color: AppColors.textSecondaryLight,
-              ),
+              Icon(Icons.chevron_right_rounded, color: context.textSecondary),
             ],
           ),
         ),

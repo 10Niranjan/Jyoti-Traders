@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +14,8 @@ import 'package:traders_retailer/domain/entities/bank_details_entity.dart';
 import 'package:traders_retailer/domain/entities/business_hours_entity.dart';
 import 'package:traders_retailer/domain/entities/delivery_config_entity.dart';
 import 'package:traders_retailer/domain/entities/notification_preferences_entity.dart';
+import 'package:traders_retailer/domain/entities/business_profile_entity.dart';
+import 'package:traders_retailer/domain/repositories/business_profile_repository.dart';
 import 'package:traders_retailer/domain/repositories/delivery_config_repository.dart';
 import 'package:traders_retailer/features/admin/screens/admin_profile_screen.dart';
 import 'package:traders_retailer/l10n/app_localizations.dart';
@@ -81,6 +85,9 @@ class FakeAuthRepository implements AuthRepository {
   }) async {}
 
   @override
+  Future<void> deleteAccount({required String uid, String? password}) async {}
+
+  @override
   Future<void> sendPasswordResetEmail(String email) async {}
 }
 
@@ -113,6 +120,33 @@ class FakeLocalStorageService extends LocalStorageService {
 
   @override
   Future<void> clearThemePreference() async => stored = null;
+
+  @override
+  String? getTextSizePreference() => null;
+
+  @override
+  String? getLanguagePreference() => null;
+}
+
+class FakeBusinessProfileRepository implements BusinessProfileRepository {
+  BusinessProfileEntity current;
+  final List<BusinessProfileEntity> saved = [];
+  final _changes = StreamController<BusinessProfileEntity>.broadcast();
+
+  FakeBusinessProfileRepository([this.current = BusinessProfileEntity.empty]);
+
+  @override
+  Stream<BusinessProfileEntity> watchProfile() async* {
+    yield current;
+    yield* _changes.stream;
+  }
+
+  @override
+  Future<void> saveProfile(BusinessProfileEntity profile) async {
+    saved.add(profile);
+    current = profile;
+    _changes.add(profile);
+  }
 }
 
 final _admin = UserModel(
@@ -129,9 +163,15 @@ final _admin = UserModel(
 Widget _wrap(
   FakeAuthRepository repository, {
   FakeDeliveryConfigRepository? deliveryConfigRepo,
+  FakeBusinessProfileRepository? businessRepo,
 }) => ProviderScope(
   overrides: [
     authRepositoryProvider.overrideWithValue(repository),
+    businessProfileRepositoryProvider.overrideWithValue(
+      businessRepo ?? FakeBusinessProfileRepository(),
+    ),
+    // Language and text size read storage too, not just the theme.
+    localStorageProvider.overrideWithValue(FakeLocalStorageService()),
     themeModeProvider.overrideWith(
       (ref) => ThemeModeController(FakeLocalStorageService()),
     ),
@@ -174,12 +214,29 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Appearance'), findsOneWidget);
+      expect(find.text('Language'), findsOneWidget); // admin gets it too now
       expect(find.text('Delivery Settings'), findsOneWidget);
       expect(find.text('Change Password'), findsOneWidget);
-      expect(find.text('Call Support'), findsOneWidget);
+      expect(find.text('Support'), findsOneWidget);
       expect(find.text('Log Out'), findsOneWidget);
+      // The owner's account can't be self-deleted — it would strand the shop.
+      expect(find.text('Delete account'), findsNothing);
     },
   );
+
+  testWidgets('Support opens Call, WhatsApp and Email options', (tester) async {
+    await tester.pumpWidget(_wrap(FakeAuthRepository(_admin)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Settings'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Support'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Call Support'), findsOneWidget);
+    expect(find.text('Chat on WhatsApp'), findsOneWidget);
+    expect(find.text('Email Support'), findsOneWidget);
+  });
 
   testWidgets('edit sheet has no shop name field for admin', (tester) async {
     await tester.pumpWidget(_wrap(FakeAuthRepository(_admin)));
@@ -258,6 +315,7 @@ void main() {
       find.widgetWithText(TextFormField, 'Rate (₹ per km)'),
       '20',
     );
+    await tester.pump(); // Save enables once the rate differs
     await tester.tap(find.widgetWithText(ElevatedButton, 'Save Changes'));
     await tester.pumpAndSettle();
 
@@ -276,5 +334,103 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Log out?'), findsOneWidget);
+  });
+
+  group('Business details (seller block on invoices)', () {
+    testWidgets('shows Not set and opens the editor', (tester) async {
+      await tester.pumpWidget(_wrap(FakeAuthRepository(_admin)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Business Details'), findsOneWidget);
+      expect(find.text('Not set'), findsOneWidget);
+
+      await tester.tap(find.text('Business Details'));
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(TextFormField, 'Legal name'), findsOneWidget);
+      expect(
+        find.widgetWithText(TextFormField, 'Registered address'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets(
+      'saving stores the entries and shows the legal name on the row',
+      (tester) async {
+        final repo = FakeBusinessProfileRepository();
+        await tester.pumpWidget(
+          _wrap(FakeAuthRepository(_admin), businessRepo: repo),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Business Details'));
+        await tester.pumpAndSettle();
+
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Legal name'),
+          '  Jyoti Traders Pvt Ltd ',
+        );
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'Registered address'),
+          '12 Market Yard, Pune',
+        );
+        await tester.enterText(
+          find.widgetWithText(TextFormField, 'GST Number (optional)'),
+          '27abcde1234f1z5',
+        );
+        await tester.pump();
+        await tester.tap(find.text('Save Changes'));
+        await tester.pumpAndSettle();
+
+        expect(repo.saved, hasLength(1));
+        expect(repo.saved.single.legalName, 'Jyoti Traders Pvt Ltd'); // trimmed
+        expect(repo.saved.single.address, '12 Market Yard, Pune');
+        expect(repo.saved.single.gstin, '27ABCDE1234F1Z5'); // upper-cased
+        expect(
+          find.text('Jyoti Traders Pvt Ltd'),
+          findsOneWidget,
+        ); // on the row now
+      },
+    );
+
+    testWidgets('an invalid GSTIN blocks saving', (tester) async {
+      final repo = FakeBusinessProfileRepository();
+      await tester.pumpWidget(
+        _wrap(FakeAuthRepository(_admin), businessRepo: repo),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Business Details'));
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'GST Number (optional)'),
+        'NOTAGSTIN',
+      );
+      await tester.pump();
+      await tester.tap(find.text('Save Changes'));
+      await tester.pump();
+
+      expect(
+        find.text('Enter a valid 15-character GST number'),
+        findsOneWidget,
+      );
+      expect(repo.saved, isEmpty);
+    });
+
+    testWidgets('leaving with unsaved edits asks first', (tester) async {
+      await tester.pumpWidget(_wrap(FakeAuthRepository(_admin)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Business Details'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.widgetWithText(TextFormField, 'Legal name'),
+        'Jyoti',
+      );
+      await tester.pump();
+
+      await tester.tap(find.byIcon(Icons.close_rounded));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Discard changes?'), findsOneWidget);
+    });
   });
 }

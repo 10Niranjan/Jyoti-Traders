@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -79,6 +80,7 @@ class _UpiPaymentScreenState extends ConsumerState<UpiPaymentScreen> {
     final orderAsync = ref.watch(orderByIdProvider(widget.orderId));
     final isSaving = ref.watch(upiPaymentControllerProvider).isLoading;
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.upiPaymentTitle, style: GoogleFonts.inter(fontWeight: FontWeight.bold))),
@@ -108,7 +110,7 @@ class _UpiPaymentScreenState extends ConsumerState<UpiPaymentScreen> {
                 const SizedBox(height: 4),
                 Text(
                   l10n.upiScanInstructions,
-                  style: GoogleFonts.inter(fontSize: 12.5, color: AppColors.textSecondaryLight),
+                  style: GoogleFonts.inter(fontSize: 12.5, color: context.textSecondary),
                 ),
                 const SizedBox(height: 20),
                 Container(
@@ -116,7 +118,7 @@ class _UpiPaymentScreenState extends ConsumerState<UpiPaymentScreen> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFA78BFA), width: 2),
+                    border: Border.all(color: AppColors.primaryLight, width: 2),
                   ),
                   child: QrImageView(data: upiLink, size: 200, backgroundColor: Colors.white),
                 ),
@@ -128,7 +130,9 @@ class _UpiPaymentScreenState extends ConsumerState<UpiPaymentScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      border: Border.all(
+                        color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                      ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
@@ -162,7 +166,7 @@ class _UpiPaymentScreenState extends ConsumerState<UpiPaymentScreen> {
                 Text(
                   l10n.upiConfirmationNote,
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.textSecondaryLight),
+                  style: GoogleFonts.inter(fontSize: 11.5, color: context.textSecondary),
                 ),
               ],
             ),

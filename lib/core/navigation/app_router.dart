@@ -22,6 +22,7 @@ import '../../features/admin/screens/retailer_detail_screen.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../features/admin/screens/all_orders_screen.dart';
 import '../../features/admin/screens/delivery_settings_screen.dart';
+import '../../features/admin/screens/manage_banners_screen.dart';
 import '../../features/admin/screens/send_broadcast_screen.dart';
 import '../../features/admin/screens/manage_categories_screen.dart';
 import '../../features/admin/screens/manage_products_screen.dart';
@@ -38,6 +39,7 @@ import '../../features/notifications/screens/notifications_screen.dart';
 import '../../features/wishlist/screens/wishlist_screen.dart';
 import '../../features/orders/screens/order_detail_screen.dart';
 import '../../features/orders/screens/order_history_screen.dart';
+import '../../features/products/controllers/search_controller.dart';
 import '../../features/products/screens/category_products_screen.dart';
 import '../../features/products/screens/product_detail_screen.dart';
 import '../../features/products/screens/search_screen.dart';
@@ -114,7 +116,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       // setFirstLaunchCompleted(), so this only ever fires once per install.
       if (authState is Unauthenticated || authState is AuthError) {
         if (ref.read(localStorageProvider).isFirstLaunch()) {
-          return location == RouteNames.onboarding ? null : RouteNames.onboarding;
+          return location == RouteNames.onboarding
+              ? null
+              : RouteNames.onboarding;
         }
         return location == RouteNames.login ? null : RouteNames.login;
       }
@@ -223,6 +227,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RouteNames.adminBroadcast,
         builder: (context, state) => const SendBroadcastScreen(),
+      ),
+      GoRoute(
+        path: RouteNames.adminBanners,
+        builder: (context, state) => const ManageBannersScreen(),
       ),
       GoRoute(
         path: RouteNames.adminOrderManagement,
@@ -451,6 +459,13 @@ class _RetailerShell extends ConsumerWidget {
       canPop: false,
       onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
+        // Home's inline search is a mode, not a route: back leaves it (like
+        // closing a search page) instead of jumping straight to "Exit app?".
+        if (navigationShell.currentIndex == 0 &&
+            ref.read(searchControllerProvider).query.isNotEmpty) {
+          ref.read(searchControllerProvider.notifier).onQueryChanged('');
+          return;
+        }
         await _confirmExitApp(context);
       },
       child: Scaffold(
@@ -521,8 +536,8 @@ class SplashScreen extends ConsumerWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: isDark
-                ? [AppColors.backgroundDark, const Color(0xFF070B19)]
-                : [const Color(0xFFEFF6FF), AppColors.backgroundLight],
+                ? [AppColors.backgroundDark, AppColors.canvasDark]
+                : [AppColors.surfaceLight, AppColors.backgroundLight],
           ),
         ),
         child: Center(

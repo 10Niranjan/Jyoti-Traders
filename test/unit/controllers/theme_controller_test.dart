@@ -14,7 +14,8 @@ class FakeLocalStorageService extends LocalStorageService {
   bool? getThemePreference() => stored;
 
   @override
-  Future<void> saveThemePreference(bool isDarkMode) async => stored = isDarkMode;
+  Future<void> saveThemePreference(bool isDarkMode) async =>
+      stored = isDarkMode;
 
   @override
   Future<void> clearThemePreference() async => stored = null;

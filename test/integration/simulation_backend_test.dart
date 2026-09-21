@@ -12,11 +12,17 @@ import 'package:traders_retailer/data/datasources/remote/product_remote_datasour
 import 'package:traders_retailer/data/datasources/remote/user_remote_datasource.dart';
 import 'package:traders_retailer/data/repositories/cart_repository_impl.dart';
 import 'package:traders_retailer/data/repositories/category_repository_impl.dart';
+import 'package:traders_retailer/data/repositories/business_profile_repository_impl.dart';
+import 'package:traders_retailer/data/datasources/remote/business_profile_remote_datasource.dart';
+import 'package:traders_retailer/domain/entities/business_profile_entity.dart';
 import 'package:traders_retailer/data/repositories/delivery_config_repository_impl.dart';
 import 'package:traders_retailer/data/repositories/firebase_auth_repository.dart';
 import 'package:traders_retailer/data/repositories/order_repository_impl.dart';
 import 'package:traders_retailer/data/repositories/notification_repository_impl.dart';
 import 'package:traders_retailer/data/repositories/product_repository_impl.dart';
+import 'package:traders_retailer/data/repositories/promo_banner_repository_impl.dart';
+import 'package:traders_retailer/data/datasources/remote/promo_banner_remote_datasource.dart';
+import 'package:traders_retailer/domain/entities/promo_banner_entity.dart';
 import 'package:traders_retailer/data/repositories/user_repository_impl.dart';
 import 'package:traders_retailer/data/datasources/local/notification_local_datasource.dart';
 import 'package:traders_retailer/data/datasources/local/product_local_datasource.dart';
@@ -74,119 +80,149 @@ void main() {
     }
   });
 
-  test('retailer sign-up starts pending, then admin approval flips it to approved', () async {
-    final authRepo = FirebaseAuthRepository(userCacheBox: userCacheBox);
-    final userRepo = UserRepositoryImpl(UserRemoteDatasource(userCacheBox: userCacheBox));
+  test(
+    'retailer sign-up starts pending, then admin approval flips it to approved',
+    () async {
+      final authRepo = FirebaseAuthRepository(userCacheBox: userCacheBox);
+      final userRepo = UserRepositoryImpl(
+        UserRemoteDatasource(userCacheBox: userCacheBox),
+      );
 
-    final retailer = await authRepo.signUp(
-      name: 'Ramesh Bhai',
-      email: 'ramesh@example.com',
-      password: 'password123',
-      phone: '9876543210',
-      role: UserRole.customer,
-      businessName: 'Ramesh Kirana Store',
-    );
+      final retailer = await authRepo.signUp(
+        name: 'Ramesh Bhai',
+        email: 'ramesh@example.com',
+        password: 'password123',
+        phone: '9876543210',
+        role: UserRole.customer,
+        businessName: 'Ramesh Kirana Store',
+      );
 
-    expect(retailer, isNotNull);
-    expect(retailer!.isApproved, isFalse);
+      expect(retailer, isNotNull);
+      expect(retailer!.isApproved, isFalse);
 
-    final pending = await userRepo.watchPendingUsers().first;
-    expect(pending.map((u) => u.uid), contains(retailer.uid));
+      final pending = await userRepo.watchPendingUsers().first;
+      expect(pending.map((u) => u.uid), contains(retailer.uid));
 
-    await userRepo.approveUser(retailer.uid);
+      await userRepo.approveUser(retailer.uid);
 
-    final refreshed = await authRepo.refreshUserStatus(retailer.uid);
-    expect(refreshed!.isApproved, isTrue);
+      final refreshed = await authRepo.refreshUserStatus(retailer.uid);
+      expect(refreshed!.isApproved, isTrue);
 
-    final approvedList = await userRepo.getApprovedUsers();
-    expect(approvedList.map((u) => u.uid), contains(retailer.uid));
-  });
+      final approvedList = await userRepo.getApprovedUsers();
+      expect(approvedList.map((u) => u.uid), contains(retailer.uid));
+    },
+  );
 
-  test('category and product CRUD round-trips through the simulated catalog', () async {
-    final categoryRepo = CategoryRepositoryImpl(CategoryRemoteDatasource(catalogBox: catalogBox));
-    final productRepo = ProductRepositoryImpl(
-      ProductRemoteDatasource(catalogBox: catalogBox),
-      ProductLocalDatasource(catalogBox: catalogBox),
-    );
+  test(
+    'category and product CRUD round-trips through the simulated catalog',
+    () async {
+      final categoryRepo = CategoryRepositoryImpl(
+        CategoryRemoteDatasource(catalogBox: catalogBox),
+      );
+      final productRepo = ProductRepositoryImpl(
+        ProductRemoteDatasource(catalogBox: catalogBox),
+        ProductLocalDatasource(catalogBox: catalogBox),
+      );
 
-    await categoryRepo.createCategory(const CategoryEntity(
-      id: 'cat_grains',
-      name: 'Atta, Rice & Grains',
-      iconUrl: '',
-      displayOrder: 1,
-      isActive: true,
-    ));
+      await categoryRepo.createCategory(
+        const CategoryEntity(
+          id: 'cat_grains',
+          name: 'Atta, Rice & Grains',
+          iconUrl: '',
+          displayOrder: 1,
+          isActive: true,
+        ),
+      );
 
-    final categories = await categoryRepo.watchCategories().first;
-    expect(categories.map((c) => c.id), contains('cat_grains'));
+      final categories = await categoryRepo.watchCategories().first;
+      expect(categories.map((c) => c.id), contains('cat_grains'));
 
-    await productRepo.createProduct(ProductEntity(
-      id: 'prod_rice_25kg',
-      name: 'Basmati Rice 25kg',
-      categoryId: 'cat_grains',
-      imageUrl: '',
-      price: Money(1800),
-      unit: ProductUnit.box,
-      stock: 40,
-      isActive: true,
-    ));
+      await productRepo.createProduct(
+        ProductEntity(
+          id: 'prod_rice_25kg',
+          name: 'Basmati Rice 25kg',
+          categoryId: 'cat_grains',
+          imageUrl: '',
+          price: Money(1800),
+          unit: ProductUnit.box,
+          stock: 40,
+          isActive: true,
+        ),
+      );
 
-    final products = await productRepo.watchProducts(categoryId: 'cat_grains').first;
-    expect(products.map((p) => p.id), contains('prod_rice_25kg'));
+      final products = await productRepo
+          .watchProducts(categoryId: 'cat_grains')
+          .first;
+      expect(products.map((p) => p.id), contains('prod_rice_25kg'));
 
-    final searchResults = await productRepo.searchProducts('basmati');
-    expect(searchResults, isNotEmpty);
-  });
+      final searchResults = await productRepo.searchProducts('basmati');
+      expect(searchResults, isNotEmpty);
+    },
+  );
 
-  test('deactivated products stay visible to the admin but disappear from retailer browsing', () async {
-    final productRepo = ProductRepositoryImpl(
-      ProductRemoteDatasource(catalogBox: catalogBox),
-      ProductLocalDatasource(catalogBox: catalogBox),
-    );
+  test(
+    'deactivated products stay visible to the admin but disappear from retailer browsing',
+    () async {
+      final productRepo = ProductRepositoryImpl(
+        ProductRemoteDatasource(catalogBox: catalogBox),
+        ProductLocalDatasource(catalogBox: catalogBox),
+      );
 
-    await productRepo.createProduct(ProductEntity(
-      id: 'prod_active',
-      name: 'Active Product',
-      categoryId: 'cat_grains',
-      imageUrl: '',
-      price: Money(500),
-      unit: ProductUnit.kg,
-      stock: 10,
-      isActive: true,
-    ));
-    await productRepo.createProduct(ProductEntity(
-      id: 'prod_hidden',
-      name: 'Hidden Product',
-      categoryId: 'cat_grains',
-      imageUrl: '',
-      price: Money(500),
-      unit: ProductUnit.kg,
-      stock: 10,
-      isActive: false,
-    ));
+      await productRepo.createProduct(
+        ProductEntity(
+          id: 'prod_active',
+          name: 'Active Product',
+          categoryId: 'cat_grains',
+          imageUrl: '',
+          price: Money(500),
+          unit: ProductUnit.kg,
+          stock: 10,
+          isActive: true,
+        ),
+      );
+      await productRepo.createProduct(
+        ProductEntity(
+          id: 'prod_hidden',
+          name: 'Hidden Product',
+          categoryId: 'cat_grains',
+          imageUrl: '',
+          price: Money(500),
+          unit: ProductUnit.kg,
+          stock: 10,
+          isActive: false,
+        ),
+      );
 
-    // Retailer browsing must not surface the inactive one...
-    final browsable = await productRepo.watchProducts().first;
-    expect(browsable.map((p) => p.id), contains('prod_active'));
-    expect(browsable.map((p) => p.id), isNot(contains('prod_hidden')));
+      // Retailer browsing must not surface the inactive one...
+      final browsable = await productRepo.watchProducts().first;
+      expect(browsable.map((p) => p.id), contains('prod_active'));
+      expect(browsable.map((p) => p.id), isNot(contains('prod_hidden')));
 
-    // ...but the admin list must, or a deactivated product could never be
-    // found again to re-activate it.
-    final allForAdmin = await productRepo.watchAllProducts().first;
-    expect(allForAdmin.map((p) => p.id), containsAll(['prod_active', 'prod_hidden']));
-  });
+      // ...but the admin list must, or a deactivated product could never be
+      // found again to re-activate it.
+      final allForAdmin = await productRepo.watchAllProducts().first;
+      expect(
+        allForAdmin.map((p) => p.id),
+        containsAll(['prod_active', 'prod_hidden']),
+      );
+    },
+  );
 
   test('cart add/update/clear round-trips through Hive', () async {
-    final cartRepo = CartRepositoryImpl(CartLocalDatasource(cartBox: cartBox, uid: 'test_uid'));
+    final cartRepo = CartRepositoryImpl(
+      CartLocalDatasource(cartBox: cartBox, uid: 'test_uid'),
+    );
 
-    await cartRepo.addItem(CartItemEntity(
-      productId: 'prod_rice_25kg',
-      name: 'Basmati Rice 25kg',
-      imageUrl: '',
-      unitPrice: Money(1800),
-      unit: ProductUnit.box,
-      qty: 2,
-    ));
+    await cartRepo.addItem(
+      CartItemEntity(
+        productId: 'prod_rice_25kg',
+        name: 'Basmati Rice 25kg',
+        imageUrl: '',
+        unitPrice: Money(1800),
+        unit: ProductUnit.box,
+        qty: 2,
+      ),
+    );
 
     var cart = await cartRepo.watchCart().first;
     expect(cart.itemCount, 2);
@@ -202,10 +238,18 @@ void main() {
   });
 
   test('broadcast send round-trips through Hive, newest first', () async {
-    final broadcastRepo = BroadcastRepositoryImpl(BroadcastLocalDatasource(box: notificationsBox));
+    final broadcastRepo = BroadcastRepositoryImpl(
+      BroadcastLocalDatasource(box: notificationsBox),
+    );
 
-    await broadcastRepo.send(title: 'New stock arrived', body: 'Fresh Basmati Rice.');
-    await broadcastRepo.send(title: 'Price drop on rice', body: '5% off this week.');
+    await broadcastRepo.send(
+      title: 'New stock arrived',
+      body: 'Fresh Basmati Rice.',
+    );
+    await broadcastRepo.send(
+      title: 'Price drop on rice',
+      body: '5% off this week.',
+    );
 
     final broadcasts = await broadcastRepo.watchBroadcasts().first;
     expect(broadcasts, hasLength(2));
@@ -214,7 +258,9 @@ void main() {
   });
 
   test('wishlist toggle round-trips through Hive, add then remove', () async {
-    final wishlistRepo = WishlistRepositoryImpl(WishlistLocalDatasource(box: cartBox, uid: 'test_uid'));
+    final wishlistRepo = WishlistRepositoryImpl(
+      WishlistLocalDatasource(box: cartBox, uid: 'test_uid'),
+    );
 
     var ids = await wishlistRepo.watchWishlist().first;
     expect(ids, isEmpty);
@@ -233,86 +279,210 @@ void main() {
     expect(ids, {'prod_sugar_5kg'});
   });
 
-  test('order placement and status update round-trip through the simulated orders store', () async {
-    final orderRepo = OrderRepositoryImpl(OrderRemoteDatasource(ordersBox: ordersBox));
+  test(
+    'order placement and status update round-trip through the simulated orders store',
+    () async {
+      final orderRepo = OrderRepositoryImpl(
+        OrderRemoteDatasource(ordersBox: ordersBox),
+      );
 
-    final order = OrderEntity(
-      id: 'order_test_1',
-      userId: 'user_1',
-      shopName: 'Ramesh Kirana Store',
-      items: [
-        OrderItemEntity(productId: 'prod_rice_25kg', name: 'Basmati Rice 25kg', qty: 2, unitPrice: Money(1800)),
-      ],
-      subtotal: Money(3600),
-      deliveryCharge: Money(100),
-      paymentMethod: PaymentMethod.cod,
-      paymentStatus: PaymentStatus.pending,
-      orderStatus: OrderStatus.pending,
-      deliveryAddress: const AddressEntity(street: 'Main Rd', city: 'Pune', pincode: '411001'),
-      createdAt: DateTime(2026, 7, 21),
+      final order = OrderEntity(
+        id: 'order_test_1',
+        userId: 'user_1',
+        shopName: 'Ramesh Kirana Store',
+        items: [
+          OrderItemEntity(
+            productId: 'prod_rice_25kg',
+            name: 'Basmati Rice 25kg',
+            qty: 2,
+            unitPrice: Money(1800),
+          ),
+        ],
+        subtotal: Money(3600),
+        deliveryCharge: Money(100),
+        paymentMethod: PaymentMethod.cod,
+        paymentStatus: PaymentStatus.pending,
+        orderStatus: OrderStatus.pending,
+        deliveryAddress: const AddressEntity(
+          street: 'Main Rd',
+          city: 'Pune',
+          pincode: '411001',
+        ),
+        createdAt: DateTime(2026, 7, 21),
+      );
+
+      await orderRepo.placeOrder(order);
+
+      final history = await orderRepo.watchOrderHistory('user_1').first;
+      expect(history.map((o) => o.id), contains('order_test_1'));
+
+      await orderRepo.updateOrderStatus('order_test_1', OrderStatus.confirmed);
+
+      final allOrders = await orderRepo.watchAllOrders().first;
+      final updated = allOrders.firstWhere((o) => o.id == 'order_test_1');
+      expect(updated.orderStatus, OrderStatus.confirmed);
+    },
+  );
+
+  test(
+    'notifications round-trip through Hive, newest first, mark-as-read persists',
+    () async {
+      final notificationRepo = NotificationRepositoryImpl(
+        NotificationLocalDatasource(box: notificationsBox),
+      );
+
+      await notificationRepo.addNotification(
+        NotificationEntity(
+          id: 'n1',
+          title: 'Order confirmed',
+          body: 'Your order #ORDER_TE is now Confirmed.',
+          orderId: 'order_test_1',
+          receivedAt: DateTime(2026, 7, 20),
+          isRead: false,
+        ),
+      );
+      await notificationRepo.addNotification(
+        NotificationEntity(
+          id: 'n2',
+          title: 'Order delivered',
+          body: 'Your order #ORDER_TE is now Delivered.',
+          orderId: 'order_test_1',
+          receivedAt: DateTime(2026, 7, 21),
+          isRead: false,
+        ),
+      );
+
+      var notifications = await notificationRepo.watchNotifications().first;
+      expect(notifications.map((n) => n.id).toList(), [
+        'n2',
+        'n1',
+      ]); // newest first
+
+      await notificationRepo.markAsRead('n1');
+      notifications = await notificationRepo.watchNotifications().first;
+      expect(notifications.firstWhere((n) => n.id == 'n1').isRead, isTrue);
+      expect(notifications.firstWhere((n) => n.id == 'n2').isRead, isFalse);
+
+      await notificationRepo.markAllAsRead();
+      notifications = await notificationRepo.watchNotifications().first;
+      expect(notifications.every((n) => n.isRead), isTrue);
+    },
+  );
+
+  test(
+    'delivery config falls back to a bootstrapping default, then round-trips an admin update',
+    () async {
+      final deliveryConfigRepo = DeliveryConfigRepositoryImpl(
+        DeliveryConfigRemoteDatasource(settingsBox: settingsBox),
+      );
+
+      // Nothing set yet — admin hasn't visited Delivery Settings.
+      final initial = await deliveryConfigRepo.watchConfig().first;
+      expect(initial.perKmRate, greaterThan(0));
+
+      await deliveryConfigRepo.updateConfig(
+        const DeliveryConfigEntity(
+          warehouseLat: 19.0760,
+          warehouseLng: 72.8777,
+          perKmRate: 15.0,
+        ),
+      );
+
+      final updated = await deliveryConfigRepo.watchConfig().first;
+      expect(updated.warehouseLat, 19.0760);
+      expect(updated.warehouseLng, 72.8777);
+      expect(updated.perKmRate, 15.0);
+    },
+  );
+
+  test(
+    'promo banners start empty, then round-trip an admin save including the end date',
+    () async {
+      final repo = PromoBannerRepositoryImpl(
+        PromoBannerRemoteDatasource(settingsBox: settingsBox),
+      );
+
+      expect(await repo.watchBanners().first, isEmpty);
+
+      final endsAt = DateTime(2026, 11, 14, 23, 59, 59);
+      await repo.saveBanners([
+        PromoBannerEntity(
+          id: 'b1',
+          title: 'Diwali kit',
+          body: 'Bundle offer',
+          endsAt: endsAt,
+        ),
+        const PromoBannerEntity(
+          id: 'b2',
+          title: 'Rice ₹2/kg off',
+          isActive: false,
+        ),
+      ]);
+
+      final saved = await repo.watchBanners().first;
+      expect(saved.map((b) => b.id), ['b1', 'b2']);
+      expect(saved.first.endsAt, endsAt);
+      expect(saved.last.endsAt, isNull);
+      expect(saved.last.isActive, isFalse);
+    },
+  );
+
+  test('deleting an account removes the retailer and signs them out', () async {
+    final authRepo = FirebaseAuthRepository(userCacheBox: userCacheBox);
+    final userRepo = UserRepositoryImpl(
+      UserRemoteDatasource(userCacheBox: userCacheBox),
+    );
+    final retailer = (await authRepo.signUp(
+      name: 'Ramesh Bhai',
+      email: 'ramesh-del@example.com',
+      password: 'password123',
+      phone: '9876543210',
+      role: UserRole.customer,
+      businessName: 'Ramesh Kirana Store',
+    ))!;
+    await userRepo.approveUser(retailer.uid);
+    expect(
+      (await userRepo.getApprovedUsers()).map((u) => u.uid),
+      contains(retailer.uid),
     );
 
-    await orderRepo.placeOrder(order);
+    await authRepo.deleteAccount(uid: retailer.uid, password: 'anything');
 
-    final history = await orderRepo.watchOrderHistory('user_1').first;
-    expect(history.map((o) => o.id), contains('order_test_1'));
-
-    await orderRepo.updateOrderStatus('order_test_1', OrderStatus.confirmed);
-
-    final allOrders = await orderRepo.watchAllOrders().first;
-    final updated = allOrders.firstWhere((o) => o.id == 'order_test_1');
-    expect(updated.orderStatus, OrderStatus.confirmed);
+    expect(await authRepo.getCurrentUser(), isNull); // signed out
+    expect(
+      (await userRepo.getApprovedUsers()).map((u) => u.uid),
+      isNot(contains(retailer.uid)),
+    );
+    expect(
+      () => authRepo.signIn(
+        email: 'ramesh-del@example.com',
+        password: 'password123',
+      ),
+      throwsA(isA<Exception>()), // "No account found"
+    );
   });
 
-  test('notifications round-trip through Hive, newest first, mark-as-read persists', () async {
-    final notificationRepo = NotificationRepositoryImpl(NotificationLocalDatasource(box: notificationsBox));
+  test(
+    'business profile starts blank, then round-trips an admin save',
+    () async {
+      final repo = BusinessProfileRepositoryImpl(
+        BusinessProfileRemoteDatasource(settingsBox: settingsBox),
+      );
 
-    await notificationRepo.addNotification(NotificationEntity(
-      id: 'n1',
-      title: 'Order confirmed',
-      body: 'Your order #ORDER_TE is now Confirmed.',
-      orderId: 'order_test_1',
-      receivedAt: DateTime(2026, 7, 20),
-      isRead: false,
-    ));
-    await notificationRepo.addNotification(NotificationEntity(
-      id: 'n2',
-      title: 'Order delivered',
-      body: 'Your order #ORDER_TE is now Delivered.',
-      orderId: 'order_test_1',
-      receivedAt: DateTime(2026, 7, 21),
-      isRead: false,
-    ));
+      expect((await repo.watchProfile().first).isEmpty, isTrue);
 
-    var notifications = await notificationRepo.watchNotifications().first;
-    expect(notifications.map((n) => n.id).toList(), ['n2', 'n1']); // newest first
+      await repo.saveProfile(
+        const BusinessProfileEntity(
+          legalName: 'Jyoti Traders',
+          address: '12 Market Yard, Pune',
+          gstin: '27ABCDE1234F1Z5',
+        ),
+      );
 
-    await notificationRepo.markAsRead('n1');
-    notifications = await notificationRepo.watchNotifications().first;
-    expect(notifications.firstWhere((n) => n.id == 'n1').isRead, isTrue);
-    expect(notifications.firstWhere((n) => n.id == 'n2').isRead, isFalse);
-
-    await notificationRepo.markAllAsRead();
-    notifications = await notificationRepo.watchNotifications().first;
-    expect(notifications.every((n) => n.isRead), isTrue);
-  });
-
-  test('delivery config falls back to a bootstrapping default, then round-trips an admin update', () async {
-    final deliveryConfigRepo = DeliveryConfigRepositoryImpl(DeliveryConfigRemoteDatasource(settingsBox: settingsBox));
-
-    // Nothing set yet — admin hasn't visited Delivery Settings.
-    final initial = await deliveryConfigRepo.watchConfig().first;
-    expect(initial.perKmRate, greaterThan(0));
-
-    await deliveryConfigRepo.updateConfig(const DeliveryConfigEntity(
-      warehouseLat: 19.0760,
-      warehouseLng: 72.8777,
-      perKmRate: 15.0,
-    ));
-
-    final updated = await deliveryConfigRepo.watchConfig().first;
-    expect(updated.warehouseLat, 19.0760);
-    expect(updated.warehouseLng, 72.8777);
-    expect(updated.perKmRate, 15.0);
-  });
+      final saved = await repo.watchProfile().first;
+      expect(saved.legalName, 'Jyoti Traders');
+      expect(saved.address, '12 Market Yard, Pune');
+      expect(saved.gstin, '27ABCDE1234F1Z5');
+    },
+  );
 }

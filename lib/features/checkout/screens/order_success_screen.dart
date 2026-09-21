@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_colors.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
 import '../../../core/utils/extensions.dart';
+import '../../../shared/widgets/animated_success_check.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -23,12 +25,8 @@ class OrderSuccessScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: AppColors.success.withOpacity(0.12), shape: BoxShape.circle),
-                child: const Icon(Icons.check_circle_rounded, size: 72, color: AppColors.success),
-              ).animate().scale(duration: 450.ms, curve: Curves.easeOutBack),
-              const SizedBox(height: 24),
+              const AnimatedSuccessCheck(),
+              const SizedBox(height: 16),
               Text(
                 l10n.orderSuccessTitle,
                 style: GoogleFonts.inter(fontSize: 22, fontWeight: FontWeight.bold),
@@ -42,7 +40,7 @@ class OrderSuccessScreen extends StatelessWidget {
               Text(
                 l10n.orderSuccessMessage,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(fontSize: 13, color: AppColors.textSecondaryLight),
+                style: GoogleFonts.inter(fontSize: 13, color: context.textSecondary),
               ).animate().fadeIn(delay: 250.ms),
               const SizedBox(height: 32),
               PrimaryButton(

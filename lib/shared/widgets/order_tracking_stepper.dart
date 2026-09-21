@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/theme_colors.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
@@ -104,7 +105,7 @@ class _StepRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = isDone
         ? AppColors.primary
-        : AppColors.textSecondaryLight.withOpacity(0.4);
+        : context.textSecondary.withOpacity(0.4);
     final delay = Duration(milliseconds: index * 180);
 
     final dot = Container(
@@ -156,7 +157,7 @@ class _StepRow extends StatelessWidget {
               style: GoogleFonts.inter(
                 fontSize: 13.5,
                 fontWeight: isDone ? FontWeight.w600 : FontWeight.w400,
-                color: isDone ? null : AppColors.textSecondaryLight,
+                color: isDone ? null : context.textSecondary,
               ),
             ),
           ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_shadows.dart';
@@ -35,9 +36,9 @@ class RetailerDetailScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.surface,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.cardBorder),
+              border: Border.all(color: context.border),
               boxShadow: AppShadows.card,
             ),
             child: Row(
@@ -81,9 +82,9 @@ class RetailerDetailScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.surface,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.cardBorder),
+              border: Border.all(color: context.border),
               boxShadow: AppShadows.card,
             ),
             child: Column(
@@ -267,7 +268,7 @@ class _KV extends StatelessWidget {
               label,
               style: GoogleFonts.inter(
                 fontSize: 12.5,
-                color: AppColors.textSecondaryLight,
+                color: context.textSecondary,
               ),
             ),
           ),

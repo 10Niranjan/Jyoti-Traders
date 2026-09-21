@@ -10,7 +10,11 @@ import '../../../core/utils/order_share_formatter.dart';
 import '../../../domain/entities/order_entity.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/order_detail_body.dart';
+import '../../../shared/widgets/share_invoice_button.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../auth/controllers/auth_state.dart';
+import '../../settings/controllers/business_profile_controller.dart';
 import '../controllers/buy_again.dart';
 import '../controllers/order_controller.dart';
 
@@ -113,11 +117,25 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
   Widget build(BuildContext context) {
     final orderAsync = ref.watch(orderByIdProvider(widget.orderId));
     final l10n = AppLocalizations.of(context)!;
+    final authState = ref.watch(authControllerProvider);
+    final buyerGstin = authState is AuthenticatedCustomer
+        ? authState.user.gstNumber
+        : null;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.orderDetailsTitle),
         actions: [
+          orderAsync.maybeWhen(
+            data: (order) => order == null
+                ? const SizedBox.shrink()
+                : ShareInvoiceButton(
+                    order: order,
+                    buyerGstin: buyerGstin,
+                    seller: ref.watch(businessProfileProvider).valueOrNull,
+                  ),
+            orElse: () => const SizedBox.shrink(),
+          ),
           orderAsync.maybeWhen(
             data: (order) => order == null
                 ? const SizedBox.shrink()

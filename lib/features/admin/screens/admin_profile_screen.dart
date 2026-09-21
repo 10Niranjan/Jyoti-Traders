@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../../core/theme/theme_controller.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/edit_basic_info_sheet.dart';
@@ -14,6 +11,12 @@ import '../../../shared/widgets/section_card.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/controllers/auth_state.dart';
 import '../../profile/controllers/profile_controller.dart';
+import '../../settings/widgets/settings_list.dart';
+import '../../settings/widgets/settings_widgets.dart';
+import '../../profile/widgets/edit_sheet_frame.dart';
+import '../widgets/business_profile_sheet.dart';
+import '../../settings/controllers/business_profile_controller.dart';
+import '../../../domain/entities/business_profile_entity.dart';
 import 'delivery_settings_screen.dart';
 
 /// The admin/wholesaler's own account screen — identity in the "Profile" tab,
@@ -60,7 +63,9 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
         final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(l10n.profileUpdatePhotoError(result.error.toString())),
+            content: Text(
+              l10n.profileUpdatePhotoError(result.error.toString()),
+            ),
             backgroundColor: AppColors.error,
           ),
         );
@@ -69,7 +74,9 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(AppLocalizations.of(context)!.upiGalleryError(e.toString())),
+          content: Text(
+            AppLocalizations.of(context)!.upiGalleryError(e.toString()),
+          ),
           backgroundColor: AppColors.error,
         ),
       );
@@ -82,108 +89,22 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
   /// `showModalBottomSheet` pattern this screen already uses for editing
   /// basic info.
   void _openDeliverySettings(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
+      useRootNavigator: true,
       isScrollControlled: true,
+      showDragHandle: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      // The form opens with its own hero card (which carries the title) and a
+      // pinned Save bar, so it fills the sheet rather than sitting under a
+      // heading.
       builder: (sheetContext) => SizedBox(
-        height: MediaQuery.of(sheetContext).size.height * 0.85,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
-              child: Text(
-                l10n.profileDeliverySettings,
-                style: GoogleFonts.inter(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const Expanded(child: DeliveryConfigFormView()),
-          ],
-        ),
+        height: MediaQuery.of(sheetContext).size.height * 0.92,
+        child: const DeliveryConfigFormView(),
       ),
     );
-  }
-
-  Future<void> _confirmChangePassword(String email) async {
-    final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          l10n.profileChangePasswordDialogTitle,
-          style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17),
-        ),
-        content: Text(
-          l10n.profileResetLinkMessage(email),
-          style: GoogleFonts.inter(fontSize: 13),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.cancelButton),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.profileSendLink),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
-    await ref.read(profileControllerProvider.notifier).sendPasswordReset(email);
-    if (!mounted) return;
-    final result = ref.read(profileControllerProvider);
-    if (result.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.profileResetLinkFailed(result.error.toString())),
-          backgroundColor: AppColors.error,
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.profileResetLinkSent(email))),
-      );
-    }
-  }
-
-  Future<void> _confirmLogout() async {
-    final l10n = AppLocalizations.of(context)!;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          l10n.profileLogoutDialogTitle,
-          style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 17),
-        ),
-        content: Text(
-          l10n.profileLogoutDialogContent,
-          style: GoogleFonts.inter(fontSize: 13),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.cancelButton),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(
-              l10n.profileLogOut,
-              style: const TextStyle(color: AppColors.error),
-            ),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true && mounted) {
-      ref.read(authControllerProvider.notifier).signOut();
-    }
   }
 
   @override
@@ -198,6 +119,9 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
     final unselectedColor = Theme.of(
       context,
     ).colorScheme.onSurface.withOpacity(0.6);
+    final business =
+        ref.watch(businessProfileProvider).valueOrNull ??
+        BusinessProfileEntity.empty;
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
@@ -213,7 +137,10 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
           indicatorColor: AppColors.primary,
           tabs: [
             Tab(icon: const Icon(Icons.person_outline), text: l10n.navProfile),
-            Tab(icon: const Icon(Icons.settings_outlined), text: l10n.profileSettingsTab),
+            Tab(
+              icon: const Icon(Icons.settings_outlined),
+              text: l10n.profileSettingsTab,
+            ),
           ],
         ),
       ),
@@ -230,6 +157,7 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
                 isUploadingPhoto: profileState.isLoading,
                 onEdit: () => showModalBottomSheet(
                   context: context,
+                  useRootNavigator: true,
                   isScrollControlled: true,
                   shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.vertical(
@@ -265,129 +193,45 @@ class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
                         Icons.event_outlined,
                         color: AppColors.primary,
                       ),
-                      title: Text(l10n.profileMemberSince(formatOrderDate(user.createdAt))),
+                      title: Text(
+                        l10n.profileMemberSince(
+                          formatOrderDate(user.createdAt),
+                        ),
+                      ),
                     ),
                   ],
                 ),
+              ),
+              const SizedBox(height: 16),
+              SettingsGroup(
+                children: [
+                  SettingsRow(
+                    icon: Icons.storefront_outlined,
+                    title: l10n.profileBusinessDetails,
+                    // The legal name is long-form, so it goes in the subtitle line.
+                    subtitle: business.legalName.isEmpty
+                        ? l10n.adminBusinessPrintedOnInvoices
+                        : business.legalName,
+                    value: business.legalName.isEmpty
+                        ? l10n.profileValueNotSet
+                        : null,
+                    onTap: () => showEditSheet(
+                      context,
+                      child: BusinessProfileSheet(initial: business),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              SectionCard(
-                title: l10n.profileAppearance,
-                icon: Icons.palette_outlined,
-                child: SegmentedButton<ThemeMode>(
-                  segments: [
-                    ButtonSegment(
-                      value: ThemeMode.system,
-                      label: Text(l10n.themeSystem),
-                      icon: const Icon(Icons.brightness_auto_outlined),
-                    ),
-                    ButtonSegment(
-                      value: ThemeMode.light,
-                      label: Text(l10n.themeLight),
-                      icon: const Icon(Icons.light_mode_outlined),
-                    ),
-                    ButtonSegment(
-                      value: ThemeMode.dark,
-                      label: Text(l10n.themeDark),
-                      icon: const Icon(Icons.dark_mode_outlined),
-                    ),
-                  ],
-                  selected: {ref.watch(themeModeProvider)},
-                  onSelectionChanged: (selection) => ref
-                      .read(themeModeProvider.notifier)
-                      .setThemeMode(selection.first),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SectionCard(
-                title: l10n.profileStoreSection,
-                icon: Icons.storefront_outlined,
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(
-                    Icons.local_shipping_outlined,
-                    color: AppColors.primary,
-                  ),
-                  title: Text(l10n.profileDeliverySettings),
-                  subtitle: Text(l10n.profileDeliverySettingsSubtitle),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _openDeliverySettings(context),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SectionCard(
-                title: l10n.profileAccountSection,
-                icon: Icons.lock_outline,
-                child: ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(
-                    Icons.password_outlined,
-                    color: AppColors.primary,
-                  ),
-                  title: Text(l10n.profileChangePassword),
-                  subtitle: Text(user.email),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () => _confirmChangePassword(user.email),
-                ),
-              ),
-              const SizedBox(height: 16),
-              SectionCard(
-                title: l10n.profileSupport,
-                icon: Icons.support_agent_outlined,
-                child: Column(
-                  children: [
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(
-                        Icons.call_outlined,
-                        color: AppColors.primary,
-                      ),
-                      title: Text(l10n.profileCallSupport),
-                      subtitle: const Text(AppConstants.kSupportPhone),
-                      onTap: () => launchUrl(
-                        Uri(scheme: 'tel', path: AppConstants.kSupportPhone),
-                      ),
-                    ),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: const Icon(
-                        Icons.email_outlined,
-                        color: AppColors.primary,
-                      ),
-                      title: Text(l10n.profileEmailSupport),
-                      subtitle: const Text(AppConstants.kSupportEmail),
-                      onTap: () => launchUrl(
-                        Uri(scheme: 'mailto', path: AppConstants.kSupportEmail),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: _confirmLogout,
-                  icon: const Icon(
-                    Icons.logout_rounded,
-                    color: AppColors.error,
-                  ),
-                  label: Text(
-                    l10n.profileLogOut,
-                    style: const TextStyle(
-                      color: AppColors.error,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.error),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                  ),
-                ),
+          SettingsList(
+            email: user.email,
+            extraRows: [
+              SettingsRow(
+                icon: Icons.local_shipping_outlined,
+                title: l10n.profileDeliverySettings,
+                subtitle: l10n.profileDeliverySettingsSubtitle,
+                onTap: () => _openDeliverySettings(context),
               ),
             ],
           ),

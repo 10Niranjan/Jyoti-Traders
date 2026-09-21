@@ -3,29 +3,30 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:badges/badges.dart' as badges;
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../../core/constants/app_shadows.dart';
 import '../../../core/constants/route_names.dart';
+import '../../../core/utils/extensions.dart';
 import '../../../domain/entities/category_entity.dart';
-import '../../../domain/entities/product_entity.dart';
+import '../../../domain/entities/order_entity.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../../shared/widgets/add_to_cart_pill.dart';
 import '../../../shared/widgets/category_card.dart';
+import '../../../shared/widgets/compact_product_tile.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/first_run_hint.dart';
 import '../../../shared/widgets/notification_bell_button.dart';
+import '../../../shared/widgets/product_card.dart';
 import '../../../shared/widgets/promo_banner_carousel.dart';
-import '../../../shared/widgets/qty_stepper.dart';
-import '../../../shared/widgets/quantity_sheet.dart';
 import '../../../shared/widgets/shimmer_loader.dart';
+import '../../../shared/widgets/staggered_entrance.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/controllers/auth_state.dart';
-import '../../cart/controllers/cart_controller.dart';
 import '../../notifications/controllers/stock_alert_controller.dart';
+import '../../settings/widgets/settings_list.dart';
+import '../../products/controllers/search_controller.dart';
+import '../../products/widgets/search_field.dart';
+import '../../products/widgets/search_results_view.dart';
 import '../controllers/home_controller.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -37,6 +38,9 @@ class HomeScreen extends ConsumerWidget {
     final categoriesAsync = ref.watch(categoriesProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
+    final searching = ref.watch(
+      searchControllerProvider.select((s) => s.query.trim().isNotEmpty),
+    );
 
     String name = l10n.homeDefaultCustomerName;
     String business = l10n.homeDefaultBusinessName;
@@ -93,107 +97,75 @@ class HomeScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: AppColors.error),
             tooltip: l10n.profileLogOut,
-            onPressed: () =>
-                ref.read(authControllerProvider.notifier).signOut(),
+            onPressed: () => confirmLogout(context, ref),
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async => ref.invalidate(categoriesProvider),
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: BouncingScrollPhysics(),
+      // The search field is pinned above the content; typing swaps the home
+      // sections for results in place instead of jumping to the Search tab.
+      body: Column(
+        children: [
+          const Padding(
+            padding: EdgeInsets.fromLTRB(18, 12, 18, 4),
+            child: SearchField(),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const _HomeSearchBar(),
-              const SizedBox(height: 16),
-              if (authState is PendingApproval) ...[
-                const _PendingPreviewBanner(),
-                const SizedBox(height: 16),
-              ],
-              const PromoBannerCarousel()
-                  .animate()
-                  .slideY(begin: 0.1, duration: 400.ms)
-                  .fadeIn(),
-              const SizedBox(height: 20),
-              const _LowStockBanner(),
-              const _BuyAgainRail(),
-              Text(
-                l10n.homeBrowseCategories,
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: isDark
-                      ? AppColors.textPrimaryDark
-                      : AppColors.textPrimaryLight,
-                ),
-              ),
-              const SizedBox(height: 12),
-              categoriesAsync.when(
-                loading: () => const GridShimmerLoader(
-                  crossAxisCount: 4,
-                  childAspectRatio: 0.85,
-                ),
-                error: (error, stack) => ErrorStateWidget(
-                  onRetry: () => ref.invalidate(categoriesProvider),
-                ),
-                data: (categories) => _CategoryGrid(categories: categories),
-              ),
-              const SizedBox(height: 12),
-              const _TodaysPicksSection(),
-            ],
+          Expanded(
+            child: searching
+                ? const Padding(
+                    padding: EdgeInsets.fromLTRB(18, 12, 18, 0),
+                    child: SearchResultsView(),
+                  )
+                : RefreshIndicator(
+                    onRefresh: () async => ref.invalidate(categoriesProvider),
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      padding: const EdgeInsets.fromLTRB(18, 12, 18, 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const _ActiveOrderCard(),
+                          if (authState is PendingApproval) ...[
+                            const _PendingPreviewBanner(),
+                            const SizedBox(height: 16),
+                          ],
+                          const PromoBannerCarousel()
+                              .animate()
+                              .slideY(begin: 0.1, duration: 400.ms)
+                              .fadeIn(),
+                          const SizedBox(height: 20),
+                          const _LowStockBanner(),
+                          const _TopProductsSection(),
+                          const _BuyAgainRail(),
+                          Text(
+                            l10n.homeBrowseCategories,
+                            style: GoogleFonts.inter(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isDark
+                                  ? AppColors.textPrimaryDark
+                                  : AppColors.textPrimaryLight,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          categoriesAsync.when(
+                            loading: () => const GridShimmerLoader(
+                              crossAxisCount: 4,
+                              childAspectRatio: 0.85,
+                            ),
+                            error: (error, stack) => ErrorStateWidget(
+                              onRetry: () => ref.invalidate(categoriesProvider),
+                            ),
+                            data: (categories) =>
+                                _CategoryGrid(categories: categories),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Tappable search bar living on Home itself (not just inside the Search
-/// tab) so retailers don't have to switch tabs to start typing — matches
-/// `SearchScreen`'s own pill styling so it reads as one search feature, not
-/// two. Not a real `TextField`: tapping switches to the Search tab (via
-/// `go`, not `push` — see the shell route comments above on why `push`
-/// can't correctly switch a `StatefulShellBranch`), where it autofocuses.
-class _HomeSearchBar extends StatelessWidget {
-  const _HomeSearchBar();
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context)!;
-
-    return InkWell(
-      onTap: () => context.go(RouteNames.search),
-      borderRadius: BorderRadius.circular(999),
-      child: Container(
-        height: 44,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: isDark ? Colors.white10 : AppColors.backgroundLight,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.search_rounded,
-              size: 20,
-              color: AppColors.textSecondaryLight,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              l10n.searchHint,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                color: AppColors.textSecondaryLight,
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -233,6 +205,78 @@ class _CategoryGrid extends StatelessWidget {
               context.push(RouteNames.productCategoryPath(category.id)),
         ).animate().scale(delay: (50 * index).ms, duration: 250.ms);
       },
+    );
+  }
+}
+
+/// Live strip for the retailer's newest in-progress order ("Order #A1B2C3D4
+/// is out for delivery →"), opening its tracking page. Renders nothing when
+/// no order is in flight.
+class _ActiveOrderCard extends ConsumerWidget {
+  const _ActiveOrderCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final order = ref.watch(activeOrderProvider);
+    if (order == null) return const SizedBox.shrink();
+    final l10n = AppLocalizations.of(context)!;
+    final id = order.id.shortId;
+    final (icon, message) = switch (order.orderStatus) {
+      OrderStatus.pending => (
+        Icons.hourglass_top_rounded,
+        l10n.homeOrderPending(id),
+      ),
+      OrderStatus.confirmed => (
+        Icons.check_circle_outline_rounded,
+        l10n.homeOrderConfirmed(id),
+      ),
+      _ => (Icons.local_shipping_outlined, l10n.homeOrderOutForDelivery(id)),
+    };
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: InkWell(
+        onTap: () => context.push(RouteNames.orderDetailPath(order.id)),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.primary.withOpacity(0.25)),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, color: AppColors.primary, size: 22),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  message,
+                  style: GoogleFonts.inter(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                l10n.homeOrderTrack,
+                style: GoogleFonts.inter(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary,
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.primary,
+                size: 18,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -334,6 +378,71 @@ class _LowStockBanner extends ConsumerWidget {
   }
 }
 
+/// Admin-curated merchandising spot (`ProductEntity.isTopProduct`) — the
+/// first product section on Home, ahead of the personalized Buy Again rail
+/// and the category grid, matching the reference wholesale app's own
+/// "Top Products" placement. A real 2-column grid via the shared
+/// `ProductCard` (not a slimmed-down tile), same aspect ratio the category
+/// product grid already uses. Renders nothing until the admin marks at
+/// least one product — no awkward empty state during catalog setup.
+class _TopProductsSection extends ConsumerWidget {
+  const _TopProductsSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final products = ref.watch(homeTopProductsProvider);
+    if (products.isEmpty) return const SizedBox.shrink();
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.homeTopProducts,
+            style: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: isDark
+                  ? AppColors.textPrimaryDark
+                  : AppColors.textPrimaryLight,
+            ),
+          ),
+          const SizedBox(height: 12),
+          LayoutBuilder(
+            builder: (context, box) => GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: products.length,
+              // Card height tracks the Text size setting (see
+              // `productCardHeight`), not a fixed ratio.
+              gridDelegate: productGridDelegate(
+                context,
+                availableWidth: box.maxWidth,
+              ),
+              itemBuilder: (context, index) {
+                final product = products[index];
+                return StaggeredEntrance(
+                  key: ValueKey(product.id),
+                  index: index,
+                  child: ProductCard(
+                    product: product,
+                    onTap: () =>
+                        context.push(RouteNames.productDetailPath(product.id)),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Horizontal quick-add rail for products the retailer orders often (≥2 past
 /// orders — same threshold the stock alert uses). Reuses `ProductCard`
 /// as-is, sized down with a fixed width the same way its own grid usage
@@ -377,7 +486,7 @@ class _BuyAgainRail extends ConsumerWidget {
                 separatorBuilder: (_, _) => const SizedBox(width: 10),
                 itemBuilder: (context, index) {
                   final product = products[index];
-                  return _BuyAgainTile(
+                  return CompactProductTile(
                     product: product,
                     onTap: () =>
                         context.push(RouteNames.productDetailPath(product.id)),
@@ -385,273 +494,6 @@ class _BuyAgainRail extends ConsumerWidget {
                 },
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Compact "Buy Again" tile — a smaller image and a single-line add/stepper
-/// row rather than the full grid `ProductCard`, matching the Figma
-/// reference's slimmer horizontal rail treatment for this rail specifically.
-class _BuyAgainTile extends ConsumerWidget {
-  final ProductEntity product;
-  final VoidCallback onTap;
-
-  const _BuyAgainTile({required this.product, required this.onTap});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final qtyInCart = ref.watch(
-      cartControllerProvider.select((cart) => cart.qtyFor(product.id)),
-    );
-    final l10n = AppLocalizations.of(context)!;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        width: 150,
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.cardBorder),
-          boxShadow: isDark ? null : AppShadows.card,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              height: 96,
-              width: double.infinity,
-              child: product.imageUrl.isEmpty
-                  ? Container(
-                      color: isDark ? Colors.white12 : Colors.black12,
-                      child: const Icon(Icons.image_outlined, size: 28),
-                    )
-                  : CachedNetworkImage(
-                      imageUrl: product.imageUrl,
-                      fit: BoxFit.cover,
-                    ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    product.isWeighed
-                        ? l10n.homeFromRatePerKg(
-                            product.rateSlabs!.bestRatePerKg.toStringAsFixed(0),
-                          )
-                        : product.price.formatted,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  if (!product.isInStock)
-                    OutOfStockPill(isDark: isDark)
-                  else if (qtyInCart == 0)
-                    AddToCartPill(
-                      filled: true,
-                      onTap: () => showQuantitySheet(context, product),
-                    )
-                  else
-                    QtyStepper(
-                      filled: true,
-                      qty: qtyInCart,
-                      max: product.maxQty,
-                      onChanged: (qty) => ref
-                          .read(cartControllerProvider.notifier)
-                          .updateQty(product.id, qty),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// A short "browse the catalog" list — the first few active products,
-/// matching the Figma reference's "Today's Picks" section. Distinct from
-/// "Buy Again" (which only ever shows products this retailer has actually
-/// reordered): this is just a generic catalog preview for a new retailer
-/// with no order history yet, or anyone browsing beyond their regulars.
-class _TodaysPicksSection extends ConsumerWidget {
-  const _TodaysPicksSection();
-
-  static const _maxPicks = 4;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final productsAsync = ref.watch(allActiveProductsProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context)!;
-
-    return productsAsync.maybeWhen(
-      data: (products) {
-        if (products.isEmpty) return const SizedBox.shrink();
-        final picks = products.take(_maxPicks).toList();
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              l10n.homeTodaysPicks,
-              style: GoogleFonts.inter(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: isDark
-                    ? AppColors.textPrimaryDark
-                    : AppColors.textPrimaryLight,
-              ),
-            ),
-            const SizedBox(height: 12),
-            for (final product in picks) ...[
-              _TodaysPickTile(
-                product: product,
-                onTap: () =>
-                    context.push(RouteNames.productDetailPath(product.id)),
-              ),
-              const SizedBox(height: 10),
-            ],
-          ],
-        );
-      },
-      orElse: () => const SizedBox.shrink(),
-    );
-  }
-}
-
-class _TodaysPickTile extends ConsumerWidget {
-  final ProductEntity product;
-  final VoidCallback onTap;
-
-  const _TodaysPickTile({required this.product, required this.onTap});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final qtyInCart = ref.watch(
-      cartControllerProvider.select((cart) => cart.qtyFor(product.id)),
-    );
-    final l10n = AppLocalizations.of(context)!;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.cardBorder),
-          boxShadow: isDark ? null : AppShadows.card,
-        ),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 52,
-              height: 52,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: product.imageUrl.isEmpty
-                    ? Container(
-                        color: isDark ? Colors.white12 : Colors.black12,
-                        child: const Icon(Icons.image_outlined),
-                      )
-                    : CachedNetworkImage(
-                        imageUrl: product.imageUrl,
-                        fit: BoxFit.cover,
-                      ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    product.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    product.isWeighed
-                        ? l10n.homeFromRatePerKg(
-                            product.rateSlabs!.bestRatePerKg.toStringAsFixed(0),
-                          )
-                        : product.price.formatted,
-                    style: GoogleFonts.inter(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                  ),
-                  if (!product.isInStock)
-                    Text(
-                      l10n.homeOutOfStock,
-                      style: GoogleFonts.inter(
-                        fontSize: 10.5,
-                        color: AppColors.error,
-                      ),
-                    )
-                  else if (product.stock <= AppConstants.kLowStockThreshold)
-                    Text(
-                      l10n.homeOnlyLeftInStock(
-                        product.stock,
-                        product.unit.value,
-                      ),
-                      style: GoogleFonts.inter(
-                        fontSize: 10.5,
-                        color: AppColors.warning,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            if (!product.isInStock)
-              OutOfStockPill(isDark: isDark)
-            else if (qtyInCart == 0)
-              AddToCartPill(
-                filled: true,
-                onTap: () => showQuantitySheet(context, product),
-              )
-            else
-              QtyStepper(
-                filled: true,
-                qty: qtyInCart,
-                max: product.maxQty,
-                onChanged: (qty) => ref
-                    .read(cartControllerProvider.notifier)
-                    .updateQty(product.id, qty),
-              ),
           ],
         ),
       ),

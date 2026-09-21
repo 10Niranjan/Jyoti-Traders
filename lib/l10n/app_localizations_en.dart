@@ -148,7 +148,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeBuyAgain => 'Buy Again';
 
   @override
-  String get homeTodaysPicks => 'Today\'s Picks';
+  String get homeTopProducts => 'Top Products';
 
   @override
   String homeFromRatePerKg(String rate) {
@@ -157,11 +157,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeOutOfStock => 'Out of stock';
-
-  @override
-  String homeOnlyLeftInStock(int stock, String unit) {
-    return 'Only $stock $unit left';
-  }
 
   @override
   String get pendingUnableToDialPhone => 'Unable to dial phone: 9860460325';
@@ -612,8 +607,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileSavedAddresses => 'Saved Addresses';
 
   @override
-  String get profileNoSavedAddresses =>
-      'Addresses you save at checkout will appear here.';
+  String get profileNoSavedAddresses => 'No saved addresses yet.';
 
   @override
   String get profileRemoveAddressAction => 'Remove';
@@ -996,6 +990,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminActive => 'Active';
+
+  @override
+  String get adminTopProductLabel => 'Top Product';
+
+  @override
+  String get adminTopProductHint =>
+      'Featured in the retailer Home screen\'s Top Products section.';
 
   @override
   String get adminSaveChanges => 'Save Changes';
@@ -1635,4 +1636,383 @@ class AppLocalizationsEn extends AppLocalizations {
   String adminApprovedMessage(String name) {
     return '$name approved successfully!';
   }
+
+  @override
+  String cartNudgeRailTitle(String minimum) {
+    return 'Suggested to reach $minimum';
+  }
+
+  @override
+  String get adminBannersTitle => 'Home Banners';
+
+  @override
+  String get adminBannersEmptyTitle => 'No banners yet';
+
+  @override
+  String get adminBannersEmptyMessage =>
+      'Add an offer or announcement. Retailers see it at the top of Home.';
+
+  @override
+  String get adminBannerAdd => 'Add banner';
+
+  @override
+  String get adminBannerEditTitle => 'Edit banner';
+
+  @override
+  String get adminBannerBodyOptional => 'Message (optional)';
+
+  @override
+  String get adminBannerTitleRequired => 'Enter a title';
+
+  @override
+  String get adminBannerShowOnHome => 'Show on Home';
+
+  @override
+  String get adminBannerNoEndDate => 'No end date';
+
+  @override
+  String get adminBannerPickEndDate => 'Show until (optional)';
+
+  @override
+  String get adminBannerClearDate => 'Clear date';
+
+  @override
+  String adminBannerUntil(String date) {
+    return 'Until $date';
+  }
+
+  @override
+  String get adminBannerExpired => 'Expired';
+
+  @override
+  String get adminBannerSaved => 'Banner saved';
+
+  @override
+  String get adminBannerDeleted => 'Banner deleted';
+
+  @override
+  String get adminBannerDeleteTitle => 'Delete banner?';
+
+  @override
+  String adminBannerDeleteContent(String title) {
+    return '\"$title\" will stop showing on Home immediately.';
+  }
+
+  @override
+  String get orderInvoiceTooltip => 'Share invoice (PDF)';
+
+  @override
+  String get orderInvoiceFailed =>
+      'Couldn\'t create the invoice. Please try again.';
+
+  @override
+  String get settingsTextSize => 'Text size';
+
+  @override
+  String get settingsTextSizeAuto => 'Auto';
+
+  @override
+  String get settingsTextSizeSmall => 'Small';
+
+  @override
+  String get settingsTextSizeMedium => 'Medium';
+
+  @override
+  String get settingsTextSizeLarge => 'Large';
+
+  @override
+  String get settingsTextSizeAutoHint =>
+      'Auto follows your phone\'s font size setting.';
+
+  @override
+  String get settingsWhatsAppSupport => 'Chat on WhatsApp';
+
+  @override
+  String get settingsClearCache => 'Clear image cache';
+
+  @override
+  String get settingsClearCacheSubtitle =>
+      'Frees up storage. Images reload when needed.';
+
+  @override
+  String get settingsCacheCleared => 'Image cache cleared';
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String settingsVersion(String version, String build) {
+    return 'Version $version ($build)';
+  }
+
+  @override
+  String cartItemRemoved(String name) {
+    return '$name removed';
+  }
+
+  @override
+  String get cartUndo => 'Undo';
+
+  @override
+  String homeOrderPending(String id) {
+    return 'Order #$id is waiting for confirmation';
+  }
+
+  @override
+  String homeOrderConfirmed(String id) {
+    return 'Order #$id is confirmed';
+  }
+
+  @override
+  String homeOrderOutForDelivery(String id) {
+    return 'Order #$id is out for delivery';
+  }
+
+  @override
+  String get homeOrderTrack => 'Track';
+
+  @override
+  String get adminAttentionTitle => 'Needs attention';
+
+  @override
+  String get adminAttentionAllClear => 'You\'re all caught up';
+
+  @override
+  String get adminAttentionApprovals => 'Retailer approvals';
+
+  @override
+  String get adminAttentionPayments => 'UPI payments to confirm';
+
+  @override
+  String get adminAttentionLowStock => 'Low stock';
+
+  @override
+  String adminAttentionStaleOrders(int minutes) {
+    return 'Orders unconfirmed $minutes+ min';
+  }
+
+  @override
+  String adminTrendVsLastWeek(String percent) {
+    return '$percent% vs last week';
+  }
+
+  @override
+  String get profileDiscardTitle => 'Discard changes?';
+
+  @override
+  String get profileDiscardMessage =>
+      'You have unsaved changes that will be lost.';
+
+  @override
+  String get profileKeepEditing => 'Keep editing';
+
+  @override
+  String get profileDiscardAction => 'Discard';
+
+  @override
+  String get profileSectionSaved => 'Saved';
+
+  @override
+  String get profileValueNotSet => 'Not set';
+
+  @override
+  String get profileAddressLabel => 'Label';
+
+  @override
+  String get profileLabelHome => 'Home';
+
+  @override
+  String get profileLabelShop => 'Shop';
+
+  @override
+  String get profileLabelWarehouse => 'Warehouse';
+
+  @override
+  String get profileSetDefault => 'Set as default';
+
+  @override
+  String get profileDefaultBadge => 'Default';
+
+  @override
+  String get profileDefaultUpdated => 'Default address updated';
+
+  @override
+  String profileCompleteTitle(int percent) {
+    return '$percent% complete';
+  }
+
+  @override
+  String get profileCompleteSubtitle => 'Finish setting up your shop';
+
+  @override
+  String get profileTaskPhoto => 'Add a shop photo';
+
+  @override
+  String get profileTaskLocation => 'Set your delivery location';
+
+  @override
+  String get profileTaskGst => 'Add your GST number';
+
+  @override
+  String get profileTaskPayout => 'Add payout details';
+
+  @override
+  String get profileInsightsTitle => 'Your business';
+
+  @override
+  String get profileInsightsThisMonth => 'Spent this month';
+
+  @override
+  String profileInsightsOrdersThisMonth(int count) {
+    return 'Orders this month: $count';
+  }
+
+  @override
+  String profileInsightsVsLastMonth(String percent) {
+    return '$percent% vs same days last month';
+  }
+
+  @override
+  String get profileInsightsMostBought => 'Most bought';
+
+  @override
+  String get profileInsightsFavCategory => 'Favourite category';
+
+  @override
+  String get profileQuickAddresses => 'Addresses';
+
+  @override
+  String get adminBusinessLegalName => 'Legal name';
+
+  @override
+  String get adminBusinessAddress => 'Registered address';
+
+  @override
+  String get adminBusinessPrintedOnInvoices => 'Printed on every invoice';
+
+  @override
+  String get settingsPrivacyPolicy => 'Privacy policy';
+
+  @override
+  String get settingsDeleteAccount => 'Delete account';
+
+  @override
+  String get settingsDeleteAccountSubtitle => 'Permanently remove your profile';
+
+  @override
+  String get settingsDeleteTitle => 'Delete your account?';
+
+  @override
+  String get settingsDeleteMessage =>
+      'Your profile, saved addresses and preferences will be permanently deleted. Past orders stay on record with the shop for accounting. This can\'t be undone.';
+
+  @override
+  String get settingsDeletePasswordLabel => 'Confirm with your password';
+
+  @override
+  String get settingsDeleteAction => 'Delete permanently';
+
+  @override
+  String settingsDeleteFailed(String error) {
+    return 'Couldn\'t delete your account: $error';
+  }
+
+  @override
+  String get notificationsFilterAll => 'All';
+
+  @override
+  String notificationsFilterUnread(int count) {
+    return 'Unread ($count)';
+  }
+
+  @override
+  String notificationsHeroUnread(int count) {
+    return '$count new';
+  }
+
+  @override
+  String get notificationsHeroCaughtUp => 'All caught up';
+
+  @override
+  String notificationsHeroSubtitle(int count) {
+    return '$count in your inbox';
+  }
+
+  @override
+  String get notificationsSectionToday => 'Today';
+
+  @override
+  String get notificationsSectionYesterday => 'Yesterday';
+
+  @override
+  String get notificationsSectionThisWeek => 'Earlier this week';
+
+  @override
+  String get notificationsSectionEarlier => 'Earlier';
+
+  @override
+  String get notificationsViewOrder => 'View order';
+
+  @override
+  String get notificationsUnreadEmptyTitle => 'You\'re all caught up';
+
+  @override
+  String get notificationsUnreadEmptyMessage =>
+      'No unread notifications right now.';
+
+  @override
+  String get adminDeliveryHeroSubtitle =>
+      'Retailers pay this for every kilometre from your warehouse';
+
+  @override
+  String get adminDeliveryPerKm => 'per km';
+
+  @override
+  String get adminDeliveryQuickRates => 'Quick rates';
+
+  @override
+  String get adminDeliverySamplesTitle => 'What retailers will pay';
+
+  @override
+  String adminDeliverySampleKm(int km) {
+    return '$km km';
+  }
+
+  @override
+  String get adminDeliveryUnsaved => 'Unsaved changes';
+
+  @override
+  String get adminDeliveryAllSaved => 'All changes saved';
+
+  @override
+  String get adminDeliveryRateDecrease => 'Decrease rate';
+
+  @override
+  String get adminDeliveryRateIncrease => 'Increase rate';
+
+  @override
+  String get settingsDone => 'Done';
+
+  @override
+  String get settingsAppearanceSubtitle => 'Choose how the app looks';
+
+  @override
+  String get settingsLanguageSubtitle => 'Pick the language you read best';
+
+  @override
+  String get settingsTextSizeSubtitle => 'Make text easier to read';
+
+  @override
+  String get settingsSupportSubtitle => 'We\'re here to help';
+
+  @override
+  String get settingsAboutSubtitle => 'About this app';
+
+  @override
+  String get settingsNotificationsSubtitle =>
+      'Choose what you want to hear about';
+
+  @override
+  String get settingsTextSizePreview =>
+      'Fresh stock, best prices, fast delivery.';
 }

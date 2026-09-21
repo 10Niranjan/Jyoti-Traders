@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -17,6 +18,7 @@ import '../../../domain/entities/order_item_entity.dart';
 import '../../../domain/usecases/delivery/calculate_delivery_charge_usecase.dart';
 import '../../../domain/value_objects/money.dart';
 import '../../../shared/widgets/address_form_fields.dart';
+import '../../../shared/widgets/animated_money_row.dart';
 import '../../../shared/widgets/press_scale.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/summary_row.dart';
@@ -362,26 +364,26 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               const SizedBox(height: 4),
               Row(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.local_shipping_outlined,
                     size: 14,
-                    color: AppColors.textSecondaryLight,
+                    color: context.textSecondary,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     etaLabel,
                     style: GoogleFonts.inter(
                       fontSize: 12,
-                      color: AppColors.textSecondaryLight,
+                      color: context.textSecondary,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
               const Divider(),
-              SummaryRow(
+              AnimatedMoneyRow(
                 label: l10n.checkoutGrandTotal,
-                value: grandTotal.formatted,
+                amount: grandTotal.amount,
                 bold: true,
               ),
               const SizedBox(height: 24),
@@ -421,6 +423,7 @@ class _PaymentMethodCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selected = value == groupValue;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return PressScale(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -430,7 +433,9 @@ class _PaymentMethodCard extends StatelessWidget {
           color: selected ? AppColors.primary.withOpacity(0.06) : null,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: selected ? AppColors.primary : const Color(0xFFE2E8F0),
+            color: selected
+                ? AppColors.primary
+                : (isDark ? AppColors.borderDark : AppColors.borderLight),
             width: selected ? 1.5 : 1,
           ),
         ),

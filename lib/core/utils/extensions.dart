@@ -13,6 +13,13 @@ extension StringCasingExtension on String {
   /// Falls back to the whole string if it's shorter than 8 — real order ids
   /// are always 36-char UUIDs, but nothing should crash on a shorter one.
   String get shortId => (length > 8 ? substring(0, 8) : this).toUpperCase();
+
+  /// Up to two initials for an avatar: "Ramesh Kirana Store" → "RK". Empty for
+  /// a blank string, so the caller picks its own fallback.
+  String get initials {
+    final words = trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty);
+    return words.take(2).map((w) => w[0].toUpperCase()).join();
+  }
 }
 
 extension DateTimeAgoExtension on DateTime {

@@ -9,27 +9,27 @@ import 'package:traders_retailer/shared/widgets/quantity_picker.dart';
 /// Stock is counted in kilos for a weighed product, so `stock: 5` is a 5 kg
 /// (5000 g) ceiling.
 ProductEntity _weighed({int stock = 5}) => ProductEntity(
-      id: 'p1',
-      name: 'Toor Dal',
-      categoryId: 'cat_pulses',
-      imageUrl: '',
-      price: Money(44),
-      unit: ProductUnit.kg,
-      stock: stock,
-      isActive: true,
-      rateSlabs: WeightRateSlabs.defaults,
-    );
+  id: 'p1',
+  name: 'Toor Dal',
+  categoryId: 'cat_pulses',
+  imageUrl: '',
+  price: Money(44),
+  unit: ProductUnit.kg,
+  stock: stock,
+  isActive: true,
+  rateSlabs: WeightRateSlabs.defaults,
+);
 
 ProductEntity _unit({int stock = 50}) => ProductEntity(
-      id: 'p2',
-      name: 'Soap Box',
-      categoryId: 'cat_misc',
-      imageUrl: '',
-      price: Money(20),
-      unit: ProductUnit.box,
-      stock: stock,
-      isActive: true,
-    );
+  id: 'p2',
+  name: 'Soap Box',
+  categoryId: 'cat_misc',
+  imageUrl: '',
+  price: Money(20),
+  unit: ProductUnit.box,
+  stock: stock,
+  isActive: true,
+);
 
 class _Host extends StatefulWidget {
   final ProductEntity product;
@@ -61,7 +61,9 @@ class _HostState extends State<_Host> {
 }
 
 void main() {
-  testWidgets('+ doubles a weighed quantity and - halves it back', (tester) async {
+  testWidgets('+ doubles a weighed quantity and - halves it back', (
+    tester,
+  ) async {
     await tester.pumpWidget(_Host(product: _weighed(), initialQty: 100));
 
     await tester.tap(find.byIcon(Icons.add_rounded));
@@ -82,7 +84,10 @@ void main() {
 
     await tester.tap(find.byIcon(Icons.add_rounded));
     await tester.pumpAndSettle();
-    expect(find.text('2 box'), findsWidgets); // stepper label + the "2" preset chip
+    expect(
+      find.text('2 box'),
+      findsWidgets,
+    ); // stepper label + the "2" preset chip
 
     await tester.tap(find.byIcon(Icons.add_rounded));
     await tester.pumpAndSettle();
@@ -95,7 +100,10 @@ void main() {
     await tester.enterText(find.byType(TextField), '1.75');
     await tester.pumpAndSettle();
 
-    expect(find.text('₹68.25'), findsOneWidget); // 1750 g falls in the 1kg-2.4kg band at ₹39/kg
+    expect(
+      find.text('₹68.25'),
+      findsOneWidget,
+    ); // 1750 g falls in the 1kg-2.4kg band at ₹39/kg
   });
 
   testWidgets('a preset tap sets the exact quantity', (tester) async {
@@ -107,10 +115,15 @@ void main() {
     expect(find.text('500 g'), findsWidgets);
   });
 
-  testWidgets('below minimum shows the error and disables the - button', (tester) async {
+  testWidgets('below minimum shows the error and disables the - button', (
+    tester,
+  ) async {
     await tester.pumpWidget(_Host(product: _weighed(), initialQty: 100));
 
-    await tester.enterText(find.byType(TextField), '0.05'); // 50 g, min is 100 g
+    await tester.enterText(
+      find.byType(TextField),
+      '0.05',
+    ); // 50 g, min is 100 g
     await tester.pumpAndSettle();
 
     expect(find.text('Minimum 100 g'), findsOneWidget);

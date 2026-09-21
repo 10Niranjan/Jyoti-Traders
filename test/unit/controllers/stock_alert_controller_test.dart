@@ -76,6 +76,9 @@ class FakeAuthRepository implements AuthRepository {
   }) async {}
 
   @override
+  Future<void> deleteAccount({required String uid, String? password}) async {}
+
+  @override
   Future<void> sendPasswordResetEmail(String email) async {}
 }
 
@@ -176,6 +179,18 @@ final _retailer = UserModel(
   createdAt: DateTime(2026, 1, 1),
 );
 
+UserModel _retailerWith(NotificationPreferencesEntity prefs) => UserModel(
+  uid: 'u1',
+  name: 'Ramesh',
+  email: 'ramesh@test.com',
+  phone: '9876543210',
+  role: UserRole.customer,
+  status: UserStatus.approved,
+  businessName: 'Ramesh Kirana Store',
+  createdAt: DateTime(2026, 1, 1),
+  notificationPreferences: prefs,
+);
+
 OrderEntity _orderWith(String productId, {String id = 'o1'}) => OrderEntity(
   id: id,
   userId: 'u1',
@@ -229,10 +244,13 @@ ProviderContainer _container({
   required List<OrderEntity> orders,
   required FakeProductRepository productRepo,
   required FakeNotificationRepository notificationRepo,
+  UserModel? user,
 }) {
   final container = ProviderContainer(
     overrides: [
-      authRepositoryProvider.overrideWithValue(FakeAuthRepository(_retailer)),
+      authRepositoryProvider.overrideWithValue(
+        FakeAuthRepository(user ?? _retailer),
+      ),
       orderRepositoryProvider.overrideWithValue(FakeOrderRepository(orders)),
       productRepositoryProvider.overrideWithValue(productRepo),
       notificationRepositoryProvider.overrideWithValue(notificationRepo),
@@ -389,5 +407,26 @@ void main() {
         expect(notificationRepo.added, hasLength(1));
       },
     );
+
+    test('stays silent while the Low-stock alerts switch is off', () async {
+      final notificationRepo = FakeNotificationRepository();
+      final container = _container(
+        orders: [
+          _orderWith('p1', id: 'o1'),
+          _orderWith('p1', id: 'o2'),
+        ],
+        productRepo: FakeProductRepository([_product(id: 'p1', stock: 3)]),
+        notificationRepo: notificationRepo,
+        user: _retailerWith(
+          const NotificationPreferencesEntity(lowStockAlerts: false),
+        ),
+      );
+      addTearDown(container.dispose);
+
+      container.read(stockAlertInitializerProvider);
+      await _settle();
+
+      expect(notificationRepo.added, isEmpty);
+    });
   });
 }

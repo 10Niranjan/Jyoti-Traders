@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/theme/theme_colors.dart';
 
 /// +/- quantity control used on Cart rows and Home's Buy Again/Today's Picks
 /// rows.
@@ -34,14 +36,13 @@ class QtyStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = filled
-        ? Colors.white
-        : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight);
+    final textColor = filled ? Colors.white : context.textPrimary;
 
     return Container(
       decoration: BoxDecoration(
-        color: filled ? AppColors.primary : AppColors.cardBorder,
+        // `cardBorder` (the old fill) is near-white in both themes, so in
+        // dark mode the white digits sat on a white pill.
+        color: filled ? AppColors.primary : context.inset,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
@@ -92,7 +93,12 @@ class _StepperButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: onTap == null
+          ? null
+          : () {
+              HapticFeedback.selectionClick();
+              onTap!();
+            },
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: Icon(

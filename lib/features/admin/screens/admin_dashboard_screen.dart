@@ -10,6 +10,7 @@ import '../../../shared/widgets/error_state_widget.dart';
 import '../../../shared/widgets/notification_bell_button.dart';
 import '../controllers/admin_dashboard_controller.dart';
 import '../widgets/admin_stat_card.dart';
+import '../widgets/attention_strip.dart';
 import '../widgets/category_revenue_chart.dart';
 import '../widgets/empty_approval_queue_card.dart';
 import '../widgets/order_status_funnel.dart';
@@ -45,6 +46,7 @@ class AdminDashboardScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const AttentionStrip(),
               Row(
                 children: [
                   Expanded(
@@ -75,6 +77,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                       value: ref.watch(todayOrderCountProvider),
                       icon: Icons.shopping_bag_outlined,
                       color: AppColors.success,
+                      trend: ref.watch(todayOrdersTrendProvider).valueOrNull,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -85,6 +88,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                       icon: Icons.payments_outlined,
                       color: AppColors.accent,
                       formatter: (v) => formatRupees(v.toDouble()),
+                      trend: ref.watch(todayRevenueTrendProvider).valueOrNull,
                     ),
                   ),
                 ],
@@ -188,6 +192,18 @@ class AdminDashboardScreen extends ConsumerWidget {
                   onPressed: () => context.push(RouteNames.adminBroadcast),
                   icon: const Icon(Icons.campaign_outlined, size: 18),
                   label: Text(l10n.adminSendBroadcast),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push(RouteNames.adminBanners),
+                  icon: const Icon(Icons.view_carousel_outlined, size: 18),
+                  label: Text(l10n.adminBannersTitle),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),

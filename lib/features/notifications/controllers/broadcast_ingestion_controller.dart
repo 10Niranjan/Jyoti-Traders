@@ -7,8 +7,11 @@ import '../../../domain/entities/broadcast_entity.dart';
 import '../../../domain/entities/notification_entity.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/controllers/auth_state.dart';
+import 'notification_controller.dart';
 
-final broadcastsProvider = StreamProvider.autoDispose<List<BroadcastEntity>>((ref) {
+final broadcastsProvider = StreamProvider.autoDispose<List<BroadcastEntity>>((
+  ref,
+) {
   return ref.watch(broadcastRepositoryProvider).watchBroadcasts();
 });
 
@@ -43,27 +46,44 @@ final broadcastIngestionProvider = Provider<void>((ref) {
 
     final box = Hive.box(HiveBoxes.notificationsCache);
     final seenKey = '${HiveKeys.seenBroadcastIds}_$uid';
-    final seen = (box.get(seenKey, defaultValue: const <dynamic>[]) as List).cast<String>().toSet();
+    final seen = (box.get(seenKey, defaultValue: const <dynamic>[]) as List)
+        .cast<String>()
+        .toSet();
 
     final unseen = broadcasts.where((b) => !seen.contains(b.id)).toList();
     if (unseen.isEmpty) return;
 
     final notificationRepo = ref.read(notificationRepositoryProvider);
+    // A broadcast is promotional, so with the Promotions switch off it is
+    // still marked seen — dropped for good rather than held back and dumped
+    // into the history the moment the retailer flips the switch on.
+    final promotionsOn = ref.read(notificationPreferencesProvider).promotions;
     for (final broadcast in unseen) {
-      await notificationRepo.addNotification(
-        NotificationEntity(
-          id: const Uuid().v4(),
-          title: broadcast.title,
-          body: broadcast.body,
-          receivedAt: broadcast.sentAt,
-          isRead: false,
-        ),
-      );
+      if (promotionsOn) {
+        await notificationRepo.addNotification(
+          NotificationEntity(
+            id: const Uuid().v4(),
+            title: broadcast.title,
+            body: broadcast.body,
+            receivedAt: broadcast.sentAt,
+            isRead: false,
+            kind: NotificationKind.broadcast,
+          ),
+        );
+      }
       seen.add(broadcast.id);
     }
     await box.put(seenKey, seen.toList());
   }
 
-  ref.listen(authControllerProvider, (previous, next) => ingest(), fireImmediately: true);
-  ref.listen(broadcastsProvider, (previous, next) => ingest(), fireImmediately: true);
+  ref.listen(
+    authControllerProvider,
+    (previous, next) => ingest(),
+    fireImmediately: true,
+  );
+  ref.listen(
+    broadcastsProvider,
+    (previous, next) => ingest(),
+    fireImmediately: true,
+  );
 });

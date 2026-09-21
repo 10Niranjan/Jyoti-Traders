@@ -39,6 +39,11 @@ class ProductEntity extends Equatable {
   /// keeps its old flat price-per-kilo behaviour.
   final WeightRateSlabs? rateSlabs;
 
+  /// Admin-curated flag — true shows this product in the retailer Home
+  /// screen's "Top Products" section. Defaults false, so every product
+  /// saved before this flag existed simply doesn't appear there.
+  final bool isTopProduct;
+
   const ProductEntity({
     required this.id,
     required this.name,
@@ -50,6 +55,7 @@ class ProductEntity extends Equatable {
     this.description,
     required this.isActive,
     this.rateSlabs,
+    this.isTopProduct = false,
   });
 
   bool get isInStock => stock > 0;
@@ -85,6 +91,7 @@ class ProductEntity extends Equatable {
       description: description,
       isActive: isActive,
       rateSlabs: rateSlabs,
+      isTopProduct: isTopProduct,
     );
   }
 
@@ -100,5 +107,6 @@ class ProductEntity extends Equatable {
     description,
     isActive,
     rateSlabs,
+    isTopProduct,
   ];
 }

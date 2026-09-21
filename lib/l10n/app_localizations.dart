@@ -346,11 +346,11 @@ abstract class AppLocalizations {
   /// **'Buy Again'**
   String get homeBuyAgain;
 
-  /// No description provided for @homeTodaysPicks.
+  /// No description provided for @homeTopProducts.
   ///
   /// In en, this message translates to:
-  /// **'Today\'s Picks'**
-  String get homeTodaysPicks;
+  /// **'Top Products'**
+  String get homeTopProducts;
 
   /// No description provided for @homeFromRatePerKg.
   ///
@@ -363,12 +363,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Out of stock'**
   String get homeOutOfStock;
-
-  /// No description provided for @homeOnlyLeftInStock.
-  ///
-  /// In en, this message translates to:
-  /// **'Only {stock} {unit} left'**
-  String homeOnlyLeftInStock(int stock, String unit);
 
   /// No description provided for @pendingUnableToDialPhone.
   ///
@@ -1129,7 +1123,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileNoSavedAddresses.
   ///
   /// In en, this message translates to:
-  /// **'Addresses you save at checkout will appear here.'**
+  /// **'No saved addresses yet.'**
   String get profileNoSavedAddresses;
 
   /// No description provided for @profileRemoveAddressAction.
@@ -1791,6 +1785,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Active'**
   String get adminActive;
+
+  /// No description provided for @adminTopProductLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Top Product'**
+  String get adminTopProductLabel;
+
+  /// No description provided for @adminTopProductHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Featured in the retailer Home screen\'s Top Products section.'**
+  String get adminTopProductHint;
 
   /// No description provided for @adminSaveChanges.
   ///
@@ -2847,6 +2853,672 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{name} approved successfully!'**
   String adminApprovedMessage(String name);
+
+  /// No description provided for @cartNudgeRailTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested to reach {minimum}'**
+  String cartNudgeRailTitle(String minimum);
+
+  /// No description provided for @adminBannersTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Home Banners'**
+  String get adminBannersTitle;
+
+  /// No description provided for @adminBannersEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No banners yet'**
+  String get adminBannersEmptyTitle;
+
+  /// No description provided for @adminBannersEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add an offer or announcement. Retailers see it at the top of Home.'**
+  String get adminBannersEmptyMessage;
+
+  /// No description provided for @adminBannerAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add banner'**
+  String get adminBannerAdd;
+
+  /// No description provided for @adminBannerEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit banner'**
+  String get adminBannerEditTitle;
+
+  /// No description provided for @adminBannerBodyOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Message (optional)'**
+  String get adminBannerBodyOptional;
+
+  /// No description provided for @adminBannerTitleRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a title'**
+  String get adminBannerTitleRequired;
+
+  /// No description provided for @adminBannerShowOnHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Show on Home'**
+  String get adminBannerShowOnHome;
+
+  /// No description provided for @adminBannerNoEndDate.
+  ///
+  /// In en, this message translates to:
+  /// **'No end date'**
+  String get adminBannerNoEndDate;
+
+  /// No description provided for @adminBannerPickEndDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Show until (optional)'**
+  String get adminBannerPickEndDate;
+
+  /// No description provided for @adminBannerClearDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear date'**
+  String get adminBannerClearDate;
+
+  /// No description provided for @adminBannerUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Until {date}'**
+  String adminBannerUntil(String date);
+
+  /// No description provided for @adminBannerExpired.
+  ///
+  /// In en, this message translates to:
+  /// **'Expired'**
+  String get adminBannerExpired;
+
+  /// No description provided for @adminBannerSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Banner saved'**
+  String get adminBannerSaved;
+
+  /// No description provided for @adminBannerDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Banner deleted'**
+  String get adminBannerDeleted;
+
+  /// No description provided for @adminBannerDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete banner?'**
+  String get adminBannerDeleteTitle;
+
+  /// No description provided for @adminBannerDeleteContent.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{title}\" will stop showing on Home immediately.'**
+  String adminBannerDeleteContent(String title);
+
+  /// No description provided for @orderInvoiceTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Share invoice (PDF)'**
+  String get orderInvoiceTooltip;
+
+  /// No description provided for @orderInvoiceFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t create the invoice. Please try again.'**
+  String get orderInvoiceFailed;
+
+  /// No description provided for @settingsTextSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Text size'**
+  String get settingsTextSize;
+
+  /// No description provided for @settingsTextSizeAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get settingsTextSizeAuto;
+
+  /// No description provided for @settingsTextSizeSmall.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get settingsTextSizeSmall;
+
+  /// No description provided for @settingsTextSizeMedium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get settingsTextSizeMedium;
+
+  /// No description provided for @settingsTextSizeLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get settingsTextSizeLarge;
+
+  /// No description provided for @settingsTextSizeAutoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto follows your phone\'s font size setting.'**
+  String get settingsTextSizeAutoHint;
+
+  /// No description provided for @settingsWhatsAppSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Chat on WhatsApp'**
+  String get settingsWhatsAppSupport;
+
+  /// No description provided for @settingsClearCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear image cache'**
+  String get settingsClearCache;
+
+  /// No description provided for @settingsClearCacheSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Frees up storage. Images reload when needed.'**
+  String get settingsClearCacheSubtitle;
+
+  /// No description provided for @settingsCacheCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Image cache cleared'**
+  String get settingsCacheCleared;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settingsAbout;
+
+  /// No description provided for @settingsVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} ({build})'**
+  String settingsVersion(String version, String build);
+
+  /// No description provided for @cartItemRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} removed'**
+  String cartItemRemoved(String name);
+
+  /// No description provided for @cartUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get cartUndo;
+
+  /// No description provided for @homeOrderPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Order #{id} is waiting for confirmation'**
+  String homeOrderPending(String id);
+
+  /// No description provided for @homeOrderConfirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'Order #{id} is confirmed'**
+  String homeOrderConfirmed(String id);
+
+  /// No description provided for @homeOrderOutForDelivery.
+  ///
+  /// In en, this message translates to:
+  /// **'Order #{id} is out for delivery'**
+  String homeOrderOutForDelivery(String id);
+
+  /// No description provided for @homeOrderTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Track'**
+  String get homeOrderTrack;
+
+  /// No description provided for @adminAttentionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs attention'**
+  String get adminAttentionTitle;
+
+  /// No description provided for @adminAttentionAllClear.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re all caught up'**
+  String get adminAttentionAllClear;
+
+  /// No description provided for @adminAttentionApprovals.
+  ///
+  /// In en, this message translates to:
+  /// **'Retailer approvals'**
+  String get adminAttentionApprovals;
+
+  /// No description provided for @adminAttentionPayments.
+  ///
+  /// In en, this message translates to:
+  /// **'UPI payments to confirm'**
+  String get adminAttentionPayments;
+
+  /// No description provided for @adminAttentionLowStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Low stock'**
+  String get adminAttentionLowStock;
+
+  /// No description provided for @adminAttentionStaleOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders unconfirmed {minutes}+ min'**
+  String adminAttentionStaleOrders(int minutes);
+
+  /// No description provided for @adminTrendVsLastWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% vs last week'**
+  String adminTrendVsLastWeek(String percent);
+
+  /// No description provided for @profileDiscardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard changes?'**
+  String get profileDiscardTitle;
+
+  /// No description provided for @profileDiscardMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You have unsaved changes that will be lost.'**
+  String get profileDiscardMessage;
+
+  /// No description provided for @profileKeepEditing.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep editing'**
+  String get profileKeepEditing;
+
+  /// No description provided for @profileDiscardAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get profileDiscardAction;
+
+  /// No description provided for @profileSectionSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get profileSectionSaved;
+
+  /// No description provided for @profileValueNotSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get profileValueNotSet;
+
+  /// No description provided for @profileAddressLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Label'**
+  String get profileAddressLabel;
+
+  /// No description provided for @profileLabelHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get profileLabelHome;
+
+  /// No description provided for @profileLabelShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop'**
+  String get profileLabelShop;
+
+  /// No description provided for @profileLabelWarehouse.
+  ///
+  /// In en, this message translates to:
+  /// **'Warehouse'**
+  String get profileLabelWarehouse;
+
+  /// No description provided for @profileSetDefault.
+  ///
+  /// In en, this message translates to:
+  /// **'Set as default'**
+  String get profileSetDefault;
+
+  /// No description provided for @profileDefaultBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get profileDefaultBadge;
+
+  /// No description provided for @profileDefaultUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Default address updated'**
+  String get profileDefaultUpdated;
+
+  /// No description provided for @profileCompleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% complete'**
+  String profileCompleteTitle(int percent);
+
+  /// No description provided for @profileCompleteSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish setting up your shop'**
+  String get profileCompleteSubtitle;
+
+  /// No description provided for @profileTaskPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a shop photo'**
+  String get profileTaskPhoto;
+
+  /// No description provided for @profileTaskLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Set your delivery location'**
+  String get profileTaskLocation;
+
+  /// No description provided for @profileTaskGst.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your GST number'**
+  String get profileTaskGst;
+
+  /// No description provided for @profileTaskPayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Add payout details'**
+  String get profileTaskPayout;
+
+  /// No description provided for @profileInsightsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your business'**
+  String get profileInsightsTitle;
+
+  /// No description provided for @profileInsightsThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Spent this month'**
+  String get profileInsightsThisMonth;
+
+  /// No description provided for @profileInsightsOrdersThisMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders this month: {count}'**
+  String profileInsightsOrdersThisMonth(int count);
+
+  /// No description provided for @profileInsightsVsLastMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% vs same days last month'**
+  String profileInsightsVsLastMonth(String percent);
+
+  /// No description provided for @profileInsightsMostBought.
+  ///
+  /// In en, this message translates to:
+  /// **'Most bought'**
+  String get profileInsightsMostBought;
+
+  /// No description provided for @profileInsightsFavCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Favourite category'**
+  String get profileInsightsFavCategory;
+
+  /// No description provided for @profileQuickAddresses.
+  ///
+  /// In en, this message translates to:
+  /// **'Addresses'**
+  String get profileQuickAddresses;
+
+  /// No description provided for @adminBusinessLegalName.
+  ///
+  /// In en, this message translates to:
+  /// **'Legal name'**
+  String get adminBusinessLegalName;
+
+  /// No description provided for @adminBusinessAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Registered address'**
+  String get adminBusinessAddress;
+
+  /// No description provided for @adminBusinessPrintedOnInvoices.
+  ///
+  /// In en, this message translates to:
+  /// **'Printed on every invoice'**
+  String get adminBusinessPrintedOnInvoices;
+
+  /// No description provided for @settingsPrivacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get settingsPrivacyPolicy;
+
+  /// No description provided for @settingsDeleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get settingsDeleteAccount;
+
+  /// No description provided for @settingsDeleteAccountSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently remove your profile'**
+  String get settingsDeleteAccountSubtitle;
+
+  /// No description provided for @settingsDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete your account?'**
+  String get settingsDeleteTitle;
+
+  /// No description provided for @settingsDeleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile, saved addresses and preferences will be permanently deleted. Past orders stay on record with the shop for accounting. This can\'t be undone.'**
+  String get settingsDeleteMessage;
+
+  /// No description provided for @settingsDeletePasswordLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm with your password'**
+  String get settingsDeletePasswordLabel;
+
+  /// No description provided for @settingsDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete permanently'**
+  String get settingsDeleteAction;
+
+  /// No description provided for @settingsDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete your account: {error}'**
+  String settingsDeleteFailed(String error);
+
+  /// No description provided for @notificationsFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get notificationsFilterAll;
+
+  /// No description provided for @notificationsFilterUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread ({count})'**
+  String notificationsFilterUnread(int count);
+
+  /// No description provided for @notificationsHeroUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} new'**
+  String notificationsHeroUnread(int count);
+
+  /// No description provided for @notificationsHeroCaughtUp.
+  ///
+  /// In en, this message translates to:
+  /// **'All caught up'**
+  String get notificationsHeroCaughtUp;
+
+  /// No description provided for @notificationsHeroSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} in your inbox'**
+  String notificationsHeroSubtitle(int count);
+
+  /// No description provided for @notificationsSectionToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get notificationsSectionToday;
+
+  /// No description provided for @notificationsSectionYesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get notificationsSectionYesterday;
+
+  /// No description provided for @notificationsSectionThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier this week'**
+  String get notificationsSectionThisWeek;
+
+  /// No description provided for @notificationsSectionEarlier.
+  ///
+  /// In en, this message translates to:
+  /// **'Earlier'**
+  String get notificationsSectionEarlier;
+
+  /// No description provided for @notificationsViewOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'View order'**
+  String get notificationsViewOrder;
+
+  /// No description provided for @notificationsUnreadEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re all caught up'**
+  String get notificationsUnreadEmptyTitle;
+
+  /// No description provided for @notificationsUnreadEmptyMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'No unread notifications right now.'**
+  String get notificationsUnreadEmptyMessage;
+
+  /// No description provided for @adminDeliveryHeroSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Retailers pay this for every kilometre from your warehouse'**
+  String get adminDeliveryHeroSubtitle;
+
+  /// No description provided for @adminDeliveryPerKm.
+  ///
+  /// In en, this message translates to:
+  /// **'per km'**
+  String get adminDeliveryPerKm;
+
+  /// No description provided for @adminDeliveryQuickRates.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick rates'**
+  String get adminDeliveryQuickRates;
+
+  /// No description provided for @adminDeliverySamplesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What retailers will pay'**
+  String get adminDeliverySamplesTitle;
+
+  /// No description provided for @adminDeliverySampleKm.
+  ///
+  /// In en, this message translates to:
+  /// **'{km} km'**
+  String adminDeliverySampleKm(int km);
+
+  /// No description provided for @adminDeliveryUnsaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Unsaved changes'**
+  String get adminDeliveryUnsaved;
+
+  /// No description provided for @adminDeliveryAllSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'All changes saved'**
+  String get adminDeliveryAllSaved;
+
+  /// No description provided for @adminDeliveryRateDecrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease rate'**
+  String get adminDeliveryRateDecrease;
+
+  /// No description provided for @adminDeliveryRateIncrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase rate'**
+  String get adminDeliveryRateIncrease;
+
+  /// No description provided for @settingsDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get settingsDone;
+
+  /// No description provided for @settingsAppearanceSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how the app looks'**
+  String get settingsAppearanceSubtitle;
+
+  /// No description provided for @settingsLanguageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the language you read best'**
+  String get settingsLanguageSubtitle;
+
+  /// No description provided for @settingsTextSizeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Make text easier to read'**
+  String get settingsTextSizeSubtitle;
+
+  /// No description provided for @settingsSupportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'re here to help'**
+  String get settingsSupportSubtitle;
+
+  /// No description provided for @settingsAboutSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'About this app'**
+  String get settingsAboutSubtitle;
+
+  /// No description provided for @settingsNotificationsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what you want to hear about'**
+  String get settingsNotificationsSubtitle;
+
+  /// No description provided for @settingsTextSizePreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Fresh stock, best prices, fast delivery.'**
+  String get settingsTextSizePreview;
 }
 
 class _AppLocalizationsDelegate

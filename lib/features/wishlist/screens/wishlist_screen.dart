@@ -43,23 +43,22 @@ class _WishlistGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      itemCount: products.length,
-      // Same fixed ratio CategoryProductsScreen settled on (0.68 clipped a
-      // 2-line product name's fixed-height card).
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.62,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+    return LayoutBuilder(
+      builder: (context, box) => GridView.builder(
+        itemCount: products.length,
+        // Card height tracks the Text size setting (see `productCardHeight`).
+        gridDelegate: productGridDelegate(
+          context,
+          availableWidth: box.maxWidth,
+        ),
+        itemBuilder: (context, index) {
+          final product = products[index];
+          return ProductCard(
+            product: product,
+            onTap: () => context.push(RouteNames.productDetailPath(product.id)),
+          );
+        },
       ),
-      itemBuilder: (context, index) {
-        final product = products[index];
-        return ProductCard(
-          product: product,
-          onTap: () => context.push(RouteNames.productDetailPath(product.id)),
-        );
-      },
     );
   }
 }

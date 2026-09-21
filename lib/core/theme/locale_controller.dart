@@ -11,9 +11,11 @@ const supportedLocales = [Locale('en'), Locale('hi'), Locale('mr')];
 class LocaleController extends StateNotifier<Locale?> {
   final LocalStorageService _storage;
 
-  LocaleController(this._storage) : super(_fromPreference(_storage.getLanguagePreference()));
+  LocaleController(this._storage)
+    : super(_fromPreference(_storage.getLanguagePreference()));
 
-  static Locale? _fromPreference(String? code) => code == null ? null : Locale(code);
+  static Locale? _fromPreference(String? code) =>
+      code == null ? null : Locale(code);
 
   Future<void> setLocale(Locale? locale) async {
     state = locale;

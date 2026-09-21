@@ -8,6 +8,7 @@ import '../../../core/constants/route_names.dart';
 import '../../../domain/entities/cart_item_entity.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../../shared/widgets/error_state_widget.dart';
+import '../../../shared/widgets/image_viewer.dart';
 import '../../../shared/widgets/inline_toast.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/product_card.dart';
@@ -94,9 +95,31 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
               child: productAsync.maybeWhen(
                 data: (product) =>
                     product != null && product.imageUrl.isNotEmpty
-                    ? CachedNetworkImage(
-                        imageUrl: product.imageUrl,
-                        fit: BoxFit.cover,
+                    ? GestureDetector(
+                        onTap: () => showImageViewer(context, product.imageUrl),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            CachedNetworkImage(
+                              imageUrl: product.imageUrl,
+                              fit: BoxFit.cover,
+                            ),
+                            // Affordance: the photo can be zoomed.
+                            const Positioned(
+                              right: 10,
+                              bottom: 10,
+                              child: CircleAvatar(
+                                radius: 15,
+                                backgroundColor: Colors.black54,
+                                child: Icon(
+                                  Icons.zoom_out_map_rounded,
+                                  size: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       )
                     : Container(
                         color: isDark ? Colors.white12 : Colors.black12,
@@ -347,10 +370,9 @@ class _RelatedProductsRail extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               SizedBox(
-                // Measured, not guessed — 246 overflowed ProductCard's
-                // internal layout by half a pixel at this 150px rail width
-                // (the same class of gap Home's own rail hit at Phase 9.7).
-                height: 260,
+                // Derived, not guessed — a hard-coded 260 (246 overflowed by
+                // half a pixel) doesn't grow with the Text size setting.
+                height: productCardHeight(context, 150),
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   itemCount: related.length,

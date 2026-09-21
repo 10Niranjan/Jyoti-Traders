@@ -20,7 +20,10 @@ Widget _harness(FakeLocalStorageService storage) {
     initialLocation: '/',
     routes: [
       GoRoute(path: '/', builder: (context, state) => const OnboardingScreen()),
-      GoRoute(path: '/login', builder: (context, state) => const Text('LOGIN SCREEN')),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const Text('LOGIN SCREEN'),
+      ),
     ],
   );
 
@@ -44,7 +47,9 @@ void main() {
     expect(find.text('Get Started'), findsNothing);
   });
 
-  testWidgets('Skip completes onboarding and navigates to login immediately', (tester) async {
+  testWidgets('Skip completes onboarding and navigates to login immediately', (
+    tester,
+  ) async {
     final storage = FakeLocalStorageService();
     await tester.pumpWidget(_harness(storage));
     await tester.pumpAndSettle();
@@ -56,23 +61,26 @@ void main() {
     expect(find.text('LOGIN SCREEN'), findsOneWidget);
   });
 
-  testWidgets('paging through Next reaches the last slide, then Get Started completes onboarding', (tester) async {
-    final storage = FakeLocalStorageService();
-    await tester.pumpWidget(_harness(storage));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'paging through Next reaches the last slide, then Get Started completes onboarding',
+    (tester) async {
+      final storage = FakeLocalStorageService();
+      await tester.pumpWidget(_harness(storage));
+      await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Next'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Next'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Next'));
+      await tester.pumpAndSettle();
 
-    expect(find.text('Pay Your Way'), findsOneWidget);
-    expect(find.text('Get Started'), findsOneWidget);
+      expect(find.text('Pay Your Way'), findsOneWidget);
+      expect(find.text('Get Started'), findsOneWidget);
 
-    await tester.tap(find.text('Get Started'));
-    await tester.pumpAndSettle();
+      await tester.tap(find.text('Get Started'));
+      await tester.pumpAndSettle();
 
-    expect(storage.completed, isTrue);
-    expect(find.text('LOGIN SCREEN'), findsOneWidget);
-  });
+      expect(storage.completed, isTrue);
+      expect(find.text('LOGIN SCREEN'), findsOneWidget);
+    },
+  );
 }

@@ -32,6 +32,7 @@ class RouteNames {
   static const String adminEditCategory = '/admin/categories/:categoryId/edit';
   static const String adminDeliverySettings = '/admin/delivery-settings';
   static const String adminBroadcast = '/admin/broadcast';
+  static const String adminBanners = '/admin/banners';
   static const String adminOrderManagement = '/admin/orders/:orderId';
   static const String adminRetailerOrders =
       '/admin/retailers/:retailerId/orders';

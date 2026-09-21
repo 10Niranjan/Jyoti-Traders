@@ -756,6 +756,108 @@ Continuing autonomously from the user's own standing instruction ("verify the 3 
 
 ---
 
+## 📅 Session Log: 2026-09-19 — Cart nudge, admin banners, PDF invoice, success animation
+
+### 📋 Tasks completed:
+
+- **Client checklist**: produced `Jyoti_Traders_Client_Checklist.docx/.pdf` (10 items the client must supply before launch — UPI ID, payment-confirmation decision, slab rate, warehouse/per-km rate, GST/Udyam/PAN, business name/address, logo, Play Store graphics, catalogue, support contact). Untracked in the project root.
+- **Search screen**: added a back arrow (Search is a shell tab, so there was no route to pop) — closes the autofocus keyboard and returns to Home.
+- **Cart nudge**: progress bar + a suggestion rail (regulars first, then closest-price) while under ₹2,500. Home's compact tile promoted to `shared/widgets/compact_product_tile.dart` and shared; fixed its weighed-product stepper (grams counted one at a time, no unit label).
+- **Admin banners**: `config/banners` single document, dual-mode datasource, `ManageBannersScreen` + add/edit sheet (title, optional message, optional end date), dashboard button, `/admin/banners` route, carousel shows admin offers first. All strings in en/hi/mr.
+- **PDF invoice**: new `pdf` package (**user-approved**, rules.md §11) + bundled Noto Sans / Noto Sans Devanagari in `assets/fonts/`. `ShareInvoiceButton` on the retailer's and admin's order screens; hidden for cancelled orders. **No GST split** (user's decision) — plain "Invoice"; seller GSTIN/address are empty `AppConstants` that print once set.
+- **Success animation**: painted ring + tick + burst (`AnimatedSuccessCheck`), no Lottie file needed. Verified frame-by-frame by rendering to PNG; caught and fixed a stray dot at the tick's start.
+- **Docs**: `rules.md` §1 and `ARCHITECTURE.md` package tables updated for `pdf`; `PRD.md` feature rows + new §4.6 Invoice; `phases.md` Post-Launch section.
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 418/418 passing (383 → 418). **Not run on a physical device** (none reachable).
+
+### 💬 Latest Discussion Summary:
+
+1. Two decisions asked up front because rules.md §11 requires it: the new `pdf` package (chose "`pdf` + bundled fonts") and GST handling (chose "simple invoice, no tax split").
+2. Skipped Lottie deliberately — `lottie` is installed but unused; a painted animation needs no asset.
+3. Nothing committed or pushed (standing rule).
+4. **Open for the client**: whether prices include GST, per-product GST rate / HSN, seller GSTIN and registered address — needed before a compliant *tax* invoice.
+
+### 🎨 Follow-up (same day): Saffron Dusk restored + real demo photos
+
+- **Saffron Dusk theme back on the build.** The client's Saffron Dusk palette (primary \`#D9581F\`) had been replaced in the working tree by "Meridian" (indigo) on 2026-09-17; after comparing the two, the user chose saffron. Restored by reverse-applying the recorded Meridian edits (\`app_colors.dart\`, \`app_theme.dart\`, \`order_status_badge.dart\`, \`app_router.dart\` splash, \`auth_screen.dart\`, \`pending_approval_screen.dart\`, \`promo_banner_carousel.dart\`), so no other change was touched. Meridian's gradient tokens are gone. The profile header's glows were kept as theme-driven (they were hardcoded violet/teal before Meridian and now follow the palette). The invoice PDF colors now derive from \`AppColors.primary\` instead of a hardcoded violet.
+- **Real demo photos.** \`demo_catalog_seeder.dart\` now gives all 16 demo products and 14 of 15 categories a real photo (Wikimedia Commons, free licences; **demo only** — replace with the client's own). Suavda stays on the placeholder (unclear what it is). Seed version 4: a phone already on version 3 has photos filled in place, never reseeded, so admin-added products survive. Covered by \`demo_catalog_seeder_test.dart\`. Needs internet on first view; a dead link falls back to the placeholder icon.
+
+---
+
+## 📅 Session Log: 2026-09-19 (continued) — Home search works in place; Search-tab icon bug
+
+### 📋 Tasks completed:
+
+- **Home search no longer redirects.** The Home bar was a fake tappable pill that `context.go`'d to the Search tab. It is now the real field, pinned above the content; typing swaps the home sections for results in place, clearing (✕) restores them. Android back on Home while searching clears the query instead of showing "Exit app?" (`_RetailerShell` in `app_router.dart`).
+- **Search-tab icon bug, root cause**: the app theme's `InputDecorationTheme` sets `filled: true` plus `enabledBorder`/`focusedBorder` (12px box). Those override the `border: InputBorder.none` the pill passed, so a second filled box painted *inside* the pill and the icon sat outside it. Fixed structurally — new shared `SearchField` (`features/products/widgets/`) is one `TextField` carrying its own `prefixIcon`/clear button/pill borders, so the icon can't fall outside the box again.
+- **One search, two entry points.** `SearchField` + `SearchResultsView` (moved out of the 503-line `search_screen.dart`) are shared by Home and the Search tab, both on `searchControllerProvider`; the field text re-syncs via `ref.listen` when the query changes from the other screen. Search tab is kept.
+- **Tests**: 3 new in `home_screen_test.dart` (icon-inside-field under the real `AppTheme`, results-in-place + clear restores home, no-match state); `FakeProductRepository.searchProducts` now really filters. `flutter analyze` zero issues; `flutter test` 424/424.
+- **Not verified on a device** (no `adb`/device reachable this session) — widget tests only.
+
+---
+
+## 📅 Session Log: 2026-09-19 (continued) — Settings overhaul, retailer UI polish, admin attention strip
+
+### 📋 Tasks completed (each step verified with `flutter analyze` + tests before the next):
+
+1. **Notification switches now work.** The three Settings switches were saved to the user record but read by nothing. New `notificationPreferencesProvider` (`notification_controller.dart`); stock alerts (`lowStockAlerts`, re-catches up when switched back on), broadcast ingestion (`promotions` — dropped for good while off) and pushed FCM messages carrying an `orderId` (`orderUpdates`) all check it.
+2. **Shared Settings list** (`features/settings/`): `SettingsList` + `SettingsRow`/`SettingsGroup`/`showSettingsSheet`, used by both `ProfileScreen` (extra row: Notifications sheet → `NotificationPrefsBody`) and `AdminProfileScreen` (extra row: Delivery settings). Rows open small sheets (Appearance, Language, Text size, Support, About). Added: WhatsApp support (`AppConstants.kSupportWhatsAppUrl`), About with version (`package_info_plus`), Text size Auto/Small/Medium/Large (`TextSizeController` + pure `resolveTextScaler`, applied in `main.dart`), Clear image cache (`flutter_cache_manager`). Change-password and log-out dialogs are now defined once. Admin gained Language. Two new packages approved by the user; `rules.md`/`ARCHITECTURE.md` tables updated.
+3. **Retailer UI**: haptics (steppers, ADD pill, sheet confirm); cart swipe-to-delete + Undo snackbar (via the tile's `_removing` flag so `Dismissible` leaves the tree the same frame); pinch-zoom product photo (`image_viewer.dart`); live order strip on Home (`activeOrderProvider`, localised per status); category rail on the category page (switches in place); fly-to-cart animation (`fly_to_cart.dart`, lands on the newest mounted `FloatingCartBar` via `CartFlightTarget`).
+4. **Real bug found while building the rail, fixed at the root**: every `ProductCard` grid used a fixed 0.62 aspect ratio tuned at 1.0x text. Measured: an out-of-stock card needed ~270 dp vs ~255 (overflow, silently clipped in release) and any larger text size overflowed every card — which the new Text size option would have made easy to hit. One `productCardHeight()`/`productGridDelegate()` now sizes all four ProductCard layouts; out-of-stock became a badge over a dimmed photo (height-neutral). 36 widget tests fit-check 3 widths × 4 text scales × 3 states.
+5. **Admin dashboard**: "Needs attention" strip (`attentionSummaryProvider` + `AttentionStrip`; chips only for non-zero counts, "all caught up" state, hidden until loaded) and week-over-week trend arrows on Today's Orders/Revenue (`trendPercent`, same-time-of-day window).
+- **Deliberately skipped** (not in the request): privacy-policy link, delete-account (both still Play Store launch blockers), language-on-first-run.
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 506/506 passing. **No device reachable — none of this was seen running on a phone.**
+
+### 💬 Latest Discussion Summary:
+
+1. User asked for the whole suggested list "step by step"; asked two `rules.md` §11 approval questions (`package_info_plus`, `flutter_cache_manager`) — both approved.
+2. Existing tests that drove the old inline Settings UI (7) were updated to the new tap-row-then-sheet flow, not deleted.
+3. Nothing committed or pushed (standing rule). `PRD.md` unchanged — no business rule changed.
+
+---
+
+## 📅 Session Log: 2026-09-20 — Profile overhaul, admin Business details, Play Store account requirements
+
+### 📋 Tasks completed (each step verified with `flutter analyze` + tests before the next):
+
+1. **Pure logic first**: `computeProfileCompleteness` (photo / GPS address / GST / payout), `computeRetailerInsights` (month-to-date vs the same days last month, top products, favourite category), `trendPercent` moved to `core/utils/trend.dart`.
+2. **Profile tab restructure**: `profile_screen.dart` 1,108 → 267 lines. Address, Business details and Payout each open their own sheet (`AddressSheet`, `BusinessDetailsSheet`, `PayoutSheet`) with a per-section Save and `EditSheetFrame`'s "Discard changes?" guard (drag-dismiss disabled — it would bypass the guard). Header extracted to `retailer_profile_header.dart`.
+3. **New cards**: `ProfileCompletenessCard` (ring + tappable missing items), `ProfileQuickActions` (Orders / Wishlist / Addresses / Support), `ProfileInsightsCard`. Shared `TrendLabel` extracted from the admin stat card.
+4. **Address polish**: `SavedAddressesSheet` with a default star + delete, Home/Shop/Warehouse label chips, two-letter initials avatar (`String.initials`).
+5. **Admin Business details**: `BusinessProfileEntity` → `config/business` (dual-mode datasource + repository), `BusinessProfileSheet`, wired into `buildInvoicePdf` via a pure, tested `resolveSellerBlock` (blank fields fall back to the built-in constants; nothing invented). Logo not done.
+6. **Play Store requirements**: retailer **Delete account** (`DeleteAccountDialog`, `AuthRepository.deleteAccount`, Firebase re-auth → doc → login) and a **Privacy policy** row that appears once `AppConstants.kPrivacyPolicyUrl` is set. `firestore.rules` lets a customer delete their own user doc.
+- **Silent-failure gotcha (worth remembering)**: `auth_repository.dart`/`firebase_auth_repository.dart` use **CRLF** line endings, so my multi-line `perl -0pi` patterns silently matched nothing there (no error). Caught by analyze, redone with the edit tool. Check line endings (`file`) before scripting multi-line replacements.
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 551/551. **No device reachable — none of this was seen running on a phone.**
+
+### 💬 Latest Discussion Summary:
+
+1. User asked how to enhance the Profile screen, got a ranked list, then said "do all the things which u told" — everything listed was built except the admin logo.
+2. **Open items for the client / before launch**: (a) supply a **privacy-policy URL** (also needed in Play Console) → set `AppConstants.kPrivacyPolicyUrl`; (b) enter the owner's **legal name, address and GSTIN** in Admin → Profile → Business Details; (c) **deploy `firestore.rules`** (customer self-delete); (d) Play Console's data-deletion form also wants a web link for deletion requests.
+3. Nothing committed or pushed (standing rule).
+
+---
+
+## 📅 Session Log: 2026-09-21/22 — Dark/light theme root-cause fix, Notifications & Delivery Settings redesign, centered Settings pop-ups
+
+### 📋 Tasks completed:
+
+- **Theme bugs found from on-device screenshots (dark + light)** — five systemic causes, fixed once rather than per screen:
+  1. `bodyMedium` (the style every un-coloured `Text` uses) was the *secondary* colour → now primary; muted text asks for `bodySmall`/`context.textSecondary`.
+  2. `AppTheme` themed almost nothing → rebuilt as one `_build(brightness)` with button, divider, bottom-sheet, dialog, snackbar, FAB and full `ColorScheme` themes.
+  3. New `core/theme/theme_colors.dart` (`context.textPrimary/textSecondary/surface/border/inset/cardDecoration()`); ~40 unguarded `AppColors.*Light` usages and 14 near-white `cardBorder` borders swept to it.
+  4. `QtyStepper` filled with a near-white colour (white digits on white in dark) — fixed.
+  5. Duplicated card chrome unified via `cardDecoration()`.
+- **Regressions caught while verifying** (both from my own theme rewrite, both now covered by tests): `ColorScheme.copyWith(primary:)` leaves the *container* roles at Material's stock purple/teal (selected SegmentedButton segment rendered cyan) — pass everything to the constructor; FAB fell back to the soft tint — explicit `floatingActionButtonTheme`.
+- **Sheets now open on the root navigator** so the floating cart bar / bottom nav can no longer sit over a sheet's Save button. Home's logout icon now asks for confirmation (`confirmLogout`, shared with Settings). Admin chart-card titles use the primary text colour.
+- **Notifications redesign**: gradient hero (unread count, ringing bell, Mark all read), All/Unread filter, day grouping (Today / Yesterday / Earlier this week / Earlier via pure `groupNotificationsByDay`), colour-coded icon per `NotificationKind` (new field; older stored items fall back via `displayKind`), "View order" cue.
+- **Delivery Settings redesign**: hero with live ₹/km readout and a truck animation, quick-rate chips, ± stepper, live "what retailers will pay" preview (2/5/10/25 km), warehouse card, pinned dirty-aware Save bar.
+- **Settings pop-ups**: the small bottom sheets (Appearance, Language, Text size, Support, About, Notifications) are now big centred cards (`showSettingsPopup`) with option tiles (theme mini-previews, script badges, true-size "Aa" samples + live preview). **Smoothness pass**: no animated backdrop blur (recomputed full-screen every frame — the main cause of lag on the Redmi), card is one cached layer while it scales, contents animate only after it lands (`kPopupTransition`).
+- New strings in en/hi/mr (`notifications*`, `adminDelivery*`, `settings*Subtitle`, `settingsDone`, …).
+- **Gotchas worth remembering**: a `perl -pi` that reads arb entries with `:encoding(UTF-8)` but the file raw double-encodes the existing Hindi/Marathi (caught and repaired; use raw bytes both ways); `google_fonts` starts a font fetch when `AppTheme` is built, which the test runner blames on whichever test is running — tests build the theme via `test/helpers/theme_builder.dart` (guarded zone); a helper file named `*_test.dart` is run as a test.
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 610/610 passing. Checked on an Android emulator and the client's Redmi (release build).
+- Not done / open: category rail wraps "Firecrackers" mid-word; primary-button white-on-saffron is ~3.9:1 (brand colour, left as is); the other bottom sheets (address, business, payout, banner editor, quantity) are still sheets.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

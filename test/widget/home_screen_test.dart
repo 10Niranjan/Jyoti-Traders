@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:traders_retailer/core/theme/app_theme.dart';
 import 'package:traders_retailer/data/datasources/local_storage_service.dart';
 import 'package:traders_retailer/data/models/user_model.dart';
 import 'package:traders_retailer/data/repositories/auth_repository.dart';
@@ -79,6 +80,9 @@ class FakeAuthRepository implements AuthRepository {
   }) async {}
 
   @override
+  Future<void> deleteAccount({required String uid, String? password}) async {}
+
+  @override
   Future<void> sendPasswordResetEmail(String email) async {}
 }
 
@@ -124,7 +128,9 @@ class FakeProductRepository implements ProductRepository {
   Stream<List<ProductEntity>> watchAllProducts() => Stream.value(products);
 
   @override
-  Future<List<ProductEntity>> searchProducts(String query) async => [];
+  Future<List<ProductEntity>> searchProducts(String query) async => products
+      .where((p) => p.name.toLowerCase().contains(query.toLowerCase()))
+      .toList();
 
   @override
   Future<ProductEntity?> getProductById(String productId) async => null;
@@ -162,6 +168,13 @@ class FakeLocalStorageService extends LocalStorageService {
 
   @override
   Future<void> markFirstRunHintSeen(String hintId) async {}
+
+  // Home now owns the search controller, which reads/writes recent searches.
+  @override
+  List<String> getRecentSearches() => const [];
+
+  @override
+  Future<void> addRecentSearch(String query) async {}
 }
 
 class FakeNotificationRepository implements NotificationRepository {
@@ -190,7 +203,12 @@ final _retailer = UserModel(
   createdAt: DateTime(2026, 1, 1),
 );
 
-OrderEntity _orderWith(String productId, {required String id}) => OrderEntity(
+OrderEntity _orderWith(
+  String productId, {
+  required String id,
+  OrderStatus status = OrderStatus.delivered,
+  DateTime? createdAt,
+}) => OrderEntity(
   id: id,
   userId: 'u1',
   shopName: 'Ramesh Kirana Store',
@@ -206,31 +224,36 @@ OrderEntity _orderWith(String productId, {required String id}) => OrderEntity(
   deliveryCharge: Money(50),
   paymentMethod: PaymentMethod.cod,
   paymentStatus: PaymentStatus.pending,
-  orderStatus: OrderStatus.delivered,
+  orderStatus: status,
   deliveryAddress: const AddressEntity(
     street: 'St',
     city: 'City',
     pincode: '123456',
   ),
-  createdAt: DateTime(2026, 7, 20),
+  createdAt: createdAt ?? DateTime(2026, 7, 20),
 );
 
-ProductEntity _product({required String id, required int stock}) =>
-    ProductEntity(
-      id: id,
-      name: 'Basmati Rice',
-      categoryId: 'c1',
-      imageUrl: '',
-      price: Money(1500),
-      unit: ProductUnit.box,
-      stock: stock,
-      isActive: true,
-    );
+ProductEntity _product({
+  required String id,
+  required int stock,
+  bool isTopProduct = false,
+}) => ProductEntity(
+  id: id,
+  name: 'Basmati Rice',
+  categoryId: 'c1',
+  imageUrl: '',
+  price: Money(1500),
+  unit: ProductUnit.box,
+  stock: stock,
+  isActive: true,
+  isTopProduct: isTopProduct,
+);
 
 Widget _wrap({
   required List<OrderEntity> orders,
   required List<ProductEntity> products,
   List<CategoryEntity> categories = const [],
+  ThemeData? theme,
 }) => ProviderScope(
   overrides: [
     authRepositoryProvider.overrideWithValue(FakeAuthRepository(_retailer)),
@@ -247,10 +270,11 @@ Widget _wrap({
     cartRepositoryProvider.overrideWithValue(FakeCartRepository()),
     localStorageProvider.overrideWithValue(FakeLocalStorageService()),
   ],
-  child: const MaterialApp(
+  child: MaterialApp(
+    theme: theme,
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    home: HomeScreen(),
+    home: const HomeScreen(),
   ),
 );
 
@@ -270,9 +294,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Buy Again'), findsOneWidget);
-    // Appears in both the Buy Again rail and the Today's Picks section below
-    // it — this single product is both a repeat buy and part of the catalog.
-    expect(find.text('Basmati Rice'), findsWidgets);
+    expect(find.text('Basmati Rice'), findsOneWidget);
   });
 
   testWidgets(
@@ -327,6 +349,35 @@ void main() {
     expect(find.textContaining('low or out of stock'), findsNothing);
   });
 
+  testWidgets('shows a Top Products section for admin-marked products', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        orders: const [],
+        products: [_product(id: 'p1', stock: 20, isTopProduct: true)],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Top Products'), findsOneWidget);
+    expect(find.text('Basmati Rice'), findsOneWidget);
+  });
+
+  testWidgets('hides the Top Products section when nothing is marked as top', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        orders: const [],
+        products: [_product(id: 'p1', stock: 20, isTopProduct: false)],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Top Products'), findsNothing);
+  });
+
   testWidgets('still shows the category grid beneath the new sections', (
     tester,
   ) async {
@@ -350,6 +401,25 @@ void main() {
     expect(find.text('Grains'), findsOneWidget);
   });
 
+  // Regression: the header's logout icon signed the retailer out on a single
+  // stray tap, with no confirmation (Settings already asked first).
+  testWidgets('tapping the header logout icon asks before signing out', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_wrap(orders: const [], products: const []));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byIcon(Icons.logout_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Log out?'), findsOneWidget);
+    // Cancelling leaves the retailer on Home.
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(find.text('Log out?'), findsNothing);
+    expect(find.byIcon(Icons.logout_rounded), findsOneWidget);
+  });
+
   testWidgets('shows a search bar for searching without switching tabs', (
     tester,
   ) async {
@@ -358,5 +428,129 @@ void main() {
 
     expect(find.text('Search products...'), findsOneWidget);
     expect(find.byIcon(Icons.search_rounded), findsOneWidget);
+  });
+
+  testWidgets(
+    'search icon sits inside the one text field, even under the app theme',
+    (tester) async {
+      // Regression: the theme's filled/enabledBorder used to paint a second
+      // box inside the pill, leaving the icon outside it.
+      await tester.pumpWidget(
+        _wrap(orders: const [], products: const [], theme: AppTheme.lightTheme),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        find.descendant(
+          of: find.byType(TextField),
+          matching: find.byIcon(Icons.search_rounded),
+        ),
+        findsOneWidget,
+      );
+      expect(find.byType(InputDecorator), findsOneWidget);
+    },
+  );
+
+  testWidgets('typing in the Home search bar shows results in place', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        orders: const [],
+        products: [_product(id: 'p1', stock: 20)],
+        categories: const [
+          CategoryEntity(
+            id: 'c1',
+            name: 'Grains',
+            iconUrl: '',
+            displayOrder: 0,
+            isActive: true,
+          ),
+        ],
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('Browse Categories'), findsOneWidget);
+
+    await tester.enterText(find.byType(TextField), 'rice');
+    await tester.pump(const Duration(milliseconds: 500)); // search debounce
+    await tester.pumpAndSettle();
+
+    expect(find.text('Basmati Rice'), findsOneWidget);
+    expect(find.text('Browse Categories'), findsNothing);
+
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Browse Categories'), findsOneWidget);
+  });
+
+  testWidgets('shows a live strip for the newest in-progress order', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        orders: [
+          _orderWith(
+            'p1',
+            id: 'older-order-id',
+            status: OrderStatus.confirmed,
+            createdAt: DateTime(2026, 7, 21),
+          ),
+          _orderWith(
+            'p1',
+            id: 'newest-order-id',
+            status: OrderStatus.outForDelivery,
+            createdAt: DateTime(2026, 7, 22),
+          ),
+        ],
+        products: const [],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Order #NEWEST-O is out for delivery'), findsOneWidget);
+    expect(find.textContaining('Order #OLDER-OR'), findsNothing);
+    expect(find.text('Track'), findsOneWidget);
+  });
+
+  testWidgets('no live strip when every order is delivered or cancelled', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        orders: [
+          _orderWith('p1', id: 'delivered-order'),
+          _orderWith(
+            'p1',
+            id: 'cancelled-order',
+            status: OrderStatus.cancelled,
+            createdAt: DateTime(2026, 7, 25),
+          ),
+        ],
+        products: const [],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Track'), findsNothing);
+  });
+
+  testWidgets('a search with no matches says so instead of going blank', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        orders: const [],
+        products: [_product(id: 'p1', stock: 20)],
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'zzz');
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No products found for "zzz"'), findsOneWidget);
   });
 }

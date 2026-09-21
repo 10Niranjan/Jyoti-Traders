@@ -4,6 +4,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/trend_label.dart';
 
 /// A single dashboard stat tile fed by an [AsyncValue<int>] stream — shows
 /// a shimmer placeholder while loading and a dash on error, matching the
@@ -15,6 +17,10 @@ class AdminStatCard extends StatelessWidget {
   final Color color;
   final String Function(int)? formatter;
 
+  /// Percent change against the same window last week (null = no baseline,
+  /// show nothing). Positive is up.
+  final double? trend;
+
   const AdminStatCard({
     super.key,
     required this.title,
@@ -22,6 +28,7 @@ class AdminStatCard extends StatelessWidget {
     required this.icon,
     required this.color,
     this.formatter,
+    this.trend,
   });
 
   @override
@@ -53,7 +60,9 @@ class AdminStatCard extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondaryLight,
                   ),
                 ),
               ),
@@ -68,7 +77,8 @@ class AdminStatCard extends StatelessWidget {
             // no manual "previous value" tracking needed.
             data: (v) => TweenAnimationBuilder<int>(
               tween: IntTween(begin: 0, end: v),
-              duration: (MediaQuery.maybeOf(context)?.disableAnimations ?? false)
+              duration:
+                  (MediaQuery.maybeOf(context)?.disableAnimations ?? false)
                   ? Duration.zero
                   : const Duration(milliseconds: 900),
               curve: Curves.easeOutCubic,
@@ -78,24 +88,42 @@ class AdminStatCard extends StatelessWidget {
                   fontSize: 30,
                   fontWeight: FontWeight.w800,
                   fontFeatures: const [FontFeature.tabularFigures()],
-                  color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : AppColors.textPrimaryLight,
                 ),
               ),
             ),
             loading: () => Shimmer.fromColors(
               baseColor: isDark ? AppColors.surfaceDark : Colors.grey.shade300,
-              highlightColor: isDark ? AppColors.backgroundDark : Colors.grey.shade100,
+              highlightColor: isDark
+                  ? AppColors.backgroundDark
+                  : Colors.grey.shade100,
               child: Container(
                 width: 40,
                 height: 30,
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                ),
               ),
             ),
             error: (_, _) => Text(
               '—',
-              style: GoogleFonts.inter(fontSize: 30, fontWeight: FontWeight.w800, color: AppColors.error),
+              style: GoogleFonts.inter(
+                fontSize: 30,
+                fontWeight: FontWeight.w800,
+                color: AppColors.error,
+              ),
             ),
           ),
+          if (trend != null) ...[
+            const SizedBox(height: 6),
+            TrendLabel(
+              percent: trend!,
+              labelFor: AppLocalizations.of(context)!.adminTrendVsLastWeek,
+            ),
+          ],
         ],
       ),
     ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1);

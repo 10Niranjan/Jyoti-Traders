@@ -9,6 +9,7 @@ class NotificationModel {
   final String? orderId;
   final DateTime receivedAt;
   final bool isRead;
+  final NotificationKind kind;
 
   NotificationModel({
     required this.id,
@@ -17,6 +18,7 @@ class NotificationModel {
     this.orderId,
     required this.receivedAt,
     required this.isRead,
+    this.kind = NotificationKind.general,
   });
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
@@ -27,17 +29,21 @@ class NotificationModel {
       orderId: json['orderId'] as String?,
       receivedAt: json['receivedAt'] as DateTime? ?? DateTime.now(),
       isRead: json['isRead'] as bool? ?? false,
+      kind:
+          NotificationKind.values.asNameMap()[json['kind']] ??
+          NotificationKind.general,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'body': body,
-        'orderId': orderId,
-        'receivedAt': receivedAt,
-        'isRead': isRead,
-      };
+    'id': id,
+    'title': title,
+    'body': body,
+    'orderId': orderId,
+    'receivedAt': receivedAt,
+    'isRead': isRead,
+    'kind': kind.name,
+  };
 
   NotificationEntity toEntity() {
     return NotificationEntity(
@@ -47,6 +53,7 @@ class NotificationModel {
       orderId: orderId,
       receivedAt: receivedAt,
       isRead: isRead,
+      kind: kind,
     );
   }
 
@@ -58,6 +65,7 @@ class NotificationModel {
       orderId: entity.orderId,
       receivedAt: entity.receivedAt,
       isRead: entity.isRead,
+      kind: entity.kind,
     );
   }
 
@@ -69,6 +77,7 @@ class NotificationModel {
       orderId: orderId,
       receivedAt: receivedAt,
       isRead: isRead ?? this.isRead,
+      kind: kind,
     );
   }
 }

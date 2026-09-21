@@ -84,13 +84,16 @@ void main() {
       expect(roundTripped, original);
     });
 
-    test('handles CRLF line endings and a trailing newline without an extra blank row', () {
-      final rows = decodeCsv('a,b\r\nc,d\r\n');
-      expect(rows, [
-        ['a', 'b'],
-        ['c', 'd'],
-      ]);
-    });
+    test(
+      'handles CRLF line endings and a trailing newline without an extra blank row',
+      () {
+        final rows = decodeCsv('a,b\r\nc,d\r\n');
+        expect(rows, [
+          ['a', 'b'],
+          ['c', 'd'],
+        ]);
+      },
+    );
 
     test('empty input decodes to no rows', () {
       expect(decodeCsv(''), isEmpty);

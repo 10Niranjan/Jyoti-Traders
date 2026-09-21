@@ -2,14 +2,17 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'core/constants/hive_keys.dart';
 import 'core/navigation/app_router.dart';
 import 'core/services/fcm_service.dart';
+import 'core/utils/secure_hive.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/locale_controller.dart';
+import 'core/theme/text_size_controller.dart';
 import 'core/theme/theme_controller.dart';
 import 'l10n/app_localizations.dart';
 import 'data/datasources/seed/demo_activity_seeder.dart';
@@ -29,6 +32,21 @@ void main() async {
     );
   } catch (e) {
     debugPrint('Firebase initialization failed: $e');
+  }
+
+  // Attests that requests reaching Firestore/Storage/Auth actually come
+  // from this app binary, not a stolen API key replayed from a script —
+  // the one gap security rules alone can't close. No-ops safely (just logs)
+  // until a real Firebase project has App Check enabled for it.
+  try {
+    await FirebaseAppCheck.instance.activate(
+      androidProvider: kReleaseMode
+          ? AndroidProvider.playIntegrity
+          : AndroidProvider.debug,
+      appleProvider: kReleaseMode ? AppleProvider.appAttest : AppleProvider.debug,
+    );
+  } catch (e) {
+    debugPrint('App Check activation failed: $e');
   }
 
   // Must be registered before runApp, and only after Firebase.initializeApp
@@ -59,7 +77,9 @@ void main() async {
   // Initialize local caching system (Hive)
   await Hive.initFlutter();
   await Hive.openBox(HiveBoxes.settingsCache);
-  final userCacheBox = await Hive.openBox(HiveBoxes.userCache);
+  // Encrypted at rest — this box caches bank details/GST/phone/address for
+  // the signed-in user (and, in simulation mode, every simulated account).
+  final userCacheBox = await openEncryptedBox(HiveBoxes.userCache);
   final catalogBox = await Hive.openBox(HiveBoxes.catalogCache);
   final ordersBox = await Hive.openBox(HiveBoxes.ordersCache);
   await Hive.openBox(HiveBoxes.cartBox);
@@ -88,6 +108,7 @@ class JyotiTradersApp extends ConsumerWidget {
     // seen yet into their own notification history.
     ref.watch(broadcastIngestionProvider);
     final router = ref.watch(appRouterProvider);
+    final textSize = ref.watch(textSizeProvider);
 
     return MaterialApp.router(
       title: 'Jyoti Traders',
@@ -107,16 +128,17 @@ class JyotiTradersApp extends ConsumerWidget {
       // Navigation router
       routerConfig: router,
 
-      // Respect the device's font-scaling accessibility setting, but clamp
-      // it — this app's screens use fixed-height rows/cards throughout
-      // (product cards, summary rows, the floating cart bar) that were
-      // never laid out against arbitrarily large text, so an unclamped
-      // scaler (up to 3.0x on some devices) would overflow them. 1.3x still
-      // gives a real, useful size bump for low-vision users.
+      // Text size: the retailer's own Settings choice, or (Auto) the device's
+      // font-scaling setting clamped to 1.3x — this app's screens use
+      // fixed-height rows/cards (product cards, summary rows, the floating
+      // cart bar) that were never laid out against arbitrarily large text,
+      // so an unclamped scaler (up to 3.0x on some devices) would overflow
+      // them. See `resolveTextScaler`.
       builder: (context, child) {
-        final scaler = MediaQuery.textScalerOf(
-          context,
-        ).clamp(minScaleFactor: 1.0, maxScaleFactor: 1.3);
+        final scaler = resolveTextScaler(
+          MediaQuery.textScalerOf(context),
+          textSize,
+        );
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(textScaler: scaler),
           child: child!,

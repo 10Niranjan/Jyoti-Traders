@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/category_entity.dart';
@@ -37,11 +38,11 @@ class AdminCategoryTile extends StatelessWidget {
           children: [
             ReorderableDragStartListener(
               index: dragHandleIndex,
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.only(right: 4),
                 child: Icon(
                   Icons.drag_handle_rounded,
-                  color: AppColors.textSecondaryLight,
+                  color: context.textSecondary,
                 ),
               ),
             ),
@@ -71,7 +72,7 @@ class AdminCategoryTile extends StatelessWidget {
                   if (!category.isActive)
                     StatusPill(
                       label: l10n.adminInactiveBadge,
-                      color: AppColors.textSecondaryLight,
+                      color: context.textSecondary,
                     ),
                 ],
               ),

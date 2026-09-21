@@ -13,4 +13,3 @@ bool isFirebasePlaceholder(FirebaseApp app) {
       app.options.apiKey.contains('YOUR-') ||
       app.options.apiKey.contains('DummyKey');
 }
-

@@ -123,6 +123,7 @@ class _AddEditCategoryScreenState extends ConsumerState<AddEditCategoryScreen> {
     final saveState = ref.watch(adminCategoryControllerProvider);
     final isSaving = saveState.isLoading;
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (!widget.isEditing) {
       // New categories go to the end of the list by default; reordering
@@ -172,12 +173,16 @@ class _AddEditCategoryScreenState extends ConsumerState<AddEditCategoryScreen> {
               const SizedBox(height: 8),
 
               Material(
-                color: Colors.white,
+                color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(
+                      color: isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight,
+                    ),
                   ),
                   child: SwitchListTile(
                     value: _isActive,

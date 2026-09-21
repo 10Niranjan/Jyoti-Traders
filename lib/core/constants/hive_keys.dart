@@ -17,7 +17,10 @@ class HiveKeys {
   static const String themeMode = 'theme_mode';
   static const String isFirstLaunch = 'is_first_launch';
   static const String languageCode = 'language_code';
+  static const String textSize = 'text_size';
   static const String simulatedDeliveryConfig = 'simulated_delivery_config';
+  static const String simulatedPromoBanners = 'simulated_promo_banners';
+  static const String simulatedBusinessProfile = 'simulated_business_profile';
   static const String seenFirstRunHints = 'seen_first_run_hints';
 
   // user_cache

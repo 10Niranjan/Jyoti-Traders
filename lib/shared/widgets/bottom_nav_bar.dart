@@ -1,5 +1,6 @@
 import 'package:badges/badges.dart' as badges;
 import 'package:flutter/material.dart';
+import '../../core/theme/theme_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/constants/app_colors.dart';
@@ -25,7 +26,7 @@ class BottomNavBar extends ConsumerWidget {
           (states) => IconThemeData(
             color: states.contains(WidgetState.selected)
                 ? AppColors.primary
-                : AppColors.textSecondaryLight,
+                : context.textSecondary,
           ),
         ),
       ),
@@ -38,7 +39,7 @@ class BottomNavBar extends ConsumerWidget {
             fontWeight: FontWeight.w500,
             color: states.contains(WidgetState.selected)
                 ? AppColors.primary
-                : AppColors.textSecondaryLight,
+                : context.textSecondary,
           ),
         ),
         onDestinationSelected: (index) => navigationShell.goBranch(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/theme_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/validators.dart';
@@ -64,19 +65,19 @@ class AddressFormFields extends StatelessWidget {
             Icon(
               hasResolvedAddress ? Icons.check_circle : Icons.location_off_outlined,
               size: 16,
-              color: hasResolvedAddress ? AppColors.success : AppColors.textSecondaryLight,
+              color: hasResolvedAddress ? AppColors.success : context.textSecondary,
             ),
             const SizedBox(width: 6),
             Expanded(
               child: isLocating
                   ? Text(
                       l10n.addressDetecting,
-                      style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.textSecondaryLight),
+                      style: GoogleFonts.inter(fontSize: 11.5, color: context.textSecondary),
                     )
                   : hasResolvedAddress
                       ? Text.rich(
                           TextSpan(
-                            style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.textSecondaryLight),
+                            style: GoogleFonts.inter(fontSize: 11.5, color: context.textSecondary),
                             children: [
                               TextSpan(text: l10n.addressDetectedPrefix, style: const TextStyle(fontWeight: FontWeight.w600)),
                               TextSpan(text: resolvedAddress),
@@ -87,7 +88,7 @@ class AddressFormFields extends StatelessWidget {
                         )
                       : Text(
                           l10n.addressAddForPricing,
-                          style: GoogleFonts.inter(fontSize: 11.5, color: AppColors.textSecondaryLight),
+                          style: GoogleFonts.inter(fontSize: 11.5, color: context.textSecondary),
                         ),
             ),
           ],

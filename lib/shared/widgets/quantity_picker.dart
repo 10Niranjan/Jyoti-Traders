@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/theme_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -215,13 +216,18 @@ class _StepButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: onTap == null
+          ? null
+          : () {
+              HapticFeedback.selectionClick();
+              onTap!();
+            },
       child: Padding(
         padding: const EdgeInsets.all(8),
         child: Icon(
           icon,
           size: 18,
-          color: onTap == null ? AppColors.textSecondaryLight.withOpacity(0.4) : AppColors.primary,
+          color: onTap == null ? context.textSecondary.withOpacity(0.4) : AppColors.primary,
         ),
       ),
     );

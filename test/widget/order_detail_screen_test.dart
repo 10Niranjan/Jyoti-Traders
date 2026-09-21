@@ -78,6 +78,9 @@ class FakeAuthRepository implements AuthRepository {
   }) async {}
 
   @override
+  Future<void> deleteAccount({required String uid, String? password}) async {}
+
+  @override
   Future<void> sendPasswordResetEmail(String email) async {}
 }
 
@@ -228,6 +231,27 @@ void main() {
 
     expect(find.text('This order could not be found.'), findsOneWidget);
   });
+
+  testWidgets(
+    'offers the invoice PDF for a live order but not a cancelled one',
+    (tester) async {
+      await tester.pumpWidget(
+        _wrap(orderRepo: FakeOrderRepository([_order()])),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Share invoice (PDF)'), findsOneWidget);
+
+      await tester.pumpWidget(
+        _wrap(
+          orderRepo: FakeOrderRepository([
+            _order(status: OrderStatus.cancelled),
+          ]),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byTooltip('Share invoice (PDF)'), findsNothing);
+    },
+  );
 
   testWidgets(
     'tapping the share action attempts the share sheet without crashing',

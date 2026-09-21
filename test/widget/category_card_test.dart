@@ -4,7 +4,8 @@ import 'package:traders_retailer/core/constants/app_colors.dart';
 import 'package:traders_retailer/domain/entities/category_entity.dart';
 import 'package:traders_retailer/shared/widgets/category_card.dart';
 
-CategoryEntity _category({String iconUrl = '', int displayOrder = 0}) => CategoryEntity(
+CategoryEntity _category({String iconUrl = '', int displayOrder = 0}) =>
+    CategoryEntity(
       id: 'c1',
       name: 'Edible Oils',
       iconUrl: iconUrl,
@@ -13,21 +14,35 @@ CategoryEntity _category({String iconUrl = '', int displayOrder = 0}) => Categor
     );
 
 void main() {
-  testWidgets('renders the category name and a fallback icon with no uploaded icon', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: CategoryCard(category: _category(), onTap: () {})),
-    ));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'renders the category name and a fallback icon with no uploaded icon',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CategoryCard(category: _category(), onTap: () {}),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text('Edible Oils'), findsOneWidget);
-    expect(find.byIcon(Icons.opacity_outlined), findsOneWidget); // "oil" match in _iconFor
-  });
+      expect(find.text('Edible Oils'), findsOneWidget);
+      expect(
+        find.byIcon(Icons.opacity_outlined),
+        findsOneWidget,
+      ); // "oil" match in _iconFor
+    },
+  );
 
   testWidgets('tapping the card calls onTap', (tester) async {
     var tapped = false;
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: CategoryCard(category: _category(), onTap: () => tapped = true)),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CategoryCard(category: _category(), onTap: () => tapped = true),
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.byType(CategoryCard));
@@ -36,10 +51,19 @@ void main() {
     expect(tapped, isTrue);
   });
 
-  testWidgets('renders an uploaded local-path icon instead of the fallback', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: CategoryCard(category: _category(iconUrl: '/tmp/fake_icon.png'), onTap: () {})),
-    ));
+  testWidgets('renders an uploaded local-path icon instead of the fallback', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: CategoryCard(
+            category: _category(iconUrl: '/tmp/fake_icon.png'),
+            onTap: () {},
+          ),
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
 
     // A real Image.file for a nonexistent path fails to load and falls back
@@ -49,19 +73,37 @@ void main() {
     expect(find.byType(Image), findsOneWidget);
   });
 
-  testWidgets('fill color rotates through the category palette by displayOrder', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(body: CategoryCard(category: _category(displayOrder: 1), onTap: () {})),
-    ));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'fill color rotates through the category palette by displayOrder',
+    (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: CategoryCard(
+              category: _category(displayOrder: 1),
+              onTap: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    final circle = tester.widget<Container>(
-      find.ancestor(of: find.byIcon(Icons.opacity_outlined), matching: find.byType(Container)).first,
-    );
-    final decoration = circle.decoration as BoxDecoration;
-    expect(decoration.color, AppColors.categoryPalette[1 % AppColors.categoryPalette.length]);
+      final circle = tester.widget<Container>(
+        find
+            .ancestor(
+              of: find.byIcon(Icons.opacity_outlined),
+              matching: find.byType(Container),
+            )
+            .first,
+      );
+      final decoration = circle.decoration as BoxDecoration;
+      expect(
+        decoration.color,
+        AppColors.categoryPalette[1 % AppColors.categoryPalette.length],
+      );
 
-    final icon = tester.widget<Icon>(find.byIcon(Icons.opacity_outlined));
-    expect(icon.color, Colors.white);
-  });
+      final icon = tester.widget<Icon>(find.byIcon(Icons.opacity_outlined));
+      expect(icon.color, Colors.white);
+    },
+  );
 }

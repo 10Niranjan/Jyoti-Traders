@@ -176,6 +176,38 @@ void main() {
     expect(saved.id, isNotEmpty); // generated
   });
 
+  testWidgets('creating a product with Top Product enabled persists the flag', (
+    tester,
+  ) async {
+    final repo = FakeProductRepository();
+    await tester.pumpWidget(_wrap(repo));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Product name'),
+      'Basmati Rice 25kg',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Price (₹)'),
+      '2250',
+    );
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Stock quantity'),
+      '40',
+    );
+    await tester.tap(find.text('Category'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Edible Oils').last);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(SwitchListTile, 'Top Product'));
+    await tester.tap(find.widgetWithText(ElevatedButton, 'Add Product'));
+    await tester.pumpAndSettle();
+
+    expect(repo.created, hasLength(1));
+    expect(repo.created.single.isTopProduct, isTrue);
+  });
+
   testWidgets(
     'edit mode pre-fills the form from the existing product and updates it',
     (tester) async {
@@ -189,6 +221,7 @@ void main() {
         stock: 12,
         description: 'Refined',
         isActive: true,
+        isTopProduct: true,
       );
       final repo = FakeProductRepository([existing]);
 
@@ -201,6 +234,14 @@ void main() {
         findsOneWidget,
       );
       expect(find.widgetWithText(TextFormField, '12'), findsOneWidget);
+      expect(
+        tester
+            .widget<SwitchListTile>(
+              find.widgetWithText(SwitchListTile, 'Top Product'),
+            )
+            .value,
+        isTrue, // seeded from the existing product's isTopProduct flag
+      );
 
       await tester.enterText(
         find.widgetWithText(TextFormField, 'Sunflower Oil 15L'),
@@ -215,6 +256,7 @@ void main() {
         'p1',
       ); // keeps its id rather than creating a duplicate
       expect(repo.updated.single.name, 'Sunflower Oil 15L (New)');
+      expect(repo.updated.single.isTopProduct, isTrue);
       expect(repo.created, isEmpty);
     },
   );

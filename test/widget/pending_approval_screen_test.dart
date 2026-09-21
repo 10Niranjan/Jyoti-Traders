@@ -32,11 +32,13 @@ class FakeAuthRepository implements AuthRepository {
     required String phone,
     required UserRole role,
     required String businessName,
-  }) async =>
-      user;
+  }) async => user;
 
   @override
-  Future<UserModel?> signIn({required String email, required String password}) async => user;
+  Future<UserModel?> signIn({
+    required String email,
+    required String password,
+  }) async => user;
 
   @override
   Future<void> signOut() async => signedOut = true;
@@ -60,11 +62,16 @@ class FakeAuthRepository implements AuthRepository {
     BankDetailsEntity? bankDetails,
     BusinessHoursEntity? businessHours,
     NotificationPreferencesEntity? notificationPreferences,
-  }) async =>
-      user;
+  }) async => user;
 
   @override
-  Future<void> updateFcmToken({required String uid, required String fcmToken}) async {}
+  Future<void> updateFcmToken({
+    required String uid,
+    required String fcmToken,
+  }) async {}
+
+  @override
+  Future<void> deleteAccount({required String uid, String? password}) async {}
 
   @override
   Future<void> sendPasswordResetEmail(String email) async {}
@@ -85,15 +92,17 @@ void main() {
   useTallTestViewport();
 
   Widget wrap(FakeAuthRepository repository) => ProviderScope(
-        overrides: [authRepositoryProvider.overrideWithValue(repository)],
-        child: const MaterialApp(
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: PendingApprovalScreen(),
-        ),
-      );
+    overrides: [authRepositoryProvider.overrideWithValue(repository)],
+    child: const MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: PendingApprovalScreen(),
+    ),
+  );
 
-  testWidgets('renders the support phone and email, both tappable', (tester) async {
+  testWidgets('renders the support phone and email, both tappable', (
+    tester,
+  ) async {
     await tester.pumpWidget(wrap(FakeAuthRepository(_retailer)));
     await tester.pumpAndSettle();
 
@@ -101,10 +110,16 @@ void main() {
     expect(find.textContaining('vishvatejkatkar007@gmail.com'), findsWidgets);
 
     final callButton = tester.widget<OutlinedButton>(
-      find.ancestor(of: find.textContaining('98604 60325'), matching: find.byType(OutlinedButton)),
+      find.ancestor(
+        of: find.textContaining('98604 60325'),
+        matching: find.byType(OutlinedButton),
+      ),
     );
     final emailButton = tester.widget<OutlinedButton>(
-      find.ancestor(of: find.textContaining('vishvatejkatkar007@gmail.com'), matching: find.byType(OutlinedButton)),
+      find.ancestor(
+        of: find.textContaining('vishvatejkatkar007@gmail.com'),
+        matching: find.byType(OutlinedButton),
+      ),
     );
     expect(callButton.onPressed, isNotNull);
     expect(emailButton.onPressed, isNotNull);
@@ -117,7 +132,9 @@ void main() {
     expect(find.text('Account Verification Pending'), findsOneWidget);
   });
 
-  testWidgets('signs out via the repository when "Sign Out" is tapped', (tester) async {
+  testWidgets('signs out via the repository when "Sign Out" is tapped', (
+    tester,
+  ) async {
     final repository = FakeAuthRepository(_retailer);
     await tester.pumpWidget(wrap(repository));
     await tester.pumpAndSettle();

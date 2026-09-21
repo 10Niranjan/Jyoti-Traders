@@ -1,15 +1,19 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/route_names.dart';
+import '../../../core/theme/theme_colors.dart';
 import '../../../core/utils/weight_formatter.dart';
 import '../../../domain/entities/cart_item_entity.dart';
 import '../../../domain/usecases/delivery/calculate_delivery_charge_usecase.dart';
 import '../../../domain/value_objects/money.dart';
+import '../../../shared/widgets/animated_money_row.dart';
 import '../../../shared/widgets/empty_state_widget.dart';
 import '../../../shared/widgets/primary_button.dart';
 import '../../../shared/widgets/qty_stepper.dart';
@@ -20,6 +24,7 @@ import '../../auth/controllers/auth_controller.dart';
 import '../../auth/controllers/auth_state.dart';
 import '../controllers/cart_controller.dart';
 import '../controllers/coupon_controller.dart';
+import '../widgets/minimum_nudge.dart';
 
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
@@ -91,36 +96,21 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 Expanded(
                   child: ListView.separated(
                     padding: const EdgeInsets.all(16),
-                    itemCount: cart.items.length,
+                    // One extra trailing row for the suggestion rail while
+                    // the cart is under the minimum.
+                    itemCount: cart.items.length + (belowMinimum ? 1 : 0),
                     separatorBuilder: (_, _) => const SizedBox(height: 12),
                     itemBuilder: (context, index) =>
-                        _CartItemTile(item: cart.items[index]),
+                        index == cart.items.length
+                        ? GapSuggestionRail(minimum: minimum)
+                        : _CartItemTile(
+                            key: ValueKey(cart.items[index].productId),
+                            item: cart.items[index],
+                          ),
                   ),
                 ),
                 if (belowMinimum)
-                  Container(
-                    width: double.infinity,
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.warning.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: AppColors.warning.withOpacity(0.3),
-                      ),
-                    ),
-                    child: Text(
-                      l10n.cartBelowMinimum(
-                        (minimum - cart.subtotal).formatted,
-                        minimum.formatted,
-                      ),
-                      style: GoogleFonts.inter(
-                        fontSize: 12.5,
-                        color: AppColors.warning,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                  MinimumNudgeBanner(subtotal: cart.subtotal, minimum: minimum),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                   child: couponState.coupon == null
@@ -238,9 +228,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                           value: deliveryCharge.formatted,
                         ),
                         const Divider(),
-                        SummaryRow(
+                        AnimatedMoneyRow(
                           label: l10n.cartTotal,
-                          value: total.formatted,
+                          amount: total.amount,
                           bold: true,
                         ),
                         const SizedBox(height: 12),
@@ -265,14 +255,96 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 /// the product's live stock, so real stock is enforced on the product page.
 const int _kMaxLineGrams = 500000;
 
-class _CartItemTile extends ConsumerWidget {
+class _CartItemTile extends ConsumerStatefulWidget {
   final CartItemEntity item;
 
-  const _CartItemTile({required this.item});
+  const _CartItemTile({super.key, required this.item});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_CartItemTile> createState() => _CartItemTileState();
+}
+
+class _CartItemTileState extends ConsumerState<_CartItemTile> {
+  // One-way: plays the shrink-out, then the actual removal happens after
+  // the tile has visually collapsed instead of just vanishing mid-list.
+  bool _removing = false;
+
+  /// Removes the line and offers Undo. Everything the snackbar needs is
+  /// captured *before* the await — this tile is disposed the moment the cart
+  /// stream drops its line, so touching `context`/`ref` afterwards would fail.
+  Future<void> _removeWithUndo() async {
+    final item = widget.item;
+    final notifier = ref.read(cartControllerProvider.notifier);
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    HapticFeedback.mediumImpact();
+    await notifier.removeItem(item.productId);
+    messenger
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(l10n.cartItemRemoved(item.name)),
+          action: SnackBarAction(
+            label: l10n.cartUndo,
+            onPressed: () => notifier.addItem(item),
+          ),
+        ),
+      );
+  }
+
+  /// The delete button: plays the shrink-out first, then removes.
+  Future<void> _removeByButton() async {
+    setState(() => _removing = true);
+    await Future.delayed(const Duration(milliseconds: 200));
+    if (!mounted) return;
+    await _removeWithUndo();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final item = widget.item;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      alignment: Alignment.topCenter,
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 160),
+        opacity: _removing ? 0 : 1,
+        child: _removing ? const SizedBox(width: double.infinity) : _buildTile(context, isDark, item),
+      ),
+    ).animate().fadeIn(duration: 240.ms, curve: Curves.easeOut).slideX(begin: 0.08, end: 0, duration: 220.ms, curve: Curves.easeOutCubic);
+  }
+
+  Widget _buildTile(BuildContext context, bool isDark, CartItemEntity item) {
+    return Dismissible(
+      key: ValueKey('dismiss-${item.productId}'),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        decoration: BoxDecoration(
+          color: AppColors.error,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: const Icon(Icons.delete_outline_rounded, color: Colors.white),
+      ),
+      // A dismissed Dismissible must leave the tree in the same frame or
+      // Flutter asserts, but the cart only drops the line a moment later
+      // (Hive stream). Flipping `_removing` swaps this whole widget out now.
+      onDismissed: (_) {
+        setState(() => _removing = true);
+        _removeWithUndo();
+      },
+      child: _buildTileContent(context, isDark, item),
+    );
+  }
+
+  Widget _buildTileContent(
+    BuildContext context,
+    bool isDark,
+    CartItemEntity item,
+  ) {
     return InkWell(
       // The delete button and QtyStepper below are their own InkWells
       // nested inside this one — Flutter routes a tap to the innermost
@@ -282,11 +354,7 @@ class _CartItemTile extends ConsumerWidget {
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.primary.withOpacity(0.08)),
-        ),
+        decoration: context.cardDecoration(radius: 12),
         child: Row(
           children: [
             Container(
@@ -318,6 +386,7 @@ class _CartItemTile extends ConsumerWidget {
                     style: GoogleFonts.inter(
                       fontWeight: FontWeight.w600,
                       fontSize: 13,
+                      color: context.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -337,7 +406,7 @@ class _CartItemTile extends ConsumerWidget {
                       ),
                       style: GoogleFonts.inter(
                         fontSize: 11,
-                        color: AppColors.textSecondaryLight,
+                        color: context.textSecondary,
                       ),
                     ),
                 ],
@@ -353,9 +422,7 @@ class _CartItemTile extends ConsumerWidget {
                     size: 20,
                   ),
                   tooltip: AppLocalizations.of(context)!.cartRemoveItemTooltip,
-                  onPressed: () => ref
-                      .read(cartControllerProvider.notifier)
-                      .removeItem(item.productId),
+                  onPressed: _removeByButton,
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),

@@ -7,43 +7,51 @@ import 'package:flutter/material.dart';
 class AppColors {
   const AppColors._();
 
-  // Brand Primaries — "Zepto Violet" (chosen from the visual-direction
-  // mockup over the original Wholesale Blue).
-  static const Color primary = Color(0xFF7C3AED); // Zepto Violet
-  static const Color primaryLight = Color(
-    0xFFA78BFA,
-  ); // used on dark surfaces (e.g. promo gradients)
-  static const Color primaryDark = Color(0xFF5B21B6);
+  // Brand Primaries — "Saffron Dusk" (client-supplied design system,
+  // replacing "Zepto Violet"). Flat single values shared by both themes:
+  // the source PDFs give slightly different shades per brightness, but
+  // this app's ~274 raw call sites of these five tokens were never
+  // brightness-split even under the old palette, and splitting them now
+  // would mean threading `isDark ? X : Y` through hundreds of sites
+  // (many with no `isDark` computed today) for a subtle shade difference.
+  // Using the Light-doc values, since Light is this app's default theme.
+  static const Color primary = Color(0xFFD9581F); // Saffron 600
+  static const Color primaryLight = Color(0xFFF2703C); // Saffron 500
+  static const Color primaryDark = Color(0xFFB8461F); // Saffron 700
 
   // Secondary / Accents
-  static const Color accent = Color(0xFF0D9488); // Teal
-  static const Color accentLight = Color(
-    0xFF2DD4BF,
-  ); // used on dark surfaces (e.g. floating cart bar)
+  static const Color accent = Color(0xFFC97D1E); // Gold 600
+  static const Color accentLight = Color(0xFFE0A94A); // Gold 400
 
   // Neutral Background & Surfaces
-  static const Color backgroundLight = Color(
-    0xFFF1F0F5,
-  ); // Lavender-tinted off-white
+  static const Color backgroundLight = Color(0xFFFBF1E4); // Warm cream
   static const Color surfaceLight = Color(0xFFFFFFFF);
 
-  static const Color backgroundDark = Color(0xFF0F172A); // Deep Slate Blue
-  static const Color surfaceDark = Color(0xFF1E293B);
+  static const Color backgroundDark = Color(0xFF14162A);
+  static const Color surfaceDark = Color(0xFF1E2136);
+
+  /// Outside the app frame (status bar / hero gradient far edge) —
+  /// darker than [backgroundDark], not a general-purpose surface.
+  static const Color canvasDark = Color(0xFF08090F);
+
+  /// Elevated bars (app bars) in dark mode — one step lighter than
+  /// [surfaceDark], which stays for cards/sheets.
+  static const Color surfaceDark2 = Color(0xFF262A45);
 
   // Semantic Colors
-  static const Color success = Color(0xFF10B981);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color error = Color(0xFFEF4444);
-  static const Color info = Color(0xFF2563EB);
+  static const Color success = Color(0xFF1FA971);
+  static const Color warning = Color(0xFFE2932F);
+  static const Color error = Color(0xFFD9483F);
 
-  // Discount & Promotional Badges
-  static const Color discountBadge = Color(
-    0xFF16A34A,
-  ); // Emerald green for discounts
-
-  /// Hairline card border — exact `slate-100` match, used app-wide for
-  /// `bg-white rounded-2xl border border-slate-100 shadow-sm` style cards.
+  /// Hairline card/input border — used app-wide in light mode.
   static const Color cardBorder = Color(0xFFF1F5F9);
+  static const Color borderLight = Color(0xFFE2E8F0);
+  static const Color borderDark = Color(0xFF2C3050);
+
+  /// A fixed dark navy, deliberately the same in both themes — for
+  /// surfaces meant to always read as "ink dark" regardless of the
+  /// active theme (e.g. the floating cart bar's pill).
+  static const Color inkNavy = Color(0xFF241F45);
 
   /// Rotating accent set for category rings — a category's color is
   /// `categoryPalette[index % categoryPalette.length]`. Tint backgrounds are
@@ -65,9 +73,9 @@ class AppColors {
   ];
 
   // Text Colors
-  static const Color textPrimaryLight = Color(0xFF0F172A);
-  static const Color textSecondaryLight = Color(0xFF475569);
+  static const Color textPrimaryLight = Color(0xFF241F45); // Dark navy
+  static const Color textSecondaryLight = Color(0xFF6B6690);
 
-  static const Color textPrimaryDark = Color(0xFFF8FAFC);
-  static const Color textSecondaryDark = Color(0xFF94A3B8);
+  static const Color textPrimaryDark = Color(0xFFFFFFFF);
+  static const Color textSecondaryDark = Color(0xFF9599B0);
 }

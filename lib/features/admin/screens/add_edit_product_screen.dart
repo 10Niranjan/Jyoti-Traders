@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -52,6 +53,7 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
   String? _categoryId;
   ProductUnit _unit = ProductUnit.piece;
   bool _isActive = true;
+  bool _isTopProduct = false;
   String? _existingImageUrl;
   String? _pickedImagePath;
 
@@ -79,6 +81,7 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
     _categoryId = product.categoryId;
     _unit = product.unit;
     _isActive = product.isActive;
+    _isTopProduct = product.isTopProduct;
     _existingImageUrl = product.imageUrl;
     final slabs = product.rateSlabs;
     if (slabs != null) {
@@ -165,6 +168,7 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
           : _descriptionController.text.trim(),
       isActive: _isActive,
       rateSlabs: slabs,
+      isTopProduct: _isTopProduct,
     );
 
     final controller = ref.read(adminProductControllerProvider.notifier);
@@ -213,6 +217,7 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
     final saveState = ref.watch(adminProductControllerProvider);
     final isSaving = saveState.isLoading;
     final l10n = AppLocalizations.of(context)!;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Seed once from the live product when editing.
     if (widget.isEditing && !_seeded) {
@@ -345,7 +350,7 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                   l10n.adminRateByQuantityHint,
                   style: GoogleFonts.inter(
                     fontSize: 11.5,
-                    color: AppColors.textSecondaryLight,
+                    color: context.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 10),
@@ -416,12 +421,16 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
               const SizedBox(height: 8),
 
               Material(
-                color: Colors.white,
+                color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(
+                      color: isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight,
+                    ),
                   ),
                   child: SwitchListTile(
                     value: _isActive,
@@ -437,6 +446,39 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                     ),
                     subtitle: Text(
                       l10n.adminInactiveProductsHint,
+                      style: GoogleFonts.inter(fontSize: 11.5),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              Material(
+                color: isDark ? AppColors.surfaceDark : AppColors.surfaceLight,
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDark
+                          ? AppColors.borderDark
+                          : AppColors.borderLight,
+                    ),
+                  ),
+                  child: SwitchListTile(
+                    value: _isTopProduct,
+                    onChanged: isSaving
+                        ? null
+                        : (v) => setState(() => _isTopProduct = v),
+                    title: Text(
+                      l10n.adminTopProductLabel,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                    subtitle: Text(
+                      l10n.adminTopProductHint,
                       style: GoogleFonts.inter(fontSize: 11.5),
                     ),
                   ),

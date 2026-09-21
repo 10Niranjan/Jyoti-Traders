@@ -10,21 +10,23 @@ import '../../../domain/usecases/category/update_category_usecase.dart';
 /// Admin's category list — same `watchCategories()` stream retailers use
 /// (unlike products, it was never `isActive`-filtered, so there's no
 /// separate "all categories" query needed here).
-final adminCategoriesProvider = StreamProvider.autoDispose<List<CategoryEntity>>((ref) {
-  final useCase = GetCategoriesUseCase(ref.watch(categoryRepositoryProvider));
-  return useCase();
-});
+final adminCategoriesProvider =
+    StreamProvider.autoDispose<List<CategoryEntity>>((ref) {
+      final useCase = GetCategoriesUseCase(
+        ref.watch(categoryRepositoryProvider),
+      );
+      return useCase();
+    });
 
 /// Single category for the edit form, derived from the list stream rather
 /// than a separate fetch — the admin always arrives here from that list.
-final adminCategoryByIdProvider = Provider.autoDispose.family<AsyncValue<CategoryEntity?>, String>((ref, categoryId) {
-  return ref.watch(adminCategoriesProvider).whenData(
-        (categories) {
-          final idx = categories.indexWhere((c) => c.id == categoryId);
-          return idx == -1 ? null : categories[idx];
-        },
-      );
-});
+final adminCategoryByIdProvider = Provider.autoDispose
+    .family<AsyncValue<CategoryEntity?>, String>((ref, categoryId) {
+      return ref.watch(adminCategoriesProvider).whenData((categories) {
+        final idx = categories.indexWhere((c) => c.id == categoryId);
+        return idx == -1 ? null : categories[idx];
+      });
+    });
 
 class AdminCategoryController extends StateNotifier<AsyncValue<void>> {
   final CreateCategoryUseCase _createUseCase;
@@ -49,7 +51,11 @@ class AdminCategoryController extends StateNotifier<AsyncValue<void>> {
     return _save(category, localIconPath: localIconPath, isNew: false);
   }
 
-  Future<bool> _save(CategoryEntity category, {String? localIconPath, required bool isNew}) async {
+  Future<bool> _save(
+    CategoryEntity category, {
+    String? localIconPath,
+    required bool isNew,
+  }) async {
     state = const AsyncValue.loading();
     try {
       var toSave = category;
@@ -105,12 +111,15 @@ class AdminCategoryController extends StateNotifier<AsyncValue<void>> {
 }
 
 final adminCategoryControllerProvider =
-    StateNotifierProvider.autoDispose<AdminCategoryController, AsyncValue<void>>((ref) {
-  final repository = ref.watch(categoryRepositoryProvider);
-  return AdminCategoryController(
-    CreateCategoryUseCase(repository),
-    UpdateCategoryUseCase(repository),
-    DeleteCategoryUseCase(repository),
-    ref.watch(imageUploadServiceProvider),
-  );
-});
+    StateNotifierProvider.autoDispose<
+      AdminCategoryController,
+      AsyncValue<void>
+    >((ref) {
+      final repository = ref.watch(categoryRepositoryProvider);
+      return AdminCategoryController(
+        CreateCategoryUseCase(repository),
+        UpdateCategoryUseCase(repository),
+        DeleteCategoryUseCase(repository),
+        ref.watch(imageUploadServiceProvider),
+      );
+    });

@@ -23,6 +23,19 @@ void main() {
       });
     });
 
+    group('initials', () {
+      test('takes the first letter of up to two words, upper-cased', () {
+        expect('Ramesh Kirana Store'.initials, 'RK');
+        expect('ramesh'.initials, 'R');
+        expect('  ram   kirana  '.initials, 'RK');
+      });
+
+      test('is empty for a blank string so callers can pick a fallback', () {
+        expect(''.initials, '');
+        expect('   '.initials, '');
+      });
+    });
+
     group('shortId', () {
       test('should return uppercase first 8 characters of string', () {
         expect('abcdefghijkl'.shortId, equals('ABCDEFGH'));

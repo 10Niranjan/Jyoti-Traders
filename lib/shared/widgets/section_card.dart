@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/theme_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_shadows.dart';
@@ -33,7 +34,7 @@ class SectionCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.cardBorder),
+        border: Border.all(color: context.border),
         boxShadow: isDark ? null : AppShadows.card,
       ),
       // A plain `Container` background isn't a `Material` ancestor, so any
@@ -74,7 +75,7 @@ class SectionCard extends StatelessWidget {
                   subtitle!,
                   style: GoogleFonts.inter(
                     fontSize: 11.5,
-                    color: AppColors.textSecondaryLight,
+                    color: context.textSecondary,
                   ),
                 ),
               ],

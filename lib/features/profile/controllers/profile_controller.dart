@@ -45,6 +45,27 @@ class ProfileController extends StateNotifier<AsyncValue<void>> {
     }
   }
 
+  /// Deletes the account. Returns whether it worked; the error is left in
+  /// [state] for the caller to show. On success the auth stream signs the user
+  /// out, which tears down the screen (and this autoDispose controller) before
+  /// the await returns — hence the [mounted] guards.
+  Future<bool> deleteAccount({
+    required String uid,
+    required String password,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      await _ref
+          .read(authRepositoryProvider)
+          .deleteAccount(uid: uid, password: password);
+      if (mounted) state = const AsyncValue.data(null);
+      return true;
+    } catch (e, st) {
+      if (mounted) state = AsyncValue.error(e, st);
+      return false;
+    }
+  }
+
   Future<void> sendPasswordReset(String email) async {
     state = const AsyncValue.loading();
     try {

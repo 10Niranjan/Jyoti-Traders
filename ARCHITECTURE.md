@@ -102,7 +102,10 @@ This application is built on **Clean Architecture** principles, popularized by R
 | `permission_handler` | Runtime permissions (notifications, location) |
 | `geolocator` | Retailer GPS location for delivery km calculation |
 | `qr_flutter` | Renders the UPI payment QR code client-side from the UPI ID (Phase 5) |
+| `pdf` | Builds the order invoice PDF on the phone (shared via `share_plus`). Uses bundled Noto Sans / Noto Sans Devanagari from `assets/fonts/` |
 | `share_plus` | OS share sheet — order confirmation text, admin CSV order export |
+| `package_info_plus` | Installed app version/build shown in Settings → About |
+| `flutter_cache_manager` | Clears the on-disk image cache from Settings (also powers `cached_network_image`) |
 
 ### 2.8 Dev & Quality
 

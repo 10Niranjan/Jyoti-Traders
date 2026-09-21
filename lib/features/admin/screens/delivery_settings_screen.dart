@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_shadows.dart';
 import '../../../core/services/location_service.dart';
+import '../../../core/theme/theme_colors.dart';
 import '../../../domain/entities/delivery_config_entity.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/error_state_widget.dart';
+import '../../../shared/widgets/staggered_entrance.dart';
 import '../controllers/admin_delivery_config_controller.dart';
+import '../widgets/delivery_form_parts.dart';
+import '../widgets/delivery_pricing_hero.dart';
+import '../widgets/delivery_sample_charges.dart';
 
 /// Standalone screen at `/admin/delivery-settings` — no longer linked to
 /// from anywhere in-app since the Profile tab (Phase 9.6) embeds
@@ -35,6 +39,10 @@ class DeliverySettingsScreen extends StatelessWidget {
 /// `Scaffold`/`AppBar` of its own, so it can be embedded either inside
 /// [DeliverySettingsScreen] or, since Phase 9.6, as a section of the admin
 /// Profile tab.
+///
+/// Laid out as a scrolling column of cards above a pinned Save bar. The hero
+/// and the "what retailers will pay" preview follow the rate field live, and
+/// Save is only enabled once something has actually changed.
 class DeliveryConfigFormView extends ConsumerStatefulWidget {
   const DeliveryConfigFormView({super.key});
 
@@ -52,6 +60,20 @@ class _DeliveryConfigFormViewState
   bool _seeded = false;
   bool _isLocating = false;
 
+  // What the fields held when last loaded or saved — "dirty" is any
+  // difference from these.
+  String _baseLat = '';
+  String _baseLng = '';
+  String _baseRate = '';
+
+  @override
+  void initState() {
+    super.initState();
+    for (final c in [_latController, _lngController, _rateController]) {
+      c.addListener(_onFieldChanged);
+    }
+  }
+
   @override
   void dispose() {
     _latController.dispose();
@@ -60,11 +82,41 @@ class _DeliveryConfigFormViewState
     super.dispose();
   }
 
+  // Seeding happens during `build`, which sets the controllers' text — the
+  // `_seeded` guard keeps that from calling `setState` mid-build.
+  void _onFieldChanged() {
+    if (_seeded && mounted) setState(() {});
+  }
+
+  bool get _dirty =>
+      _latController.text.trim() != _baseLat ||
+      _lngController.text.trim() != _baseLng ||
+      _rateController.text.trim() != _baseRate;
+
+  double? get _rate => double.tryParse(_rateController.text.trim());
+
+  void _rememberBaseline() {
+    _baseLat = _latController.text.trim();
+    _baseLng = _lngController.text.trim();
+    _baseRate = _rateController.text.trim();
+  }
+
   void _seedFrom(DeliveryConfigEntity config) {
     _latController.text = config.warehouseLat.toString();
     _lngController.text = config.warehouseLng.toString();
     _rateController.text = config.perKmRate.toString();
+    _rememberBaseline();
     _seeded = true;
+  }
+
+  void _setRate(num value) {
+    _rateController.text = value == value.roundToDouble()
+        ? value.toInt().toString()
+        : value.toStringAsFixed(1);
+  }
+
+  void _bumpRate(int delta) {
+    _setRate(((_rate ?? 0) + delta).clamp(1, 999));
   }
 
   Future<void> _useCurrentLocation() async {
@@ -111,6 +163,8 @@ class _DeliveryConfigFormViewState
     if (!mounted) return;
     final l10n = AppLocalizations.of(context)!;
 
+    if (success) setState(_rememberBaseline);
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -146,157 +200,191 @@ class _DeliveryConfigFormViewState
           onRetry: () => ref.invalidate(deliveryConfigProvider),
         ),
       ),
-      data: (_) => SingleChildScrollView(
-        padding: const EdgeInsets.all(18.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.cardBorder),
-                  boxShadow: AppShadows.card,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.adminWarehouseLocation,
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.adminWarehouseLocationHint,
-                      style: GoogleFonts.inter(
-                        fontSize: 11.5,
-                        color: AppColors.textSecondaryLight,
+      // Shrinks above the keyboard so the pinned Save bar is never covered.
+      data: (_) => AnimatedPadding(
+        duration: const Duration(milliseconds: 150),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(18, 6, 18, 20),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      StaggeredEntrance(
+                        index: 0,
+                        child: DeliveryPricingHero(rate: _rate),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextFormField(
-                            controller: _latController,
-                            enabled: !isSaving,
-                            decoration: InputDecoration(
-                              labelText: l10n.adminLatitude,
-                            ),
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                              signed: true,
-                            ),
-                            validator: _validateCoordinate,
-                          ),
+                      const SizedBox(height: 20),
+                      StaggeredEntrance(
+                        index: 1,
+                        child: DeliveryQuickRates(
+                          current: _rate,
+                          onPick: _setRate,
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: TextFormField(
-                            controller: _lngController,
-                            enabled: !isSaving,
-                            decoration: InputDecoration(
-                              labelText: l10n.adminLongitude,
-                            ),
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                              signed: true,
-                            ),
-                            validator: _validateCoordinate,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        onPressed: (isSaving || _isLocating)
-                            ? null
-                            : _useCurrentLocation,
-                        icon: _isLocating
-                            ? const SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Icon(Icons.my_location_rounded, size: 16),
-                        label: Text(l10n.adminUseCurrentLocation),
                       ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppColors.cardBorder),
-                  boxShadow: AppShadows.card,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.adminPerKmRate,
-                      style: GoogleFonts.inter(fontWeight: FontWeight.w600),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _rateController,
-                      enabled: !isSaving,
-                      decoration: InputDecoration(
-                        labelText: l10n.adminRateLabelPerKm,
-                        prefixText: '₹ ',
+                      const SizedBox(height: 16),
+                      StaggeredEntrance(
+                        index: 2,
+                        child: _rateCard(l10n, isSaving),
                       ),
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
+                      const SizedBox(height: 16),
+                      StaggeredEntrance(
+                        index: 3,
+                        child: DeliverySampleCharges(rate: _rate),
                       ),
-                      validator: (v) {
-                        final parsed = double.tryParse(v?.trim() ?? '');
-                        if (parsed == null) return l10n.adminEnterValidRate;
-                        if (parsed <= 0) return l10n.adminRateMustBeAbove0;
-                        return null;
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isSaving ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 15),
+                      const SizedBox(height: 16),
+                      StaggeredEntrance(
+                        index: 4,
+                        child: _warehouseCard(l10n, isSaving),
+                      ),
+                    ],
                   ),
-                  child: isSaving
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(
-                          l10n.adminSaveChanges,
-                          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-                        ),
+                ),
+              ),
+            ),
+            DeliverySaveBar(dirty: _dirty, isSaving: isSaving, onSave: _save),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _rateCard(AppLocalizations l10n, bool isSaving) {
+    final rate = _rate;
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: context.cardDecoration(radius: 22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DeliveryCardHeader(
+            icon: Icons.payments_rounded,
+            title: l10n.adminPerKmRate,
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              DeliveryStepButton(
+                icon: Icons.remove_rounded,
+                tooltip: l10n.adminDeliveryRateDecrease,
+                onPressed: isSaving || rate == null || rate <= 1
+                    ? null
+                    : () => _bumpRate(-1),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextFormField(
+                  controller: _rateController,
+                  enabled: !isSaving,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                    color: context.textPrimary,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: l10n.adminRateLabelPerKm,
+                    prefixText: '₹ ',
+                  ),
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  validator: (v) {
+                    final parsed = double.tryParse(v?.trim() ?? '');
+                    if (parsed == null) return l10n.adminEnterValidRate;
+                    if (parsed <= 0) return l10n.adminRateMustBeAbove0;
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              DeliveryStepButton(
+                icon: Icons.add_rounded,
+                tooltip: l10n.adminDeliveryRateIncrease,
+                onPressed: isSaving || (rate ?? 0) >= 999
+                    ? null
+                    : () => _bumpRate(1),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _warehouseCard(AppLocalizations l10n, bool isSaving) {
+    const coordinateKeyboard = TextInputType.numberWithOptions(
+      decimal: true,
+      signed: true,
+    );
+    final fieldStyle = GoogleFonts.inter(
+      fontSize: 17,
+      fontWeight: FontWeight.w600,
+      color: context.textPrimary,
+    );
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: context.cardDecoration(radius: 22),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          DeliveryCardHeader(
+            icon: Icons.location_on_rounded,
+            title: l10n.adminWarehouseLocation,
+            subtitle: l10n.adminWarehouseLocationHint,
+          ),
+          const SizedBox(height: 18),
+          Row(
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: _latController,
+                  enabled: !isSaving,
+                  style: fieldStyle,
+                  decoration: InputDecoration(labelText: l10n.adminLatitude),
+                  keyboardType: coordinateKeyboard,
+                  validator: _validateCoordinate,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextFormField(
+                  controller: _lngController,
+                  enabled: !isSaving,
+                  style: fieldStyle,
+                  decoration: InputDecoration(labelText: l10n.adminLongitude),
+                  keyboardType: coordinateKeyboard,
+                  validator: _validateCoordinate,
                 ),
               ),
             ],
           ),
-        ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: (isSaving || _isLocating) ? null : _useCurrentLocation,
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              icon: _isLocating
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.my_location_rounded, size: 18),
+              label: Text(l10n.adminUseCurrentLocation),
+            ),
+          ),
+        ],
       ),
     );
   }

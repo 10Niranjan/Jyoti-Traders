@@ -15,7 +15,9 @@ void main() {
   setUp(() {
     repository = MockWishlistRepository();
     wishlistStream = StreamController<Set<String>>.broadcast();
-    when(() => repository.watchWishlist()).thenAnswer((_) => wishlistStream.stream);
+    when(
+      () => repository.watchWishlist(),
+    ).thenAnswer((_) => wishlistStream.stream);
     when(() => repository.toggle(any())).thenAnswer((_) async {});
     controller = WishlistController(repository);
   });

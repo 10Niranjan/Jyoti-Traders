@@ -77,11 +77,8 @@ class PendingApprovalScreen extends ConsumerWidget {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: isDark
-                ? [AppColors.backgroundDark, const Color(0xFF070B19)]
-                : [
-                    const Color(0xFFFFF7ED),
-                    AppColors.backgroundLight,
-                  ], // soft amber to white
+                ? [AppColors.backgroundDark, AppColors.canvasDark]
+                : [AppColors.surfaceLight, AppColors.backgroundLight],
           ),
         ),
         child: SafeArea(

@@ -9,7 +9,8 @@ import '../../data/datasources/local_storage_service.dart';
 class ThemeModeController extends StateNotifier<ThemeMode> {
   final LocalStorageService _storage;
 
-  ThemeModeController(this._storage) : super(_fromPreference(_storage.getThemePreference()));
+  ThemeModeController(this._storage)
+    : super(_fromPreference(_storage.getThemePreference()));
 
   static ThemeMode _fromPreference(bool? isDark) {
     if (isDark == null) return ThemeMode.light;
@@ -29,6 +30,8 @@ class ThemeModeController extends StateNotifier<ThemeMode> {
   }
 }
 
-final themeModeProvider = StateNotifierProvider<ThemeModeController, ThemeMode>((ref) {
-  return ThemeModeController(ref.watch(localStorageProvider));
-});
+final themeModeProvider = StateNotifierProvider<ThemeModeController, ThemeMode>(
+  (ref) {
+    return ThemeModeController(ref.watch(localStorageProvider));
+  },
+);

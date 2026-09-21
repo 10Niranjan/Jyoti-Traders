@@ -30,7 +30,10 @@ class FakeAuthRepository implements AuthRepository {
   }) async => null;
 
   @override
-  Future<UserModel?> signIn({required String email, required String password}) async => null;
+  Future<UserModel?> signIn({
+    required String email,
+    required String password,
+  }) async => null;
 
   @override
   Future<void> signOut() async {}
@@ -57,7 +60,13 @@ class FakeAuthRepository implements AuthRepository {
   }) async => null;
 
   @override
-  Future<void> updateFcmToken({required String uid, required String fcmToken}) async {}
+  Future<void> updateFcmToken({
+    required String uid,
+    required String fcmToken,
+  }) async {}
+
+  @override
+  Future<void> deleteAccount({required String uid, String? password}) async {}
 
   @override
   Future<void> sendPasswordResetEmail(String email) async {}
@@ -69,7 +78,9 @@ void main() {
   Future<void> pumpSignUp(WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [authRepositoryProvider.overrideWithValue(FakeAuthRepository())],
+        overrides: [
+          authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
+        ],
         child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
@@ -82,7 +93,9 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('sign up screen shows no validation errors on first load', (tester) async {
+  testWidgets('sign up screen shows no validation errors on first load', (
+    tester,
+  ) async {
     await pumpSignUp(tester);
 
     expect(find.text('Name is required'), findsNothing);
@@ -92,10 +105,15 @@ void main() {
     expect(find.text('Password is required'), findsNothing);
   });
 
-  testWidgets('typing in one field does not flag the other untouched fields', (tester) async {
+  testWidgets('typing in one field does not flag the other untouched fields', (
+    tester,
+  ) async {
     await pumpSignUp(tester);
 
-    await tester.enterText(find.widgetWithText(TextFormField, 'Full Name'), 'A');
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Full Name'),
+      'A',
+    );
     await tester.pump();
 
     // The touched field validates live...

@@ -39,7 +39,10 @@ class FakeAuthRepository implements AuthRepository {
   }) async => user;
 
   @override
-  Future<UserModel?> signIn({required String email, required String password}) async => user;
+  Future<UserModel?> signIn({
+    required String email,
+    required String password,
+  }) async => user;
 
   @override
   Future<void> signOut() async {}
@@ -66,7 +69,13 @@ class FakeAuthRepository implements AuthRepository {
   }) async => user;
 
   @override
-  Future<void> updateFcmToken({required String uid, required String fcmToken}) async {}
+  Future<void> updateFcmToken({
+    required String uid,
+    required String fcmToken,
+  }) async {}
+
+  @override
+  Future<void> deleteAccount({required String uid, String? password}) async {}
 
   @override
   Future<void> sendPasswordResetEmail(String email) async {}
@@ -119,7 +128,9 @@ void main() {
     tempDir = Directory.systemTemp.createTempSync('broadcast_ingestion_test_');
     Hive.init(tempDir.path);
     notificationsBox = await Hive.openBox(HiveBoxes.notificationsCache);
-    broadcastRepo = BroadcastRepositoryImpl(BroadcastLocalDatasource(box: notificationsBox));
+    broadcastRepo = BroadcastRepositoryImpl(
+      BroadcastLocalDatasource(box: notificationsBox),
+    );
   });
 
   tearDown(() async {
@@ -129,10 +140,15 @@ void main() {
     } catch (_) {}
   });
 
-  ProviderContainer container(FakeNotificationRepository notificationRepo) {
+  ProviderContainer container(
+    FakeNotificationRepository notificationRepo, {
+    UserModel? user,
+  }) {
     final c = ProviderContainer(
       overrides: [
-        authRepositoryProvider.overrideWithValue(FakeAuthRepository(_retailer)),
+        authRepositoryProvider.overrideWithValue(
+          FakeAuthRepository(user ?? _retailer),
+        ),
         broadcastRepositoryProvider.overrideWithValue(broadcastRepo),
         notificationRepositoryProvider.overrideWithValue(notificationRepo),
       ],
@@ -141,17 +157,23 @@ void main() {
     return c;
   }
 
-  test('copies a broadcast sent before the retailer ever opens the app into their notification history', () async {
-    await broadcastRepo.send(title: 'New stock arrived', body: 'Fresh Basmati Rice is back in stock.');
-    final notificationRepo = FakeNotificationRepository();
-    final c = container(notificationRepo);
+  test(
+    'copies a broadcast sent before the retailer ever opens the app into their notification history',
+    () async {
+      await broadcastRepo.send(
+        title: 'New stock arrived',
+        body: 'Fresh Basmati Rice is back in stock.',
+      );
+      final notificationRepo = FakeNotificationRepository();
+      final c = container(notificationRepo);
 
-    c.read(broadcastIngestionProvider);
-    await _settle();
+      c.read(broadcastIngestionProvider);
+      await _settle();
 
-    expect(notificationRepo.added, hasLength(1));
-    expect(notificationRepo.added.single.title, 'New stock arrived');
-  });
+      expect(notificationRepo.added, hasLength(1));
+      expect(notificationRepo.added.single.title, 'New stock arrived');
+    },
+  );
 
   test('a broadcast sent after ingestion starts is still copied in', () async {
     final notificationRepo = FakeNotificationRepository();
@@ -160,28 +182,71 @@ void main() {
     await _settle();
     expect(notificationRepo.added, isEmpty);
 
-    await broadcastRepo.send(title: 'Price drop on rice', body: '5% off this week.');
+    await broadcastRepo.send(
+      title: 'Price drop on rice',
+      body: '5% off this week.',
+    );
     await _settle();
 
     expect(notificationRepo.added, hasLength(1));
   });
 
-  test('the same broadcast is never copied twice, even across a fresh session (persisted dedupe)', () async {
-    await broadcastRepo.send(title: 'New stock arrived', body: 'Fresh Basmati Rice is back in stock.');
+  test(
+    'the same broadcast is never copied twice, even across a fresh session (persisted dedupe)',
+    () async {
+      await broadcastRepo.send(
+        title: 'New stock arrived',
+        body: 'Fresh Basmati Rice is back in stock.',
+      );
 
-    final firstSession = FakeNotificationRepository();
-    final c1 = container(firstSession);
-    c1.read(broadcastIngestionProvider);
-    await _settle();
-    expect(firstSession.added, hasLength(1));
+      final firstSession = FakeNotificationRepository();
+      final c1 = container(firstSession);
+      c1.read(broadcastIngestionProvider);
+      await _settle();
+      expect(firstSession.added, hasLength(1));
 
-    // A fresh app session (new ProviderContainer, new in-memory notification
-    // repo) re-reads the same persisted "seen" set from Hive.
-    final secondSession = FakeNotificationRepository();
-    final c2 = container(secondSession);
-    c2.read(broadcastIngestionProvider);
-    await _settle();
+      // A fresh app session (new ProviderContainer, new in-memory notification
+      // repo) re-reads the same persisted "seen" set from Hive.
+      final secondSession = FakeNotificationRepository();
+      final c2 = container(secondSession);
+      c2.read(broadcastIngestionProvider);
+      await _settle();
 
-    expect(secondSession.added, isEmpty);
-  });
+      expect(secondSession.added, isEmpty);
+    },
+  );
+
+  test(
+    'drops broadcasts for good while the Promotions switch is off',
+    () async {
+      await broadcastRepo.send(title: 'Diwali offer', body: '10% off.');
+      final promotionsOff = UserModel(
+        uid: 'u1',
+        name: 'Ramesh',
+        email: 'ramesh@test.com',
+        phone: '9876543210',
+        role: UserRole.customer,
+        status: UserStatus.approved,
+        businessName: 'Ramesh Kirana Store',
+        createdAt: DateTime(2026, 1, 1),
+        notificationPreferences: const NotificationPreferencesEntity(
+          promotions: false,
+        ),
+      );
+
+      final whileOff = FakeNotificationRepository();
+      final c1 = container(whileOff, user: promotionsOff);
+      c1.read(broadcastIngestionProvider);
+      await _settle();
+      expect(whileOff.added, isEmpty);
+
+      // Switched back on later (fresh session, default prefs): the broadcast
+      // that arrived while it was off must not be dumped into the history now.
+      final afterOn = FakeNotificationRepository();
+      final c2 = container(afterOn);
+      c2.read(broadcastIngestionProvider);
+      await _settle();
+      expect(afterOn.added, isEmpty);
+    },
+  );
 }

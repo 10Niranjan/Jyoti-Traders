@@ -1,0 +1,52 @@
+rules_version = '2';
+
+// Mirrors firestore.rules: without this file, Storage's default is either
+// wide open (test mode) or fully closed — neither matches what ImageUploadService
+// actually needs (admin-only catalog images, owner-only payment screenshots).
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Caps a real risk of open Storage rules: someone using your bucket as
+    // free file hosting for arbitrarily large or non-image files.
+    function isValidImage() {
+      return request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    match /product_images/{fileName} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() && isValidImage();
+    }
+
+    match /category_icons/{fileName} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() && isValidImage();
+    }
+
+    match /profile_photos/{uid}.jpg {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && (request.auth.uid == uid || isAdmin()) && isValidImage();
+    }
+
+    match /payment_screenshots/{orderId}.jpg {
+      function isOrderOwner() {
+        return firestore.get(/databases/(default)/documents/orders/$(orderId)).data.userId == request.auth.uid;
+      }
+      allow read: if isSignedIn() && (isOrderOwner() || isAdmin());
+      allow write: if isSignedIn() && (isOrderOwner() || isAdmin()) && isValidImage();
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,7 @@ import '../controllers/auth_controller.dart';
 import '../controllers/auth_state.dart';
 import '../../../data/models/user_model.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/network/firebase_mode.dart';
 import '../../../core/utils/validators.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -22,6 +24,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   bool _isLogin = true;
   bool _obscurePassword = true;
+
+  bool get _showDemoLogin {
+    try {
+      return isFirebasePlaceholder(Firebase.app());
+    } catch (_) {
+      return true;
+    }
+  }
 
   // Controllers
   final _emailController = TextEditingController();
@@ -85,8 +95,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: isDark
-                ? [AppColors.backgroundDark, const Color(0xFF070B19)]
-                : [const Color(0xFFEFF6FF), AppColors.backgroundLight],
+                ? [AppColors.backgroundDark, AppColors.canvasDark]
+                : [AppColors.surfaceLight, AppColors.backgroundLight],
           ),
         ),
         child: SafeArea(
@@ -405,7 +415,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       ],
                     ).animate().fadeIn(delay: 500.ms),
 
-                    if (_isLogin) ...[
+                    // Quick-login shortcuts fill in demo credentials
+                    // (admin@jyoti.com/admin123 etc.) that only resolve to
+                    // anything in Hive-simulation mode — gated on
+                    // isFirebasePlaceholder rather than build type, so this
+                    // disappears the moment a real Firebase project (where
+                    // those strings could collide with a real account) is
+                    // wired up, in debug or release alike.
+                    if (_isLogin && _showDemoLogin) ...[
                       const SizedBox(height: 20),
                       // Helper text for quick demoing
                       Container(

@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/trend.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/entities/order_entity.dart';
 import '../../../domain/entities/user_entity.dart';
@@ -72,6 +74,120 @@ final todayRevenueProvider = Provider.autoDispose<AsyncValue<int>>((ref) {
         .fold(0.0, (sum, o) => sum + o.grandTotal.amount);
     return total.round();
   });
+});
+
+/// [measure] of today's orders *so far* against the same window last week
+/// (midnight to this time of day, seven days back) — so a half-finished day
+/// isn't shown as a collapse against a full one. Null when last week's window
+/// had nothing to compare to.
+double? _todayVsLastWeek(
+  List<OrderEntity> orders,
+  num Function(Iterable<OrderEntity>) measure,
+) {
+  final now = DateTime.now();
+  final todayStart = DateTime(now.year, now.month, now.day);
+  const week = Duration(days: 7);
+  Iterable<OrderEntity> within(DateTime start, DateTime end) => orders.where(
+    (o) => !o.createdAt.isBefore(start) && !o.createdAt.isAfter(end),
+  );
+  return trendPercent(
+    measure(within(todayStart, now)),
+    measure(within(todayStart.subtract(week), now.subtract(week))),
+  );
+}
+
+/// Trend behind the "Today's Orders" card (counts every order, cancelled
+/// included — same as the number it sits under).
+final todayOrdersTrendProvider = Provider.autoDispose<AsyncValue<double?>>((
+  ref,
+) {
+  return ref
+      .watch(allOrdersProvider)
+      .whenData((orders) => _todayVsLastWeek(orders, (os) => os.length));
+});
+
+/// Trend behind the "Today's Revenue" card (cancelled orders excluded, same
+/// as [todayRevenueProvider]).
+final todayRevenueTrendProvider = Provider.autoDispose<AsyncValue<double?>>((
+  ref,
+) {
+  return ref
+      .watch(allOrdersProvider)
+      .whenData(
+        (orders) => _todayVsLastWeek(
+          orders,
+          (os) => os
+              .where((o) => o.orderStatus != OrderStatus.cancelled)
+              .fold(0.0, (sum, o) => sum + o.grandTotal.amount),
+        ),
+      );
+});
+
+/// What needs the owner's attention right now — one count per chip on the
+/// dashboard's "Needs attention" strip.
+class AttentionSummary {
+  final int pendingApprovals;
+
+  /// UPI orders where the retailer tapped "I have paid" and the admin hasn't
+  /// confirmed the money arrived.
+  final int unconfirmedPayments;
+
+  /// Active products at or below `AppConstants.kLowStockThreshold`.
+  final int lowStockProducts;
+
+  /// Orders still `pending` after `AppConstants.kUnconfirmedOrderMinutes`.
+  final int staleOrders;
+
+  const AttentionSummary({
+    required this.pendingApprovals,
+    required this.unconfirmedPayments,
+    required this.lowStockProducts,
+    required this.staleOrders,
+  });
+
+  bool get isClear =>
+      pendingApprovals == 0 &&
+      unconfirmedPayments == 0 &&
+      lowStockProducts == 0 &&
+      staleOrders == 0;
+}
+
+/// Null until all three sources have loaded — the strip shows nothing rather
+/// than a false "all caught up" while data is still arriving.
+///
+/// ponytail: "stale" is judged against `DateTime.now()` when the inputs
+/// change, so an order crosses the threshold at the next order/product
+/// update rather than the exact minute. Add a periodic tick if that lag ever
+/// matters.
+final attentionSummaryProvider = Provider.autoDispose<AttentionSummary?>((ref) {
+  final pending = ref.watch(pendingUsersProvider).valueOrNull;
+  final orders = ref.watch(allOrdersProvider).valueOrNull;
+  final products = ref.watch(allProductsProvider).valueOrNull;
+  if (pending == null || orders == null || products == null) return null;
+
+  final now = DateTime.now();
+  const staleAfter = Duration(minutes: AppConstants.kUnconfirmedOrderMinutes);
+  return AttentionSummary(
+    pendingApprovals: pending.length,
+    unconfirmedPayments: orders
+        .where(
+          (o) =>
+              o.paymentMethod == PaymentMethod.upi &&
+              o.paymentStatus == PaymentStatus.paymentClaimed &&
+              o.orderStatus != OrderStatus.cancelled,
+        )
+        .length,
+    lowStockProducts: products
+        .where((p) => p.isActive && p.stock <= AppConstants.kLowStockThreshold)
+        .length,
+    staleOrders: orders
+        .where(
+          (o) =>
+              o.orderStatus == OrderStatus.pending &&
+              now.difference(o.createdAt) >= staleAfter,
+        )
+        .length,
+  );
 });
 
 /// One row in the "Top Products" list — revenue-ranked, not quantity-ranked,

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../../core/theme/theme_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/date_formatter.dart';
@@ -56,7 +57,7 @@ class OrderDetailBody extends StatelessWidget {
           formatOrderDateTime(order.createdAt),
           style: GoogleFonts.inter(
             fontSize: 12,
-            color: AppColors.textSecondaryLight,
+            color: context.textSecondary,
           ),
         ),
         if (showShopName) ...[
@@ -124,7 +125,7 @@ class OrderDetailBody extends StatelessWidget {
             fontSize: 11,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.6,
-            color: AppColors.textSecondaryLight,
+            color: context.textSecondary,
           ),
         ),
         const SizedBox(height: 6),
@@ -139,7 +140,7 @@ class OrderDetailBody extends StatelessWidget {
             fontSize: 11,
             fontWeight: FontWeight.w600,
             letterSpacing: 0.6,
-            color: AppColors.textSecondaryLight,
+            color: context.textSecondary,
           ),
         ),
         const SizedBox(height: 6),

@@ -1,0 +1,109 @@
+rules_version = '2';
+
+// Server-side enforcement for the business rules that today live only in
+// Dart (PlaceOrderUseCase's ₹2,500 minimum, ApproveUserUseCase's admin gate,
+// OrderEntity.isCancellable's 10-minute window). Without this file, anyone
+// with a valid Firebase Auth session can call the Firestore SDK directly and
+// bypass every one of those checks — the app's UI is not a security boundary.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function myUid() {
+      return request.auth.uid;
+    }
+
+    function myUser() {
+      return get(/databases/$(database)/documents/users/$(myUid())).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && myUser().role == 'admin';
+    }
+
+    function isApproved() {
+      return isSignedIn() && myUser().status == 'approved';
+    }
+
+    match /users/{uid} {
+      allow read: if isSignedIn() && (uid == myUid() || isAdmin());
+
+      // Sign-up creates your own doc, but only as an unapproved customer —
+      // never self-assign admin or a pre-approved status this way. The
+      // first admin account must be created directly in the Firebase
+      // Console (or via the Admin SDK, which ignores these rules).
+      allow create: if isSignedIn() && uid == myUid()
+        && request.resource.data.role == 'customer'
+        && request.resource.data.status == 'pending';
+
+      // Profile edits: you may update your own doc, but role/status/
+      // isApproved are frozen unless the actor is already an admin.
+      allow update: if isAdmin() || (
+        isSignedIn() && uid == myUid()
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.isApproved == resource.data.isApproved
+      );
+
+      // A retailer may delete their own profile (the in-app "Delete account",
+      // which Google Play requires). Admin accounts are not self-deletable.
+      allow delete: if isAdmin() || (
+        isSignedIn() && uid == myUid() && myUser().role == 'customer'
+      );
+    }
+
+    match /categories/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /products/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /orders/{id} {
+      allow read: if isSignedIn() && (resource.data.userId == myUid() || isAdmin());
+
+      // Only an approved retailer can place an order, only for themselves,
+      // only for >= the enforced minimum, and only starting in a state
+      // nobody could use to skip admin review (e.g. pre-marked "paid").
+      allow create: if isApproved()
+        && request.resource.data.userId == myUid()
+        && request.resource.data.subtotal >= 2500
+        && request.resource.data.orderStatus == 'pending'
+        && request.resource.data.paymentStatus in ['pending', 'payment_claimed'];
+
+      // Admin: unrestricted updates (status, payment confirmation, etc).
+      // Owner: exactly two narrow self-service actions, nothing else —
+      // cancelling their own still-pending order inside the 10-minute
+      // window, or claiming a UPI payment they made.
+      allow update: if isAdmin() || (
+        isSignedIn() && resource.data.userId == myUid() && (
+          (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['orderStatus'])
+            && request.resource.data.orderStatus == 'cancelled'
+            && resource.data.orderStatus == 'pending'
+            && request.time < resource.data.createdAt + duration.value(10, 'm')
+          ) || (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['paymentStatus', 'paymentScreenshotUrl'])
+            && request.resource.data.paymentStatus == 'payment_claimed'
+            && resource.data.paymentStatus == 'pending'
+          )
+        )
+      );
+
+      allow delete: if false;
+    }
+
+    // Single-document delivery config (config/delivery) — everyone signed
+    // in needs to read the per-km rate at checkout; only admin sets it.
+    match /config/{doc} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

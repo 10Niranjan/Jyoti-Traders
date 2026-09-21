@@ -5,6 +5,7 @@ import '../../../domain/entities/notification_entity.dart';
 import '../../../domain/entities/order_entity.dart';
 import '../../../domain/entities/product_entity.dart';
 import '../../orders/controllers/order_controller.dart';
+import 'notification_controller.dart';
 
 /// Product ids the signed-in retailer has ordered at least
 /// [AppConstants.kFrequentOrderThreshold] separate times — derived only from
@@ -80,7 +81,11 @@ final stockAlertInitializerProvider = Provider<void>((ref) {
   final notificationRepo = ref.watch(notificationRepositoryProvider);
   final alreadyNotified = <String>{};
 
-  ref.listen(lowStockFrequentProductsProvider, (previous, products) {
+  void notifyLow(List<ProductEntity> products) {
+    // Preferences are read, not watched: flipping the switch must not re-run
+    // this whole provider and reset the dedupe set. Nothing is recorded as
+    // notified while the switch is off.
+    if (!ref.read(notificationPreferencesProvider).lowStockAlerts) return;
     for (final product in products) {
       final key = '${product.id}:${product.stock == 0 ? 'out' : 'low'}';
       if (!alreadyNotified.add(key)) continue;
@@ -95,8 +100,22 @@ final stockAlertInitializerProvider = Provider<void>((ref) {
               : 'Only ${product.stock} left of one of your regulars — order soon.',
           receivedAt: DateTime.now(),
           isRead: false,
+          kind: NotificationKind.stock,
         ),
       );
     }
-  }, fireImmediately: true);
+  }
+
+  ref.listen(
+    lowStockFrequentProductsProvider,
+    (previous, products) => notifyLow(products),
+    fireImmediately: true,
+  );
+  // Switching alerts back on catches up on anything that went low meanwhile.
+  ref.listen(notificationPreferencesProvider.select((p) => p.lowStockAlerts), (
+    previous,
+    enabled,
+  ) {
+    if (enabled) notifyLow(ref.read(lowStockFrequentProductsProvider));
+  });
 });
