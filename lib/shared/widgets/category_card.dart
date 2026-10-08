@@ -90,7 +90,8 @@ class CategoryCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
-              fontSize: 11,
+              fontSize: 10,
+              letterSpacing: -0.2,
               fontWeight: FontWeight.w600,
               color: isDark
                   ? AppColors.textPrimaryDark

@@ -4,10 +4,10 @@ import '../../../core/theme/theme_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/admin_dashboard_controller.dart';
-
-const _weekdayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 /// Bar chart of orders placed per day over the last 7 days, sourced from
 /// [last7DaysOrderCountsProvider].
@@ -21,6 +21,8 @@ class OrdersBarChart extends ConsumerWidget {
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
     final buckets = ref.watch(last7DaysOrderCountsProvider);
+    final l10n = AppLocalizations.of(context)!;
+    final weekdayFormat = DateFormat.E(l10n.localeName);
 
     return Container(
       width: double.infinity,
@@ -34,7 +36,7 @@ class OrdersBarChart extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Orders — Last 7 Days',
+            l10n.adminChartOrdersLast7Days,
             style: GoogleFonts.inter(
               fontSize: 15,
               fontWeight: FontWeight.bold,
@@ -49,7 +51,7 @@ class OrdersBarChart extends ConsumerWidget {
                 if (days.every((d) => d.count == 0)) {
                   return Center(
                     child: Text(
-                      'No orders yet this week',
+                      l10n.adminChartNoOrdersThisWeek,
                       style: GoogleFonts.inter(fontSize: 12, color: textColor),
                     ),
                   );
@@ -71,7 +73,7 @@ class OrdersBarChart extends ConsumerWidget {
                         getTooltipColor: (_) => AppColors.primary,
                         getTooltipItem: (group, groupIndex, rod, rodIndex) =>
                             BarTooltipItem(
-                              '${rod.toY.round()} orders',
+                              l10n.adminChartOrdersTooltip(rod.toY.round()),
                               const TextStyle(
                                 color: Colors.white,
                                 fontSize: 11,
@@ -101,7 +103,7 @@ class OrdersBarChart extends ConsumerWidget {
                             return Padding(
                               padding: const EdgeInsets.only(top: 6),
                               child: Text(
-                                _weekdayLabels[days[idx].day.weekday - 1],
+                                weekdayFormat.format(days[idx].day),
                                 style: GoogleFonts.inter(
                                   fontSize: 10,
                                   color: textColor,
@@ -137,7 +139,7 @@ class OrdersBarChart extends ConsumerWidget {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (_, _) => Center(
                 child: Text(
-                  'Couldn\'t load chart data',
+                  l10n.adminChartLoadError,
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: AppColors.error,

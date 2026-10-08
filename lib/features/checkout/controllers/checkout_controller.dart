@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/analytics_service.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/entities/order_entity.dart';
 import '../../../domain/exceptions/domain_exceptions.dart';
@@ -10,8 +11,11 @@ import '../../cart/controllers/cart_controller.dart';
 class CheckoutController extends StateNotifier<AsyncValue<String?>> {
   final PlaceOrderUseCase _placeOrderUseCase;
   final CartController _cartController;
+  final AnalyticsService _analytics;
 
-  CheckoutController(this._placeOrderUseCase, this._cartController) : super(const AsyncValue.data(null));
+  CheckoutController(this._placeOrderUseCase, this._cartController, [AnalyticsService? analytics])
+      : _analytics = analytics ?? AnalyticsService(),
+        super(const AsyncValue.data(null));
 
   Future<void> placeOrder(OrderEntity order) async {
     state = const AsyncValue.loading();
@@ -19,6 +23,11 @@ class CheckoutController extends StateNotifier<AsyncValue<String?>> {
       await _placeOrderUseCase(order);
       await _cartController.clearCart();
       state = AsyncValue.data(order.id);
+      _analytics.logOrderPlaced(
+        orderId: order.id,
+        value: order.grandTotal.amount,
+        paymentMethod: order.paymentMethod.name,
+      );
     } on MinimumOrderException catch (e, st) {
       state = AsyncValue.error(e, st);
     } catch (e, st) {

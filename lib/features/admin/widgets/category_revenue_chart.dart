@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/admin_dashboard_controller.dart';
 
 /// Donut chart of revenue by category, sourced from [categoryRevenueProvider].
@@ -22,6 +23,7 @@ class CategoryRevenueChart extends ConsumerWidget {
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
     final revenueAsync = ref.watch(categoryRevenueProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       width: double.infinity,
@@ -35,7 +37,7 @@ class CategoryRevenueChart extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Revenue by Category',
+            l10n.adminChartRevenueByCategory,
             style: GoogleFonts.inter(
               fontSize: 15,
               fontWeight: FontWeight.bold,
@@ -52,7 +54,7 @@ class CategoryRevenueChart extends ConsumerWidget {
               height: 160,
               child: Center(
                 child: Text(
-                  "Couldn't load chart data",
+                  l10n.adminChartLoadError,
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: AppColors.error,
@@ -66,7 +68,7 @@ class CategoryRevenueChart extends ConsumerWidget {
                   height: 160,
                   child: Center(
                     child: Text(
-                      'No sales yet',
+                      l10n.adminNoSalesYet,
                       style: GoogleFonts.inter(fontSize: 12, color: textColor),
                     ),
                   ),
@@ -80,7 +82,11 @@ class CategoryRevenueChart extends ConsumerWidget {
               final slices = [
                 ...top,
                 if (otherRevenue > 0)
-                  CategoryRevenue('other', 'Other', otherRevenue),
+                  CategoryRevenue(
+                    'other',
+                    l10n.adminChartOtherCategory,
+                    otherRevenue,
+                  ),
               ];
               final total = slices.fold(0.0, (sum, c) => sum + c.revenue);
 

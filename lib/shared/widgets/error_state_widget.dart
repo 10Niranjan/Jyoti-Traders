@@ -40,7 +40,7 @@ class ErrorStateWidget extends StatelessWidget {
               onPressed: onRetry,
               icon: const Icon(Icons.refresh_rounded),
               label: Text(l10n.retry),
-              style: OutlinedButton.styleFrom(foregroundColor: AppColors.primary),
+              style: OutlinedButton.styleFrom(foregroundColor: AppColors.primaryDark),
             ),
           ],
         ],

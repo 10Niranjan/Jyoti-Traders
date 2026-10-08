@@ -1794,6 +1794,43 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
+  String get adminChartLoadError => 'चार्ट डेटा लोड नहीं हो सका';
+
+  @override
+  String get adminChartRetailerGrowth => 'रिटेलर वृद्धि';
+
+  @override
+  String get adminChartNoRetailersYet => 'अभी तक कोई स्वीकृत रिटेलर नहीं';
+
+  @override
+  String adminChartRetailersTooltip(int count) {
+    return '$count रिटेलर';
+  }
+
+  @override
+  String get adminChartRevenueByCategory => 'श्रेणी अनुसार राजस्व';
+
+  @override
+  String get adminChartOtherCategory => 'अन्य';
+
+  @override
+  String get adminChartOrdersLast7Days => 'ऑर्डर — पिछले 7 दिन';
+
+  @override
+  String get adminChartNoOrdersThisWeek => 'इस सप्ताह अभी तक कोई ऑर्डर नहीं';
+
+  @override
+  String adminChartOrdersTooltip(int count) {
+    return '$count ऑर्डर';
+  }
+
+  @override
+  String get adminChartOrderStatusFunnel => 'ऑर्डर स्थिति फ़नल';
+
+  @override
+  String get adminChartNoActiveOrders => 'अभी तक कोई सक्रिय ऑर्डर नहीं';
+
+  @override
   String get profileDiscardTitle => 'बदलाव छोड़ें?';
 
   @override

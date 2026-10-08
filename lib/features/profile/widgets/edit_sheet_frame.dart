@@ -54,17 +54,23 @@ Future<bool> confirmDiscardChanges(BuildContext context) async {
   return discard ?? false;
 }
 
-/// Title bar, keyboard-safe scrolling body and the unsaved-changes guard, so
-/// every edit sheet behaves the same. While [dirty], leaving the sheet asks
-/// first; clean sheets close immediately.
+/// Gradient header band + keyboard-safe scrolling body + the unsaved-changes
+/// guard, so every edit sheet behaves and looks the same — same icon-badge
+/// treatment as the Settings pop-ups ([showSettingsPopup]'s `_Header`), just
+/// anchored to the top of a bottom sheet instead of a centered card, since a
+/// form with a keyboard needs the sheet's resize-with-keyboard behaviour a
+/// centered dialog doesn't give for free.
+/// While [dirty], leaving the sheet asks first; clean sheets close immediately.
 class EditSheetFrame extends StatelessWidget {
   final String title;
+  final IconData icon;
   final bool dirty;
   final Widget child;
 
   const EditSheetFrame({
     super.key,
     required this.title,
+    required this.icon,
     required this.dirty,
     required this.child,
   });
@@ -84,36 +90,77 @@ class EditSheetFrame extends StatelessWidget {
           bottom: MediaQuery.viewInsetsOf(context).bottom,
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(20, 12, 12, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        title,
-                        style: GoogleFonts.inter(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded),
-                      tooltip: MaterialLocalizations.of(
-                        context,
-                      ).closeButtonTooltip,
-                      onPressed: () => Navigator.of(context).maybePop(),
-                    ),
-                  ],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SheetHeader(title: title, icon: icon),
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 20),
+                  child: child,
                 ),
-                Padding(padding: const EdgeInsets.only(right: 8), child: child),
-              ],
-            ),
+              ),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The saffron gradient band across the top of an edit sheet — an icon badge,
+/// the title, and a close button. Visually the same language as
+/// [showSettingsPopup]'s header, scaled down for a sheet instead of a card.
+/// Public so other bottom sheets outside the profile-edit family (e.g. the
+/// admin banner editor) can match the same look without duplicating it.
+class SheetHeader extends StatelessWidget {
+  final String title;
+  final IconData icon;
+
+  const SheetHeader({super.key, required this.title, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      child: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [AppColors.primaryDark, AppColors.primary],
+          ),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 14, 10, 14),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.20),
+                border: Border.all(color: Colors.white.withOpacity(0.36)),
+              ),
+              child: Icon(icon, size: 22, color: Colors.white),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close_rounded, color: Colors.white),
+              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+              onPressed: () => Navigator.of(context).maybePop(),
+            ),
+          ],
         ),
       ),
     );

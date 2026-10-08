@@ -154,6 +154,7 @@ class _AddressSheetState extends ConsumerState<AddressSheet> {
     ];
     return EditSheetFrame(
       title: l10n.checkoutDeliveryAddress,
+      icon: Icons.location_on_outlined,
       dirty: _dirty,
       child: Form(
         key: _formKey,

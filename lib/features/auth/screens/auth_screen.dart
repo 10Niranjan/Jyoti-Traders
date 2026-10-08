@@ -336,7 +336,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                       ? null
                                       : _submit,
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
+                                    backgroundColor: AppColors.primaryDark,
                                     foregroundColor: Colors.white,
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 16.0,
@@ -402,7 +402,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                             });
                           },
                           style: TextButton.styleFrom(
-                            foregroundColor: AppColors.primary,
+                            foregroundColor: AppColors.primaryDark,
                             padding: EdgeInsets.zero,
                           ),
                           child: Text(
@@ -468,7 +468,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                                       style: const TextStyle(fontSize: 11),
                                     ),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primary,
+                                      backgroundColor: AppColors.primaryDark,
                                       foregroundColor: Colors.white,
                                       visualDensity: VisualDensity.compact,
                                       padding: const EdgeInsets.symmetric(

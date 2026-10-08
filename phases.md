@@ -342,11 +342,19 @@
 - [x] Configure `firebase_crashlytics` — auto-capture uncaught exceptions in release build
 
 > **Scope note**: `firebase_crashlytics` was already pre-approved in rules.md/ARCHITECTURE.md but never wired up. Hooked `FlutterError.onError` → `FirebaseCrashlytics.instance.recordFlutterFatalError` and `PlatformDispatcher.instance.onError` → `recordError(fatal: true)` in `main.dart`, right after the existing Firebase/FCM init block. `setCrashlyticsCollectionEnabled(kReleaseMode)` gates collection to release builds only, so local dev/debug errors and the test suite's expected simulation-mode fallbacks don't get reported. Follows the same defensive try/catch pattern as every other Firebase call in `main.dart` — setup failure degrades to a debug print, never a crash. `flutter analyze` zero issues, `flutter test` 225/225 passing (unchanged, this branch's prior Change Password/Settings work already added tests up to 225).
-- [ ] Configure `firebase_analytics` — track key events (order placed, user registered, login)
-- [ ] Write and deploy Firestore Security Rules — role-based read/write guards
-- [ ] Set Android `minSdkVersion = 24`, `targetSdkVersion = 34` in `build.gradle.kts`
-- [ ] Generate upload keystore — `keytool` command, store `.jks` file securely
-- [ ] Configure `key.properties` + `build.gradle.kts` for signed release build
+- [x] Configure `firebase_analytics` — track key events (order placed, user registered, login)
+
+> **Scope note (2026-09-22)**: `firebase_analytics` was already pre-approved but never installed. Added a thin `AnalyticsService` (`core/services/`) mirroring `FcmService`'s defensive shape — every call wrapped in its own try/catch, no-ops rather than throws. Wired three events: `logLogin`/`logSignUp` (with role as the method) from `AuthController.signIn`/`signUp` on success, and `logPurchase` (order id, grand total, payment method) from `CheckoutController.placeOrder` on success. No new UI, no new tests beyond the existing suite — this is pure telemetry plumbing with no branching logic of its own to test, same treatment as Crashlytics above. `flutter analyze` zero issues, `flutter test` 610/610 passing.
+
+- [x] Write Firestore Security Rules — role-based read/write guards
+- [ ] Deploy Firestore Security Rules (blocked — no live Firebase project yet)
+- [x] Set Android `minSdkVersion = 24`, `targetSdkVersion = 34` in `build.gradle.kts`
+
+> **Scope note (2026-09-22)**: audited before writing anything new — both were already done in earlier sessions, just never checked off. `firestore.rules`/`storage.rules` are already fully role-based (users/categories/products/orders/config; product/category/profile/payment-screenshot storage paths) and match every real datasource in the app — nothing left to *write*. Deploying needs `firebase deploy --only firestore:rules,storage` against a real project, but `firebase_options.dart` is still 100% placeholder credentials and there's no `.firebaserc` — same "no live Firebase project" gap documented since Phase 2, so deployment stays blocked, split into its own line rather than marked done. `build.gradle.kts` already had `minSdk 24`/`targetSdk 34`/`compileSdk 36` set from an earlier session.
+- [x] Generate upload keystore — `keytool` command, store `.jks` file securely
+- [x] Configure `key.properties` + `build.gradle.kts` for signed release build
+
+> **Scope note (2026-09-22)**: root cause of the first two failed attempts — `keytool -genkeypair` without `-storepass`/`-keypass` reads the password from Java's interactive `System.console()`, which returns `null` (silently, no file written) when invoked through a non-TTY shell bridge like Claude Code's `!` command relay. Fixed by passing `-storepass`/`-keypass` as explicit flags instead of relying on the interactive prompt. `android/keystore/jyoti-traders-upload.jks` now exists (alias `upload`, RSA 2048, 10,000-day validity), verified with `keytool -list -v`. `android/key.properties` holds the real credentials — confirmed gitignored (`git check-ignore`) alongside the `.jks` itself, so neither can land in a commit. `android/app/build.gradle.kts` reads `key.properties` into a real `signingConfigs["release"]`, falling back to debug signing only if that file is ever absent. **Password saved by the user outside this repo — losing it blocks all future Play Store updates to this app.** Native `flutter build apk/appbundle` still can't be verified from this sandbox (no network access to `dl.google.com` here) — build and test the signed release yourself once ready.
 - [ ] Build signed App Bundle: `flutter build appbundle --release`
 - [ ] Create Google Play Developer Account (guidance to client)
 - [ ] Create Play Store listing — app name, description, screenshots (min 2), feature graphic

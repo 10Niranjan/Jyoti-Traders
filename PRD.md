@@ -143,7 +143,7 @@ Rules:
 - A placed order **freezes** its line totals — editing a product's rates later never re-prices a historical invoice.
 - Products saved before this feature carry no rate card and keep flat per-kilo pricing, so no data migration was required.
 
-> **Rate values are client-set business rules.** The ₹39 rate for the 1 kg – 2.4 kg band is a default pending final client confirmation.
+> **Rate values are client-set business rules**, confirmed by the client (including the ₹39 rate for the 1 kg – 2.4 kg band).
 
 ---
 

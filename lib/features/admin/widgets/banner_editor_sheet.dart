@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:uuid/uuid.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../domain/entities/promo_banner_entity.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/primary_button.dart';
+import '../../profile/widgets/edit_sheet_frame.dart';
 import '../controllers/admin_banner_controller.dart';
 
 /// Opens the add/edit form. Pass [banner] to edit, omit it to add a new one.
@@ -104,82 +104,85 @@ class _BannerEditorSheetState extends ConsumerState<BannerEditorSheet> {
     // the whole async save, and to drive the button's loading state.
     final isSaving = ref.watch(adminBannerControllerProvider).isLoading;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        20,
-        20,
-        20 + MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.banner == null
-                    ? l10n.adminBannerAdd
-                    : l10n.adminBannerEditTitle,
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _title,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(
-                  labelText: l10n.broadcastTitleFieldLabel,
-                ),
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? l10n.adminBannerTitleRequired
-                    : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _body,
-                maxLines: 2,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(
-                  labelText: l10n.adminBannerBodyOptional,
-                ),
-              ),
-              const SizedBox(height: 8),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: Text(l10n.adminBannerShowOnHome),
-                value: _isActive,
-                onChanged: (v) => setState(() => _isActive = v),
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(Icons.event_outlined),
-                title: Text(
-                  _endsAt == null
-                      ? l10n.adminBannerPickEndDate
-                      : l10n.adminBannerUntil(formatOrderDate(_endsAt!)),
-                ),
-                trailing: _endsAt == null
-                    ? null
-                    : IconButton(
-                        icon: const Icon(Icons.close_rounded),
-                        tooltip: l10n.adminBannerClearDate,
-                        onPressed: () => setState(() => _endsAt = null),
-                      ),
-                onTap: _pickEndDate,
-              ),
-              const SizedBox(height: 16),
-              PrimaryButton(
-                label: l10n.save,
-                isLoading: isSaving,
-                onPressed: _save,
-              ),
-            ],
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SheetHeader(
+            title: widget.banner == null
+                ? l10n.adminBannerAdd
+                : l10n.adminBannerEditTitle,
+            icon: Icons.campaign_outlined,
           ),
-        ),
+          Flexible(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                18,
+                20,
+                20 + MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextFormField(
+                      controller: _title,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecoration(
+                        labelText: l10n.broadcastTitleFieldLabel,
+                      ),
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? l10n.adminBannerTitleRequired
+                          : null,
+                    ),
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _body,
+                      maxLines: 2,
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecoration(
+                        labelText: l10n.adminBannerBodyOptional,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(l10n.adminBannerShowOnHome),
+                      value: _isActive,
+                      onChanged: (v) => setState(() => _isActive = v),
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.event_outlined),
+                      title: Text(
+                        _endsAt == null
+                            ? l10n.adminBannerPickEndDate
+                            : l10n.adminBannerUntil(formatOrderDate(_endsAt!)),
+                      ),
+                      trailing: _endsAt == null
+                          ? null
+                          : IconButton(
+                              icon: const Icon(Icons.close_rounded),
+                              tooltip: l10n.adminBannerClearDate,
+                              onPressed: () => setState(() => _endsAt = null),
+                            ),
+                      onTap: _pickEndDate,
+                    ),
+                    const SizedBox(height: 16),
+                    PrimaryButton(
+                      label: l10n.save,
+                      isLoading: isSaving,
+                      onPressed: _save,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

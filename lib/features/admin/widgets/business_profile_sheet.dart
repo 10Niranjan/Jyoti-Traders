@@ -82,6 +82,7 @@ class _BusinessProfileSheetState extends ConsumerState<BusinessProfileSheet> {
     final l10n = AppLocalizations.of(context)!;
     return EditSheetFrame(
       title: l10n.profileBusinessDetails,
+      icon: Icons.business_outlined,
       dirty: _dirty,
       child: Form(
         key: _formKey,

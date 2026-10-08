@@ -235,7 +235,7 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
                               : AppColors.primary,
                         ),
                         selected: preset == _qty,
-                        selectedColor: AppColors.primary,
+                        selectedColor: AppColors.primaryDark,
                         backgroundColor: Colors.transparent,
                         showCheckmark: false,
                         shape: RoundedRectangleBorder(

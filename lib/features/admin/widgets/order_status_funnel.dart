@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/extensions.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/admin_dashboard_controller.dart';
 
 /// Horizontal bars showing how many active orders have *reached* each
@@ -21,6 +22,7 @@ class OrderStatusFunnel extends ConsumerWidget {
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
     final funnelAsync = ref.watch(orderStatusFunnelProvider);
+    final l10n = AppLocalizations.of(context)!;
 
     return Container(
       width: double.infinity,
@@ -34,7 +36,7 @@ class OrderStatusFunnel extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Order Status Funnel',
+            l10n.adminChartOrderStatusFunnel,
             style: GoogleFonts.inter(
               fontSize: 15,
               fontWeight: FontWeight.bold,
@@ -51,7 +53,7 @@ class OrderStatusFunnel extends ConsumerWidget {
               height: 120,
               child: Center(
                 child: Text(
-                  "Couldn't load chart data",
+                  l10n.adminChartLoadError,
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: AppColors.error,
@@ -65,7 +67,7 @@ class OrderStatusFunnel extends ConsumerWidget {
                   height: 120,
                   child: Center(
                     child: Text(
-                      'No active orders yet',
+                      l10n.adminChartNoActiveOrders,
                       style: GoogleFonts.inter(fontSize: 12, color: textColor),
                     ),
                   ),

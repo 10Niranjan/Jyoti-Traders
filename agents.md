@@ -634,6 +634,26 @@ User asked what else could be added to the app, got a categorized list (low/medi
 ### 💬 Latest Discussion Summary:
 
 1. User approved the plan and asked to proceed with 9.1 specifically, "be careful" — flagged as the structural (higher-risk) half of the roadmap, versus 9.7–9.8's purely additive retailer-content half.
+
+---
+
+## 📅 Session Log: 2026-10-08 — Release signing, Analytics, button-contrast fix, edit-sheet header redesign
+
+### 📋 Tasks completed:
+
+- **Release signing, actually done** — a real upload keystore (`android/keystore/jyoti-traders-upload.jks`, alias `upload`, RSA 2048, 10,000-day validity) was generated and `android/key.properties` filled with its real credentials; both are confirmed gitignored (`android/.gitignore`), so neither can land in a commit — `android/key.properties.template` is checked in as the shape for reference. `android/app/build.gradle.kts` now reads `key.properties` into a real `signingConfigs["release"]`, falling back to debug signing only if that file is ever absent — replaces the old hardcoded "TODO: add your own signing config, using debug keys for now". **The keystore password is saved by the user outside this repo — losing it blocks all future Play Store updates to this app.**
+- **Firebase Analytics wired up** — `firebase_analytics` added to `pubspec.yaml`; new `core/services/analytics_service.dart` (`AnalyticsService`), same defensive try/catch-degrades-to-no-op pattern as `FcmService`/`LocationService`/`ImageUploadService`. Logs login/sign-up (`AuthController`) and order-placed-as-purchase with amount + payment method (`CheckoutController`).
+- **Accessibility contrast fix, applied once at the root**: `AppTheme`'s `elevatedButtonTheme`/`filledButtonTheme`/`outlinedButtonTheme` were filling white text onto `AppColors.primary` (Saffron 600, ~3.9:1 — short of WCAG AA's 4.5:1 for normal text). Switched to `AppColors.primaryDark` (Saffron 700, ~5.3:1) in the theme, then swept every place that had independently hardcoded `AppColors.primary` as a filled background/foreground instead of going through the theme — `PrimaryButton`, `FloatingCartBar`'s total pill, `ErrorStateWidget`'s retry button, `quantity_sheet.dart`'s selected preset chip, and three buttons each in `auth_screen.dart`/`onboarding_screen.dart`/`pending_approval_screen.dart`. `AppColors.primary` itself is untouched and still used for borders/outlines/icons, which don't carry the same contrast requirement.
+- **Edit-sheet visual rework**: `EditSheetFrame` (`features/profile/widgets/edit_sheet_frame.dart`) gained a saffron gradient header band (circular icon badge + title + close button) replacing its old plain text-row title, extracted as a public `SheetHeader` widget so other bottom sheets can reuse the same look without duplicating it — applied to `banner_editor_sheet.dart` (admin) and `business_profile_sheet.dart`, matching the visual language `showSettingsPopup`'s cards already use.
+- Minor: `CategoryCard`'s label shrunk 11px → 10px with tighter letter-spacing (fitting 2-line category names that were crowding the card), a few l10n string additions supporting the above.
+- **Found and fixed one stale test while verifying, not an app bug**: `theme_contrast_test.dart`'s "elevated button has a filled primary background" test still asserted `AppColors.primary` and was never updated when the contrast fix above landed — updated the assertion to `AppColors.primaryDark` with a comment explaining why, rather than reverting the (correct) contrast fix to make the old assertion pass.
+- **Verification**: `flutter analyze` — zero issues. `flutter test` — 608/608 passing (1 test fixed as above, no other regressions).
+
+### 💬 Latest Discussion Summary:
+
+1. This work had already landed in the working tree from an earlier, undocumented session — this session's job was to verify it (`flutter analyze`/`flutter test`), fix what verification turned up, log it, and commit/push, per explicit user request.
+2. **Still open for launch**: every other pre-launch client item from the checklist (UPI ID, GST/business legal details, privacy-policy URL, Play Store graphics) remains outstanding. Firestore/Storage security rules are already written (role-based, matching every real datasource) but not yet deployed — blocked on a live Firebase project (`firebase_options.dart` is still placeholder credentials), a gap documented since Phase 2.
+3. `PRD.md` updated (the ₹39 slab-rate note now says client-confirmed, not pending) and `phases.md`'s Phase 8 checklist updated to check off Analytics, Firestore rules (written, not deployed), minSdk/targetSdk, and the signed-release items — all genuinely done in an earlier undocumented pass, just never checked off until now.
 2. `phases.md` updated: new **Phase 9 — Navigation Redesign** section added (running alongside Phase 8, not blocking it), goal and full roadmap recorded before any code was touched.
 
 ---
@@ -864,7 +884,7 @@ Continuing autonomously from the user's own standing instruction ("verify the 3 
 - [x] Set up Firebase Project / backend config.
 - [x] Implement onboarding & authentication flows (with role-based routing and manual admin approval status check).
 - [x] Enforce business rules in code (Minimum order of ₹2,500, delivery charge calculation per km, quantity-based slab pricing for per-kg products — `PRD.md` §4.5).
-- [ ] Confirm the 1 kg – 2.4 kg slab rate with the client (₹39 assumed as a default prefill).
+- [x] Confirm the 1 kg – 2.4 kg slab rate with the client (₹39 confirmed).
 - [x] Implement initial theme & design system screens (Home, Category, Detail).
 
 ---

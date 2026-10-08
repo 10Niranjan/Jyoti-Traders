@@ -103,6 +103,7 @@ class _PayoutSheetState extends ConsumerState<PayoutSheet> {
     final l10n = AppLocalizations.of(context)!;
     return EditSheetFrame(
       title: l10n.profilePayoutDetails,
+      icon: Icons.account_balance_outlined,
       dirty: _dirty,
       child: Form(
         key: _formKey,

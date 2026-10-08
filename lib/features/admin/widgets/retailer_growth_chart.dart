@@ -4,23 +4,10 @@ import '../../../core/theme/theme_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 import '../controllers/admin_dashboard_controller.dart';
-
-const _monthLabels = [
-  'Jan',
-  'Feb',
-  'Mar',
-  'Apr',
-  'May',
-  'Jun',
-  'Jul',
-  'Aug',
-  'Sep',
-  'Oct',
-  'Nov',
-  'Dec',
-];
 
 /// Cumulative approved-retailer count over the last 6 months, sourced from
 /// [retailerGrowthProvider].
@@ -34,6 +21,8 @@ class RetailerGrowthChart extends ConsumerWidget {
         ? AppColors.textSecondaryDark
         : AppColors.textSecondaryLight;
     final growthAsync = ref.watch(retailerGrowthProvider);
+    final l10n = AppLocalizations.of(context)!;
+    final monthFormat = DateFormat.MMM(l10n.localeName);
 
     return Container(
       width: double.infinity,
@@ -47,7 +36,7 @@ class RetailerGrowthChart extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Retailer Growth',
+            l10n.adminChartRetailerGrowth,
             style: GoogleFonts.inter(
               fontSize: 15,
               fontWeight: FontWeight.bold,
@@ -61,7 +50,7 @@ class RetailerGrowthChart extends ConsumerWidget {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (_, _) => Center(
                 child: Text(
-                  "Couldn't load chart data",
+                  l10n.adminChartLoadError,
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     color: AppColors.error,
@@ -72,7 +61,7 @@ class RetailerGrowthChart extends ConsumerWidget {
                 if (months.every((m) => m.cumulativeCount == 0)) {
                   return Center(
                     child: Text(
-                      'No approved retailers yet',
+                      l10n.adminChartNoRetailersYet,
                       style: GoogleFonts.inter(fontSize: 12, color: textColor),
                     ),
                   );
@@ -95,7 +84,7 @@ class RetailerGrowthChart extends ConsumerWidget {
                         getTooltipItems: (spots) => spots
                             .map(
                               (s) => LineTooltipItem(
-                                '${s.y.round()} retailers',
+                                l10n.adminChartRetailersTooltip(s.y.round()),
                                 const TextStyle(
                                   color: Colors.white,
                                   fontSize: 11,
@@ -127,7 +116,7 @@ class RetailerGrowthChart extends ConsumerWidget {
                             return Padding(
                               padding: const EdgeInsets.only(top: 6),
                               child: Text(
-                                _monthLabels[months[idx].month.month - 1],
+                                monthFormat.format(months[idx].month),
                                 style: GoogleFonts.inter(
                                   fontSize: 10,
                                   color: textColor,

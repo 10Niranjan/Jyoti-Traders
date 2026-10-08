@@ -3124,6 +3124,72 @@ abstract class AppLocalizations {
   /// **'{percent}% vs last week'**
   String adminTrendVsLastWeek(String percent);
 
+  /// No description provided for @adminChartLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load chart data'**
+  String get adminChartLoadError;
+
+  /// No description provided for @adminChartRetailerGrowth.
+  ///
+  /// In en, this message translates to:
+  /// **'Retailer Growth'**
+  String get adminChartRetailerGrowth;
+
+  /// No description provided for @adminChartNoRetailersYet.
+  ///
+  /// In en, this message translates to:
+  /// **'No approved retailers yet'**
+  String get adminChartNoRetailersYet;
+
+  /// No description provided for @adminChartRetailersTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} retailers'**
+  String adminChartRetailersTooltip(int count);
+
+  /// No description provided for @adminChartRevenueByCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Revenue by Category'**
+  String get adminChartRevenueByCategory;
+
+  /// No description provided for @adminChartOtherCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get adminChartOtherCategory;
+
+  /// No description provided for @adminChartOrdersLast7Days.
+  ///
+  /// In en, this message translates to:
+  /// **'Orders — Last 7 Days'**
+  String get adminChartOrdersLast7Days;
+
+  /// No description provided for @adminChartNoOrdersThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'No orders yet this week'**
+  String get adminChartNoOrdersThisWeek;
+
+  /// No description provided for @adminChartOrdersTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} orders'**
+  String adminChartOrdersTooltip(int count);
+
+  /// No description provided for @adminChartOrderStatusFunnel.
+  ///
+  /// In en, this message translates to:
+  /// **'Order Status Funnel'**
+  String get adminChartOrderStatusFunnel;
+
+  /// No description provided for @adminChartNoActiveOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'No active orders yet'**
+  String get adminChartNoActiveOrders;
+
   /// No description provided for @profileDiscardTitle.
   ///
   /// In en, this message translates to:

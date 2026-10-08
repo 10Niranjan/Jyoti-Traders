@@ -95,7 +95,9 @@ void main() {
       ) async {
         final theme = buildTheme(dark: dark);
         final style = theme.elevatedButtonTheme.style!;
-        expect(style.backgroundColor!.resolve({}), AppColors.primary);
+        // primaryDark, not primary: white text on Saffron 600 is ~3.9:1,
+        // short of WCAG AA's 4.5:1 — primaryDark (Saffron 700) clears ~5.3:1.
+        expect(style.backgroundColor!.resolve({}), AppColors.primaryDark);
         expect(style.foregroundColor!.resolve({}), Colors.white);
       });
 

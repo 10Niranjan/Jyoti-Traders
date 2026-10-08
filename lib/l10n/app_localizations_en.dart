@@ -1797,6 +1797,43 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get adminChartLoadError => 'Couldn\'t load chart data';
+
+  @override
+  String get adminChartRetailerGrowth => 'Retailer Growth';
+
+  @override
+  String get adminChartNoRetailersYet => 'No approved retailers yet';
+
+  @override
+  String adminChartRetailersTooltip(int count) {
+    return '$count retailers';
+  }
+
+  @override
+  String get adminChartRevenueByCategory => 'Revenue by Category';
+
+  @override
+  String get adminChartOtherCategory => 'Other';
+
+  @override
+  String get adminChartOrdersLast7Days => 'Orders — Last 7 Days';
+
+  @override
+  String get adminChartNoOrdersThisWeek => 'No orders yet this week';
+
+  @override
+  String adminChartOrdersTooltip(int count) {
+    return '$count orders';
+  }
+
+  @override
+  String get adminChartOrderStatusFunnel => 'Order Status Funnel';
+
+  @override
+  String get adminChartNoActiveOrders => 'No active orders yet';
+
+  @override
   String get profileDiscardTitle => 'Discard changes?';
 
   @override

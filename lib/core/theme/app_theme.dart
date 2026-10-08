@@ -144,9 +144,12 @@ class AppTheme {
       // a "Save" button with no fill, a white divider on a dark screen.
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          // primaryDark, not primary: white text on Saffron 600 is ~3.9:1,
+          // short of WCAG AA's 4.5:1 for normal-weight text. Saffron 700 (the
+          // design system's own darker shade) clears it at ~5.3:1.
+          backgroundColor: AppColors.primaryDark,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.primary.withOpacity(0.4),
+          disabledBackgroundColor: AppColors.primaryDark.withOpacity(0.4),
           disabledForegroundColor: Colors.white70,
           elevation: 0.0,
           shape: buttonShape,
@@ -155,7 +158,7 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primary,
+          backgroundColor: AppColors.primaryDark,
           foregroundColor: Colors.white,
           shape: buttonShape,
           textStyle: GoogleFonts.inter(fontWeight: FontWeight.w600),
@@ -163,7 +166,7 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
+          foregroundColor: AppColors.primaryDark,
           side: const BorderSide(color: AppColors.primary),
           shape: buttonShape,
           textStyle: GoogleFonts.inter(fontWeight: FontWeight.w600),

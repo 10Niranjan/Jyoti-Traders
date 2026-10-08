@@ -189,7 +189,7 @@ class PendingApprovalScreen extends ConsumerWidget {
                   icon: const Icon(Icons.refresh_rounded),
                   label: Text(l10n.pendingCheckStatusAgain),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: AppColors.primaryDark,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
@@ -207,7 +207,7 @@ class PendingApprovalScreen extends ConsumerWidget {
                   icon: const Icon(Icons.storefront_outlined),
                   label: Text(l10n.pendingBrowseCatalog),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.primary,
+                    foregroundColor: AppColors.primaryDark,
                     side: const BorderSide(color: AppColors.primary),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
@@ -292,7 +292,7 @@ class PendingApprovalScreen extends ConsumerWidget {
                         ),
                         style: OutlinedButton.styleFrom(
                           side: const BorderSide(color: AppColors.primary),
-                          foregroundColor: AppColors.primary,
+                          foregroundColor: AppColors.primaryDark,
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),

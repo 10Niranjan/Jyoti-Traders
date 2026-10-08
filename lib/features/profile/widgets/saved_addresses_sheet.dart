@@ -82,6 +82,7 @@ class SavedAddressesSheet extends ConsumerWidget {
 
     return EditSheetFrame(
       title: l10n.profileSavedAddresses,
+      icon: Icons.bookmark_border_rounded,
       dirty: false,
       child: user.savedAddresses.isEmpty
           ? Padding(

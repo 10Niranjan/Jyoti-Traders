@@ -164,7 +164,7 @@ class FloatingCartBar extends ConsumerWidget {
       key: ValueKey(itemCount),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: AppColors.primaryDark,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
