@@ -17,12 +17,16 @@ void main() {
   setUp(() {
     repository = MockOrderRepository();
     useCase = UpdatePaymentStatusUseCase(repository);
-    when(() => repository.updatePaymentStatus(any(), any())).thenAnswer((_) async {});
+    when(
+      () => repository.updatePaymentStatus(any(), any()),
+    ).thenAnswer((_) async {});
   });
 
   test('confirms payment for the correct order', () async {
     await useCase('order_1', PaymentStatus.paid);
 
-    verify(() => repository.updatePaymentStatus('order_1', PaymentStatus.paid)).called(1);
+    verify(
+      () => repository.updatePaymentStatus('order_1', PaymentStatus.paid),
+    ).called(1);
   });
 }

@@ -1,0 +1,624 @@
+<title>Jyoti Traders Palette Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAF8F4; --paper-2:#F1ECE2; --paper-3:#E9E2D4;
+    --ink:#1B1A17; --ink-muted:#5B564C; --ink-faint:#9A9284;
+    --rule:#E4DFD4; --rule-soft:rgba(27,26,23,.08);
+    --live-accent:#059669;
+    --shadow-1:0 1px 2px rgba(27,26,23,.07), 0 1px 1px rgba(27,26,23,.04);
+    --shadow-2:0 10px 26px -8px rgba(27,26,23,.16), 0 3px 8px rgba(27,26,23,.06);
+    --shadow-3:0 30px 60px -20px rgba(27,26,23,.28), 0 6px 18px rgba(27,26,23,.10);
+
+    --f-display:'Fraunces','Iowan Old Style',Georgia,serif;
+    --f-body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+    --f-mono:'IBM Plex Mono','SF Mono',Consolas,monospace;
+
+    --sp-1:.25rem; --sp-2:.5rem; --sp-3:.75rem; --sp-4:1rem; --sp-5:1.5rem; --sp-6:2.25rem; --sp-7:3.5rem; --sp-8:5.5rem;
+    --r-sm:8px; --r-md:14px; --r-lg:22px;
+    --ease:cubic-bezier(.16,1,.3,1); --ease-spring:cubic-bezier(.34,1.56,.64,1);
+    --maxw:1180px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#141210; --paper-2:#1C1916; --paper-3:#25211C;
+      --ink:#F3EFE6; --ink-muted:#B7AE9F; --ink-faint:#726A5C;
+      --rule:#322C24; --rule-soft:rgba(243,239,230,.09);
+      --shadow-1:0 1px 2px rgba(0,0,0,.5); --shadow-2:0 12px 28px rgba(0,0,0,.5); --shadow-3:0 34px 64px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#141210; --paper-2:#1C1916; --paper-3:#25211C;
+    --ink:#F3EFE6; --ink-muted:#B7AE9F; --ink-faint:#726A5C;
+    --rule:#322C24; --rule-soft:rgba(243,239,230,.09);
+    --shadow-1:0 1px 2px rgba(0,0,0,.5); --shadow-2:0 12px 28px rgba(0,0,0,.5); --shadow-3:0 34px 64px rgba(0,0,0,.6);
+  }
+
+  *,*::before,*::after{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; background:var(--paper); color:var(--ink); font-family:var(--f-body);
+    font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:var(--f-display); color:var(--ink); margin:0; text-wrap:balance}
+  p{margin:0}
+  button{font:inherit; color:inherit; background:none; border:none; cursor:pointer; text-align:left}
+  .icon{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  :focus-visible{outline:2.5px solid var(--live-accent); outline-offset:2px; border-radius:5px}
+
+  .grain{position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.05; mix-blend-mode:overlay}
+
+  main{max-width:var(--maxw); margin:0 auto; padding:0 var(--sp-5) var(--sp-8); position:relative; z-index:2}
+
+  /* masthead */
+  .masthead{border-bottom:1px solid var(--rule); position:relative; z-index:2}
+  .mast-row{max-width:var(--maxw); margin:0 auto; padding:var(--sp-4) var(--sp-5); display:flex; align-items:center; gap:var(--sp-3)}
+  .mast-mark{width:34px; height:34px; border-radius:9px; background:var(--ink); color:var(--paper); display:flex; align-items:center; justify-content:center; font-family:var(--f-display); font-weight:700; font-size:.95rem; flex-shrink:0}
+  .mast-name{font-family:var(--f-display); font-weight:600; font-size:1.05rem}
+  .mast-rule{width:1px; height:18px; background:var(--rule); margin:0 .2rem}
+  .mast-tag{font-size:.78rem; color:var(--ink-faint); font-weight:500; letter-spacing:.02em}
+
+  /* intro */
+  .intro{padding:var(--sp-7) 0 var(--sp-6); max-width:660px}
+  .eyebrow{display:flex; align-items:center; gap:.55rem; font-size:.74rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-muted); margin-bottom:var(--sp-4)}
+  .eyebrow-dot{width:7px; height:7px; border-radius:50%; background:var(--live-accent); transition:background .5s var(--ease)}
+  .intro h1{font-size:clamp(2rem,4vw,2.9rem); font-weight:600; line-height:1.08; letter-spacing:-.01em}
+  .intro .dek{margin-top:var(--sp-4); font-size:1.05rem; color:var(--ink-muted); max-width:56ch; line-height:1.65}
+
+  /* swatch grid — paint chips */
+  .swatch-section{padding-bottom:var(--sp-7)}
+  .chip-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp-5) var(--sp-5); padding-top:var(--sp-2)}
+  .chip{
+    display:flex; flex-direction:column; background:var(--paper-2); border:1px solid var(--rule);
+    border-radius:var(--r-lg); overflow:hidden; box-shadow:var(--shadow-1);
+    transform:rotate(var(--tilt,0deg)); transition:transform .45s var(--ease-spring), box-shadow .35s var(--ease), border-color .35s var(--ease);
+    opacity:0; animation:fan-in .6s var(--ease) forwards;
+  }
+  .chip:nth-child(1){--tilt:-1.1deg; animation-delay:.02s}
+  .chip:nth-child(2){--tilt:.7deg; animation-delay:.09s}
+  .chip:nth-child(3){--tilt:-.5deg; animation-delay:.16s}
+  .chip:nth-child(4){--tilt:.9deg; animation-delay:.23s}
+  .chip:nth-child(5){--tilt:-.8deg; animation-delay:.30s}
+  .chip:nth-child(6){--tilt:.5deg; animation-delay:.37s}
+  @keyframes fan-in{from{opacity:0; transform:rotate(var(--tilt,0deg)) translateY(16px)} to{opacity:1; transform:rotate(var(--tilt,0deg)) translateY(0)}}
+  .chip:hover{transform:rotate(0deg) translateY(-5px); box-shadow:var(--shadow-2)}
+  .chip[aria-pressed="true"]{transform:rotate(0deg) translateY(-3px); box-shadow:0 0 0 2.5px var(--c1), var(--shadow-3); border-color:transparent}
+  .chip-swatch{position:relative; height:104px; background:linear-gradient(135deg, var(--c1), var(--c2))}
+  .chip-dots{position:absolute; left:var(--sp-4); bottom:var(--sp-3); display:flex; gap:6px}
+  .chip-dots i{display:block; width:14px; height:14px; border-radius:50%; background:var(--dc); box-shadow:0 0 0 2px rgba(255,255,255,.55)}
+  .chip-check{position:absolute; top:var(--sp-3); right:var(--sp-3); width:26px; height:26px; border-radius:50%; background:#fff; color:var(--c3); display:flex; align-items:center; justify-content:center; opacity:0; transform:scale(.5); transition:opacity .3s var(--ease-spring), transform .3s var(--ease-spring); box-shadow:0 2px 6px rgba(0,0,0,.25)}
+  .chip-check .icon{width:14px; height:14px; stroke-width:3}
+  .chip[aria-pressed="true"] .chip-check{opacity:1; transform:scale(1)}
+  .chip-reco{position:absolute; top:var(--sp-3); left:var(--sp-3); background:#fff; color:#141313; font-size:.62rem; font-weight:700; letter-spacing:.03em; text-transform:uppercase; padding:.25rem .6rem; border-radius:999px; box-shadow:0 2px 6px rgba(0,0,0,.2)}
+  .chip-info{padding:var(--sp-4) var(--sp-4) var(--sp-4)}
+  .chip-info b{display:block; font-family:var(--f-display); font-weight:600; font-size:1.05rem; margin-bottom:.2rem}
+  .chip-info span{display:block; font-size:.8rem; color:var(--ink-faint)}
+
+  /* stage */
+  .stage-section{padding-bottom:var(--sp-7)}
+  .stage-head{display:flex; align-items:baseline; justify-content:space-between; gap:var(--sp-4); flex-wrap:wrap; margin-bottom:var(--sp-5)}
+  .stage-head h2{font-size:1.4rem; font-weight:600; transition:color .3s}
+  .stage-head h2 em{font-style:normal; color:var(--live-accent); transition:color .5s var(--ease)}
+  .stage-vibe{font-size:.85rem; color:var(--ink-faint); font-weight:500}
+
+  .table-surface{
+    background:var(--paper-3); border:1px solid var(--rule); border-radius:var(--r-lg);
+    padding:var(--sp-6) var(--sp-5); box-shadow:inset 0 2px 8px rgba(0,0,0,.05);
+  }
+  .stage-row{display:flex; gap:var(--sp-5); overflow-x:auto; padding:var(--sp-2) var(--sp-2) var(--sp-3); scroll-snap-type:x proximity}
+  .stage-row > *{scroll-snap-align:start}
+
+  /* phone shell — fixed device housing */
+  .phone-shell{flex:0 0 218px; background:#0B0B0E; border-radius:32px; padding:8px; box-shadow:0 22px 44px -16px rgba(0,0,0,.4), 0 0 0 1px rgba(0,0,0,.08)}
+  .phone-notch{position:relative; height:0}
+  .phone-notch::before{content:''; position:absolute; top:6px; left:50%; transform:translateX(-50%); width:74px; height:16px; background:#0B0B0E; border-radius:0 0 12px 12px; z-index:3}
+  .phone-screen{
+    width:100%; height:452px; border-radius:24px; overflow:hidden; position:relative;
+    background:var(--bg); color:var(--text); font-family:var(--f-body); display:flex; flex-direction:column;
+    transition:background .45s var(--ease), color .45s var(--ease);
+  }
+  .pstat{display:flex; justify-content:space-between; align-items:center; padding:10px 16px 2px; font-size:10px; font-weight:600; font-family:var(--f-mono)}
+  .pstat-icons{display:flex; gap:4px; align-items:center}
+  .pstat-icons .icon{width:11px; height:11px}
+  .screen-body{flex:1; overflow:hidden; padding:10px 12px 0; display:flex; flex-direction:column; gap:11px}
+
+  .hero-card{position:relative; border-radius:16px; padding:14px 15px; overflow:hidden; background:var(--hero-grad); flex-shrink:0}
+  .hero-card::before{content:''; position:absolute; inset:0; background:linear-gradient(0deg, rgba(0,0,0,.35), transparent 65%)}
+  .hero-card *{position:relative}
+  .hero-tag{display:inline-block; font-size:8.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:#fff; background:rgba(255,255,255,.2); padding:.2rem .5rem; border-radius:999px; margin-bottom:6px}
+  .hero-card h3{color:#fff; font-size:14px; font-weight:600; line-height:1.25; max-width:70%}
+  .hero-card p{color:rgba(255,255,255,.85); font-size:9.5px; margin-top:4px; max-width:70%}
+
+  .search-pill{display:flex; align-items:center; gap:7px; background:var(--surface); border:1px solid var(--border); border-radius:999px; padding:8px 12px; flex-shrink:0}
+  .search-pill .icon{width:13px; height:13px; color:var(--text-faint)}
+  .search-pill span{font-size:10.5px; color:var(--text-faint)}
+
+  .cat-row{display:flex; gap:6px; flex-shrink:0}
+  .cat-chip{display:flex; align-items:center; gap:5px; background:var(--surface); border:1px solid var(--border); padding:5px 9px; border-radius:999px; font-size:8.7px; font-weight:600; color:var(--text-muted); white-space:nowrap}
+  .cat-chip.active{background:var(--brand); border-color:var(--brand); color:#fff}
+  .cat-dot{width:6px; height:6px; border-radius:50%; background:var(--cd); flex-shrink:0}
+
+  .pop-row{display:flex; flex-direction:column; gap:6px; flex-shrink:0}
+  .pop-item{display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); border-radius:11px; padding:6px 8px}
+  .pop-thumb{width:30px; height:30px; border-radius:8px; background:var(--brand-tint); color:var(--brand); display:flex; align-items:center; justify-content:center; flex-shrink:0}
+  .pop-thumb .icon{width:14px; height:14px}
+  .pop-name{font-size:9.6px; font-weight:600; line-height:1.25}
+  .pop-unit{font-size:8px; color:var(--text-faint)}
+  .pop-price{margin-left:auto; font-size:10px; font-weight:700; font-family:var(--f-mono); color:var(--text)}
+
+  .bottom-nav{display:flex; border-top:1px solid var(--border); background:var(--surface); flex-shrink:0; margin-top:auto}
+  .nav-btn{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:9px 0 8px; color:var(--text-faint); font-size:7.6px; font-weight:600; position:relative}
+  .nav-btn .icon{width:15px; height:15px}
+  .nav-btn.active{color:var(--brand)}
+  .nav-cart-dot{position:absolute; top:5px; right:24%; width:6px; height:6px; border-radius:50%; background:var(--danger); border:1.5px solid var(--surface)}
+
+  /* catalog */
+  .screen-title-row{display:flex; align-items:center; justify-content:space-between; flex-shrink:0}
+  .screen-title-row h3{font-size:13.5px; font-weight:600}
+  .screen-title-row .icon{width:15px; height:15px; color:var(--text-muted)}
+  .prod-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; overflow:hidden}
+  .prod-card{background:var(--surface); border:1px solid var(--border); border-radius:11px; overflow:hidden; display:flex; flex-direction:column}
+  .prod-thumb{height:46px; background:linear-gradient(135deg,var(--brand-tint),var(--accent-tint)); color:var(--brand); display:flex; align-items:center; justify-content:center}
+  .prod-thumb .icon{width:17px; height:17px}
+  .prod-body{padding:6px 7px 7px; display:flex; flex-direction:column; gap:2px}
+  .prod-name{font-size:8.8px; font-weight:600; line-height:1.25}
+  .prod-unit{font-size:7.4px; color:var(--text-faint)}
+  .prod-foot{display:flex; align-items:center; justify-content:space-between; margin-top:3px}
+  .prod-price{font-size:9.6px; font-weight:700; font-family:var(--f-mono)}
+  .add-btn{width:19px; height:19px; border-radius:50%; background:var(--brand); color:#fff; display:flex; align-items:center; justify-content:center}
+  .add-btn .icon{width:10px; height:10px; stroke-width:3}
+  .qty-stepper{display:flex; align-items:center; gap:5px; background:var(--brand); border-radius:999px; padding:2px 6px; color:#fff; font-family:var(--f-mono); font-size:8.6px; font-weight:700}
+
+  /* cart */
+  .back-row{display:flex; align-items:center; gap:8px; flex-shrink:0}
+  .back-row .icon{width:14px; height:14px}
+  .back-row h3{font-size:13px; font-weight:600}
+  .cart-list{display:flex; flex-direction:column; flex-shrink:0}
+  .cart-item{display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--border-soft)}
+  .cart-thumb{width:28px; height:28px; border-radius:7px; background:var(--accent-tint); color:var(--accent); display:flex; align-items:center; justify-content:center; flex-shrink:0}
+  .cart-thumb .icon{width:13px; height:13px}
+  .cart-name{font-size:9.4px; font-weight:600}
+  .cart-qty{font-size:7.8px; color:var(--text-faint)}
+  .cart-price{margin-left:auto; font-size:9.6px; font-weight:700; font-family:var(--f-mono)}
+  .summary-card{background:var(--surface-2); border-radius:11px; padding:9px 10px; display:flex; flex-direction:column; gap:5px; flex-shrink:0}
+  .summary-row{display:flex; justify-content:space-between; font-size:9px; color:var(--text-muted)}
+  .summary-row.total{font-size:11px; font-weight:700; color:var(--text); padding-top:5px; border-top:1px dashed var(--border); font-family:var(--f-mono)}
+  .checkout-btn{margin-top:auto; margin-bottom:10px; background:var(--brand); color:#fff; border-radius:999px; padding:11px; text-align:center; font-size:10.5px; font-weight:700; flex-shrink:0}
+
+  /* tracking */
+  .track-badge{display:inline-flex; align-self:flex-start; align-items:center; gap:4px; background:var(--brand-tint); color:var(--brand); font-size:8.4px; font-weight:700; padding:4px 9px; border-radius:999px; flex-shrink:0}
+  .track-badge .icon{width:9px; height:9px}
+  .tracker{display:flex; align-items:flex-start; flex-shrink:0; padding:2px 2px 0}
+  .track-step{flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; position:relative}
+  .track-dot{width:20px; height:20px; border-radius:50%; background:var(--brand); color:#fff; display:flex; align-items:center; justify-content:center; z-index:1}
+  .track-dot .icon{width:10px; height:10px; stroke-width:3}
+  .track-step.pending .track-dot{background:var(--surface); border:2px solid var(--border); color:var(--text-faint)}
+  .track-line{position:absolute; top:10px; left:50%; width:100%; height:2px; background:var(--brand); z-index:0}
+  .track-step.pending .track-line{background:var(--border)}
+  .track-step:last-child .track-line{display:none}
+  .track-label{font-size:6.9px; font-weight:600; color:var(--text-muted); text-align:center}
+  .eta-card{display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--border); border-radius:11px; padding:9px 10px; flex-shrink:0}
+  .eta-icon{width:26px; height:26px; border-radius:50%; background:var(--accent-tint); color:var(--accent); display:flex; align-items:center; justify-content:center; flex-shrink:0}
+  .eta-icon .icon{width:13px; height:13px}
+  .eta-title{font-size:9.2px; font-weight:700}
+  .eta-sub{font-size:7.8px; color:var(--text-faint)}
+  .partner-row{display:flex; align-items:center; gap:8px; margin-top:auto; margin-bottom:10px; flex-shrink:0}
+  .partner-avatar{width:28px; height:28px; border-radius:50%; background:var(--brand-deep); color:#fff; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:700; font-family:var(--f-display); flex-shrink:0}
+  .partner-name{font-size:9.4px; font-weight:600}
+  .partner-role{font-size:7.6px; color:var(--text-faint)}
+  .call-btn{margin-left:auto; width:26px; height:26px; border-radius:50%; background:var(--success); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0}
+  .call-btn .icon{width:12px; height:12px}
+
+  /* admin shell */
+  .admin-shell{flex:0 0 460px; background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; box-shadow:var(--shadow-2); transition:background .45s var(--ease), border-color .45s var(--ease)}
+  .admin-topbar{display:flex; align-items:center; gap:8px; padding:11px 14px; border-bottom:1px solid var(--border); background:var(--bg)}
+  .admin-dots{display:flex; gap:5px}
+  .admin-dots i{width:8px; height:8px; border-radius:50%; background:var(--border)}
+  .admin-topbar span{margin-left:6px; font-size:10.5px; font-weight:600; color:var(--text-muted)}
+  .admin-topbar time{margin-left:auto; font-size:9.5px; color:var(--text-faint); font-family:var(--f-mono)}
+  .admin-body{padding:15px 16px 17px; display:flex; flex-direction:column; gap:14px; background:var(--bg)}
+  .kpi-row{display:grid; grid-template-columns:repeat(4,1fr); gap:9px}
+  .kpi-card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:10px 11px}
+  .kpi-label{display:flex; align-items:center; gap:4px; font-size:8.4px; color:var(--text-faint); font-weight:600}
+  .kpi-label .icon{width:10px; height:10px}
+  .kpi-num{font-family:var(--f-display); font-size:16.5px; font-weight:600; margin-top:3px}
+  .kpi-trend{font-size:8px; font-weight:700; color:var(--success); margin-top:2px; display:flex; align-items:center; gap:2px}
+  .kpi-trend .icon{width:8px; height:8px}
+  .kpi-trend.warn{color:var(--warning)}
+  .chart-card{background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:12px 14px 10px; display:flex; flex-direction:column; gap:8px}
+  .chart-head{display:flex; justify-content:space-between; align-items:baseline}
+  .chart-head b{font-size:9.5px; font-weight:600}
+  .chart-head span{font-size:8px; color:var(--text-faint)}
+  .bars{display:flex; align-items:flex-end; gap:7px; height:52px}
+  .bars i{flex:1; border-radius:4px 4px 0 0; background:var(--brand); opacity:.85}
+  .bars i:nth-child(even){background:var(--accent); opacity:.8}
+  .orders-table{width:100%; border-collapse:collapse; font-size:9.6px}
+  .orders-table th{text-align:left; font-size:7.8px; text-transform:uppercase; letter-spacing:.04em; color:var(--text-faint); padding:0 8px 6px 0; font-weight:600}
+  .orders-table td{padding:7px 8px 7px 0; border-top:1px solid var(--border-soft)}
+  .orders-table td.amt{font-family:var(--f-mono); font-weight:600}
+  .stbadge{display:inline-flex; align-items:center; gap:4px; font-size:8px; font-weight:700; padding:3px 8px; border-radius:999px}
+  .stbadge.placed{background:var(--accent-tint); color:var(--accent)}
+  .stbadge.packed{background:color-mix(in srgb, var(--warning) 16%, transparent); color:var(--warning)}
+  .stbadge.transit{background:var(--brand-tint); color:var(--brand)}
+  .stbadge.delivered{background:color-mix(in srgb, var(--success) 16%, transparent); color:var(--success)}
+  .stbadge.cancelled{background:color-mix(in srgb, var(--danger) 14%, transparent); color:var(--danger)}
+
+  /* hex strip */
+  .hex-section{padding-top:var(--sp-2)}
+  .hex-strip{display:grid; grid-template-columns:repeat(9,1fr); gap:var(--sp-3)}
+  .hexchip{display:flex; flex-direction:column; border:1px solid var(--rule); border-radius:var(--r-md); overflow:hidden; background:var(--paper-2); transition:transform .25s var(--ease-spring), box-shadow .25s}
+  .hexchip:hover{transform:translateY(-3px); box-shadow:var(--shadow-1)}
+  .hexchip-fill{height:38px; background:var(--sw)}
+  .hexchip-meta{padding:.5rem .55rem}
+  .hexchip-meta b{display:block; font-size:.66rem; font-weight:600}
+  .hexchip-meta code{display:block; font-size:.62rem; color:var(--ink-faint); font-family:var(--f-mono); margin-top:1px}
+  .hexchip.copied .hexchip-meta code{color:var(--live-accent)}
+  .hexchip.copied .hexchip-meta code::after{content:' ✓ copied'}
+
+  footer{padding:var(--sp-7) 0 var(--sp-3); text-align:center; color:var(--ink-faint); font-size:.8rem; border-top:1px solid var(--rule); margin-top:var(--sp-7)}
+  footer b{color:var(--ink-muted)}
+
+  @media (max-width:960px){
+    .chip-grid{grid-template-columns:repeat(2,1fr)}
+    .hex-strip{grid-template-columns:repeat(5,1fr)}
+    .admin-shell{flex-basis:400px}
+  }
+  @media (max-width:620px){
+    .chip-grid{grid-template-columns:1fr}
+    .hex-strip{grid-template-columns:repeat(3,1fr)}
+    main{padding:0 var(--sp-4) var(--sp-8)}
+    .intro h1{font-size:1.9rem}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms !important; transition-duration:.01ms !important; scroll-behavior:auto !important}
+    .chip{opacity:1; animation:none}
+  }
+
+  /* ===== palette definitions (scoped to .palette-stage) ===== */
+  .palette-stage{
+    --bg:#F7F6FB; --surface:#FFFFFF; --surface-2:#EFEAFB;
+    --text:#1C1533; --text-muted:#5B5372; --text-faint:#9B93B0; --border:#E4DEF5; --border-soft:rgba(28,21,51,.08);
+    --brand:#7C3AED; --brand-deep:#5B21B6; --brand-tint:#F1EBFE; --brand-ring:rgba(124,58,237,.25);
+    --accent:#0D9488; --accent-tint:#E4F8F5;
+    --success:#0F9960; --warning:#D97706; --danger:#DC2626;
+    --cat-1:#1D4ED8; --cat-2:#EA580C; --cat-3:#0D9488; --cat-4:#BE185D;
+    --hero-grad:linear-gradient(135deg,#2C1065,#7C3AED 55%,#2DD4BF);
+  }
+  .palette-stage[data-palette="emerald"]{
+    --bg:#F5FAF7; --surface:#FFFFFF; --surface-2:#E7F3EB;
+    --text:#0E2318; --text-muted:#3F5C4C; --text-faint:#89A897; --border:#D6EADD; --border-soft:rgba(14,35,24,.08);
+    --brand:#059669; --brand-deep:#065F46; --brand-tint:#E7F8EF; --brand-ring:rgba(5,150,105,.25);
+    --accent:#B45309; --accent-tint:#FCF1DF;
+    --success:#16A34A; --warning:#B45309; --danger:#DC2626;
+    --cat-1:#0F766E; --cat-2:#B45309; --cat-3:#059669; --cat-4:#7C2D12;
+    --hero-grad:linear-gradient(135deg,#053B2A,#059669 55%,#FDE68A);
+  }
+  .palette-stage[data-palette="sunset"]{
+    --bg:#FFF9F4; --surface:#FFFFFF; --surface-2:#FBEBDC;
+    --text:#2B1608; --text-muted:#6B4A32; --text-faint:#B08863; --border:#F1DFC9; --border-soft:rgba(43,22,8,.08);
+    --brand:#EA580C; --brand-deep:#9A3412; --brand-tint:#FEF0E4; --brand-ring:rgba(234,88,12,.25);
+    --accent:#0F766E; --accent-tint:#E4F5F3;
+    --success:#15803D; --warning:#B45309; --danger:#B91C1C;
+    --cat-1:#C2410C; --cat-2:#0F766E; --cat-3:#A16207; --cat-4:#9D174D;
+    --hero-grad:linear-gradient(135deg,#5B1A0A,#EA580C 55%,#FBBF24);
+  }
+  .palette-stage[data-palette="ocean"]{
+    --bg:#F5F8FC; --surface:#FFFFFF; --surface-2:#E7EFFA;
+    --text:#0B1526; --text-muted:#3E4C63; --text-faint:#8E9BB3; --border:#DAE4F3; --border-soft:rgba(11,21,38,.08);
+    --brand:#1D4ED8; --brand-deep:#1E3A8A; --brand-tint:#E9F0FE; --brand-ring:rgba(29,78,216,.25);
+    --accent:#0891B2; --accent-tint:#E1F6FA;
+    --success:#059669; --warning:#B45309; --danger:#DC2626;
+    --cat-1:#1D4ED8; --cat-2:#0891B2; --cat-3:#7C3AED; --cat-4:#BE185D;
+    --hero-grad:linear-gradient(135deg,#08163E,#1D4ED8 55%,#38BDF8);
+  }
+  .palette-stage[data-palette="midnight"]{
+    --bg:#0C1120; --surface:#151C31; --surface-2:#1C2540;
+    --text:#F1F0EA; --text-muted:#A9AFC4; --text-faint:#6A7191; --border:#293258; --border-soft:rgba(241,240,234,.08);
+    --brand:#F59E0B; --brand-deep:#D97706; --brand-tint:rgba(245,158,11,.14); --brand-ring:rgba(245,158,11,.35);
+    --accent:#8B5CF6; --accent-tint:rgba(139,92,246,.16);
+    --success:#34D399; --warning:#FBBF24; --danger:#F87171;
+    --cat-1:#F59E0B; --cat-2:#8B5CF6; --cat-3:#22D3EE; --cat-4:#F472B6;
+    --hero-grad:linear-gradient(135deg,#05070E,#1C2540 55%,#F59E0B);
+  }
+  .palette-stage[data-palette="rosemint"]{
+    --bg:#FFF7FA; --surface:#FFFFFF; --surface-2:#FCE8F1;
+    --text:#241019; --text-muted:#6B4658; --text-faint:#B189A0; --border:#F6DCE8; --border-soft:rgba(36,16,25,.08);
+    --brand:#DB2777; --brand-deep:#9D174D; --brand-tint:#FDEAF3; --brand-ring:rgba(219,39,119,.25);
+    --accent:#0D9488; --accent-tint:#E4F8F5;
+    --success:#0D9488; --warning:#D97706; --danger:#DC2626;
+    --cat-1:#DB2777; --cat-2:#0D9488; --cat-3:#7C3AED; --cat-4:#B45309;
+    --hero-grad:linear-gradient(135deg,#4C0519,#DB2777 55%,#5EEAD4);
+  }
+</style>
+
+<svg style="display:none">
+<defs>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><polygon points="4,4 20,4 14,12 14,19 10,21 10,12"/></symbol>
+  <symbol id="i-arrow-left" viewBox="0 0 24 24"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12,19 5,12 12,5"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8l-9-5-9 5v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5"/><line x1="12" y1="13" x2="12" y2="21"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><polyline points="5,13 10,18 19,7"/></symbol>
+  <symbol id="i-truck" viewBox="0 0 24 24"><rect x="1" y="7" width="14" height="10" rx="1.5"/><path d="M15 10h4l3 3v4h-7z"/><circle cx="6" cy="19" r="2"/><circle cx="18" cy="19" r="2"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12,7 12,12 16,14"/></symbol>
+  <symbol id="i-phone-call" viewBox="0 0 24 24"><path d="M4 4h4l2 5-2.5 1.5a12 12 0 0 0 6 6L15 14l5 2v4c0 1-1 2-2 2C10 22 2 14 2 6c0-1 1-2 2-2z"/></symbol>
+  <symbol id="i-chevron-right" viewBox="0 0 24 24"><polyline points="9,6 15,12 9,18"/></symbol>
+  <symbol id="i-trending-up" viewBox="0 0 24 24"><polyline points="3,17 9,11 13,15 21,6"/><polyline points="15,6 21,6 21,12"/></symbol>
+  <symbol id="i-trending-down" viewBox="0 0 24 24"><polyline points="3,7 9,13 13,9 21,18"/><polyline points="21,12 21,18 15,18"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><line x1="12" y1="9.5" x2="12" y2="13.5"/><line x1="12" y1="16.5" x2="12" y2="17"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.4 12.2a2 2 0 0 0 2 1.8h7.2a2 2 0 0 0 2-1.6L21 7H6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v3"/><path d="M3 7v11a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1h-4a2.5 2.5 0 0 1 0-5h4"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2 20c0-3.5 3-5.5 7-5.5s7 2 7 5.5"/><path d="M16 6.5c1.7.3 3 1.7 3 3.4s-1.3 3.1-3 3.4"/><path d="M18.5 14.5c2 .4 3.5 1.7 3.5 3.8v1.7"/></symbol>
+  <symbol id="i-package" viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M4 7.5l8 4.5 8-4.5"/><line x1="12" y1="12" x2="12" y2="21"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
+</defs>
+</svg>
+
+<div class="grain"></div>
+
+<header class="masthead">
+  <div class="mast-row">
+    <span class="mast-mark">JT</span>
+    <span class="mast-name">Jyoti Traders</span>
+    <span class="mast-rule"></span>
+    <span class="mast-tag">Palette Studio</span>
+  </div>
+</header>
+
+<main>
+  <section class="intro">
+    <div class="eyebrow"><span class="eyebrow-dot" id="eyebrowDot"></span> Design decision · retailer &amp; admin app</div>
+    <h1>Six directions.<br>One app, seen six ways.</h1>
+    <p class="dek">Pick a swatch below — every screen on the light table updates live, so the call can be judged on real product, not a color wheel.</p>
+  </section>
+
+  <section class="swatch-section">
+    <div class="chip-grid" id="chipGrid">
+      <button class="chip" data-key="violet" data-name="Violet Pulse" data-vibe="Modern &amp; energetic" style="--c1:#7C3AED;--c2:#0D9488;--c3:#5B21B6" aria-pressed="false">
+        <span class="chip-swatch"><span class="chip-dots"><i style="--dc:#7C3AED"></i><i style="--dc:#0D9488"></i><i style="--dc:#5B21B6"></i></span><span class="chip-check"><svg class="icon"><use href="#i-check"></use></svg></span></span>
+        <span class="chip-info"><b>Violet Pulse</b><span>Modern &amp; energetic</span></span>
+      </button>
+      <button class="chip" data-key="emerald" data-name="Emerald Trade" data-vibe="Trust &amp; prosperity" style="--c1:#059669;--c2:#D97706;--c3:#065F46" aria-pressed="true">
+        <span class="chip-swatch"><span class="chip-reco">Recommended</span><span class="chip-dots"><i style="--dc:#059669"></i><i style="--dc:#D97706"></i><i style="--dc:#065F46"></i></span><span class="chip-check"><svg class="icon"><use href="#i-check"></use></svg></span></span>
+        <span class="chip-info"><b>Emerald Trade</b><span>Trust &amp; prosperity</span></span>
+      </button>
+      <button class="chip" data-key="sunset" data-name="Sunset Bazaar" data-vibe="Warm &amp; local market" style="--c1:#EA580C;--c2:#0F766E;--c3:#9A3412" aria-pressed="false">
+        <span class="chip-swatch"><span class="chip-dots"><i style="--dc:#EA580C"></i><i style="--dc:#0F766E"></i><i style="--dc:#9A3412"></i></span><span class="chip-check"><svg class="icon"><use href="#i-check"></use></svg></span></span>
+        <span class="chip-info"><b>Sunset Bazaar</b><span>Warm &amp; local market</span></span>
+      </button>
+      <button class="chip" data-key="ocean" data-name="Ocean Ledger" data-vibe="Corporate &amp; reliable" style="--c1:#1D4ED8;--c2:#0891B2;--c3:#1E3A8A" aria-pressed="false">
+        <span class="chip-swatch"><span class="chip-dots"><i style="--dc:#1D4ED8"></i><i style="--dc:#0891B2"></i><i style="--dc:#1E3A8A"></i></span><span class="chip-check"><svg class="icon"><use href="#i-check"></use></svg></span></span>
+        <span class="chip-info"><b>Ocean Ledger</b><span>Corporate &amp; reliable</span></span>
+      </button>
+      <button class="chip" data-key="midnight" data-name="Midnight Amber" data-vibe="Premium admin, after hours" style="--c1:#F59E0B;--c2:#8B5CF6;--c3:#0C1120" aria-pressed="false">
+        <span class="chip-swatch"><span class="chip-dots"><i style="--dc:#F59E0B"></i><i style="--dc:#8B5CF6"></i><i style="--dc:#22D3EE"></i></span><span class="chip-check"><svg class="icon"><use href="#i-check"></use></svg></span></span>
+        <span class="chip-info"><b>Midnight Amber</b><span>Premium admin, after hours</span></span>
+      </button>
+      <button class="chip" data-key="rosemint" data-name="Rose Mint" data-vibe="Fresh &amp; friendly" style="--c1:#DB2777;--c2:#0D9488;--c3:#9D174D" aria-pressed="false">
+        <span class="chip-swatch"><span class="chip-dots"><i style="--dc:#DB2777"></i><i style="--dc:#0D9488"></i><i style="--dc:#9D174D"></i></span><span class="chip-check"><svg class="icon"><use href="#i-check"></use></svg></span></span>
+        <span class="chip-info"><b>Rose Mint</b><span>Fresh &amp; friendly</span></span>
+      </button>
+    </div>
+  </section>
+
+  <section class="stage-section">
+    <div class="stage-head">
+      <h2 id="stageTitle">Emerald Trade — <em>on every screen</em></h2>
+      <span class="stage-vibe" id="stageVibe">Trust &amp; prosperity</span>
+    </div>
+
+    <div class="table-surface">
+      <div class="stage-row">
+
+        <!-- HOME -->
+        <div class="palette-stage phone-shell" data-palette="emerald">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="pstat"><span>9:41</span><span class="pstat-icons"><svg class="icon"><use href="#i-trending-up"></use></svg>4G · 82%</span></div>
+            <div class="screen-body">
+              <div class="hero-card">
+                <span class="hero-tag">Diwali Stock-Up</span>
+                <h3>Flat 12% off bulk grocery orders</h3>
+                <p>Valid on orders above ₹15,000 · ends Sun</p>
+              </div>
+              <div class="search-pill"><svg class="icon"><use href="#i-search"></use></svg><span>Search 4,200+ SKUs…</span></div>
+              <div class="cat-row">
+                <span class="cat-chip active"><span class="cat-dot" style="--cd:#fff"></span>Grains</span>
+                <span class="cat-chip"><span class="cat-dot" style="--cd:var(--cat-2)"></span>Snacks</span>
+                <span class="cat-chip"><span class="cat-dot" style="--cd:var(--cat-3)"></span>Beverages</span>
+                <span class="cat-chip"><span class="cat-dot" style="--cd:var(--cat-4)"></span>Household</span>
+              </div>
+              <div class="pop-row">
+                <div class="pop-item"><span class="pop-thumb"><svg class="icon"><use href="#i-package"></use></svg></span><div><div class="pop-name">Basmati Rice 25kg</div><div class="pop-unit">Premium long grain</div></div><span class="pop-price">₹2,140</span></div>
+                <div class="pop-item"><span class="pop-thumb"><svg class="icon"><use href="#i-package"></use></svg></span><div><div class="pop-name">Sunflower Oil 5L</div><div class="pop-unit">Refined, carton of 4</div></div><span class="pop-price">₹680</span></div>
+                <div class="pop-item"><span class="pop-thumb"><svg class="icon"><use href="#i-package"></use></svg></span><div><div class="pop-name">Toor Dal 5kg</div><div class="pop-unit">Unpolished</div></div><span class="pop-price">₹575</span></div>
+              </div>
+            </div>
+            <div class="bottom-nav">
+              <div class="nav-btn active"><svg class="icon"><use href="#i-home"></use></svg>Home</div>
+              <div class="nav-btn"><svg class="icon"><use href="#i-grid"></use></svg>Catalog</div>
+              <div class="nav-btn" style="position:relative"><svg class="icon"><use href="#i-cart"></use></svg>Cart<span class="nav-cart-dot"></span></div>
+              <div class="nav-btn"><svg class="icon"><use href="#i-box"></use></svg>Orders</div>
+              <div class="nav-btn"><svg class="icon"><use href="#i-user"></use></svg>Profile</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CATALOG -->
+        <div class="palette-stage phone-shell" data-palette="emerald">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="pstat"><span>9:41</span><span class="pstat-icons"><svg class="icon"><use href="#i-trending-up"></use></svg>4G · 82%</span></div>
+            <div class="screen-body">
+              <div class="screen-title-row"><h3>Catalog</h3><svg class="icon"><use href="#i-filter"></use></svg></div>
+              <div class="cat-row">
+                <span class="cat-chip active"><span class="cat-dot" style="--cd:#fff"></span>All</span>
+                <span class="cat-chip"><span class="cat-dot" style="--cd:var(--cat-1)"></span>Grains</span>
+                <span class="cat-chip"><span class="cat-dot" style="--cd:var(--cat-2)"></span>Snacks</span>
+              </div>
+              <div class="prod-grid">
+                <div class="prod-card"><div class="prod-thumb"><svg class="icon"><use href="#i-package"></use></svg></div><div class="prod-body"><div class="prod-name">Wheat Atta 10kg</div><div class="prod-unit">Chakki fresh</div><div class="prod-foot"><span class="prod-price">₹410</span><span class="add-btn"><svg class="icon"><use href="#i-plus"></use></svg></span></div></div></div>
+                <div class="prod-card"><div class="prod-thumb"><svg class="icon"><use href="#i-package"></use></svg></div><div class="prod-body"><div class="prod-name">Glucose Biscuits</div><div class="prod-unit">24-pack carton</div><div class="prod-foot"><span class="prod-price">₹312</span><span class="qty-stepper"><svg class="icon" style="width:8px;height:8px"><use href="#i-minus"></use></svg>2<svg class="icon" style="width:8px;height:8px"><use href="#i-plus"></use></svg></span></div></div></div>
+                <div class="prod-card"><div class="prod-thumb"><svg class="icon"><use href="#i-package"></use></svg></div><div class="prod-body"><div class="prod-name">Iodised Salt 1kg</div><div class="prod-unit">Pack of 12</div><div class="prod-foot"><span class="prod-price">₹156</span><span class="add-btn"><svg class="icon"><use href="#i-plus"></use></svg></span></div></div></div>
+                <div class="prod-card"><div class="prod-thumb"><svg class="icon"><use href="#i-package"></use></svg></div><div class="prod-body"><div class="prod-name">Masala Chai 500g</div><div class="prod-unit">Loose leaf</div><div class="prod-foot"><span class="prod-price">₹245</span><span class="add-btn"><svg class="icon"><use href="#i-plus"></use></svg></span></div></div></div>
+              </div>
+            </div>
+            <div class="bottom-nav">
+              <div class="nav-btn"><svg class="icon"><use href="#i-home"></use></svg>Home</div>
+              <div class="nav-btn active"><svg class="icon"><use href="#i-grid"></use></svg>Catalog</div>
+              <div class="nav-btn" style="position:relative"><svg class="icon"><use href="#i-cart"></use></svg>Cart<span class="nav-cart-dot"></span></div>
+              <div class="nav-btn"><svg class="icon"><use href="#i-box"></use></svg>Orders</div>
+              <div class="nav-btn"><svg class="icon"><use href="#i-user"></use></svg>Profile</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CART -->
+        <div class="palette-stage phone-shell" data-palette="emerald">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="pstat"><span>9:41</span><span class="pstat-icons"><svg class="icon"><use href="#i-trending-up"></use></svg>4G · 82%</span></div>
+            <div class="screen-body">
+              <div class="back-row"><svg class="icon"><use href="#i-arrow-left"></use></svg><h3>Your cart · 3 items</h3></div>
+              <div class="cart-list">
+                <div class="cart-item"><span class="cart-thumb"><svg class="icon"><use href="#i-package"></use></svg></span><div><div class="cart-name">Basmati Rice 25kg</div><div class="cart-qty">Qty 1</div></div><span class="cart-price">₹2,140</span></div>
+                <div class="cart-item"><span class="cart-thumb"><svg class="icon"><use href="#i-package"></use></svg></span><div><div class="cart-name">Sunflower Oil 5L</div><div class="cart-qty">Qty 4</div></div><span class="cart-price">₹2,720</span></div>
+                <div class="cart-item" style="border-bottom:none"><span class="cart-thumb"><svg class="icon"><use href="#i-package"></use></svg></span><div><div class="cart-name">Toor Dal 5kg</div><div class="cart-qty">Qty 2</div></div><span class="cart-price">₹1,150</span></div>
+              </div>
+              <div class="summary-card">
+                <div class="summary-row"><span>Subtotal</span><span>₹6,010</span></div>
+                <div class="summary-row"><span>Delivery</span><span>₹0</span></div>
+                <div class="summary-row total"><span>Total</span><span>₹6,010</span></div>
+              </div>
+              <div class="checkout-btn">Checkout · Net-15 credit</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TRACKING -->
+        <div class="palette-stage phone-shell" data-palette="emerald">
+          <div class="phone-notch"></div>
+          <div class="phone-screen">
+            <div class="pstat"><span>9:41</span><span class="pstat-icons"><svg class="icon"><use href="#i-trending-up"></use></svg>4G · 82%</span></div>
+            <div class="screen-body">
+              <div class="back-row"><svg class="icon"><use href="#i-arrow-left"></use></svg><h3>Order #JT-4821</h3></div>
+              <span class="track-badge"><svg class="icon"><use href="#i-truck"></use></svg>Out for delivery</span>
+              <div class="tracker">
+                <div class="track-step"><span class="track-dot"><svg class="icon"><use href="#i-check"></use></svg></span><span class="track-line"></span><span class="track-label">Placed</span></div>
+                <div class="track-step"><span class="track-dot"><svg class="icon"><use href="#i-check"></use></svg></span><span class="track-line"></span><span class="track-label">Packed</span></div>
+                <div class="track-step"><span class="track-dot"><svg class="icon"><use href="#i-truck"></use></svg></span><span class="track-line"></span><span class="track-label">Transit</span></div>
+                <div class="track-step pending"><span class="track-dot"><svg class="icon"><use href="#i-box"></use></svg></span><span class="track-line"></span><span class="track-label">Delivered</span></div>
+              </div>
+              <div class="eta-card"><span class="eta-icon"><svg class="icon"><use href="#i-clock"></use></svg></span><div><div class="eta-title">Arriving today, 4–6 PM</div><div class="eta-sub">12 cartons · Route via NH48</div></div></div>
+              <div class="partner-row">
+                <span class="partner-avatar">RK</span>
+                <div><div class="partner-name">Ramesh Kumar</div><div class="partner-role">Delivery partner</div></div>
+                <span class="call-btn"><svg class="icon"><use href="#i-phone-call"></use></svg></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ADMIN -->
+        <div class="palette-stage admin-shell" data-palette="emerald">
+          <div class="admin-topbar"><span class="admin-dots"><i></i><i></i><i></i></span><span>Admin · Overview</span><time>Wed, 26 Aug</time></div>
+          <div class="admin-body">
+            <div class="kpi-row">
+              <div class="kpi-card"><div class="kpi-label"><svg class="icon"><use href="#i-box"></use></svg>Today's orders</div><div class="kpi-num">184</div><div class="kpi-trend"><svg class="icon"><use href="#i-trending-up"></use></svg>+12%</div></div>
+              <div class="kpi-card"><div class="kpi-label"><svg class="icon"><use href="#i-wallet"></use></svg>Revenue</div><div class="kpi-num">₹9.2L</div><div class="kpi-trend"><svg class="icon"><use href="#i-trending-up"></use></svg>+6%</div></div>
+              <div class="kpi-card"><div class="kpi-label"><svg class="icon"><use href="#i-users"></use></svg>Active retailers</div><div class="kpi-num">742</div><div class="kpi-trend"><svg class="icon"><use href="#i-trending-up"></use></svg>+3%</div></div>
+              <div class="kpi-card"><div class="kpi-label"><svg class="icon"><use href="#i-alert"></use></svg>Low stock</div><div class="kpi-num">9</div><div class="kpi-trend warn"><svg class="icon"><use href="#i-trending-down"></use></svg>SKUs</div></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-head"><b>Orders, last 7 days</b><span>Peak Tue · 268</span></div>
+              <div class="bars"><i style="height:52%"></i><i style="height:68%"></i><i style="height:100%"></i><i style="height:74%"></i><i style="height:60%"></i><i style="height:85%"></i><i style="height:71%"></i></div>
+            </div>
+            <table class="orders-table">
+              <thead><tr><th>Retailer</th><th>Amount</th><th>Status</th></tr></thead>
+              <tbody>
+                <tr><td>Shree Ganesh Kirana</td><td class="amt">₹12,400</td><td><span class="stbadge transit">In transit</span></td></tr>
+                <tr><td>Patel General Store</td><td class="amt">₹6,010</td><td><span class="stbadge packed">Packed</span></td></tr>
+                <tr><td>New Anand Traders</td><td class="amt">₹21,850</td><td><span class="stbadge delivered">Delivered</span></td></tr>
+                <tr><td>Sai Provision Store</td><td class="amt">₹3,275</td><td><span class="stbadge cancelled">Cancelled</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section class="hex-section">
+    <div class="stage-head" style="margin-bottom:var(--sp-4)">
+      <h2 style="font-size:1.05rem">Reference codes</h2>
+      <span class="stage-vibe">Click a chip to copy its hex</span>
+    </div>
+    <div class="hex-strip" id="hexStrip"></div>
+  </section>
+
+  <footer>Jyoti Traders Palette Studio · built on the components already shipping in the retailer &amp; admin apps · <b>tap any swatch to preview it live</b></footer>
+</main>
+
+<script>
+(function(){
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+  var stages = Array.prototype.slice.call(document.querySelectorAll('.palette-stage'));
+  var stageTitle = document.getElementById('stageTitle');
+  var stageVibe = document.getElementById('stageVibe');
+  var eyebrowDot = document.getElementById('eyebrowDot');
+  var hexStrip = document.getElementById('hexStrip');
+  var root = document.documentElement;
+
+  var HEX_TOKENS = [
+    ['Background','--bg'], ['Surface','--surface'], ['Text','--text'],
+    ['Muted text','--text-muted'], ['Brand','--brand'], ['Brand deep','--brand-deep'],
+    ['Accent','--accent'], ['Success','--success'], ['Danger','--danger']
+  ];
+
+  function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+  function buildHexStrip(){
+    var cs = getComputedStyle(stages[0]);
+    hexStrip.innerHTML = HEX_TOKENS.map(function(t){
+      var val = cs.getPropertyValue(t[1]).trim();
+      return '<button class="hexchip" data-copy="' + esc(val) + '" style="--sw:' + esc(val) + '">' +
+             '<span class="hexchip-fill"></span>' +
+             '<span class="hexchip-meta"><b>' + esc(t[0]) + '</b><code>' + esc(val) + '</code></span>' +
+             '</button>';
+    }).join('');
+    Array.prototype.forEach.call(hexStrip.querySelectorAll('.hexchip'), function(btn){
+      btn.addEventListener('click', function(){
+        var v = btn.getAttribute('data-copy');
+        try{ navigator.clipboard.writeText(v); }catch(e){}
+        btn.classList.add('copied');
+        setTimeout(function(){ btn.classList.remove('copied'); }, 1400);
+      });
+    });
+  }
+
+  function applyPalette(chip){
+    var key = chip.dataset.key, name = chip.dataset.name, vibe = chip.dataset.vibe;
+    var c1 = chip.style.getPropertyValue('--c1');
+    stages.forEach(function(s){ s.setAttribute('data-palette', key); });
+    chips.forEach(function(c){ c.setAttribute('aria-pressed', c === chip ? 'true' : 'false'); });
+    stageTitle.innerHTML = esc(name) + ' — <em>on every screen</em>';
+    stageVibe.textContent = vibe;
+    if(eyebrowDot) eyebrowDot.style.background = c1;
+    root.style.setProperty('--live-accent', c1);
+    buildHexStrip();
+  }
+
+  chips.forEach(function(chip){
+    chip.addEventListener('click', function(){ applyPalette(chip); });
+  });
+
+  buildHexStrip();
+})();
+</script>

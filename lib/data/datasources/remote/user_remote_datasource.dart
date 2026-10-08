@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/constants/firestore_paths.dart';
 import '../../../core/constants/hive_keys.dart';
 import '../../../core/network/firebase_mode.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../models/user_model.dart';
 
 /// Admin-side user management (approve/reject/list). Reads and writes the
@@ -28,7 +28,7 @@ class UserRemoteDatasource {
       _useMock = isFirebasePlaceholder(_firestore!.app);
     } catch (e) {
       _useMock = true;
-      debugPrint('UserRemoteDatasource: Firestore unavailable, using simulation mode: $e');
+      logWarning('UserRemoteDatasource: Firestore unavailable, using simulation mode', e);
     }
   }
 

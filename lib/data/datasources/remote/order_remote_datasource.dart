@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/constants/firestore_paths.dart';
 import '../../../core/constants/hive_keys.dart';
 import '../../../core/network/firebase_mode.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../models/order_model.dart';
 
 /// Firestore CRUD for orders, with a Hive-simulation fallback while
@@ -26,7 +26,7 @@ class OrderRemoteDatasource {
       _useMock = isFirebasePlaceholder(_firestore!.app);
     } catch (e) {
       _useMock = true;
-      debugPrint('OrderRemoteDatasource: Firestore unavailable, using simulation mode: $e');
+      logWarning('OrderRemoteDatasource: Firestore unavailable, using simulation mode', e);
     }
   }
 

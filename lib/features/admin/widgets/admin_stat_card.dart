@@ -4,6 +4,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/trend_label.dart';
 
 /// A single dashboard stat tile fed by an [AsyncValue<int>] stream — shows
 /// a shimmer placeholder while loading and a dash on error, matching the
@@ -13,6 +15,11 @@ class AdminStatCard extends StatelessWidget {
   final AsyncValue<int> value;
   final IconData icon;
   final Color color;
+  final String Function(int)? formatter;
+
+  /// Percent change against the same window last week (null = no baseline,
+  /// show nothing). Positive is up.
+  final double? trend;
 
   const AdminStatCard({
     super.key,
@@ -20,6 +27,8 @@ class AdminStatCard extends StatelessWidget {
     required this.value,
     required this.icon,
     required this.color,
+    this.formatter,
+    this.trend,
   });
 
   @override
@@ -51,7 +60,9 @@ class AdminStatCard extends StatelessWidget {
                   style: GoogleFonts.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                    color: isDark
+                        ? AppColors.textSecondaryDark
+                        : AppColors.textSecondaryLight,
                   ),
                 ),
               ),
@@ -60,28 +71,59 @@ class AdminStatCard extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           value.when(
-            data: (v) => Text(
-              '$v',
-              style: GoogleFonts.poppins(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+            // TweenAnimationBuilder retargets from whatever's on screen to
+            // the new `end` on every rebuild, so this both counts up from 0
+            // on first load and animates smoothly on later live updates —
+            // no manual "previous value" tracking needed.
+            data: (v) => TweenAnimationBuilder<int>(
+              tween: IntTween(begin: 0, end: v),
+              duration:
+                  (MediaQuery.maybeOf(context)?.disableAnimations ?? false)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 900),
+              curve: Curves.easeOutCubic,
+              builder: (context, animatedValue, _) => Text(
+                formatter?.call(animatedValue) ?? '$animatedValue',
+                style: GoogleFonts.inter(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : AppColors.textPrimaryLight,
+                ),
               ),
             ),
             loading: () => Shimmer.fromColors(
               baseColor: isDark ? AppColors.surfaceDark : Colors.grey.shade300,
-              highlightColor: isDark ? AppColors.backgroundDark : Colors.grey.shade100,
+              highlightColor: isDark
+                  ? AppColors.backgroundDark
+                  : Colors.grey.shade100,
               child: Container(
                 width: 40,
-                height: 24,
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6)),
+                height: 30,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                ),
               ),
             ),
             error: (_, _) => Text(
               '—',
-              style: GoogleFonts.poppins(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.error),
+              style: GoogleFonts.inter(
+                fontSize: 30,
+                fontWeight: FontWeight.w800,
+                color: AppColors.error,
+              ),
             ),
           ),
+          if (trend != null) ...[
+            const SizedBox(height: 6),
+            TrendLabel(
+              percent: trend!,
+              labelFor: AppLocalizations.of(context)!.adminTrendVsLastWeek,
+            ),
+          ],
         ],
       ),
     ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1);

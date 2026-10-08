@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/constants/firestore_paths.dart';
 import '../../../core/constants/hive_keys.dart';
 import '../../../core/network/firebase_mode.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../models/delivery_config_model.dart';
 
 /// Firestore CRUD for the single `config/delivery` document, with a
@@ -27,7 +27,7 @@ class DeliveryConfigRemoteDatasource {
       _useMock = isFirebasePlaceholder(_firestore!.app);
     } catch (e) {
       _useMock = true;
-      debugPrint('DeliveryConfigRemoteDatasource: Firestore unavailable, using simulation mode: $e');
+      logWarning('DeliveryConfigRemoteDatasource: Firestore unavailable, using simulation mode', e);
     }
   }
 

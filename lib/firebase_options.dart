@@ -50,25 +50,25 @@ class DefaultFirebaseOptions {
     apiKey: 'YOUR-WEB-API-KEY',
     appId: '1:1234567890:web:abcdef123456',
     messagingSenderId: '1234567890',
-    projectId: 'jyoti-kirana-placeholder',
-    authDomain: 'jyoti-kirana-placeholder.firebaseapp.com',
-    storageBucket: 'jyoti-kirana-placeholder.appspot.com',
+    projectId: 'jyoti-traders-placeholder',
+    authDomain: 'jyoti-traders-placeholder.firebaseapp.com',
+    storageBucket: 'jyoti-traders-placeholder.appspot.com',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'YOUR-ANDROID-API-KEY',
     appId: '1:1234567890:android:abcdef123456',
     messagingSenderId: '1234567890',
-    projectId: 'jyoti-kirana-placeholder',
-    storageBucket: 'jyoti-kirana-placeholder.appspot.com',
+    projectId: 'jyoti-traders-placeholder',
+    storageBucket: 'jyoti-traders-placeholder.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'YOUR-IOS-API-KEY',
     appId: '1:1234567890:ios:abcdef123456',
     messagingSenderId: '1234567890',
-    projectId: 'jyoti-kirana-placeholder',
-    storageBucket: 'jyoti-kirana-placeholder.appspot.com',
+    projectId: 'jyoti-traders-placeholder',
+    storageBucket: 'jyoti-traders-placeholder.appspot.com',
     iosBundleId: 'com.traders.retailer.tradersRetailer',
   );
 }

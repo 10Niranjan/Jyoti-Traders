@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/constants/firestore_paths.dart';
 import '../../../core/constants/hive_keys.dart';
 import '../../../core/network/firebase_mode.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../models/category_model.dart';
 
 /// Firestore CRUD for categories, with a Hive-simulation fallback while
@@ -27,7 +27,7 @@ class CategoryRemoteDatasource {
       _useMock = isFirebasePlaceholder(_firestore!.app);
     } catch (e) {
       _useMock = true;
-      debugPrint('CategoryRemoteDatasource: Firestore unavailable, using simulation mode: $e');
+      logWarning('CategoryRemoteDatasource: Firestore unavailable, using simulation mode', e);
     }
   }
 

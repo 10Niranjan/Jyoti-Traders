@@ -11,6 +11,8 @@ import 'package:traders_retailer/domain/entities/user_entity.dart';
 import 'package:traders_retailer/domain/repositories/user_repository.dart';
 import 'package:traders_retailer/features/admin/screens/retailer_detail_screen.dart';
 import 'package:traders_retailer/features/admin/widgets/retailer_approval_card.dart';
+import 'package:traders_retailer/l10n/app_localizations.dart';
+import '../helpers/test_viewport.dart';
 
 class FakeUserRepository implements UserRepository {
   @override
@@ -34,7 +36,11 @@ final _fullUser = UserEntity(
   phone: '9876543210',
   role: UserRole.customer,
   status: UserStatus.pending,
-  address: const AddressEntity(street: '12 MG Road', city: 'Pune', pincode: '411001'),
+  address: const AddressEntity(
+    street: '12 MG Road',
+    city: 'Pune',
+    pincode: '411001',
+  ),
   gstNumber: '27ABCDE1234F1Z5',
   createdAt: DateTime(2026, 1, 15, 10, 30),
   bankDetails: const BankDetailsEntity(
@@ -44,15 +50,28 @@ final _fullUser = UserEntity(
     bankName: 'HDFC Bank',
     upiId: 'owner@upi',
   ),
-  businessHours: const BusinessHoursEntity(openTime: '09:00', closeTime: '21:00'),
+  businessHours: const BusinessHoursEntity(
+    openTime: '09:00',
+    closeTime: '21:00',
+  ),
 );
 
 void main() {
-  testWidgets('RetailerDetailScreen shows the full retailer profile', (tester) async {
+  useTallTestViewport();
+
+  testWidgets('RetailerDetailScreen shows the full retailer profile', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [userRepositoryProvider.overrideWithValue(FakeUserRepository())],
-        child: MaterialApp(home: RetailerDetailScreen(user: _fullUser)),
+        overrides: [
+          userRepositoryProvider.overrideWithValue(FakeUserRepository()),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: RetailerDetailScreen(user: _fullUser),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -67,28 +86,41 @@ void main() {
 
     await tester.scrollUntilVisible(find.text('Approve'), 200);
     expect(find.text('15 Jan 2026, 10:30 AM'), findsOneWidget);
-    expect(find.text('Approve'), findsOneWidget); // pending retailer still actionable from here
+    expect(
+      find.text('Approve'),
+      findsOneWidget,
+    ); // pending retailer still actionable from here
   });
 
-  testWidgets('tapping a queued retailer card opens its full detail screen', (tester) async {
+  testWidgets('tapping a queued retailer card opens its full detail screen', (
+    tester,
+  ) async {
     final router = GoRouter(
       initialLocation: RouteNames.adminApprovalQueue,
       routes: [
         GoRoute(
           path: RouteNames.adminApprovalQueue,
-          builder: (context, state) => Scaffold(body: RetailerApprovalCard(user: _fullUser)),
+          builder: (context, state) =>
+              Scaffold(body: RetailerApprovalCard(user: _fullUser)),
         ),
         GoRoute(
           path: RouteNames.adminRetailerDetail,
-          builder: (context, state) => RetailerDetailScreen(user: state.extra as UserEntity),
+          builder: (context, state) =>
+              RetailerDetailScreen(user: state.extra as UserEntity),
         ),
       ],
     );
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [userRepositoryProvider.overrideWithValue(FakeUserRepository())],
-        child: MaterialApp.router(routerConfig: router),
+        overrides: [
+          userRepositoryProvider.overrideWithValue(FakeUserRepository()),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
       ),
     );
     await tester.pumpAndSettle();

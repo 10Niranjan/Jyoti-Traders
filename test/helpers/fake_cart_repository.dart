@@ -25,7 +25,8 @@ class FakeCartRepository implements CartRepository {
     if (idx == -1) {
       items = [...items, item];
     } else {
-      items = [...items]..[idx] = items[idx].copyWith(qty: items[idx].qty + item.qty);
+      items = [...items]
+        ..[idx] = items[idx].copyWith(qty: items[idx].qty + item.qty);
     }
     _controller.add(CartEntity(items: items));
   }

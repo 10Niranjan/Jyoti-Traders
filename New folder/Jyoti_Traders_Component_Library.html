@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jyoti Traders — Component Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#7C3AED;--primary-light:#A78BFA;--primary-dark:#5B21B6;
+  --accent:#0D9488;--accent-light:#2DD4BF;
+  --bg:#F8FAFC;--surface:#FFFFFF;
+  --success:#10B981;--warning:#F59E0B;--error:#EF4444;--info:#06B6D4;--discount:#16A34A;
+  --text:#0F172A;--text2:#475569;
+  --cat1:#1D4ED8;--cat2:#EA580C;--cat3:#0D9488;--cat4:#7C3AED;--cat5:#BE185D;--cat6:#15803D;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#E2E8F0;color:var(--text)}
+h1,h2,h3,.poppins{font-family:'Poppins',sans-serif}
+.row{display:flex;align-items:center}
+.col{display:flex;flex-direction:column}
+.between{justify-content:space-between}
+.wrap{flex-wrap:wrap}
+.g4{gap:4px}.g6{gap:6px}.g8{gap:8px}.g10{gap:10px}.g12{gap:12px}.g16{gap:16px}.g20{gap:20px}.g24{gap:24px}
+.page{max-width:1400px;margin:0 auto;padding:60px 40px 120px}
+.page-head{margin-bottom:48px}
+.page-head h1{font-size:36px;font-weight:700;color:var(--text)}
+.page-head p{font-size:15px;color:var(--text2);margin-top:8px}
+.section{margin-bottom:64px}
+.section-title{font-size:22px;font-weight:700;margin-bottom:20px;padding-bottom:10px;border-bottom:2px solid #CBD5E1;color:var(--text)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
+.cell{background:var(--surface);border-radius:14px;padding:20px;border:1px solid #E2E8F0}
+.cell-wide{grid-column:span 2}
+.label{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#94A3B8;margin-bottom:14px}
+
+/* ===== COLOR SWATCHES ===== */
+.swatch{border-radius:10px;height:64px;margin-bottom:8px;border:1px solid rgba(0,0,0,0.06)}
+.swatch-name{font-size:12.5px;font-weight:600}
+.swatch-hex{font-size:11px;color:var(--text2);font-family:monospace}
+
+/* ===== TYPE ===== */
+.type-row{padding:14px 0;border-bottom:1px solid #F1F5F9}
+.type-meta{font-size:11px;color:#94A3B8;font-family:monospace;margin-top:4px}
+
+/* ===== BUTTONS ===== */
+.btn-primary{width:100%;height:50px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary.disabled{background:#C4B5FD}
+.btn-primary.loading{background:var(--primary)}
+.spinner{width:20px;height:20px;border-radius:50%;border:2.5px solid rgba(255,255,255,0.4);border-top-color:#fff}
+.btn-outlined{width:100%;height:48px;background:transparent;border:1.5px solid var(--primary);color:var(--primary);border-radius:12px;font-weight:700;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-outlined.error{border-color:var(--error);color:var(--error)}
+.btn-outlined.success{border-color:var(--success);color:var(--success)}
+.btn-text{color:var(--primary);font-weight:700;font-size:14px}
+.btn-text.error{color:var(--error)}
+.fab{background:var(--primary);color:#fff;border-radius:28px;height:52px;padding:0 20px;display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14.5px;box-shadow:0 8px 20px rgba(124,58,237,0.35)}
+
+/* ===== ICON CIRCLE (placeholder for material icons) ===== */
+.ic{display:inline-flex;align-items:center;justify-content:center;font-family:'Segoe UI Symbol',sans-serif;line-height:1}
+
+/* ===== PRODUCT CARD ===== */
+.product-card{width:170px;background:#fff;border-radius:16px;border:1px solid rgba(124,58,237,0.08);overflow:hidden}
+.product-img{width:100%;aspect-ratio:1.1;background:linear-gradient(135deg,#EDE9FE,#F5F3FF);display:flex;align-items:center;justify-content:center;color:#C4B5FD;font-size:32px}
+.product-body{padding:10px}
+.product-name{font-size:12.5px;font-weight:600;line-height:1.3;height:32px;overflow:hidden}
+.product-unit{font-size:10.5px;color:var(--text2);margin-top:2px}
+.product-row{margin-top:8px}
+.product-price{font-size:14px;font-weight:700;color:var(--primary)}
+.pill-add{background:#fff;border:1px solid var(--primary);color:var(--primary);font-size:12px;font-weight:800;letter-spacing:.3px;border-radius:8px;padding:5px 12px;box-shadow:1.5px 1.5px 0 var(--primary)}
+.pill-outofstock{background:transparent;border:1px solid rgba(148,163,184,0.4);color:rgba(148,163,184,0.6);font-size:12px;font-weight:800;border-radius:8px;padding:5px 12px}
+.stepper-compact{background:var(--primary);color:#fff;border-radius:8px;display:flex;align-items:center;gap:8px;padding:4px 8px;font-size:13px;font-weight:700}
+
+/* ===== CATEGORY CARD ===== */
+.category-card{width:88px;text-align:center}
+.category-circle{width:56px;height:56px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff}
+.category-label{font-size:11px;font-weight:600;line-height:1.3}
+
+/* ===== BADGES / CHIPS ===== */
+.badge{display:inline-flex;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:20px;font-size:12.5px;font-weight:600;border:1px solid #E2E8F0;color:var(--text2)}
+.chip.selected{background:rgba(124,58,237,0.15);border-color:transparent;color:var(--primary)}
+
+/* ===== STEPPER (qty) ===== */
+.qty-stepper{display:inline-flex;align-items:center;border:1.5px solid rgba(124,58,237,0.3);border-radius:10px;overflow:hidden}
+.qty-stepper button{width:40px;height:40px;background:none;border:none;color:var(--primary);font-size:18px;font-weight:700}
+.qty-stepper .val{min-width:40px;text-align:center;font-weight:700;font-size:14px}
+
+/* ===== TRACKING STEPPER ===== */
+.track{padding:4px 0}
+.track-step{display:flex;gap:12px}
+.track-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.track-icon.done{background:var(--primary);color:#fff}
+.track-icon.pending{background:#fff;border:2px solid #CBD5E1;color:#CBD5E1}
+.track-line{width:2px;flex:1;background:#CBD5E1;margin:2px 0 2px 15px}
+.track-line.done{background:var(--primary)}
+.track-label{font-size:13px;font-weight:600;padding-top:5px}
+
+/* ===== INPUTS ===== */
+.field{margin-bottom:14px}
+.field-label{font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:500}
+.field-input{width:100%;height:48px;border:1.5px solid #E2E8F0;border-radius:16px;padding:0 14px;font-size:14px;display:flex;align-items:center;gap:8px;color:var(--text)}
+.field-input.focus{border-color:var(--primary);border-width:2px}
+.field-input.error{border-color:var(--error)}
+.field-helper{font-size:11px;color:#94A3B8;margin-top:5px}
+.field-helper.error{color:var(--error)}
+.switch{width:44px;height:26px;border-radius:14px;background:var(--primary);position:relative}
+.switch .dot{width:20px;height:20px;border-radius:50%;background:#fff;position:absolute;top:3px;right:3px}
+.switch.off{background:#E2E8F0}
+.switch.off .dot{left:3px;right:auto}
+.radio{width:20px;height:20px;border-radius:50%;border:2px solid var(--primary);display:flex;align-items:center;justify-content:center}
+.radio .dot{width:10px;height:10px;border-radius:50%;background:var(--primary)}
+.seg{display:inline-flex;border:1.5px solid #E2E8F0;border-radius:10px;overflow:hidden}
+.seg div{padding:8px 16px;font-size:12.5px;font-weight:600;color:var(--text2)}
+.seg div.active{background:var(--primary);color:#fff}
+.readonly{background:rgba(15,23,42,0.04);border-radius:12px;padding:10px 14px}
+.readonly .rl{font-size:11px;color:var(--text2)}
+.readonly .rv{font-size:13.5px;font-weight:600;margin-top:2px}
+
+/* ===== NAV ===== */
+.navbar{background:#fff;border-top:1px solid #E2E8F0;display:flex;padding:10px 0 6px}
+.navitem{flex:1;text-align:center;font-size:10.5px;color:#94A3B8;font-weight:600}
+.navitem.active{color:var(--primary)}
+.navicon{font-size:20px;margin-bottom:2px;position:relative}
+.appbar{background:#fff;height:56px;display:flex;align-items:center;padding:0 16px;border-bottom:1px solid #F1F5F9}
+.appbar-title{font-family:'Poppins';font-weight:600;font-size:18px}
+.bell{position:relative;font-size:20px}
+.bell .dot{position:absolute;top:-2px;right:-2px;width:9px;height:9px;background:var(--error);border-radius:50%;border:2px solid #fff}
+
+/* ===== FEEDBACK ===== */
+.empty-state{text-align:center;padding:32px 16px;color:#94A3B8}
+.empty-icon{font-size:44px;opacity:.5;margin-bottom:10px}
+.empty-title{font-family:'Poppins';font-weight:600;font-size:15px;color:var(--text)}
+.empty-msg{font-size:12.5px;margin-top:4px;max-width:220px;margin-left:auto;margin-right:auto}
+.shimmer{background:linear-gradient(90deg,#E2E8F0,#F1F5F9,#E2E8F0);border-radius:10px}
+.toast{background:#1E293B;color:#fff;border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.cart-bar{background:#1E293B;border-radius:16px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+
+/* ===== SECTION CARD ===== */
+.section-card{background:#fff;border-radius:12px;padding:16px;border:1px solid #E2E8F0}
+.section-card .sc-title{font-family:'Poppins';font-weight:600;font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:12px}
+
+/* ===== MISC ===== */
+.profile-header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:20px;padding:18px;color:#fff}
+.avatar{width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px}
+.promo{background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:14px;padding:16px;color:#fff;height:92px;display:flex;align-items:center;gap:12px}
+.rate-row{display:flex;justify-content:space-between;padding:10px 12px;font-size:13px;border-bottom:1px solid #F1F5F9}
+.rate-row.active{background:rgba(124,58,237,0.08);border-radius:8px;font-weight:700;color:var(--primary)}
+.stat-card{background:#fff;border-radius:16px;padding:16px;border:1px solid #E2E8F0;box-shadow:0 4px 10px rgba(0,0,0,0.03)}
+.stat-title{font-size:12.5px;font-weight:600;color:var(--text2)}
+.stat-value{font-family:'Poppins';font-weight:700;font-size:26px;margin-top:6px}
+.dialog{background:#fff;border-radius:20px;padding:20px;width:280px}
+.dialog h3{font-size:16px;margin-bottom:8px}
+.dialog p{font-size:13px;color:var(--text2);margin-bottom:18px}
+.sheet{background:#fff;border-radius:20px 20px 0 0;padding:16px 16px 20px}
+.sheet .handle{width:36px;height:4px;background:#E2E8F0;border-radius:2px;margin:0 auto 14px}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="page-head">
+    <h1>Jyoti Traders — Component Library</h1>
+    <p>Real tokens and shared widgets extracted from the Flutter codebase (lib/core/theme, lib/shared/widgets, lib/features/admin/widgets). Import into Figma via the html.to.design plugin.</p>
+  </div>
+
+  <!-- COLORS -->
+  <div class="section" id="colors">
+    <div class="section-title">Colors</div>
+    <div class="grid">
+      <div class="cell"><div class="swatch" style="background:#7C3AED"></div><div class="swatch-name">Primary</div><div class="swatch-hex">#7C3AED</div></div>
+      <div class="cell"><div class="swatch" style="background:#A78BFA"></div><div class="swatch-name">Primary Light</div><div class="swatch-hex">#A78BFA</div></div>
+      <div class="cell"><div class="swatch" style="background:#5B21B6"></div><div class="swatch-name">Primary Dark</div><div class="swatch-hex">#5B21B6</div></div>
+      <div class="cell"><div class="swatch" style="background:#0D9488"></div><div class="swatch-name">Accent (Teal)</div><div class="swatch-hex">#0D9488</div></div>
+      <div class="cell"><div class="swatch" style="background:#2DD4BF"></div><div class="swatch-name">Accent Light</div><div class="swatch-hex">#2DD4BF</div></div>
+      <div class="cell"><div class="swatch" style="background:#F8FAFC;border:1px solid #E2E8F0"></div><div class="swatch-name">Background</div><div class="swatch-hex">#F8FAFC</div></div>
+      <div class="cell"><div class="swatch" style="background:#FFFFFF;border:1px solid #E2E8F0"></div><div class="swatch-name">Surface</div><div class="swatch-hex">#FFFFFF</div></div>
+      <div class="cell"><div class="swatch" style="background:#10B981"></div><div class="swatch-name">Success</div><div class="swatch-hex">#10B981</div></div>
+      <div class="cell"><div class="swatch" style="background:#F59E0B"></div><div class="swatch-name">Warning</div><div class="swatch-hex">#F59E0B</div></div>
+      <div class="cell"><div class="swatch" style="background:#EF4444"></div><div class="swatch-name">Error</div><div class="swatch-hex">#EF4444</div></div>
+      <div class="cell"><div class="swatch" style="background:#06B6D4"></div><div class="swatch-name">Info</div><div class="swatch-hex">#06B6D4</div></div>
+      <div class="cell"><div class="swatch" style="background:#16A34A"></div><div class="swatch-name">Discount Badge</div><div class="swatch-hex">#16A34A</div></div>
+      <div class="cell"><div class="swatch" style="background:#0F172A"></div><div class="swatch-name">Text Primary</div><div class="swatch-hex">#0F172A</div></div>
+      <div class="cell"><div class="swatch" style="background:#475569"></div><div class="swatch-name">Text Secondary</div><div class="swatch-hex">#475569</div></div>
+      <div class="cell"><div class="swatch" style="background:#0F172A"></div><div class="swatch-name">Background Dark</div><div class="swatch-hex">#0F172A</div></div>
+      <div class="cell"><div class="swatch" style="background:#1E293B"></div><div class="swatch-name">Surface Dark</div><div class="swatch-hex">#1E293B</div></div>
+    </div>
+    <div class="label" style="margin-top:24px">Category palette (rotates by index % 6)</div>
+    <div class="grid">
+      <div class="cell"><div class="swatch" style="background:#1D4ED8"></div><div class="swatch-hex">#1D4ED8</div></div>
+      <div class="cell"><div class="swatch" style="background:#EA580C"></div><div class="swatch-hex">#EA580C</div></div>
+      <div class="cell"><div class="swatch" style="background:#0D9488"></div><div class="swatch-hex">#0D9488</div></div>
+      <div class="cell"><div class="swatch" style="background:#7C3AED"></div><div class="swatch-hex">#7C3AED</div></div>
+      <div class="cell"><div class="swatch" style="background:#BE185D"></div><div class="swatch-hex">#BE185D</div></div>
+      <div class="cell"><div class="swatch" style="background:#15803D"></div><div class="swatch-hex">#15803D</div></div>
+    </div>
+  </div>
+
+  <!-- TYPOGRAPHY -->
+  <div class="section" id="type">
+    <div class="section-title">Typography — Poppins (headings) / Inter (body)</div>
+    <div class="cell cell-wide" style="max-width:700px">
+      <div class="type-row"><div class="poppins" style="font-size:32px;font-weight:700">Display Large</div><div class="type-meta">Poppins / 32 / Bold</div></div>
+      <div class="type-row"><div class="poppins" style="font-size:20px;font-weight:600">Title Large — App Bar / Section Header</div><div class="type-meta">Poppins / 20 / SemiBold</div></div>
+      <div class="type-row"><div style="font-size:16px">Body Large</div><div class="type-meta">Inter / 16 / Regular</div></div>
+      <div class="type-row"><div style="font-size:14px;color:var(--text2)">Body Medium (secondary)</div><div class="type-meta">Inter / 14 / Regular / #475569</div></div>
+      <div class="type-row"><div style="font-size:12.5px;font-weight:600">Product name (card)</div><div class="type-meta">Inter / 12.5 / SemiBold</div></div>
+      <div class="type-row"><div style="font-size:14px;font-weight:700;color:var(--primary)">Price</div><div class="type-meta">Inter / 14 / Bold / Primary</div></div>
+      <div class="type-row"><div style="font-size:15px;font-weight:700">Button Label</div><div class="type-meta">Inter / 15 / Bold</div></div>
+      <div class="type-row"><div style="font-size:11px;font-weight:700">Badge Label</div><div class="type-meta">11 / Bold</div></div>
+    </div>
+  </div>
+
+  <!-- SPACING / RADIUS -->
+  <div class="section">
+    <div class="section-title">Spacing / Radius / Elevation</div>
+    <div class="grid">
+      <div class="cell"><div class="label">Card radius</div>12px · elevation 1</div>
+      <div class="cell"><div class="label">Product / category card radius</div>16px</div>
+      <div class="cell"><div class="label">Pill / chip / stepper radius</div>8–10px</div>
+      <div class="cell"><div class="label">Bottom sheet top radius</div>20px</div>
+      <div class="cell"><div class="label">Screen / card padding</div>16px</div>
+      <div class="cell"><div class="label">Row / compact padding</div>10–12px</div>
+      <div class="cell"><div class="label">PrimaryButton height</div>50px, full width</div>
+      <div class="cell"><div class="label">Stat card shadow</div>black@3–20% blur 10 offset(0,4)</div>
+      <div class="cell"><div class="label">Cart bar / toast shadow</div>black@25% blur 16 offset(0,6)</div>
+    </div>
+  </div>
+
+  <!-- BUTTONS -->
+  <div class="section">
+    <div class="section-title">Buttons</div>
+    <div class="grid">
+      <div class="cell"><div class="label">PrimaryButton — default</div><div class="btn-primary">Place Order</div></div>
+      <div class="cell"><div class="label">PrimaryButton — with icon</div><div class="btn-primary">✓ Place Order</div></div>
+      <div class="cell"><div class="label">PrimaryButton — loading</div><div class="btn-primary loading"><div class="spinner"></div></div></div>
+      <div class="cell"><div class="label">PrimaryButton — disabled</div><div class="btn-primary disabled">Out of Stock</div></div>
+      <div class="cell"><div class="label">Outlined Button</div><div class="btn-outlined">Buy Again</div></div>
+      <div class="cell"><div class="label">Outlined — error</div><div class="btn-outlined error">Cancel</div></div>
+      <div class="cell"><div class="label">Outlined — success</div><div class="btn-outlined success">Mark as Paid</div></div>
+      <div class="cell"><div class="label">Text button</div><div class="btn-text">Sign Up</div></div>
+      <div class="cell"><div class="label">Text button — error</div><div class="btn-text error">Sign Out</div></div>
+      <div class="cell"><div class="label">Extended FAB</div><div class="fab">+ Add Product</div></div>
+    </div>
+  </div>
+
+  <!-- PRODUCT / CATEGORY CARDS -->
+  <div class="section">
+    <div class="section-title">Product &amp; Category Cards</div>
+    <div class="grid">
+      <div class="cell"><div class="label">ProductCard — add to cart</div>
+        <div class="product-card"><div class="product-img">🛢</div><div class="product-body">
+          <div class="product-name">Sunflower Oil 15L Tin</div><div class="product-unit">per tin</div>
+          <div class="row between product-row"><div class="product-price">₹1,850</div><div class="pill-add">ADD</div></div>
+        </div></div>
+      </div>
+      <div class="cell"><div class="label">ProductCard — in cart (compact stepper)</div>
+        <div class="product-card"><div class="product-img">🍚</div><div class="product-body">
+          <div class="product-name">Basmati Rice Premium 25kg</div><div class="product-unit">from ₹68/kg</div>
+          <div class="row between product-row"><div class="product-price">₹1,700</div><div class="stepper-compact">−&nbsp;2&nbsp;+</div></div>
+        </div></div>
+      </div>
+      <div class="cell"><div class="label">ProductCard — out of stock</div>
+        <div class="product-card"><div class="product-img">🧂</div><div class="product-body">
+          <div class="product-name">Iodised Salt 1kg Pack</div><div class="product-unit">per pack</div>
+          <div class="row between product-row"><div class="product-price">₹22</div><div class="pill-outofstock">ADD</div></div>
+          <div style="font-size:11px;color:var(--error);font-weight:600;margin-top:4px">Out of stock</div>
+        </div></div>
+      </div>
+      <div class="cell"><div class="label">CategoryCard</div>
+        <div class="category-card"><div class="category-circle" style="background:#1D4ED8">🌾</div><div class="category-label">Grains &amp; Cereals</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BADGES / CHIPS -->
+  <div class="section">
+    <div class="section-title">Badges &amp; Chips</div>
+    <div class="grid">
+      <div class="cell"><div class="label">OrderStatusBadge — states</div>
+        <div class="row wrap g8">
+          <div class="badge" style="background:rgba(245,158,11,.12);color:#F59E0B">PENDING</div>
+          <div class="badge" style="background:rgba(6,182,212,.12);color:#06B6D4">CONFIRMED</div>
+          <div class="badge" style="background:rgba(124,58,237,.12);color:#7C3AED">OUT FOR DELIVERY</div>
+          <div class="badge" style="background:rgba(16,185,129,.12);color:#10B981">DELIVERED</div>
+          <div class="badge" style="background:rgba(239,68,68,.12);color:#EF4444">CANCELLED</div>
+        </div>
+      </div>
+      <div class="cell"><div class="label">StatusFilterChip</div>
+        <div class="row g8"><div class="chip selected">✓ All</div><div class="chip">Pending</div><div class="chip">Delivered</div></div>
+      </div>
+      <div class="cell"><div class="label">AddToCartPill / OutOfStockPill</div>
+        <div class="row g12"><div class="pill-add">ADD</div><div class="pill-outofstock">ADD</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEPPERS -->
+  <div class="section">
+    <div class="section-title">Steppers</div>
+    <div class="grid">
+      <div class="cell"><div class="label">QtyStepper — full outlined</div><div class="qty-stepper"><button>−</button><div class="val">3</div><button>+</button></div></div>
+      <div class="cell cell-wide"><div class="label">OrderTrackingStepper — in progress</div>
+        <div class="track">
+          <div class="track-step"><div class="track-icon done">🧾</div><div class="track-label">Order Placed</div></div>
+          <div class="track-line done"></div>
+          <div class="track-step"><div class="track-icon done">✔</div><div class="track-label">Confirmed</div></div>
+          <div class="track-line"></div>
+          <div class="track-step"><div class="track-icon pending">🚚</div><div class="track-label" style="color:#94A3B8">Out for Delivery</div></div>
+          <div class="track-line"></div>
+          <div class="track-step"><div class="track-icon pending">🏠</div><div class="track-label" style="color:#94A3B8">Delivered</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INPUTS / FORMS -->
+  <div class="section">
+    <div class="section-title">Inputs &amp; Forms</div>
+    <div class="grid">
+      <div class="cell"><div class="label">Text field — default</div>
+        <div class="field"><div class="field-label">Email Address</div><div class="field-input">✉ you@example.com</div></div>
+      </div>
+      <div class="cell"><div class="label">Text field — focused</div>
+        <div class="field"><div class="field-label">Password</div><div class="field-input focus">🔒 ••••••••</div></div>
+      </div>
+      <div class="cell"><div class="label">Text field — error + helper</div>
+        <div class="field"><div class="field-label">Phone Number</div><div class="field-input error">📱 98765</div><div class="field-helper error">10-digit mobile number</div></div>
+      </div>
+      <div class="cell"><div class="label">ReadOnlyField</div>
+        <div class="readonly"><div class="rl">Detected Location</div><div class="rv">🔒 MG Road, Pune, 411001</div></div>
+      </div>
+      <div class="cell"><div class="label">Switch — on / off</div>
+        <div class="row g16"><div class="switch"><div class="dot"></div></div><div class="switch off"><div class="dot"></div></div></div>
+      </div>
+      <div class="cell"><div class="label">Radio — selected / unselected</div>
+        <div class="row g16"><div class="radio"><div class="dot"></div></div><div class="radio" style="border-color:#CBD5E1"></div></div>
+      </div>
+      <div class="cell"><div class="label">SegmentedButton — Theme</div>
+        <div class="seg"><div class="active">System</div><div>Light</div><div>Dark</div></div>
+      </div>
+      <div class="cell cell-wide"><div class="label">RateSlabTable — weighed pricing</div>
+        <div style="border:1px solid #E2E8F0;border-radius:12px;overflow:hidden">
+          <div class="rate-row"><span>Below 240 g</span><span>₹75/kg</span></div>
+          <div class="rate-row active"><span>240 g – 999 g</span><span>₹70/kg</span></div>
+          <div class="rate-row"><span>1 kg – 2.4 kg</span><span>₹68/kg</span></div>
+          <div class="rate-row" style="border-bottom:none"><span>Above 2.4 kg</span><span>₹65/kg</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION -->
+  <div class="section">
+    <div class="section-title">Navigation</div>
+    <div class="grid">
+      <div class="cell"><div class="label">AppBar + NotificationBellButton</div>
+        <div class="appbar"><div class="appbar-title">Jyoti Traders</div><div style="flex:1"></div><div class="bell">🔔<div class="dot"></div></div></div>
+      </div>
+      <div class="cell cell-wide"><div class="label">BottomNavBar — Retailer (5 tabs)</div>
+        <div class="navbar">
+          <div class="navitem active"><div class="navicon">🏬</div>Home</div>
+          <div class="navitem"><div class="navicon">🔍</div>Search</div>
+          <div class="navitem"><div class="navicon">🛒<div style="position:absolute" ></div></div>Cart</div>
+          <div class="navitem"><div class="navicon">🧾</div>Orders</div>
+          <div class="navitem"><div class="navicon">👤</div>Profile</div>
+        </div>
+      </div>
+      <div class="cell cell-wide"><div class="label">AdminBottomNavBar (5 tabs)</div>
+        <div class="navbar">
+          <div class="navitem active"><div class="navicon">📊</div>Dashboard</div>
+          <div class="navitem"><div class="navicon">🧾</div>Orders</div>
+          <div class="navitem"><div class="navicon">📦</div>Catalog</div>
+          <div class="navitem"><div class="navicon">🏬</div>Retailers</div>
+          <div class="navitem"><div class="navicon">👤</div>Profile</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FEEDBACK -->
+  <div class="section">
+    <div class="section-title">Feedback &amp; Empty/Loading/Error States</div>
+    <div class="grid">
+      <div class="cell"><div class="label">EmptyStateWidget</div>
+        <div class="empty-state"><div class="empty-icon">🗂</div><div class="empty-title">No orders yet</div><div class="empty-msg">Your placed orders will show up here.</div></div>
+      </div>
+      <div class="cell"><div class="label">ErrorStateWidget</div>
+        <div class="empty-state"><div class="empty-icon" style="color:#EF4444;opacity:1">⚠</div><div class="empty-title">Couldn't load orders</div><div class="btn-text" style="margin-top:10px;display:inline-block">Retry</div></div>
+      </div>
+      <div class="cell"><div class="label">ShimmerLoader — grid / list</div>
+        <div class="col g8"><div class="shimmer" style="height:16px;width:80%"></div><div class="shimmer" style="height:16px;width:60%"></div><div class="shimmer" style="height:60px"></div></div>
+      </div>
+      <div class="cell cell-wide"><div class="label">InlineToast</div>
+        <div class="toast">✔ Basmati Rice added to cart <span style="margin-left:auto;font-weight:700;color:var(--primary-light)">VIEW CART</span></div>
+      </div>
+      <div class="cell cell-wide"><div class="label">FloatingCartBar</div>
+        <div class="cart-bar"><div><div style="font-size:11px;color:rgba(255,255,255,.6)">3 items</div><div style="font-weight:700">₹3,450</div></div><div class="btn-primary" style="width:auto;padding:0 18px">View Cart →</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARDS / MISC -->
+  <div class="section">
+    <div class="section-title">Section Cards, Stat Cards &amp; Misc</div>
+    <div class="grid">
+      <div class="cell"><div class="label">SectionCard</div>
+        <div class="section-card"><div class="sc-title">📍 Delivery Address</div><div style="font-size:12.5px;color:var(--text2)">Form fields render here</div></div>
+      </div>
+      <div class="cell"><div class="label">AdminStatCard</div>
+        <div class="stat-card"><div class="row between"><div class="stat-title">Pending Approvals</div><div>⏳</div></div><div class="stat-value">7</div></div>
+      </div>
+      <div class="cell"><div class="label">ProfileHeaderCard</div>
+        <div class="profile-header row g12"><div class="avatar">S</div><div><div style="font-weight:700;font-size:17px">Sharma General Store</div><div style="font-size:12px;color:rgba(255,255,255,.85)">Ramesh Sharma · 98765 43210</div></div></div>
+      </div>
+      <div class="cell cell-wide"><div class="label">PromoBannerCarousel — slide</div>
+        <div class="promo">🚚 <div><div style="font-weight:700;font-size:14px">Own Fleet Delivery</div><div style="font-size:11px;color:rgba(255,255,255,.9)">Fast, reliable delivery on every order</div></div></div>
+      </div>
+      <div class="cell"><div class="label">EmptyApprovalQueueCard</div>
+        <div class="empty-state" style="border:1px solid #E2E8F0;border-radius:14px;padding:20px"><div class="empty-icon" style="color:#10B981;opacity:1">✅</div><div class="empty-title">Approval queue is clear!</div><div class="empty-msg">All registered customers are verified.</div></div>
+      </div>
+      <div class="cell cell-wide"><div class="label">RetailerApprovalCard</div>
+        <div style="border:1px solid #E2E8F0;border-radius:12px;padding:14px">
+          <div class="row g10"><div class="avatar" style="background:rgba(124,58,237,.1);color:var(--primary)">P</div><div><div style="font-weight:700;font-size:14px">Patil Kirana Store</div><div style="font-size:12px;color:var(--text2)">Owner: Sunil Patil · 90211 22334</div></div></div>
+          <div style="border-top:1px solid #F1F5F9;margin:12px 0"></div>
+          <div class="row between"><div class="btn-text error">Reject</div><div class="btn-outlined success" style="width:auto;padding:0 16px;height:38px">✓ Approve</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERLAYS -->
+  <div class="section">
+    <div class="section-title">Dialogs &amp; Bottom Sheets</div>
+    <div class="grid">
+      <div class="cell"><div class="label">AlertDialog — confirm/destructive</div>
+        <div class="dialog"><h3>Cancel this order?</h3><p>This cannot be undone.</p><div class="row between"><div class="btn-text">No</div><div class="btn-text error">Yes, Cancel</div></div></div>
+      </div>
+      <div class="cell"><div class="label">AlertDialog — informative action</div>
+        <div class="dialog"><h3>Change Password?</h3><p>We'll send a password reset link to you@example.com.</p><div class="row between"><div class="btn-text">Cancel</div><div class="btn-text">Send Link</div></div></div>
+      </div>
+      <div class="cell cell-wide"><div class="label">Bottom Sheet — QuantitySheet</div>
+        <div class="sheet"><div class="handle"></div>
+          <div class="row g10"><div class="product-img" style="width:44px;height:44px;border-radius:10px;font-size:18px">🍚</div><div style="font-weight:600;font-size:13.5px">Basmati Rice Premium 25kg</div></div>
+          <div class="row g8" style="margin:14px 0"><div class="chip selected">1 kg</div><div class="chip">2 kg</div><div class="chip">5 kg</div></div>
+          <div class="row between" style="margin-bottom:14px"><div style="font-weight:700;font-size:18px" class="poppins">₹68.00</div><div class="qty-stepper"><button>−</button><div class="val">1kg</div><button>+</button></div></div>
+          <div class="btn-primary">Add to Cart</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

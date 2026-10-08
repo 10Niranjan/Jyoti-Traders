@@ -3,71 +3,112 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/theme/theme_controller.dart';
+import '../../../core/utils/date_formatter.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../../shared/widgets/edit_basic_info_sheet.dart';
 import '../../../shared/widgets/profile_header_card.dart';
 import '../../../shared/widgets/section_card.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/controllers/auth_state.dart';
 import '../../profile/controllers/profile_controller.dart';
+import '../../settings/widgets/settings_list.dart';
+import '../../settings/widgets/settings_widgets.dart';
+import '../../profile/widgets/edit_sheet_frame.dart';
+import '../widgets/business_profile_sheet.dart';
+import '../../settings/controllers/business_profile_controller.dart';
+import '../../../domain/entities/business_profile_entity.dart';
+import 'delivery_settings_screen.dart';
 
-/// The admin/wholesaler's own account screen — identity, appearance, and
-/// logout. Everything else admin-specific (orders, retailers, products,
-/// categories, delivery settings) already lives on its own screen off the
-/// dashboard; this just gives the admin's own account a home, matching the
-/// retailer side's `ProfileScreen`.
-class AdminProfileScreen extends ConsumerWidget {
+/// The admin/wholesaler's own account screen — identity in the "Profile" tab,
+/// app-wide preferences and account actions in "Settings". Everything else
+/// admin-specific (orders, retailers, products, categories, delivery
+/// settings) already lives on its own screen off the dashboard.
+class AdminProfileScreen extends ConsumerStatefulWidget {
   const AdminProfileScreen({super.key});
 
-  Future<void> _pickProfilePhoto(BuildContext context, WidgetRef ref, String uid) async {
+  @override
+  ConsumerState<AdminProfileScreen> createState() => _AdminProfileScreenState();
+}
+
+class _AdminProfileScreenState extends ConsumerState<AdminProfileScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickProfilePhoto(String uid) async {
     try {
       final picked = await ImagePicker().pickImage(
         source: ImageSource.gallery,
         maxWidth: 800,
         imageQuality: 85,
       );
-      if (picked == null) return;
-      await ref.read(profileControllerProvider.notifier).updatePhoto(uid: uid, localFilePath: picked.path);
-      if (!context.mounted) return;
+      if (picked == null || !mounted) return;
+      await ref
+          .read(profileControllerProvider.notifier)
+          .updatePhoto(uid: uid, localFilePath: picked.path);
+      if (!mounted) return;
       final result = ref.read(profileControllerProvider);
       if (result.hasError) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Couldn\'t update photo: ${result.error}'), backgroundColor: AppColors.error),
+          SnackBar(
+            content: Text(
+              l10n.profileUpdatePhotoError(result.error.toString()),
+            ),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } catch (e) {
-      if (!context.mounted) return;
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Couldn\'t open the gallery: $e'), backgroundColor: AppColors.error),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.upiGalleryError(e.toString()),
+          ),
+          backgroundColor: AppColors.error,
+        ),
       );
     }
   }
 
-  Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
+  /// Delivery settings used to be its own pushed screen; Phase 9.6 folds it
+  /// in here as a sheet instead, reusing [DeliveryConfigFormView] (which
+  /// already handles its own scrolling/keyboard-avoidance) unchanged — same
+  /// `showModalBottomSheet` pattern this screen already uses for editing
+  /// basic info.
+  void _openDeliverySettings(BuildContext context) {
+    showModalBottomSheet(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('Log out?', style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 17)),
-        content: Text(
-          'You\'ll need to sign in again to access the admin panel.',
-          style: GoogleFonts.inter(fontSize: 13),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Cancel')),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('Log Out', style: TextStyle(color: AppColors.error)),
-          ),
-        ],
+      useRootNavigator: true,
+      isScrollControlled: true,
+      showDragHandle: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      // The form opens with its own hero card (which carries the title) and a
+      // pinned Save bar, so it fills the sheet rather than sitting under a
+      // heading.
+      builder: (sheetContext) => SizedBox(
+        height: MediaQuery.of(sheetContext).size.height * 0.92,
+        child: const DeliveryConfigFormView(),
       ),
     );
-    if (confirmed == true && context.mounted) {
-      ref.read(authControllerProvider.notifier).signOut();
-    }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final authState = ref.watch(authControllerProvider);
     final profileState = ref.watch(profileControllerProvider);
 
@@ -75,64 +116,124 @@ class AdminProfileScreen extends ConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final user = authState.user;
+    final unselectedColor = Theme.of(
+      context,
+    ).colorScheme.onSurface.withOpacity(0.6);
+    final business =
+        ref.watch(businessProfileProvider).valueOrNull ??
+        BusinessProfileEntity.empty;
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Admin Profile', style: GoogleFonts.poppins(fontWeight: FontWeight.bold))),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      appBar: AppBar(
+        title: Text(
+          l10n.adminProfileTitle,
+          style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+        ),
+        bottom: TabBar(
+          controller: _tabController,
+          labelColor: AppColors.primary,
+          unselectedLabelColor: unselectedColor,
+          indicatorColor: AppColors.primary,
+          tabs: [
+            Tab(icon: const Icon(Icons.person_outline), text: l10n.navProfile),
+            Tab(
+              icon: const Icon(Icons.settings_outlined),
+              text: l10n.profileSettingsTab,
+            ),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
         children: [
-          ProfileHeaderCard(
-            title: user.name,
-            subtitleLines: [user.email, user.phone],
-            photoUrl: user.photoUrl,
-            isUploadingPhoto: profileState.isLoading,
-            onEdit: () => showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-              builder: (_) => EditBasicInfoSheet(user: user, showShopName: false),
-            ),
-            onTapPhoto: () => _pickProfilePhoto(context, ref, user.uid),
-          ),
-          const SizedBox(height: 20),
-          SectionCard(
-            title: 'Appearance',
-            icon: Icons.palette_outlined,
-            child: SegmentedButton<ThemeMode>(
-              segments: const [
-                ButtonSegment(
-                  value: ThemeMode.system,
-                  label: Text('System'),
-                  icon: Icon(Icons.brightness_auto_outlined),
+          ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              ProfileHeaderCard(
+                title: user.name,
+                subtitleLines: [user.email, user.phone],
+                photoUrl: user.photoUrl,
+                isUploadingPhoto: profileState.isLoading,
+                onEdit: () => showModalBottomSheet(
+                  context: context,
+                  useRootNavigator: true,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
+                  ),
+                  builder: (_) =>
+                      EditBasicInfoSheet(user: user, showShopName: false),
                 ),
-                ButtonSegment(
-                  value: ThemeMode.light,
-                  label: Text('Light'),
-                  icon: Icon(Icons.light_mode_outlined),
-                ),
-                ButtonSegment(
-                  value: ThemeMode.dark,
-                  label: Text('Dark'),
-                  icon: Icon(Icons.dark_mode_outlined),
-                ),
-              ],
-              selected: {ref.watch(themeModeProvider)},
-              onSelectionChanged: (selection) =>
-                  ref.read(themeModeProvider.notifier).setThemeMode(selection.first),
-            ),
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => _confirmLogout(context, ref),
-              icon: const Icon(Icons.logout_rounded, color: AppColors.error),
-              label: const Text('Log Out', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.bold)),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: AppColors.error),
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                onTapPhoto: () => _pickProfilePhoto(user.uid),
               ),
-            ),
+              const SizedBox(height: 16),
+              SectionCard(
+                title: l10n.profileAccountInfo,
+                icon: Icons.badge_outlined,
+                child: Column(
+                  children: [
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(
+                        Icons.shield_outlined,
+                        color: AppColors.primary,
+                      ),
+                      title: Text(l10n.profileRoleLabel),
+                      trailing: Text(
+                        l10n.profileRoleAdmin,
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(
+                        Icons.event_outlined,
+                        color: AppColors.primary,
+                      ),
+                      title: Text(
+                        l10n.profileMemberSince(
+                          formatOrderDate(user.createdAt),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              SettingsGroup(
+                children: [
+                  SettingsRow(
+                    icon: Icons.storefront_outlined,
+                    title: l10n.profileBusinessDetails,
+                    // The legal name is long-form, so it goes in the subtitle line.
+                    subtitle: business.legalName.isEmpty
+                        ? l10n.adminBusinessPrintedOnInvoices
+                        : business.legalName,
+                    value: business.legalName.isEmpty
+                        ? l10n.profileValueNotSet
+                        : null,
+                    onTap: () => showEditSheet(
+                      context,
+                      child: BusinessProfileSheet(initial: business),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          SettingsList(
+            email: user.email,
+            extraRows: [
+              SettingsRow(
+                icon: Icons.local_shipping_outlined,
+                title: l10n.profileDeliverySettings,
+                subtitle: l10n.profileDeliverySettingsSubtitle,
+                onTap: () => _openDeliverySettings(context),
+              ),
+            ],
           ),
         ],
       ),

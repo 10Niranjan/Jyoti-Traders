@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../constants/storage_paths.dart';
 import '../network/firebase_mode.dart';
+import '../utils/app_logger.dart';
 
 /// Uploads product images, category icons, and UPI payment screenshots to
 /// Firebase Storage, with the same
@@ -27,16 +27,25 @@ class ImageUploadService {
   factory ImageUploadService({FirebaseStorage? storage}) {
     try {
       final instance = storage ?? FirebaseStorage.instance;
-      return ImageUploadService._(instance, isFirebasePlaceholder(Firebase.app()));
+      return ImageUploadService._(
+        instance,
+        isFirebasePlaceholder(Firebase.app()),
+      );
     } catch (e) {
-      debugPrint('ImageUploadService: Firebase Storage unavailable, using simulation mode: $e');
+      logWarning(
+        'ImageUploadService: Firebase Storage unavailable, using simulation mode',
+        e,
+      );
       return ImageUploadService._(null, true);
     }
   }
 
   /// Returns the uploaded image's download URL, or the local file path when
   /// running in simulation mode.
-  Future<String> uploadProductImage({required String productId, required String localFilePath}) async {
+  Future<String> uploadProductImage({
+    required String productId,
+    required String localFilePath,
+  }) async {
     if (_useMock || _storage == null) {
       return localFilePath;
     }
@@ -53,13 +62,19 @@ class ImageUploadService {
     try {
       await _storage.ref(StoragePaths.productImage(productId)).delete();
     } catch (e) {
-      debugPrint('ImageUploadService: no stored image to delete for $productId ($e)');
+      logWarning(
+        'ImageUploadService: no stored image to delete for $productId',
+        e,
+      );
     }
   }
 
   /// Same upload/simulation-fallback behavior as [uploadProductImage], for
   /// category icons.
-  Future<String> uploadCategoryIcon({required String categoryId, required String localFilePath}) async {
+  Future<String> uploadCategoryIcon({
+    required String categoryId,
+    required String localFilePath,
+  }) async {
     if (_useMock || _storage == null) {
       return localFilePath;
     }
@@ -73,13 +88,19 @@ class ImageUploadService {
     try {
       await _storage.ref(StoragePaths.categoryIcon(categoryId)).delete();
     } catch (e) {
-      debugPrint('ImageUploadService: no stored icon to delete for $categoryId ($e)');
+      logWarning(
+        'ImageUploadService: no stored icon to delete for $categoryId',
+        e,
+      );
     }
   }
 
   /// Same upload/simulation-fallback behavior as [uploadProductImage], for
   /// a retailer's optional UPI payment screenshot.
-  Future<String> uploadPaymentScreenshot({required String orderId, required String localFilePath}) async {
+  Future<String> uploadPaymentScreenshot({
+    required String orderId,
+    required String localFilePath,
+  }) async {
     if (_useMock || _storage == null) {
       return localFilePath;
     }
@@ -90,7 +111,10 @@ class ImageUploadService {
 
   /// Same upload/simulation-fallback behavior as [uploadProductImage], for
   /// a retailer or admin's profile photo.
-  Future<String> uploadProfilePhoto({required String uid, required String localFilePath}) async {
+  Future<String> uploadProfilePhoto({
+    required String uid,
+    required String localFilePath,
+  }) async {
     if (_useMock || _storage == null) {
       return localFilePath;
     }
@@ -100,4 +124,6 @@ class ImageUploadService {
   }
 }
 
-final imageUploadServiceProvider = Provider<ImageUploadService>((ref) => ImageUploadService());
+final imageUploadServiceProvider = Provider<ImageUploadService>(
+  (ref) => ImageUploadService(),
+);

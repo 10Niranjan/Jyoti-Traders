@@ -86,6 +86,8 @@ class OrderModel {
   final String? notes;
   final String? paymentScreenshotUrl;
   final DateTime createdAt;
+  final String? couponCode;
+  final double? discount;
 
   OrderModel({
     required this.id,
@@ -101,6 +103,8 @@ class OrderModel {
     this.notes,
     this.paymentScreenshotUrl,
     required this.createdAt,
+    this.couponCode,
+    this.discount,
   });
 
   factory OrderModel.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -113,14 +117,18 @@ class OrderModel {
 
   static OrderModel _fromJson(String id, Map<String, dynamic> json) {
     final itemsJson = (json['items'] as List<dynamic>? ?? []);
-    final addressMap = Map<String, dynamic>.from(json['deliveryAddress'] as Map? ?? {});
+    final addressMap = Map<String, dynamic>.from(
+      json['deliveryAddress'] as Map? ?? {},
+    );
 
     return OrderModel(
       id: id,
       userId: json['userId'] as String? ?? '',
       shopName: json['shopName'] as String? ?? '',
       items: itemsJson
-          .map((e) => OrderItemModel.fromJson(Map<String, dynamic>.from(e as Map)))
+          .map(
+            (e) => OrderItemModel.fromJson(Map<String, dynamic>.from(e as Map)),
+          )
           .toList(),
       subtotal: (json['subtotal'] as num?)?.toDouble() ?? 0,
       deliveryCharge: (json['deliveryCharge'] as num?)?.toDouble() ?? 0,
@@ -137,6 +145,8 @@ class OrderModel {
       notes: json['notes'] as String?,
       paymentScreenshotUrl: json['paymentScreenshotUrl'] as String?,
       createdAt: parseFirestoreDate(json['createdAt']),
+      couponCode: json['couponCode'] as String?,
+      discount: (json['discount'] as num?)?.toDouble(),
     );
   }
 
@@ -147,7 +157,9 @@ class OrderModel {
       'items': items.map((e) => e.toJson()).toList(),
       'subtotal': subtotal,
       'deliveryCharge': deliveryCharge,
-      'grandTotal': subtotal + deliveryCharge,
+      'couponCode': couponCode,
+      'discount': discount,
+      'grandTotal': subtotal - (discount ?? 0) + deliveryCharge,
       'paymentMethod': paymentMethod,
       'paymentStatus': paymentStatus,
       'orderStatus': orderStatus,
@@ -182,6 +194,8 @@ class OrderModel {
       notes: notes,
       paymentScreenshotUrl: paymentScreenshotUrl,
       createdAt: createdAt,
+      couponCode: couponCode,
+      discount: discount == null ? null : Money(discount!),
     );
   }
 
@@ -200,6 +214,8 @@ class OrderModel {
       notes: entity.notes,
       paymentScreenshotUrl: entity.paymentScreenshotUrl,
       createdAt: entity.createdAt,
+      couponCode: entity.couponCode,
+      discount: entity.discount?.amount,
     );
   }
 }

@@ -21,13 +21,19 @@ import 'package:flutter_test/flutter_test.dart';
 /// ```
 void useTallTestViewport({Size size = const Size(1000, 2400)}) {
   setUp(() {
-    final view = TestWidgetsFlutterBinding.ensureInitialized().platformDispatcher.views.first;
+    final view = TestWidgetsFlutterBinding.ensureInitialized()
+        .platformDispatcher
+        .views
+        .first;
     view.physicalSize = size;
     view.devicePixelRatio = 1.0;
   });
 
   tearDown(() {
-    final view = TestWidgetsFlutterBinding.ensureInitialized().platformDispatcher.views.first;
+    final view = TestWidgetsFlutterBinding.ensureInitialized()
+        .platformDispatcher
+        .views
+        .first;
     view.resetPhysicalSize();
     view.resetDevicePixelRatio();
   });

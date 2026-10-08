@@ -6,7 +6,7 @@ void main() {
     test('formatOrderDate formats correctly as d MMM yyyy', () {
       final date = DateTime(2026, 7, 15);
       expect(formatOrderDate(date), equals('15 Jul 2026'));
-      
+
       final singleDigitDay = DateTime(2026, 7, 9);
       expect(formatOrderDate(singleDigitDay), equals('9 Jul 2026'));
     });

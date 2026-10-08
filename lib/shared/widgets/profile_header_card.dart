@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
+import '../../l10n/app_localizations.dart';
 
 /// Gradient identity card up top — avatar, title, and a couple of subtitle
 /// lines at a glance, with a single edit affordance instead of every field
@@ -83,7 +84,7 @@ class ProfileHeaderCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
                   overflow: TextOverflow.ellipsis,
                 ),
                 for (final line in subtitleLines) ...[
@@ -100,7 +101,7 @@ class ProfileHeaderCard extends StatelessWidget {
           IconButton(
             onPressed: onEdit,
             icon: const Icon(Icons.edit_outlined, color: Colors.white),
-            tooltip: 'Edit profile',
+            tooltip: AppLocalizations.of(context)!.editProfileTooltip,
           ),
         ],
       ),

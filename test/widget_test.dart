@@ -18,13 +18,9 @@ void main() {
   });
 
   testWidgets('App smoke test', (WidgetTester tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: JyotiKiranaApp(),
-      ),
-    );
+    await tester.pumpWidget(const ProviderScope(child: JyotiTradersApp()));
 
-    expect(find.byType(JyotiKiranaApp), findsOneWidget);
+    expect(find.byType(JyotiTradersApp), findsOneWidget);
 
     // Settle the splash screen redirect timer
     await tester.pumpAndSettle(const Duration(seconds: 2));

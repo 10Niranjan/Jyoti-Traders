@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jyoti Traders — Customer App Screens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#7C3AED;--primary-light:#A78BFA;--primary-dark:#5B21B6;
+  --accent:#0D9488;--accent-light:#2DD4BF;
+  --bg:#F8FAFC;--surface:#FFFFFF;
+  --success:#10B981;--warning:#F59E0B;--error:#EF4444;--info:#06B6D4;
+  --text:#0F172A;--text2:#475569;
+  --cat1:#1D4ED8;--cat2:#EA580C;--cat3:#0D9488;--cat4:#7C3AED;--cat5:#BE185D;--cat6:#15803D;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#CBD5E1;color:var(--text)}
+h1,h2,h3,.poppins{font-family:'Poppins',sans-serif}
+.row{display:flex;align-items:center}
+.col{display:flex;flex-direction:column}
+.between{justify-content:space-between}
+.wrap{flex-wrap:wrap}
+.g4{gap:4px}.g6{gap:6px}.g8{gap:8px}.g10{gap:10px}.g12{gap:12px}.g16{gap:16px}
+
+.intro{padding:40px 40px 0;font-family:'Poppins';font-weight:700;font-size:28px}
+.intro p{font-family:'Inter';font-weight:400;font-size:14px;color:#334155;margin-top:6px}
+.canvas{padding:40px;display:flex;flex-wrap:wrap;gap:70px;align-items:flex-start}
+.frame-wrap{display:flex;flex-direction:column;gap:10px}
+.frame-label{font-family:'Poppins';font-weight:700;font-size:13px;color:#1E293B;background:#fff;display:inline-block;padding:4px 10px;border-radius:6px;width:fit-content}
+.frame{width:375px;min-height:812px;border-radius:28px;overflow:hidden;background:var(--bg);border:1px solid #E2E8F0;box-shadow:0 10px 40px rgba(0,0,0,.12);display:flex;flex-direction:column}
+.statusbar{height:24px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-size:11px;font-weight:600}
+.body{flex:1;display:flex;flex-direction:column}
+
+/* appbar */
+.appbar{background:#fff;min-height:56px;display:flex;align-items:center;padding:0 12px;border-bottom:1px solid #F1F5F9;gap:10px;flex-shrink:0}
+.appbar-icon{font-size:18px;width:28px;text-align:center;color:var(--text)}
+.appbar-title{font-family:'Poppins';font-weight:600;font-size:17px}
+.appbar-sub{font-size:11px;color:var(--text2);margin-top:1px}
+.bell{position:relative;font-size:19px}
+.bell .dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--error);border-radius:50%;border:2px solid #fff}
+.tabbar{display:flex;border-bottom:1px solid #F1F5F9;background:#fff}
+.tabbar div{flex:1;text-align:center;padding:10px 0;font-size:13px;font-weight:600;color:#94A3B8;border-bottom:2px solid transparent}
+.tabbar div.active{color:var(--primary);border-color:var(--primary)}
+
+/* content */
+.p16{padding:16px}
+.section-h{font-family:'Poppins';font-weight:600;font-size:16px;margin:18px 0 10px}
+.caption{font-size:12px;color:var(--text2)}
+
+/* buttons/fields shared */
+.btn-primary{width:100%;height:50px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-primary.disabled{background:#C4B5FD}
+.btn-outlined{height:44px;border:1.5px solid var(--primary);color:var(--primary);border-radius:12px;font-weight:700;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:6px;flex:1}
+.btn-outlined.error{border-color:var(--error);color:var(--error)}
+.btn-outlined.success{border-color:var(--success);color:var(--success)}
+.btn-text{color:var(--primary);font-weight:700;font-size:13.5px}
+.btn-text.error{color:var(--error)}
+.field{margin-bottom:12px}
+.field-label{font-size:11.5px;color:var(--text2);margin-bottom:5px;font-weight:500}
+.field-input{width:100%;height:46px;border:1.5px solid #E2E8F0;border-radius:14px;padding:0 12px;font-size:13.5px;display:flex;align-items:center;gap:8px}
+.field-input.focus{border-color:var(--primary);border-width:2px}
+.field-helper{font-size:10.5px;color:#94A3B8;margin-top:4px}
+
+/* product/category cards */
+.product-card{width:150px;background:#fff;border-radius:14px;border:1px solid rgba(124,58,237,0.08);overflow:hidden;flex-shrink:0}
+.product-img{width:100%;aspect-ratio:1.1;background:linear-gradient(135deg,#EDE9FE,#F5F3FF);display:flex;align-items:center;justify-content:center;color:#C4B5FD;font-size:28px}
+.product-body{padding:9px}
+.product-name{font-size:11.5px;font-weight:600;line-height:1.3;height:29px;overflow:hidden}
+.product-unit{font-size:10px;color:var(--text2);margin-top:2px}
+.product-price{font-size:13px;font-weight:700;color:var(--primary)}
+.pill-add{background:#fff;border:1px solid var(--primary);color:var(--primary);font-size:11px;font-weight:800;border-radius:7px;padding:4px 10px;box-shadow:1.5px 1.5px 0 var(--primary)}
+.stepper-compact{background:var(--primary);color:#fff;border-radius:7px;display:flex;align-items:center;gap:6px;padding:3px 7px;font-size:12px;font-weight:700}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.hscroll{display:flex;gap:10px;overflow:hidden}
+.category-card{text-align:center}
+.category-circle{width:52px;height:52px;border-radius:50%;margin:0 auto 6px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff}
+.category-label{font-size:10.5px;font-weight:600;line-height:1.25}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 8px}
+
+/* badges */
+.badge{display:inline-flex;padding:4px 11px;border-radius:20px;font-size:10.5px;font-weight:700}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid #E2E8F0;color:var(--text2)}
+.chip.selected{background:rgba(124,58,237,0.15);border-color:transparent;color:var(--primary)}
+
+/* nav */
+.navbar{background:#fff;border-top:1px solid #E2E8F0;display:flex;padding:9px 0 6px;flex-shrink:0}
+.navitem{flex:1;text-align:center;font-size:10px;color:#94A3B8;font-weight:600}
+.navitem.active{color:var(--primary)}
+.navicon{font-size:19px;margin-bottom:2px}
+
+.qty-stepper{display:inline-flex;align-items:center;border:1.5px solid rgba(124,58,237,0.3);border-radius:9px;overflow:hidden}
+.qty-stepper button{width:32px;height:32px;background:none;border:none;color:var(--primary);font-size:15px;font-weight:700}
+.qty-stepper .val{min-width:32px;text-align:center;font-weight:700;font-size:12.5px}
+
+.track-step{display:flex;gap:10px}
+.track-icon{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.track-icon.done{background:var(--primary);color:#fff}
+.track-icon.pending{background:#fff;border:2px solid #CBD5E1;color:#CBD5E1}
+.track-line{width:2px;flex:1;background:#CBD5E1;margin:2px 0 2px 13px;min-height:20px}
+.track-line.done{background:var(--primary)}
+.track-label{font-size:12.5px;font-weight:600;padding-top:4px}
+
+.cart-bar{background:#1E293B;border-radius:14px;padding:11px 14px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 24px rgba(0,0,0,.3);margin:0 16px}
+.toast{background:#1E293B;color:#fff;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:8px;font-size:12px;margin:0 16px 10px}
+
+.section-card{background:#fff;border-radius:12px;padding:14px;border:1px solid #E2E8F0;margin-bottom:12px}
+.section-card .sc-title{font-family:'Poppins';font-weight:600;font-size:14px;display:flex;align-items:center;gap:7px;margin-bottom:10px}
+.switch{width:40px;height:23px;border-radius:12px;background:var(--primary);position:relative;flex-shrink:0}
+.switch .dot{width:17px;height:17px;border-radius:50%;background:#fff;position:absolute;top:3px;right:3px}
+.switch.off{background:#E2E8F0}
+.switch.off .dot{left:3px;right:auto}
+.list-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F8FAFC;font-size:13px}
+
+.profile-header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:18px;padding:16px;color:#fff}
+.avatar{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;flex-shrink:0}
+.promo{background:linear-gradient(135deg,var(--primary),var(--primary-light));border-radius:14px;padding:14px;color:#fff;height:88px;display:flex;align-items:center;gap:12px;margin:16px}
+</style>
+</head>
+<body>
+<div class="intro">Jyoti Traders — Customer App
+<p>All 15 retailer-facing screens, real copy and layout pulled from lib/features/{auth,home,products,cart,checkout,orders,notifications,profile}. Import each frame into Figma via html.to.design.</p>
+</div>
+<div class="canvas">
+
+<!-- 1 SPLASH -->
+<div class="frame-wrap"><div class="frame-label">01 — Splash</div><div class="frame">
+<div class="statusbar">9:41<span>••• 5G 100%</span></div>
+<div class="body" style="background:linear-gradient(180deg,#EFF6FF,#F8FAFC);align-items:center;justify-content:center;text-align:center;gap:14px">
+  <div style="width:80px;height:80px;border-radius:50%;background:rgba(124,58,237,.12);display:flex;align-items:center;justify-content:center;font-size:36px">🏬</div>
+  <div class="poppins" style="font-size:28px;font-weight:700">Jyoti Traders</div>
+  <div style="font-size:14px;color:var(--text2)">Wholesale Market Store</div>
+  <div style="width:26px;height:26px;border:3px solid #E2E8F0;border-top-color:var(--primary);border-radius:50%;margin-top:10px"></div>
+</div>
+</div></div>
+
+<!-- 2 AUTH LOGIN -->
+<div class="frame-wrap"><div class="frame-label">02 — Sign In</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body" style="background:linear-gradient(180deg,#EFF6FF,#F8FAFC)">
+<div class="p16" style="text-align:center">
+  <div style="width:64px;height:64px;border-radius:50%;background:rgba(124,58,237,.12);display:flex;align-items:center;justify-content:center;font-size:28px;margin:8px auto 12px">🏬</div>
+  <div class="poppins" style="font-size:26px;font-weight:700">Jyoti Traders</div>
+  <div style="font-size:13px;color:var(--text2);margin-top:4px">Wholesale &amp; Retail Market Hub</div>
+</div>
+<div style="background:#fff;border-radius:24px;box-shadow:0 8px 24px rgba(0,0,0,.06);margin:8px 16px;padding:22px">
+  <div class="field"><div class="field-label">Email Address</div><div class="field-input focus">✉ retailer@shop.com</div></div>
+  <div class="field"><div class="field-label">Password</div><div class="field-input">🔒 •••••••• 👁</div></div>
+  <div class="btn-primary" style="margin-top:6px">Sign In</div>
+</div>
+<div style="text-align:center;font-size:12.5px;color:var(--text2);margin-top:14px">Don't have an account? <span class="btn-text">Sign Up</span></div>
+<div style="background:rgba(124,58,237,.06);border-radius:12px;margin:16px;padding:14px">
+  <div style="font-size:12px;font-weight:600;margin-bottom:10px">💡 Simulation Demo Quick Login:</div>
+  <div class="row g8"><div class="btn-outlined">🛡 Admin Demo</div><div class="btn-outlined">🏬 Retailer Demo</div></div>
+</div>
+</div>
+</div></div>
+
+<!-- 3 AUTH SIGNUP -->
+<div class="frame-wrap"><div class="frame-label">03 — Sign Up</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body" style="background:linear-gradient(180deg,#EFF6FF,#F8FAFC)">
+<div class="p16" style="text-align:center;padding-bottom:0">
+  <div style="width:64px;height:64px;border-radius:50%;background:rgba(124,58,237,.12);display:flex;align-items:center;justify-content:center;font-size:28px;margin:8px auto 12px">🏬</div>
+  <div class="poppins" style="font-size:26px;font-weight:700">Jyoti Traders</div>
+  <div style="font-size:13px;color:var(--text2);margin-top:4px">Create Your Retailer Account</div>
+</div>
+<div style="background:#fff;border-radius:24px;box-shadow:0 8px 24px rgba(0,0,0,.06);margin:8px 16px;padding:20px">
+  <div class="field"><div class="field-label">Full Name</div><div class="field-input">👤 Ramesh Sharma</div><div class="field-helper">Letters and spaces only</div></div>
+  <div class="field"><div class="field-label">Phone Number</div><div class="field-input">📱 98765 43210</div><div class="field-helper">10-digit mobile number</div></div>
+  <div class="field"><div class="field-label">Business / Shop Name</div><div class="field-input">🏬 Sharma General Store</div><div class="field-helper">Letters, numbers, spaces, &amp; - . allowed</div></div>
+  <div class="field"><div class="field-label">Email Address</div><div class="field-input">✉ retailer@shop.com</div></div>
+  <div class="field"><div class="field-label">Password</div><div class="field-input focus">🔒 •••••••• 👁</div><div class="field-helper">8+ chars with upper, lower, number &amp; symbol</div></div>
+  <div class="btn-primary" style="margin-top:6px">Create Account</div>
+</div>
+<div style="text-align:center;font-size:12.5px;color:var(--text2);margin-top:14px;padding-bottom:20px">Already have an account? <span class="btn-text">Sign In</span></div>
+</div>
+</div></div>
+
+<!-- 4 PENDING APPROVAL -->
+<div class="frame-wrap"><div class="frame-label">04 — Pending Approval</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body" style="background:linear-gradient(180deg,#FFF7ED,#F8FAFC);align-items:center;text-align:center;padding:32px 20px 0">
+  <div style="width:120px;height:120px;border-radius:50%;background:rgba(245,158,11,.1);display:flex;align-items:center;justify-content:center">
+    <div style="width:84px;height:84px;border-radius:50%;background:rgba(245,158,11,.2);display:flex;align-items:center;justify-content:center;font-size:36px">⏳</div>
+  </div>
+  <div class="poppins" style="font-size:21px;font-weight:700;margin-top:20px">Account Verification Pending</div>
+  <div style="font-size:13px;color:var(--text2);margin-top:10px;line-height:1.5">Your retailer application is currently being reviewed by the owner of Jyoti Traders. Once approved, you will gain full access to wholesale product purchasing.</div>
+  <div class="btn-primary" style="margin-top:20px">↻ Check Status Again</div>
+  <div style="background:#fff;border-radius:20px;padding:16px;margin-top:20px;width:100%;text-align:left">
+    <div style="font-weight:700;font-size:13.5px;margin-bottom:10px;text-align:center">Need Urgent Approval? Contact Support</div>
+    <div class="btn-outlined success" style="margin-bottom:8px">📞 Call Owner: +91 98604 60325</div>
+    <div class="btn-outlined">✉ Email: vishvatejkatkar007@gmail.com</div>
+  </div>
+  <div class="btn-text error" style="margin-top:20px">⇥ Sign Out &amp; Try Another Account</div>
+</div>
+</div></div>
+
+<!-- 5 HOME -->
+<div class="frame-wrap"><div class="frame-label">05 — Home</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div><div class="appbar-title">Sharma General Store</div><div class="appbar-sub">Owner: Ramesh Sharma</div></div><div style="flex:1"></div><div class="bell">🔔<div class="dot"></div></div><div class="appbar-icon">⇥</div></div>
+<div class="promo">🚚 <div><div style="font-weight:700;font-size:13.5px">Own Fleet Delivery</div><div style="font-size:11px;color:rgba(255,255,255,.9)">Fast, reliable delivery on every order</div></div></div>
+<div style="margin:0 16px;background:rgba(239,68,68,.08);border-radius:10px;padding:10px 12px;display:flex;gap:8px;align-items:center;font-size:12px;color:#B91C1C"><span>⚠</span> 3 of your regulars are low or out of stock.</div>
+<div class="p16" style="padding-bottom:0">
+  <div class="section-h" style="margin-top:14px">Buy Again</div>
+  <div class="hscroll">
+    <div class="product-card"><div class="product-img">🍚</div><div class="product-body"><div class="product-name">Basmati Rice 25kg</div><div class="product-unit">from ₹68/kg</div><div class="row between" style="margin-top:6px"><div class="product-price">₹1,700</div><div class="stepper-compact">−1+</div></div></div></div>
+    <div class="product-card"><div class="product-img">🛢</div><div class="product-body"><div class="product-name">Sunflower Oil 15L</div><div class="product-unit">per tin</div><div class="row between" style="margin-top:6px"><div class="product-price">₹1,850</div><div class="pill-add">ADD</div></div></div></div>
+  </div>
+  <div class="section-h">Browse Categories</div>
+  <div class="grid4">
+    <div class="category-card"><div class="category-circle" style="background:var(--cat1)">🌾</div><div class="category-label">Grains &amp; Cereals</div></div>
+    <div class="category-card"><div class="category-circle" style="background:var(--cat2)">🛢</div><div class="category-label">Edible Oils</div></div>
+    <div class="category-card"><div class="category-circle" style="background:var(--cat3)">🫘</div><div class="category-label">Pulses &amp; Lentils</div></div>
+    <div class="category-card"><div class="category-circle" style="background:var(--cat4)">🌶</div><div class="category-label">Spices &amp; Masala</div></div>
+    <div class="category-card"><div class="category-circle" style="background:var(--cat5)">🥛</div><div class="category-label">Dairy Products</div></div>
+    <div class="category-card"><div class="category-circle" style="background:var(--cat6)">🍞</div><div class="category-label">Bakery</div></div>
+    <div class="category-card"><div class="category-circle" style="background:var(--cat1)">🧃</div><div class="category-label">Beverages</div></div>
+    <div class="category-card"><div class="category-circle" style="background:var(--cat2)">🧼</div><div class="category-label">Cleaning Supplies</div></div>
+  </div>
+</div>
+<div style="flex:1"></div>
+<div class="cart-bar" style="margin-bottom:12px"><div><div style="font-size:10.5px;color:rgba(255,255,255,.6)">3 items</div><div style="font-weight:700;font-size:13.5px">₹4,450</div></div><div style="background:var(--primary);color:#fff;padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:700">View Cart →</div></div>
+<div class="navbar">
+  <div class="navitem active"><div class="navicon">🏬</div>Home</div>
+  <div class="navitem"><div class="navicon">🔍</div>Search</div>
+  <div class="navitem"><div class="navicon">🛒</div>Cart</div>
+  <div class="navitem"><div class="navicon">🧾</div>Orders</div>
+  <div class="navitem"><div class="navicon">👤</div>Profile</div>
+</div>
+</div>
+</div></div>
+
+<!-- 6 CATEGORY PRODUCTS -->
+<div class="frame-wrap"><div class="frame-label">06 — Category Products</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-icon">←</div><div class="appbar-title">Edible Oils</div></div>
+<div class="p16">
+<div class="grid2">
+  <div class="product-card" style="width:100%"><div class="product-img">🛢</div><div class="product-body"><div class="product-name">Sunflower Oil 15L Tin</div><div class="product-unit">per tin</div><div class="row between" style="margin-top:6px"><div class="product-price">₹1,850</div><div class="pill-add">ADD</div></div></div></div>
+  <div class="product-card" style="width:100%"><div class="product-img">🫒</div><div class="product-body"><div class="product-name">Groundnut Oil 15L</div><div class="product-unit">per tin</div><div class="row between" style="margin-top:6px"><div class="product-price">₹2,150</div><div class="pill-add">ADD</div></div></div></div>
+  <div class="product-card" style="width:100%"><div class="product-img">🛢</div><div class="product-body"><div class="product-name">Mustard Oil 5L Can</div><div class="product-unit">per can</div><div class="row between" style="margin-top:6px"><div class="product-price">₹720</div><div class="stepper-compact">−2+</div></div></div></div>
+  <div class="product-card" style="width:100%"><div class="product-img">🥥</div><div class="product-body"><div class="product-name">Coconut Oil 1L Pouch</div><div class="product-unit">per pouch</div><div class="row between" style="margin-top:6px"><div class="product-price">₹210</div><div class="pill-add">ADD</div></div></div></div>
+</div>
+</div>
+<div style="flex:1"></div>
+<div class="cart-bar" style="margin-bottom:12px"><div><div style="font-size:10.5px;color:rgba(255,255,255,.6)">3 items</div><div style="font-weight:700;font-size:13.5px">₹4,450</div></div><div style="background:var(--primary);color:#fff;padding:8px 14px;border-radius:10px;font-size:12.5px;font-weight:700">View Cart →</div></div>
+</div>
+</div></div>
+
+<!-- 7 PRODUCT DETAIL -->
+<div class="frame-wrap"><div class="frame-label">07 — Product Detail</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-icon">←</div><div class="appbar-title">Product Details</div></div>
+<div style="aspect-ratio:1.2;background:linear-gradient(135deg,#EDE9FE,#F5F3FF);display:flex;align-items:center;justify-content:center;font-size:56px">🛢</div>
+<div class="p16">
+  <div class="poppins" style="font-size:19px;font-weight:700">Sunflower Oil 15L Tin</div>
+  <div style="font-size:12.5px;color:var(--text2);margin-top:2px">Sold per tin</div>
+  <div class="poppins" style="font-size:25px;font-weight:700;color:var(--primary);margin-top:8px">₹1,850</div>
+  <div style="font-size:12.5px;font-weight:700;color:var(--success);margin-top:4px">42 tins in stock</div>
+  <div class="section-h">Quantity</div>
+  <div class="row g8"><div class="chip selected">1 tin</div><div class="chip">2 tins</div><div class="chip">5 tins</div></div>
+  <div class="row between" style="margin-top:14px">
+    <div class="poppins" style="font-size:18px;font-weight:700">₹3,700.00</div>
+    <div class="qty-stepper"><button>−</button><div class="val">2</div><button>+</button></div>
+  </div>
+  <div class="section-h">Description</div>
+  <div style="font-size:12.5px;color:var(--text2);line-height:1.6">Refined sunflower oil, cold-pressed for wholesale kitchens and retail resale. Rich in Vitamin E, low cholesterol. Sealed tin, 15-litre capacity.</div>
+</div>
+<div style="flex:1"></div>
+<div class="toast"><span>✔</span> Sunflower Oil added to cart <span style="margin-left:auto;font-weight:700;color:var(--primary-light);font-size:11px">VIEW CART</span></div>
+<div class="p16" style="padding-top:0"><div class="btn-primary">🛒 Add 2 tins · ₹3,700</div></div>
+</div>
+</div></div>
+
+<!-- 8 SEARCH -->
+<div class="frame-wrap"><div class="frame-label">08 — Search</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="field-input focus" style="border:none;background:#F1F5F9;flex:1">🔍 Search products...</div></div>
+<div class="p16">
+  <div class="row between"><div class="poppins" style="font-weight:600;font-size:14px">Recent Searches</div><div class="btn-text" style="font-size:12px">Clear</div></div>
+  <div class="row wrap g8" style="margin-top:12px">
+    <div class="chip">rice</div><div class="chip">oil</div><div class="chip">sugar</div><div class="chip">wheat flour</div><div class="chip">salt</div>
+  </div>
+</div>
+<div style="flex:1"></div>
+<div class="navbar">
+  <div class="navitem"><div class="navicon">🏬</div>Home</div>
+  <div class="navitem active"><div class="navicon">🔍</div>Search</div>
+  <div class="navitem"><div class="navicon">🛒</div>Cart</div>
+  <div class="navitem"><div class="navicon">🧾</div>Orders</div>
+  <div class="navitem"><div class="navicon">👤</div>Profile</div>
+</div>
+</div>
+</div></div>
+
+<!-- 9 CART -->
+<div class="frame-wrap"><div class="frame-label">09 — Cart</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-title">Cart</div></div>
+<div class="p16">
+  <div class="row g10" style="border:1px solid #F1F5F9;border-radius:12px;padding:10px;margin-bottom:10px">
+    <div style="width:52px;height:52px;border-radius:10px;background:#EDE9FE;display:flex;align-items:center;justify-content:center;font-size:20px">🍚</div>
+    <div style="flex:1"><div style="font-size:12.5px;font-weight:600">Basmati Rice Premium 25kg</div><div style="font-size:11px;color:var(--text2)">1.2 kg @ ₹68/kg</div><div class="product-price" style="margin-top:3px">₹81.60</div></div>
+    <div class="col g6" style="align-items:flex-end"><div style="color:var(--error);font-size:15px">🗑</div><div class="qty-stepper"><button>−</button><div class="val">1</div><button>+</button></div></div>
+  </div>
+  <div class="row g10" style="border:1px solid #F1F5F9;border-radius:12px;padding:10px;margin-bottom:10px">
+    <div style="width:52px;height:52px;border-radius:10px;background:#EDE9FE;display:flex;align-items:center;justify-content:center;font-size:20px">🛢</div>
+    <div style="flex:1"><div style="font-size:12.5px;font-weight:600">Sunflower Oil 15L Tin</div><div class="product-price" style="margin-top:3px">₹3,700.00</div></div>
+    <div class="col g6" style="align-items:flex-end"><div style="color:var(--error);font-size:15px">🗑</div><div class="qty-stepper"><button>−</button><div class="val">2</div><button>+</button></div></div>
+  </div>
+  <div style="background:rgba(245,158,11,.12);border-radius:10px;padding:10px 12px;font-size:12px;color:#92400E;margin-top:6px">Add ₹550 more to reach the ₹5,000 minimum order.</div>
+</div>
+<div style="flex:1"></div>
+<div class="p16">
+  <div class="row between" style="margin-bottom:12px"><div style="font-size:14px;font-weight:600">Subtotal</div><div class="poppins" style="font-size:17px;font-weight:700">₹4,450.00</div></div>
+  <div class="btn-primary disabled">Proceed to Checkout →</div>
+</div>
+<div class="navbar">
+  <div class="navitem"><div class="navicon">🏬</div>Home</div>
+  <div class="navitem"><div class="navicon">🔍</div>Search</div>
+  <div class="navitem active"><div class="navicon">🛒</div>Cart</div>
+  <div class="navitem"><div class="navicon">🧾</div>Orders</div>
+  <div class="navitem"><div class="navicon">👤</div>Profile</div>
+</div>
+</div>
+</div></div>
+
+<!-- 10 CHECKOUT -->
+<div class="frame-wrap"><div class="frame-label">10 — Checkout</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-icon">←</div><div class="appbar-title">Checkout</div></div>
+<div class="p16">
+  <div class="section-h" style="margin-top:6px">Delivery Address</div>
+  <div class="field"><div class="field-label">Street Address</div><div class="field-input">🏠 MG Road, Shop No. 14</div></div>
+  <div class="row g10"><div class="field" style="flex:1"><div class="field-label">City</div><div class="field-input">Pune</div></div><div class="field" style="flex:1"><div class="field-label">Pincode</div><div class="field-input">411001</div></div></div>
+  <div class="row between"><div style="font-size:11.5px;color:var(--success)">✓ Detected: MG Road, Pune, 411001</div><div class="btn-text" style="font-size:11.5px">Refresh location</div></div>
+
+  <div class="section-h">Payment Method</div>
+  <div class="row g10" style="border:1.5px solid var(--primary);border-radius:12px;padding:12px;margin-bottom:8px"><div style="width:18px;height:18px;border-radius:50%;border:2px solid var(--primary);display:flex;align-items:center;justify-content:center"><div style="width:9px;height:9px;border-radius:50%;background:var(--primary)"></div></div><span style="font-size:13px">💵 Cash on Delivery (COD)</span></div>
+  <div class="row g10" style="border:1.5px solid #E2E8F0;border-radius:12px;padding:12px"><div style="width:18px;height:18px;border-radius:50%;border:2px solid #CBD5E1"></div><span style="font-size:13px">▦ UPI</span></div>
+
+  <div class="section-h">Order Summary</div>
+  <div class="list-row"><span>Subtotal (3 items)</span><span>₹4,450.00</span></div>
+  <div class="list-row"><span>Delivery Charge</span><span>₹80.00</span></div>
+  <div class="list-row" style="border-bottom:none;font-weight:700;font-size:15px"><span>Grand Total</span><span>₹4,530.00</span></div>
+</div>
+<div style="flex:1"></div>
+<div class="p16"><div class="btn-primary">✓ Place Order</div></div>
+</div>
+</div></div>
+
+<!-- 11 UPI PAYMENT -->
+<div class="frame-wrap"><div class="frame-label">11 — UPI Payment</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-icon">←</div><div class="appbar-title poppins">UPI Payment</div></div>
+<div class="p16" style="text-align:center">
+  <div class="poppins" style="font-size:19px;font-weight:700;margin-top:6px">Pay ₹4,530.00</div>
+  <div style="font-size:12px;color:var(--text2);margin-top:4px">Scan with any UPI app, or use the ID below</div>
+  <div style="width:200px;height:200px;background:#fff;border:2px solid var(--primary);border-radius:16px;margin:16px auto;display:flex;align-items:center;justify-content:center;font-size:64px">▦</div>
+  <div class="row between" style="background:#F1F5F9;border-radius:10px;padding:10px 14px;text-align:left"><span style="font-size:12.5px;font-weight:600">jyotitraders@okhdfcbank</span><span>⧉</span></div>
+  <div class="section-h" style="text-align:left">Payment Screenshot (optional)</div>
+  <div style="border:1.5px dashed #CBD5E1;border-radius:12px;padding:20px;color:#94A3B8;font-size:12.5px">⬆ Tap to upload screenshot</div>
+</div>
+<div style="flex:1"></div>
+<div class="p16"><div class="btn-primary">✓ I Have Paid</div><div style="text-align:center;font-size:11px;color:var(--text2);margin-top:8px">The admin will confirm your payment shortly after.</div></div>
+</div>
+</div></div>
+
+<!-- 12 ORDER SUCCESS -->
+<div class="frame-wrap"><div class="frame-label">12 — Order Success</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body" style="align-items:center;justify-content:center;text-align:center;padding:0 24px;gap:6px">
+  <div style="width:88px;height:88px;border-radius:50%;background:rgba(16,185,129,.12);display:flex;align-items:center;justify-content:center;font-size:40px">✅</div>
+  <div class="poppins" style="font-size:20px;font-weight:700;margin-top:14px">Order Placed!</div>
+  <div style="font-size:12px;color:var(--text2)">Order #8F3C21</div>
+  <div style="font-size:13px;color:var(--text2);margin-top:10px;line-height:1.5">The admin has been notified and will confirm your order shortly.</div>
+  <div class="btn-primary" style="margin-top:20px;width:100%">View Order</div>
+  <div class="btn-text" style="margin-top:14px">Continue Shopping</div>
+</div>
+</div></div>
+
+<!-- 13 ORDER HISTORY -->
+<div class="frame-wrap"><div class="frame-label">13 — My Orders</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-title">My Orders</div></div>
+<div class="p16" style="padding-bottom:0">
+  <div class="row wrap g8"><div class="chip selected">✓ All</div><div class="chip">Pending</div><div class="chip">Confirmed</div><div class="chip">Out for Delivery</div><div class="chip">Delivered</div></div>
+</div>
+<div class="p16">
+  <div style="border:1px solid #E2E8F0;border-radius:12px;padding:14px;margin-bottom:10px">
+    <div class="row between"><span style="font-weight:700;font-size:13px">Order #8F3C21</span><div class="badge" style="background:rgba(124,58,237,.12);color:var(--primary)">OUT FOR DELIVERY</div></div>
+    <div style="font-size:11.5px;color:var(--text2);margin-top:4px">5 items · 12 Aug 2026</div>
+    <div class="poppins" style="font-weight:700;font-size:14px;color:var(--primary);margin-top:6px">₹4,530.00</div>
+  </div>
+  <div style="border:1px solid #E2E8F0;border-radius:12px;padding:14px;margin-bottom:10px">
+    <div class="row between"><span style="font-weight:700;font-size:13px">Order #7A1D09</span><div class="badge" style="background:rgba(16,185,129,.12);color:var(--success)">DELIVERED</div></div>
+    <div style="font-size:11.5px;color:var(--text2);margin-top:4px">3 items · 04 Aug 2026</div>
+    <div class="poppins" style="font-weight:700;font-size:14px;color:var(--primary);margin-top:6px">₹2,180.00</div>
+  </div>
+  <div style="border:1px solid #E2E8F0;border-radius:12px;padding:14px">
+    <div class="row between"><span style="font-weight:700;font-size:13px">Order #6C4B77</span><div class="badge" style="background:rgba(239,68,68,.12);color:var(--error)">CANCELLED</div></div>
+    <div style="font-size:11.5px;color:var(--text2);margin-top:4px">2 items · 28 Jul 2026</div>
+    <div class="poppins" style="font-weight:700;font-size:14px;color:var(--primary);margin-top:6px">₹960.00</div>
+  </div>
+</div>
+<div style="flex:1"></div>
+<div class="navbar">
+  <div class="navitem"><div class="navicon">🏬</div>Home</div>
+  <div class="navitem"><div class="navicon">🔍</div>Search</div>
+  <div class="navitem"><div class="navicon">🛒</div>Cart</div>
+  <div class="navitem active"><div class="navicon">🧾</div>Orders</div>
+  <div class="navitem"><div class="navicon">👤</div>Profile</div>
+</div>
+</div>
+</div></div>
+
+<!-- 14 ORDER DETAIL -->
+<div class="frame-wrap"><div class="frame-label">14 — Order Detail</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-icon">←</div><div class="appbar-title">Order Details</div><div style="flex:1"></div><div class="appbar-icon">⤴</div></div>
+<div class="p16">
+  <div class="row between"><span class="poppins" style="font-weight:700;font-size:15px">Order #8F3C21</span><div class="badge" style="background:rgba(6,182,212,.12);color:var(--info)">CONFIRMED</div></div>
+  <div style="font-size:11px;color:var(--text2);margin-top:2px">Placed on 12 Aug 2026, 10:32 AM</div>
+
+  <div class="section-h">Order Status</div>
+  <div class="track-step"><div class="track-icon done">🧾</div><div class="track-label">Order Placed</div></div>
+  <div class="track-line done"></div>
+  <div class="track-step"><div class="track-icon done">✔</div><div class="track-label">Confirmed</div></div>
+  <div class="track-line"></div>
+  <div class="track-step"><div class="track-icon pending">🚚</div><div class="track-label" style="color:#94A3B8">Out for Delivery</div></div>
+  <div class="track-line"></div>
+  <div class="track-step"><div class="track-icon pending">🏠</div><div class="track-label" style="color:#94A3B8">Delivered</div></div>
+
+  <div class="section-h">Items</div>
+  <div class="list-row"><span>Basmati Rice 25kg × 1</span><span>₹1,700.00</span></div>
+  <div class="list-row"><span>Sunflower Oil 15L × 1</span><span>₹1,850.00</span></div>
+  <div class="list-row"><span>Toor Dal · 1.2 kg @ ₹120/kg</span><span>₹144.00</span></div>
+  <div class="list-row"><span>Subtotal</span><span>₹3,694.00</span></div>
+  <div class="list-row"><span>Delivery Charge</span><span>₹80.00</span></div>
+  <div class="list-row" style="border-bottom:none;font-weight:700;font-size:14.5px"><span>Grand Total</span><span>₹3,774.00</span></div>
+
+  <div class="section-h">Delivery Address</div>
+  <div style="font-size:12.5px;color:var(--text2);line-height:1.5">MG Road, Shop No. 14, Pune, 411001</div>
+
+  <div class="section-h">Payment</div>
+  <div style="font-size:12.5px;color:var(--text2)">Cash on Delivery</div>
+</div>
+<div style="flex:1"></div>
+<div class="p16" style="display:flex;gap:10px"><div class="btn-outlined">↻ Buy Again</div><div class="btn-outlined error">✕ Cancel</div></div>
+</div>
+</div></div>
+
+<!-- 15 NOTIFICATIONS -->
+<div class="frame-wrap"><div class="frame-label">15 — Notifications</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-icon">←</div><div class="appbar-title poppins">Notifications</div><div style="flex:1"></div><div class="btn-text" style="font-size:11.5px">Mark all read</div></div>
+<div class="p16">
+  <div class="row g10" style="background:rgba(124,58,237,.05);border:1px solid #F1F5F9;border-radius:10px;padding:12px;margin-bottom:8px;position:relative">
+    <div style="width:8px;height:8px;background:var(--primary);border-radius:50%;position:absolute;top:12px;left:12px"></div>
+    <div style="padding-left:14px"><div style="font-weight:700;font-size:12.5px">Order Confirmed</div><div style="font-size:11.5px;color:var(--text2);margin-top:2px">Your order #8F3C21 has been confirmed by the admin.</div><div style="font-size:10px;color:#94A3B8;margin-top:4px">2h ago</div></div>
+  </div>
+  <div class="row g10" style="background:rgba(124,58,237,.05);border:1px solid #F1F5F9;border-radius:10px;padding:12px;margin-bottom:8px;position:relative">
+    <div style="width:8px;height:8px;background:var(--primary);border-radius:50%;position:absolute;top:12px;left:12px"></div>
+    <div style="padding-left:14px"><div style="font-weight:700;font-size:12.5px">Low Stock Alert</div><div style="font-size:11.5px;color:var(--text2);margin-top:2px">Toor Dal is running low on stock.</div><div style="font-size:10px;color:#94A3B8;margin-top:4px">5h ago</div></div>
+  </div>
+  <div class="row g10" style="border:1px solid #F1F5F9;border-radius:10px;padding:12px;margin-bottom:8px">
+    <div><div style="font-weight:600;font-size:12.5px">Order Delivered</div><div style="font-size:11.5px;color:var(--text2);margin-top:2px">Order #7A1D09 has been delivered.</div><div style="font-size:10px;color:#94A3B8;margin-top:4px">1d ago</div></div>
+  </div>
+  <div class="row g10" style="border:1px solid #F1F5F9;border-radius:10px;padding:12px">
+    <div><div style="font-weight:600;font-size:12.5px">Welcome to Jyoti Traders</div><div style="font-size:11.5px;color:var(--text2);margin-top:2px">Your account has been approved. Start shopping now.</div><div style="font-size:10px;color:#94A3B8;margin-top:4px">3d ago</div></div>
+  </div>
+</div>
+</div>
+</div></div>
+
+<!-- 16 PROFILE -->
+<div class="frame-wrap"><div class="frame-label">16 — Profile</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar poppins"><div class="appbar-title">Profile</div></div>
+<div class="tabbar"><div class="active">🏬 Profile</div><div>⚙ Settings</div></div>
+<div class="p16">
+  <div class="profile-header row g12"><div class="avatar">S</div><div><div style="font-weight:700;font-size:15.5px">Sharma General Store</div><div style="font-size:11.5px;color:rgba(255,255,255,.85)">Ramesh Sharma</div><div style="font-size:11.5px;color:rgba(255,255,255,.85)">98765 43210</div></div><div style="margin-left:auto">✎</div></div>
+
+  <div class="section-card" style="margin-top:14px"><div class="sc-title">📍 Delivery Address</div>
+    <div class="field"><div class="field-label">Street Address</div><div class="field-input">MG Road, Shop No. 14</div></div>
+    <div class="row g10"><div class="field" style="flex:1"><div class="field-label">City</div><div class="field-input">Pune</div></div><div class="field" style="flex:1"><div class="field-label">Pincode</div><div class="field-input">411001</div></div></div>
+  </div>
+
+  <div class="section-card"><div class="sc-title">🏬 Business Details</div>
+    <div class="field"><div class="field-label">GST Number (optional)</div><div class="field-input">27ABCDE1234F1Z5</div></div>
+    <div class="row between" style="padding:6px 0"><span style="font-size:13px">Open 24×7</span><div class="switch off"><div class="dot"></div></div></div>
+    <div class="row g10"><div class="btn-outlined">Opens: 09:00 AM</div><div class="btn-outlined">Closes: 09:00 PM</div></div>
+  </div>
+
+  <div class="section-card"><div class="sc-title">🏦 Payout Details</div>
+    <div class="field"><div class="field-label">Account Holder Name</div><div class="field-input">Ramesh Sharma</div></div>
+    <div class="field"><div class="field-label">Account Number</div><div class="field-input">XXXXXXXX4521</div></div>
+    <div class="row g10"><div class="field" style="flex:1"><div class="field-label">IFSC Code</div><div class="field-input">HDFC0001234</div></div><div class="field" style="flex:1"><div class="field-label">Bank Name</div><div class="field-input">HDFC Bank</div></div></div>
+  </div>
+  <div class="btn-primary">Save Changes</div>
+</div>
+<div style="flex:1"></div>
+<div class="navbar">
+  <div class="navitem"><div class="navicon">🏬</div>Home</div>
+  <div class="navitem"><div class="navicon">🔍</div>Search</div>
+  <div class="navitem"><div class="navicon">🛒</div>Cart</div>
+  <div class="navitem"><div class="navicon">🧾</div>Orders</div>
+  <div class="navitem active"><div class="navicon">👤</div>Profile</div>
+</div>
+</div>
+</div></div>
+
+<!-- 17 PROFILE SETTINGS -->
+<div class="frame-wrap"><div class="frame-label">17 — Profile · Settings</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar poppins"><div class="appbar-title">Profile</div></div>
+<div class="tabbar"><div>🏬 Profile</div><div class="active">⚙ Settings</div></div>
+<div class="p16">
+  <div class="section-card"><div class="sc-title">🔔 Notifications</div>
+    <div class="row between" style="padding:6px 0"><div><div style="font-size:13px;font-weight:500">Order Updates</div><div style="font-size:11px;color:var(--text2)">Status changes for your orders</div></div><div class="switch"><div class="dot"></div></div></div>
+    <div class="row between" style="padding:6px 0"><div><div style="font-size:13px;font-weight:500">Promotions</div><div style="font-size:11px;color:var(--text2)">Offers and discounts</div></div><div class="switch"><div class="dot"></div></div></div>
+    <div class="row between" style="padding:6px 0"><div><div style="font-size:13px;font-weight:500">Low Stock Alerts</div><div style="font-size:11px;color:var(--text2)">When items you buy often are running low</div></div><div class="switch"><div class="dot"></div></div></div>
+  </div>
+  <div class="section-card"><div class="sc-title">🎨 Appearance</div>
+    <div style="display:inline-flex;border:1.5px solid #E2E8F0;border-radius:10px;overflow:hidden">
+      <div style="padding:7px 14px;font-size:11.5px;font-weight:600;background:var(--primary);color:#fff">◐ System</div>
+      <div style="padding:7px 14px;font-size:11.5px;font-weight:600;color:var(--text2)">☀ Light</div>
+      <div style="padding:7px 14px;font-size:11.5px;font-weight:600;color:var(--text2)">☾ Dark</div>
+    </div>
+  </div>
+  <div class="section-card"><div class="sc-title">🔒 Account</div>
+    <div class="list-row" style="border:none"><div><div style="font-weight:500">Change Password</div><div style="font-size:11px;color:var(--text2)">retailer@shop.com</div></div><span>›</span></div>
+  </div>
+  <div class="section-card"><div class="sc-title">🎧 Support</div>
+    <div class="list-row"><div><div style="font-weight:500">Call Support</div><div style="font-size:11px;color:var(--text2)">+91 98604 60325</div></div><span>📞</span></div>
+    <div class="list-row" style="border:none"><div><div style="font-weight:500">Email Support</div><div style="font-size:11px;color:var(--text2)">vishvatejkatkar007@gmail.com</div></div><span>✉</span></div>
+  </div>
+  <div class="btn-outlined error" style="width:100%">⇥ Log Out</div>
+</div>
+<div style="flex:1"></div>
+<div class="navbar">
+  <div class="navitem"><div class="navicon">🏬</div>Home</div>
+  <div class="navitem"><div class="navicon">🔍</div>Search</div>
+  <div class="navitem"><div class="navicon">🛒</div>Cart</div>
+  <div class="navitem"><div class="navicon">🧾</div>Orders</div>
+  <div class="navitem active"><div class="navicon">👤</div>Profile</div>
+</div>
+</div>
+</div></div>
+
+</div>
+</body>
+</html>

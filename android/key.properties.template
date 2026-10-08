@@ -1,0 +1,6 @@
+## Copy this file to android/key.properties (gitignored, never commit it)
+## and fill in the values from your upload keystore.
+storePassword=
+keyPassword=
+keyAlias=upload
+storeFile=keystore/jyoti-traders-upload.jks

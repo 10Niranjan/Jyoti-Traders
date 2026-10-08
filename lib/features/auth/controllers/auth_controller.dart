@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/services/analytics_service.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/repositories/auth_repository_provider.dart';
 import '../../../data/models/user_model.dart';
@@ -7,9 +8,12 @@ import 'auth_state.dart';
 
 class AuthController extends StateNotifier<AuthState> {
   final AuthRepository _authRepository;
+  final AnalyticsService _analytics;
   StreamSubscription<UserModel?>? _authSubscription;
 
-  AuthController(this._authRepository) : super(const AuthInitial()) {
+  AuthController(this._authRepository, [AnalyticsService? analytics])
+      : _analytics = analytics ?? AnalyticsService(),
+        super(const AuthInitial()) {
     _init();
   }
 
@@ -47,6 +51,7 @@ class AuthController extends StateNotifier<AuthState> {
     try {
       final user = await _authRepository.signIn(email: email, password: password);
       _handleUserChange(user);
+      if (user != null) _analytics.logLogin(user.role.name);
     } catch (e) {
       state = AuthError(e.toString().replaceAll('Exception: ', ''));
     }
@@ -71,6 +76,7 @@ class AuthController extends StateNotifier<AuthState> {
         businessName: businessName,
       );
       _handleUserChange(user);
+      if (user != null) _analytics.logSignUp(user.role.name);
     } catch (e) {
       state = AuthError(e.toString().replaceAll('Exception: ', ''));
     }

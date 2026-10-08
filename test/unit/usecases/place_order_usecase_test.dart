@@ -62,14 +62,23 @@ OrderEntity _buildOrder({required double subtotal, double deliveryCharge = 0}) {
     userId: 'user_1',
     shopName: 'Ram Kirana Store',
     items: [
-      OrderItemEntity(productId: 'p1', name: 'Rice 25kg', qty: 1, unitPrice: Money(subtotal)),
+      OrderItemEntity(
+        productId: 'p1',
+        name: 'Rice 25kg',
+        qty: 1,
+        unitPrice: Money(subtotal),
+      ),
     ],
     subtotal: Money(subtotal),
     deliveryCharge: Money(deliveryCharge),
     paymentMethod: PaymentMethod.cod,
     paymentStatus: PaymentStatus.pending,
     orderStatus: OrderStatus.pending,
-    deliveryAddress: const AddressEntity(street: 'Main Rd', city: 'Pune', pincode: '411001'),
+    deliveryAddress: const AddressEntity(
+      street: 'Main Rd',
+      city: 'Pune',
+      pincode: '411001',
+    ),
     createdAt: DateTime(2026, 7, 21),
   );
 }

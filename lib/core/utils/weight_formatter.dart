@@ -1,6 +1,7 @@
 /// How much a ± tap moves a weight, in grams. Coarser as the weight grows —
 /// nobody nudges a 10 kg order by 100 g.
-int weightStepFor(int grams) => grams < 1000 ? 100 : (grams < 5000 ? 500 : 1000);
+int weightStepFor(int grams) =>
+    grams < 1000 ? 100 : (grams < 5000 ? 500 : 1000);
 
 /// Default weight a one-tap "add" puts in the cart: a round kilo, or all the
 /// stock left if there's less than that.

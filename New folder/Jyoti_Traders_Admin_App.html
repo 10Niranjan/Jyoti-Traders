@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Jyoti Traders — Admin App Screens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#7C3AED;--primary-light:#A78BFA;--primary-dark:#5B21B6;
+  --accent:#0D9488;
+  --bg:#F8FAFC;--surface:#FFFFFF;
+  --success:#10B981;--warning:#F59E0B;--error:#EF4444;--info:#06B6D4;
+  --text:#0F172A;--text2:#475569;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#CBD5E1;color:var(--text)}
+h1,h2,h3,.poppins{font-family:'Poppins',sans-serif}
+.row{display:flex;align-items:center}
+.col{display:flex;flex-direction:column}
+.between{justify-content:space-between}
+.wrap{flex-wrap:wrap}
+.g6{gap:6px}.g8{gap:8px}.g10{gap:10px}.g12{gap:12px}
+
+.intro{padding:40px 40px 0;font-family:'Poppins';font-weight:700;font-size:28px}
+.intro p{font-family:'Inter';font-weight:400;font-size:14px;color:#334155;margin-top:6px}
+.canvas{padding:40px;display:flex;flex-wrap:wrap;gap:70px;align-items:flex-start}
+.frame-wrap{display:flex;flex-direction:column;gap:10px}
+.frame-label{font-family:'Poppins';font-weight:700;font-size:13px;color:#1E293B;background:#fff;display:inline-block;padding:4px 10px;border-radius:6px;width:fit-content}
+.frame{width:375px;min-height:812px;border-radius:28px;overflow:hidden;background:var(--bg);border:1px solid #E2E8F0;box-shadow:0 10px 40px rgba(0,0,0,.12);display:flex;flex-direction:column}
+.statusbar{height:24px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-size:11px;font-weight:600}
+.body{flex:1;display:flex;flex-direction:column}
+
+.appbar{background:#fff;min-height:56px;display:flex;align-items:center;padding:0 12px;border-bottom:1px solid #F1F5F9;gap:10px;flex-shrink:0}
+.appbar-icon{font-size:18px;width:26px;text-align:center}
+.appbar-title{font-family:'Poppins';font-weight:600;font-size:17px}
+.bell{position:relative;font-size:19px}
+.bell .dot{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--error);border-radius:50%;border:2px solid #fff}
+.tabbar{display:flex;border-bottom:1px solid #F1F5F9;background:#fff}
+.tabbar div{flex:1;text-align:center;padding:10px 0;font-size:12.5px;font-weight:600;color:#94A3B8;border-bottom:2px solid transparent}
+.tabbar div.active{color:var(--primary);border-color:var(--primary)}
+
+.p16{padding:16px}
+.section-h{font-family:'Poppins';font-weight:600;font-size:15px;margin:16px 0 10px}
+.btn-primary{width:100%;height:48px;background:var(--primary);color:#fff;border:none;border-radius:12px;font-weight:700;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-outlined{height:44px;border:1.5px solid var(--primary);color:var(--primary);border-radius:12px;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px}
+.btn-outlined.error{border-color:var(--error);color:var(--error)}
+.btn-outlined.success{border-color:var(--success);color:var(--success);flex:1}
+.btn-text{color:var(--primary);font-weight:700;font-size:12.5px}
+.btn-text.error{color:var(--error)}
+.fab{position:absolute;bottom:20px;right:16px;background:var(--primary);color:#fff;border-radius:26px;height:48px;padding:0 18px;display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:13px;box-shadow:0 8px 20px rgba(124,58,237,.35)}
+
+.field{margin-bottom:12px}
+.field-label{font-size:11.5px;color:var(--text2);margin-bottom:5px;font-weight:500}
+.field-input{width:100%;height:46px;border:1.5px solid #E2E8F0;border-radius:14px;padding:0 12px;font-size:13px;display:flex;align-items:center;gap:8px}
+.field-input.focus{border-color:var(--primary);border-width:2px}
+.switch{width:40px;height:23px;border-radius:12px;background:var(--primary);position:relative;flex-shrink:0}
+.switch .dot{width:17px;height:17px;border-radius:50%;background:#fff;position:absolute;top:3px;right:3px}
+.switch.off{background:#E2E8F0}
+.switch.off .dot{left:3px;right:auto}
+
+.badge{display:inline-flex;padding:4px 11px;border-radius:20px;font-size:10.5px;font-weight:700}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid #E2E8F0;color:var(--text2)}
+.chip.selected{background:rgba(124,58,237,0.15);border-color:transparent;color:var(--primary)}
+
+.navbar{background:#fff;border-top:1px solid #E2E8F0;display:flex;padding:9px 0 6px;flex-shrink:0}
+.navitem{flex:1;text-align:center;font-size:10px;color:#94A3B8;font-weight:600}
+.navitem.active{color:var(--primary)}
+.navicon{font-size:19px;margin-bottom:2px}
+
+.avatar{width:44px;height:44px;border-radius:50%;background:rgba(124,58,237,.1);color:var(--primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0}
+.stat-card{background:#fff;border-radius:14px;padding:14px;border:1px solid #E2E8F0;box-shadow:0 4px 10px rgba(0,0,0,0.03)}
+.stat-title{font-size:11.5px;font-weight:600;color:var(--text2)}
+.stat-value{font-family:'Poppins';font-weight:700;font-size:23px;margin-top:5px}
+.list-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #F8FAFC;font-size:13px}
+.dialog{background:#fff;border-radius:18px;padding:18px;width:280px}
+.dialog h3{font-size:15px;margin-bottom:8px}
+.dialog p{font-size:12.5px;color:var(--text2);margin-bottom:16px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="intro">Jyoti Traders — Admin App
+<p>All 11 admin-panel screens (13 frames incl. tab states), real copy and layout pulled from lib/features/admin. Import each frame into Figma via html.to.design.</p>
+</div>
+<div class="canvas">
+
+<!-- 1 DASHBOARD -->
+<div class="frame-wrap"><div class="frame-label">01 — Dashboard</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-title">Jyoti Traders Admin</div><div style="flex:1"></div><div class="bell">🔔<div class="dot"></div></div></div>
+<div class="p16">
+  <div class="row g10"><div class="stat-card" style="flex:1"><div class="row between"><span class="stat-title">Pending Approvals</span><span>⏳</span></div><div class="stat-value">7</div></div>
+    <div class="stat-card" style="flex:1"><div class="row between"><span class="stat-title">Total Retailers</span><span>🏬</span></div><div class="stat-value">58</div></div></div>
+  <div class="stat-card" style="margin-top:12px"><div class="row between"><span class="stat-title">Today's Orders</span><span>🛍</span></div><div class="stat-value">14</div></div>
+
+  <div class="section-h">Orders — Last 7 Days</div>
+  <div class="stat-card" style="padding:14px">
+    <div class="row" style="align-items:flex-end;gap:8px;height:80px">
+      <div style="background:var(--primary);width:100%;height:40%;border-radius:4px 4px 0 0"></div>
+      <div style="background:var(--primary);width:100%;height:65%;border-radius:4px 4px 0 0"></div>
+      <div style="background:var(--primary);width:100%;height:30%;border-radius:4px 4px 0 0"></div>
+      <div style="background:var(--primary);width:100%;height:80%;border-radius:4px 4px 0 0"></div>
+      <div style="background:var(--primary);width:100%;height:55%;border-radius:4px 4px 0 0"></div>
+      <div style="background:var(--primary);width:100%;height:95%;border-radius:4px 4px 0 0"></div>
+      <div style="background:var(--primary);width:100%;height:45%;border-radius:4px 4px 0 0"></div>
+    </div>
+    <div class="row between" style="margin-top:6px;font-size:9.5px;color:var(--text2)"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+  </div>
+
+  <div class="btn-outlined" style="width:100%;margin-top:14px">🚚 Delivery Settings</div>
+
+  <div class="row between" style="margin-top:18px"><div class="poppins" style="font-weight:600;font-size:15px">Retailer Approval Queue</div><div class="btn-text">View All</div></div>
+  <div style="border:1px solid #E2E8F0;border-radius:12px;padding:12px;margin-top:8px">
+    <div class="row g10"><div class="avatar">P</div><div><div style="font-weight:700;font-size:13px">Patil Kirana Store</div><div style="font-size:11.5px;color:var(--text2)">Sunil Patil · 90211 22334</div></div></div>
+    <div class="row between" style="margin-top:10px"><div class="btn-text error">Reject</div><div class="btn-outlined success">✓ Approve</div></div>
+  </div>
+  <div style="font-size:11px;color:var(--text2);margin-top:8px">+6 more waiting — tap "View All"</div>
+</div>
+<div style="flex:1"></div>
+<div class="navbar">
+  <div class="navitem active"><div class="navicon">📊</div>Dashboard</div>
+  <div class="navitem"><div class="navicon">🧾</div>Orders</div>
+  <div class="navitem"><div class="navicon">📦</div>Catalog</div>
+  <div class="navitem"><div class="navicon">🏬</div>Retailers</div>
+  <div class="navitem"><div class="navicon">👤</div>Profile</div>
+</div>
+</div>
+</div></div>
+
+<!-- 2 ALL ORDERS -->
+<div class="frame-wrap"><div class="frame-label">02 — All Orders</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-title">All Orders</div><div style="flex:1"></div><div class="appbar-icon">⤴</div></div>
+<div class="p16" style="padding-bottom:0"><div class="row wrap g8"><div class="chip selected">✓ All</div><div class="chip">Pending</div><div class="chip">Confirmed</div><div class="chip">Delivered</div></div></div>
+<div class="p16">
+  <div style="border:1px solid rgba(124,58,237,.08);border-radius:12px;padding:12px;margin-bottom:10px">
+    <div class="row between"><span style="font-weight:700;font-size:13px">Order #8F3C21</span><div class="badge" style="background:rgba(124,58,237,.12);color:var(--primary)">OUT FOR DELIVERY</div></div>
+    <div style="font-size:12px;color:var(--primary);font-weight:600;margin-top:3px">Sharma General Store</div>
+    <div style="font-size:11.5px;color:var(--text2);margin-top:2px">5 items · 12 Aug 2026</div>
+    <div class="poppins" style="font-weight:700;font-size:14px;margin-top:6px">₹4,530.00</div>
+  </div>
+  <div style="border:1px solid rgba(124,58,237,.08);border-radius:12px;padding:12px">
+    <div class="row between"><span style="font-weight:700;font-size:13px">Order #4E9A02</span><div class="badge" style="background:rgba(245,158,11,.12);color:var(--warning)">PENDING</div></div>
+    <div style="font-size:12px;color:var(--primary);font-weight:600;margin-top:3px">Patil Kirana Store</div>
+    <div style="font-size:11.5px;color:var(--text2);margin-top:2px">2 items · 12 Aug 2026</div>
+    <div class="poppins" style="font-weight:700;font-size:14px;margin-top:6px">₹960.00</div>
+  </div>
+</div>
+</div>
+</div></div>
+
+<!-- 3 CATALOG PRODUCTS -->
+<div class="frame-wrap"><div class="frame-label">03 — Catalog · Products</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body" style="position:relative">
+<div class="appbar"><div class="appbar-title">Catalog</div></div>
+<div class="tabbar"><div class="active">📦 Products</div><div>🏷 Categories</div></div>
+<div style="margin:12px 16px;background:rgba(239,68,68,.08);border-radius:10px;padding:10px 12px;font-size:11.5px;color:#B91C1C">⚠ 3 product(s) are low on stock (≤10).</div>
+<div class="p16" style="padding-top:0">
+  <div class="row g10" style="border:1px solid #F1F5F9;border-radius:12px;padding:10px;margin-bottom:8px">
+    <div style="width:48px;height:48px;border-radius:10px;background:#EDE9FE;display:flex;align-items:center;justify-content:center;font-size:20px">🍚</div>
+    <div style="flex:1"><div style="font-weight:700;font-size:12.5px">Basmati Rice Premium 25kg</div><div style="font-size:11px;color:var(--primary)">from ₹68/kg</div><div style="font-size:11px;color:var(--error);font-weight:600">⚠ Stock: 8</div></div>
+    <div class="col g8"><span style="color:var(--primary)">✎</span><span style="color:var(--error)">🗑</span></div>
+  </div>
+  <div class="row g10" style="border:1px solid #F1F5F9;border-radius:12px;padding:10px">
+    <div style="width:48px;height:48px;border-radius:10px;background:#EDE9FE;display:flex;align-items:center;justify-content:center;font-size:20px">🛢</div>
+    <div style="flex:1"><div style="font-weight:700;font-size:12.5px">Sunflower Oil 15L Tin</div><div style="font-size:11px;color:var(--primary)">₹1,850 / tin</div><div style="font-size:11px;color:var(--text2)">Stock: 42</div></div>
+    <div class="col g8"><span style="color:var(--primary)">✎</span><span style="color:var(--error)">🗑</span></div>
+  </div>
+</div>
+<div class="fab">+ Add Product</div>
+</div>
+</div></div>
+
+<!-- 4 CATALOG CATEGORIES -->
+<div class="frame-wrap"><div class="frame-label">04 — Catalog · Categories</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body" style="position:relative">
+<div class="appbar"><div class="appbar-title">Catalog</div></div>
+<div class="tabbar"><div>📦 Products</div><div class="active">🏷 Categories</div></div>
+<div class="p16">
+  <div class="row g10" style="border:1px solid #F1F5F9;border-radius:12px;padding:10px;margin-bottom:8px">
+    <span style="color:#CBD5E1">⠿</span>
+    <div style="width:40px;height:40px;border-radius:8px;background:#1D4ED8;display:flex;align-items:center;justify-content:center;font-size:18px">🌾</div>
+    <div style="flex:1;font-weight:700;font-size:12.5px">Grains &amp; Cereals</div>
+    <div class="col g8"><span style="color:var(--primary)">✎</span><span style="color:var(--error)">🗑</span></div>
+  </div>
+  <div class="row g10" style="border:1px solid #F1F5F9;border-radius:12px;padding:10px;margin-bottom:8px">
+    <span style="color:#CBD5E1">⠿</span>
+    <div style="width:40px;height:40px;border-radius:8px;background:#EA580C;display:flex;align-items:center;justify-content:center;font-size:18px">🛢</div>
+    <div style="flex:1;font-weight:700;font-size:12.5px">Edible Oils</div>
+    <div class="col g8"><span style="color:var(--primary)">✎</span><span style="color:var(--error)">🗑</span></div>
+  </div>
+  <div class="row g10" style="border:1px solid #F1F5F9;border-radius:12px;padding:10px;opacity:.5">
+    <span style="color:#CBD5E1">⠿</span>
+    <div style="width:40px;height:40px;border-radius:8px;background:#0D9488;display:flex;align-items:center;justify-content:center;font-size:18px">🫘</div>
+    <div style="flex:1;font-weight:700;font-size:12.5px">Pulses &amp; Lentils</div>
+    <div class="badge" style="background:#F1F5F9;color:var(--text2);margin-right:8px">INACTIVE</div>
+    <div class="col g8"><span style="color:var(--primary)">✎</span><span style="color:var(--error)">🗑</span></div>
+  </div>
+</div>
+<div class="fab">+ Add Category</div>
+</div>
+</div></div>
+
+<!-- 5 ADD/EDIT PRODUCT -->
+<div class="frame-wrap"><div class="frame-label">05 — Add / Edit Product</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-icon">←</div><div class="appbar-title">Edit Product</div></div>
+<div class="p16">
+  <div style="border:1.5px dashed #CBD5E1;border-radius:12px;padding:18px;text-align:center;color:#94A3B8;font-size:12px;margin-bottom:14px">🖼 Tap to change image</div>
+  <div class="field"><div class="field-label">Product name</div><div class="field-input focus">Basmati Rice Premium 25kg</div></div>
+  <div class="field"><div class="field-label">Category</div><div class="field-input">Grains &amp; Cereals ▾</div></div>
+  <div class="field"><div class="field-label">Unit</div><div class="field-input">per kg ▾</div></div>
+  <div class="section-h" style="margin-top:6px">Rate by quantity (₹ per kg)</div>
+  <div style="font-size:11px;color:var(--text2);margin-bottom:10px">The whole weight is billed at the one rate its band earns.</div>
+  <div class="row g10"><div class="field" style="flex:1"><div class="field-label">Below 240 g</div><div class="field-input">₹ 75 /kg</div></div><div class="field" style="flex:1"><div class="field-label">240 g – 999 g</div><div class="field-input">₹ 70 /kg</div></div></div>
+  <div class="row g10"><div class="field" style="flex:1"><div class="field-label">1 kg – 2.4 kg</div><div class="field-input">₹ 68 /kg</div></div><div class="field" style="flex:1"><div class="field-label">Above 2.4 kg</div><div class="field-input">₹ 65 /kg</div></div></div>
+  <div class="field"><div class="field-label">Stock quantity</div><div class="field-input">320</div><div style="font-size:10.5px;color:#94A3B8;margin-top:3px">In kilograms</div></div>
+  <div class="row between" style="padding:8px 0"><div><div style="font-size:13px;font-weight:500">Active</div><div style="font-size:11px;color:var(--text2)">Inactive products stay in your catalog but are hidden from retailers.</div></div><div class="switch"><div class="dot"></div></div></div>
+  <div class="btn-primary">Save Changes</div>
+</div>
+</div>
+</div></div>
+
+<!-- 6 ADD/EDIT CATEGORY -->
+<div class="frame-wrap"><div class="frame-label">06 — Add / Edit Category</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-icon">←</div><div class="appbar-title">Add Category</div></div>
+<div class="p16">
+  <div style="border:1.5px dashed #CBD5E1;border-radius:12px;padding:18px;text-align:center;color:#94A3B8;font-size:12px;margin-bottom:14px">🖼 Tap to add image</div>
+  <div class="field"><div class="field-label">Category name</div><div class="field-input focus">e.g. Edible Oils</div></div>
+  <div class="row between" style="padding:8px 0"><div><div style="font-size:13px;font-weight:500">Active</div><div style="font-size:11px;color:var(--text2)">Inactive categories stay in your catalog but are hidden from retailers.</div></div><div class="switch"><div class="dot"></div></div></div>
+  <div class="btn-primary">Add Category</div>
+</div>
+</div>
+</div></div>
+
+<!-- 7 RETAILERS APPROVED -->
+<div class="frame-wrap"><div class="frame-label">07 — Retailers · Approved</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-title">Retailers</div></div>
+<div class="tabbar"><div class="active">🏬 Approved</div><div>⏳ Pending (7)</div></div>
+<div class="p16">
+  <div class="list-row"><div class="row g10"><div class="avatar">S</div><div><div style="font-weight:700;font-size:13px">Sharma General Store</div><div style="font-size:11.5px;color:var(--text2)">Ramesh Sharma</div></div></div><div class="col" style="align-items:flex-end"><div style="font-weight:700;font-size:13px;color:var(--primary)">₹28,450</div><div style="font-size:10.5px;color:var(--text2)">12 orders</div></div></div>
+  <div class="list-row"><div class="row g10"><div class="avatar">M</div><div><div style="font-weight:700;font-size:13px">Modern Traders</div><div style="font-size:11.5px;color:var(--text2)">Anita Deshmukh</div></div></div><div class="col" style="align-items:flex-end"><div style="font-weight:700;font-size:13px;color:var(--primary)">₹14,020</div><div style="font-size:10.5px;color:var(--text2)">6 orders</div></div></div>
+</div>
+<div style="flex:1"></div>
+<div class="navbar">
+  <div class="navitem"><div class="navicon">📊</div>Dashboard</div>
+  <div class="navitem"><div class="navicon">🧾</div>Orders</div>
+  <div class="navitem"><div class="navicon">📦</div>Catalog</div>
+  <div class="navitem active"><div class="navicon">🏬</div>Retailers</div>
+  <div class="navitem"><div class="navicon">👤</div>Profile</div>
+</div>
+</div>
+</div></div>
+
+<!-- 8 RETAILERS PENDING / APPROVAL QUEUE -->
+<div class="frame-wrap"><div class="frame-label">08 — Retailers · Pending (Approval Queue)</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-title">Retailers</div></div>
+<div class="tabbar"><div>🏬 Approved</div><div class="active">⏳ Pending (7)</div></div>
+<div class="p16">
+  <div style="border:1px solid #E2E8F0;border-radius:12px;padding:12px;margin-bottom:10px">
+    <div class="row g10"><div class="avatar">P</div><div><div style="font-weight:700;font-size:13px">Patil Kirana Store</div><div style="font-size:11.5px;color:var(--text2)">Sunil Patil · 90211 22334</div><div style="font-size:11px;color:var(--text2)">Shivaji Nagar, Pune</div></div></div>
+    <div class="row between" style="margin-top:10px"><div class="btn-text error">Reject</div><div class="btn-outlined success">✓ Approve</div></div>
+  </div>
+  <div style="border:1px solid #E2E8F0;border-radius:12px;padding:12px">
+    <div class="row g10"><div class="avatar">V</div><div><div style="font-weight:700;font-size:13px">Verma Wholesale</div><div style="font-size:11.5px;color:var(--text2)">Deepak Verma · 88990 11223</div><div style="font-size:11px;color:var(--text2)">Hadapsar, Pune</div></div></div>
+    <div class="row between" style="margin-top:10px"><div class="btn-text error">Reject</div><div class="btn-outlined success">✓ Approve</div></div>
+  </div>
+</div>
+</div>
+</div></div>
+
+<!-- 9 RETAILER DETAIL -->
+<div class="frame-wrap"><div class="frame-label">09 — Retailer Detail</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-icon">←</div><div class="appbar-title">Patil Kirana Store</div></div>
+<div class="p16">
+  <div class="row g10"><div class="avatar" style="width:48px;height:48px">P</div><div class="poppins" style="font-weight:700;font-size:15px">Patil Kirana Store</div><div class="badge" style="background:rgba(245,158,11,.12);color:var(--warning);margin-left:auto">PENDING</div></div>
+
+  <div class="section-h">Owner</div><div style="font-size:13px">Sunil Patil</div>
+  <div class="section-h">Contact</div><div style="font-size:13px">sunil.patil@example.com</div><div style="font-size:13px">90211 22334</div>
+  <div class="section-h">Address</div><div style="font-size:13px;line-height:1.5">Shivaji Nagar, Pune, 411005</div>
+  <div class="section-h">GST</div><div style="font-size:13px">27PQRSX5678L1Z2</div>
+  <div class="section-h">Business Hours</div><div style="font-size:13px">09:00 AM – 09:00 PM</div>
+  <div class="section-h">Bank Details</div>
+  <div style="font-size:13px;line-height:1.6">Sunil Patil<br>XXXXXXXX7789 · IBKL0001122<br>Indian Bank</div>
+  <div class="section-h">Registered On</div><div style="font-size:13px">10 Aug 2026</div>
+
+  <div style="border-top:1px solid #F1F5F9;margin:16px 0"></div>
+  <div class="row between"><div class="btn-text error">Reject</div><div class="btn-outlined success">✓ Approve</div></div>
+</div>
+</div>
+</div></div>
+
+<!-- 10 ORDER MANAGEMENT -->
+<div class="frame-wrap"><div class="frame-label">10 — Order Management</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-icon">←</div><div class="appbar-title">Manage Order</div></div>
+<div class="p16">
+  <div class="row between"><span class="poppins" style="font-weight:700;font-size:15px">Order #8F3C21</span><div class="badge" style="background:rgba(124,58,237,.12);color:var(--primary)">OUT FOR DELIVERY</div></div>
+  <div style="font-size:11px;color:var(--primary);font-weight:600;margin-top:2px">Sharma General Store</div>
+
+  <div style="border:1.5px solid rgba(124,58,237,.2);border-radius:12px;padding:10px 12px;margin-top:12px">
+    <div class="field-label">Order status</div>
+    <div style="font-size:13px;font-weight:600;color:var(--primary);margin-top:4px">Out for Delivery ▾</div>
+  </div>
+
+  <div class="section-h">Items</div>
+  <div class="list-row"><span>Basmati Rice 25kg × 1</span><span>₹1,700.00</span></div>
+  <div class="list-row"><span>Sunflower Oil 15L × 1</span><span>₹1,850.00</span></div>
+  <div class="list-row" style="border-bottom:none;font-weight:700;font-size:14.5px"><span>Grand Total</span><span>₹3,630.00</span></div>
+
+  <div class="section-h">Delivery Address</div>
+  <div style="font-size:12.5px;color:var(--text2)">MG Road, Shop No. 14, Pune, 411001</div>
+
+  <div class="section-h">Payment</div>
+  <div style="font-size:12.5px;color:var(--text2);margin-bottom:8px">Cash on Delivery — Unpaid</div>
+  <div class="btn-outlined success">✓ Mark as Paid</div>
+</div>
+</div>
+</div></div>
+
+<!-- 11 DELIVERY SETTINGS -->
+<div class="frame-wrap"><div class="frame-label">11 — Delivery Settings</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-icon">←</div><div class="appbar-title">Delivery Settings</div></div>
+<div class="p16">
+  <div class="section-h" style="margin-top:6px">Warehouse Location</div>
+  <div style="font-size:11.5px;color:var(--text2);margin-bottom:10px">Every delivery charge is calculated as straight-line distance from this point.</div>
+  <div class="row g10"><div class="field" style="flex:1"><div class="field-label">Latitude</div><div class="field-input">18.5204</div></div><div class="field" style="flex:1"><div class="field-label">Longitude</div><div class="field-input">73.8567</div></div></div>
+  <div class="btn-text">📍 Use current location</div>
+
+  <div class="section-h">Per-km Rate</div>
+  <div class="field"><div class="field-label">Rate (₹ per km)</div><div class="field-input focus">₹ 8.00</div></div>
+  <div class="btn-primary" style="margin-top:10px">Save Changes</div>
+</div>
+</div>
+</div></div>
+
+<!-- 12 ADMIN PROFILE -->
+<div class="frame-wrap"><div class="frame-label">12 — Admin Profile</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-title">Admin Profile</div></div>
+<div class="tabbar"><div class="active">👤 Profile</div><div>⚙ Settings</div></div>
+<div class="p16">
+  <div style="background:linear-gradient(135deg,var(--primary),var(--primary-dark));border-radius:18px;padding:16px;color:#fff" class="row g12">
+    <div class="avatar" style="background:rgba(255,255,255,.2);color:#fff">V</div>
+    <div><div style="font-weight:700;font-size:15.5px">Vishvatej Katkar</div><div style="font-size:11.5px;color:rgba(255,255,255,.85)">vishvatejkatkar007@gmail.com</div><div style="font-size:11.5px;color:rgba(255,255,255,.85)">98604 60325</div></div>
+    <div style="margin-left:auto">✎</div>
+  </div>
+</div>
+<div style="flex:1"></div>
+<div class="navbar">
+  <div class="navitem"><div class="navicon">📊</div>Dashboard</div>
+  <div class="navitem"><div class="navicon">🧾</div>Orders</div>
+  <div class="navitem"><div class="navicon">📦</div>Catalog</div>
+  <div class="navitem"><div class="navicon">🏬</div>Retailers</div>
+  <div class="navitem active"><div class="navicon">👤</div>Profile</div>
+</div>
+</div>
+</div></div>
+
+<!-- 13 ADMIN PROFILE SETTINGS -->
+<div class="frame-wrap"><div class="frame-label">13 — Admin Profile · Settings</div><div class="frame">
+<div class="statusbar">9:41</div>
+<div class="body">
+<div class="appbar"><div class="appbar-title">Admin Profile</div></div>
+<div class="tabbar"><div>👤 Profile</div><div class="active">⚙ Settings</div></div>
+<div class="p16">
+  <div style="border:1px solid #E2E8F0;border-radius:12px;padding:14px;margin-bottom:12px">
+    <div class="poppins" style="font-weight:600;font-size:14px;margin-bottom:10px">🎨 Appearance</div>
+    <div style="display:inline-flex;border:1.5px solid #E2E8F0;border-radius:10px;overflow:hidden">
+      <div style="padding:7px 14px;font-size:11.5px;font-weight:600;background:var(--primary);color:#fff">◐ System</div>
+      <div style="padding:7px 14px;font-size:11.5px;font-weight:600;color:var(--text2)">☀ Light</div>
+      <div style="padding:7px 14px;font-size:11.5px;font-weight:600;color:var(--text2)">☾ Dark</div>
+    </div>
+  </div>
+  <div style="border:1px solid #E2E8F0;border-radius:12px;padding:14px;margin-bottom:12px">
+    <div class="poppins" style="font-weight:600;font-size:14px;margin-bottom:6px">🏬 Store</div>
+    <div class="list-row" style="border:none"><div><div style="font-weight:500">Delivery Settings</div><div style="font-size:11px;color:var(--text2)">Delivery radius, fees, and minimum order value</div></div><span>›</span></div>
+  </div>
+  <div style="border:1px solid #E2E8F0;border-radius:12px;padding:14px;margin-bottom:12px">
+    <div class="poppins" style="font-weight:600;font-size:14px;margin-bottom:6px">🔒 Account</div>
+    <div class="list-row" style="border:none"><div><div style="font-weight:500">Change Password</div><div style="font-size:11px;color:var(--text2)">vishvatejkatkar007@gmail.com</div></div><span>›</span></div>
+  </div>
+  <div style="border:1px solid #E2E8F0;border-radius:12px;padding:14px;margin-bottom:14px">
+    <div class="poppins" style="font-weight:600;font-size:14px;margin-bottom:6px">🎧 Support</div>
+    <div class="list-row"><div style="font-weight:500">Call Support</div><span>📞</span></div>
+    <div class="list-row" style="border:none"><div style="font-weight:500">Email Support</div><span>✉</span></div>
+  </div>
+  <div class="btn-outlined error" style="width:100%">⇥ Log Out</div>
+</div>
+</div>
+</div></div>
+
+<!-- DIALOGS -->
+<div class="frame-wrap"><div class="frame-label">Dialogs — Delete Confirm / Log Out</div><div class="frame" style="min-height:auto;background:#94A3B8;padding:40px 20px;align-items:center;display:flex;flex-direction:column;gap:20px">
+  <div class="dialog"><h3>Delete product?</h3><p>"Basmati Rice Premium 25kg" will be permanently removed from the catalog. To hide it from retailers without losing it, edit the product and turn off "Active" instead.</p><div class="row between"><div class="btn-text">Cancel</div><div class="btn-text error">Delete</div></div></div>
+  <div class="dialog"><h3>Log out?</h3><p>You'll need to sign in again to access the admin panel.</p><div class="row between"><div class="btn-text">Cancel</div><div class="btn-text error">Log Out</div></div></div>
+</div></div>
+
+</div>
+</body>
+</html>

@@ -1,8 +1,8 @@
 {
   "project_info": {
     "project_number": "123456789012",
-    "project_id": "jyoti-kirana-demo",
-    "storage_bucket": "jyoti-kirana-demo.appspot.com"
+    "project_id": "jyoti-traders-demo",
+    "storage_bucket": "jyoti-traders-demo.appspot.com"
   },
   "client": [
     {

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../core/utils/weight_formatter.dart';
 import '../value_objects/money.dart';
 import '../value_objects/weight_rate_slabs.dart';
 
@@ -38,6 +39,11 @@ class ProductEntity extends Equatable {
   /// keeps its old flat price-per-kilo behaviour.
   final WeightRateSlabs? rateSlabs;
 
+  /// Admin-curated flag — true shows this product in the retailer Home
+  /// screen's "Top Products" section. Defaults false, so every product
+  /// saved before this flag existed simply doesn't appear there.
+  final bool isTopProduct;
+
   const ProductEntity({
     required this.id,
     required this.name,
@@ -49,6 +55,7 @@ class ProductEntity extends Equatable {
     this.description,
     required this.isActive,
     this.rateSlabs,
+    this.isTopProduct = false,
   });
 
   bool get isInStock => stock > 0;
@@ -68,22 +75,38 @@ class ProductEntity extends Equatable {
   /// Smallest sensible starting quantity — 100 g, or one whole unit.
   int get minQty => isWeighed ? 100 : 1;
 
-  ProductEntity copyWith({String? imageUrl}) {
+  /// How [qty] reads in prose: `2.5 kg`, or `3 box`.
+  String labelForQty(int qty) =>
+      isWeighed ? formatGrams(qty) : '$qty ${unit.value}';
+
+  ProductEntity copyWith({String? imageUrl, Money? price, int? stock}) {
     return ProductEntity(
       id: id,
       name: name,
       categoryId: categoryId,
       imageUrl: imageUrl ?? this.imageUrl,
-      price: price,
+      price: price ?? this.price,
       unit: unit,
-      stock: stock,
+      stock: stock ?? this.stock,
       description: description,
       isActive: isActive,
       rateSlabs: rateSlabs,
+      isTopProduct: isTopProduct,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [id, name, categoryId, imageUrl, price, unit, stock, description, isActive, rateSlabs];
+  List<Object?> get props => [
+    id,
+    name,
+    categoryId,
+    imageUrl,
+    price,
+    unit,
+    stock,
+    description,
+    isActive,
+    rateSlabs,
+    isTopProduct,
+  ];
 }
