@@ -5,8 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/route_names.dart';
+import '../../../domain/entities/order_entity.dart';
 import '../../../l10n/app_localizations.dart';
 import '../controllers/admin_dashboard_controller.dart';
+import '../screens/all_orders_screen.dart';
 
 /// "Needs attention" — the dashboard as a to-do list. One tappable chip per
 /// thing waiting on the owner (only the non-zero ones), each opening the place
@@ -39,7 +41,16 @@ class AttentionStrip extends ConsumerWidget {
           count: summary.unconfirmedPayments,
           label: l10n.adminAttentionPayments,
           color: AppColors.primary,
-          onTap: () => context.go(RouteNames.adminOrders),
+          // Pushed directly (not routed through the Orders tab) so it can
+          // carry the payment-status scope — landing the admin on exactly
+          // the orders the chip named instead of the unfiltered tab.
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const AllOrdersScreen(
+                paymentStatus: PaymentStatus.paymentClaimed,
+              ),
+            ),
+          ),
         ),
       if (summary.staleOrders > 0)
         _AttentionChip(

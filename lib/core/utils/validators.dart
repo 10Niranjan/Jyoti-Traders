@@ -8,6 +8,7 @@ class Validators {
   );
   static final RegExp _ifsc = RegExp(r'^[A-Z]{4}0[A-Z0-9]{6}$');
   static final RegExp _accountNumber = RegExp(r'^\d{9,18}$');
+  static final RegExp _pincode = RegExp(r'^\d{6}$');
 
   /// Letters only, single spaces/apostrophes/hyphens between words — the
   /// alternation (separator must be followed by another letter run) is what
@@ -65,6 +66,13 @@ class Validators {
 
   static String? address(String? value) =>
       required(value, fieldName: 'Address');
+
+  static String? pincode(String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) return 'Pincode is required';
+    if (!_pincode.hasMatch(trimmed)) return 'Enter a valid 6-digit pincode';
+    return null;
+  }
 
   static String? businessName(String? value) {
     final trimmed = value?.trim() ?? '';

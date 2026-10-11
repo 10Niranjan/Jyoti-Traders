@@ -273,115 +273,125 @@ class _ProductsListViewState extends ConsumerState<ProductsListView> {
           ),
         ),
         Expanded(
-          child: RefreshIndicator(
-            onRefresh: () async => ref.invalidate(allProductsProvider),
-            child: products.when(
-              loading: () => const Padding(
-                padding: EdgeInsets.all(18.0),
-                child: ListShimmerLoader(itemCount: 6, itemHeight: 92),
-              ),
-              error: (e, _) => ListView(
-                padding: const EdgeInsets.all(18.0),
-                children: [
-                  ErrorStateWidget(
-                    message: l10n.adminCouldntLoadProducts('$e'),
-                    onRetry: () => ref.invalidate(allProductsProvider),
-                  ),
-                ],
-              ),
-              data: (list) {
-                if (list.isEmpty) {
-                  return ListView(
-                    padding: const EdgeInsets.all(18.0),
-                    children: [
-                      EmptyStateWidget(
-                        icon: Icons.inventory_2_outlined,
-                        title: l10n.adminNoProductsYetTitle,
-                        message: l10n.adminNoProductsYetMessage,
-                      ),
-                    ],
-                  );
-                }
-
-                final filtered = filterAndSortAdminProducts(
-                  list,
-                  query: _query,
-                  categoryId: _categoryId,
-                  sort: _sort,
-                );
-
-                if (filtered.isEmpty) {
-                  return ListView(
-                    padding: const EdgeInsets.all(18.0),
-                    children: [
-                      EmptyStateWidget(
-                        icon: Icons.search_off_rounded,
-                        title: l10n.adminNoProductsMatchTitle,
-                        message: l10n.adminNoProductsMatchMessage,
-                      ),
-                    ],
-                  );
-                }
-
-                // Low-stock count reflects the whole catalog, not just the
-                // current search/filter — it's a catalog-health summary, not
-                // scoped to whatever the admin happens to be searching for.
-                final lowStockCount = list
-                    .where((p) => p.stock <= AppConstants.kLowStockThreshold)
-                    .length;
-
-                return Column(
+          // Reserves screen space the floating "Add Product" FAB sits in —
+          // its own fixed margin (16) plus FloatingActionButton.extended's
+          // height (~56). A short, unscrolled list otherwise renders its
+          // last row directly under the FAB, since the FAB floats at a
+          // fixed viewport position regardless of scroll offset; the
+          // ListView's own bottom `padding` only reserves scrollable space,
+          // which is invisible until the list is actually scrolled there.
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 80),
+            child: RefreshIndicator(
+              onRefresh: () async => ref.invalidate(allProductsProvider),
+              child: products.when(
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(18.0),
+                  child: ListShimmerLoader(itemCount: 6, itemHeight: 92),
+                ),
+                error: (e, _) => ListView(
+                  padding: const EdgeInsets.all(18.0),
                   children: [
-                    Expanded(
-                      child: ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(18, 10, 18, 88),
-                        itemCount:
-                            filtered.length + (lowStockCount > 0 ? 1 : 0),
-                        itemBuilder: (context, index) {
-                          if (lowStockCount > 0 && index == 0) {
-                            return _LowStockBanner(count: lowStockCount);
-                          }
-                          final product =
-                              filtered[index - (lowStockCount > 0 ? 1 : 0)];
-                          final tile = AdminProductTile(
-                            product: product,
-                            onEdit: () => context.push(
-                              RouteNames.adminEditProductPath(product.id),
-                            ),
-                            onDelete: () => _confirmDelete(product),
-                          );
-                          if (!_selectionMode) return tile;
-                          return Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Checkbox(
-                                value: _selectedIds.contains(product.id),
-                                onChanged: (checked) => setState(() {
-                                  if (checked == true) {
-                                    _selectedIds.add(product.id);
-                                  } else {
-                                    _selectedIds.remove(product.id);
-                                  }
-                                }),
-                              ),
-                              Expanded(child: tile),
-                            ],
-                          );
-                        },
-                      ),
+                    ErrorStateWidget(
+                      message: l10n.adminCouldntLoadProducts('$e'),
+                      onRetry: () => ref.invalidate(allProductsProvider),
                     ),
-                    if (_selectionMode && _selectedIds.isNotEmpty)
-                      _BulkActionBar(
-                        count: _selectedIds.length,
-                        onEdit: () => _showBulkEditDialog(
-                          list
-                              .where((p) => _selectedIds.contains(p.id))
-                              .toList(),
+                  ],
+                ),
+                data: (list) {
+                  if (list.isEmpty) {
+                    return ListView(
+                      padding: const EdgeInsets.all(18.0),
+                      children: [
+                        EmptyStateWidget(
+                          icon: Icons.inventory_2_outlined,
+                          title: l10n.adminNoProductsYetTitle,
+                          message: l10n.adminNoProductsYetMessage,
+                        ),
+                      ],
+                    );
+                  }
+
+                  final filtered = filterAndSortAdminProducts(
+                    list,
+                    query: _query,
+                    categoryId: _categoryId,
+                    sort: _sort,
+                  );
+
+                  if (filtered.isEmpty) {
+                    return ListView(
+                      padding: const EdgeInsets.all(18.0),
+                      children: [
+                        EmptyStateWidget(
+                          icon: Icons.search_off_rounded,
+                          title: l10n.adminNoProductsMatchTitle,
+                          message: l10n.adminNoProductsMatchMessage,
+                        ),
+                      ],
+                    );
+                  }
+
+                  // Low-stock count reflects the whole catalog, not just the
+                  // current search/filter — it's a catalog-health summary, not
+                  // scoped to whatever the admin happens to be searching for.
+                  final lowStockCount = list
+                      .where((p) => p.stock <= AppConstants.kLowStockThreshold)
+                      .length;
+
+                  return Column(
+                    children: [
+                      Expanded(
+                        child: ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(18, 10, 18, 88),
+                          itemCount:
+                              filtered.length + (lowStockCount > 0 ? 1 : 0),
+                          itemBuilder: (context, index) {
+                            if (lowStockCount > 0 && index == 0) {
+                              return _LowStockBanner(count: lowStockCount);
+                            }
+                            final product =
+                                filtered[index - (lowStockCount > 0 ? 1 : 0)];
+                            final tile = AdminProductTile(
+                              product: product,
+                              onEdit: () => context.push(
+                                RouteNames.adminEditProductPath(product.id),
+                              ),
+                              onDelete: () => _confirmDelete(product),
+                            );
+                            if (!_selectionMode) return tile;
+                            return Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Checkbox(
+                                  value: _selectedIds.contains(product.id),
+                                  onChanged: (checked) => setState(() {
+                                    if (checked == true) {
+                                      _selectedIds.add(product.id);
+                                    } else {
+                                      _selectedIds.remove(product.id);
+                                    }
+                                  }),
+                                ),
+                                Expanded(child: tile),
+                              ],
+                            );
+                          },
                         ),
                       ),
-                  ],
-                );
-              },
+                      if (_selectionMode && _selectedIds.isNotEmpty)
+                        _BulkActionBar(
+                          count: _selectedIds.length,
+                          onEdit: () => _showBulkEditDialog(
+                            list
+                                .where((p) => _selectedIds.contains(p.id))
+                                .toList(),
+                          ),
+                        ),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ),

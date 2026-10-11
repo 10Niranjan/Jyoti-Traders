@@ -28,10 +28,16 @@ import '../controllers/admin_dashboard_controller.dart';
 /// retailer's orders only — used by the Retailers tab's Approved segment
 /// "view history" tap-through, reusing this screen's list/filter UI rather
 /// than a near-duplicate.
+///
+/// When [paymentStatus] is set, the list is additionally scoped to UPI
+/// orders in that payment state — used by the dashboard's "UPI payments to
+/// confirm" attention chip, so it actually lands on the orders it names
+/// instead of dumping the admin on the unfiltered list.
 class AllOrdersScreen extends ConsumerStatefulWidget {
   final String? retailerId;
+  final PaymentStatus? paymentStatus;
 
-  const AllOrdersScreen({super.key, this.retailerId});
+  const AllOrdersScreen({super.key, this.retailerId, this.paymentStatus});
 
   @override
   ConsumerState<AllOrdersScreen> createState() => _AllOrdersScreenState();
@@ -41,9 +47,14 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
   OrderStatus? _filter;
 
   List<OrderEntity> _filteredOrders(List<OrderEntity> orders) {
-    final scoped = widget.retailerId == null
+    var scoped = widget.retailerId == null
         ? orders
         : orders.where((o) => o.userId == widget.retailerId).toList();
+    if (widget.paymentStatus != null) {
+      scoped = scoped
+          .where((o) => o.paymentStatus == widget.paymentStatus)
+          .toList();
+    }
     return _filter == null
         ? scoped
         : scoped.where((o) => o.orderStatus == _filter).toList();
@@ -109,9 +120,8 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
     final retailerId = widget.retailerId;
     final l10n = AppLocalizations.of(context)!;
 
-    final title = retailerId == null
-        ? l10n.adminAllOrdersTitle
-        : ref
+    final title = retailerId != null
+        ? ref
               .watch(approvedUsersProvider)
               .maybeWhen(
                 data: (users) {
@@ -121,7 +131,10 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
                       : l10n.adminRetailerOrdersTitle(match.first.shopName);
                 },
                 orElse: () => l10n.adminRetailerOrders,
-              );
+              )
+        : widget.paymentStatus != null
+        ? l10n.adminAttentionPayments
+        : l10n.adminAllOrdersTitle;
 
     return Scaffold(
       appBar: AppBar(

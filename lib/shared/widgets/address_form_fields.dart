@@ -35,7 +35,8 @@ class AddressFormFields extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasResolvedAddress = resolvedAddress != null && resolvedAddress!.trim().isNotEmpty;
+    final hasResolvedAddress =
+        resolvedAddress != null && resolvedAddress!.trim().isNotEmpty;
     final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -56,40 +57,57 @@ class AddressFormFields extends StatelessWidget {
           controller: pincodeController,
           decoration: InputDecoration(labelText: l10n.addressPincodeLabel),
           keyboardType: TextInputType.number,
-          validator: (v) => Validators.required(v, fieldName: 'Pincode'),
+          maxLength: 6,
+          validator: Validators.pincode,
         ),
         const SizedBox(height: 12),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(
-              hasResolvedAddress ? Icons.check_circle : Icons.location_off_outlined,
+              hasResolvedAddress
+                  ? Icons.check_circle
+                  : Icons.location_off_outlined,
               size: 16,
-              color: hasResolvedAddress ? AppColors.success : context.textSecondary,
+              color: hasResolvedAddress
+                  ? AppColors.success
+                  : context.textSecondary,
             ),
             const SizedBox(width: 6),
             Expanded(
               child: isLocating
                   ? Text(
                       l10n.addressDetecting,
-                      style: GoogleFonts.inter(fontSize: 11.5, color: context.textSecondary),
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        color: context.textSecondary,
+                      ),
                     )
                   : hasResolvedAddress
-                      ? Text.rich(
-                          TextSpan(
-                            style: GoogleFonts.inter(fontSize: 11.5, color: context.textSecondary),
-                            children: [
-                              TextSpan(text: l10n.addressDetectedPrefix, style: const TextStyle(fontWeight: FontWeight.w600)),
-                              TextSpan(text: resolvedAddress),
-                            ],
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        )
-                      : Text(
-                          l10n.addressAddForPricing,
-                          style: GoogleFonts.inter(fontSize: 11.5, color: context.textSecondary),
+                  ? Text.rich(
+                      TextSpan(
+                        style: GoogleFonts.inter(
+                          fontSize: 11.5,
+                          color: context.textSecondary,
                         ),
+                        children: [
+                          TextSpan(
+                            text: l10n.addressDetectedPrefix,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          TextSpan(text: resolvedAddress),
+                        ],
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    )
+                  : Text(
+                      l10n.addressAddForPricing,
+                      style: GoogleFonts.inter(
+                        fontSize: 11.5,
+                        color: context.textSecondary,
+                      ),
+                    ),
             ),
           ],
         ),
@@ -99,9 +117,17 @@ class AddressFormFields extends StatelessWidget {
           child: TextButton.icon(
             onPressed: isLocating ? null : onUseCurrentLocation,
             icon: isLocating
-                ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2))
+                ? const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
                 : const Icon(Icons.my_location_rounded, size: 16),
-            label: Text(hasResolvedAddress ? l10n.addressRefreshLocation : l10n.addressUseCurrentLocation),
+            label: Text(
+              hasResolvedAddress
+                  ? l10n.addressRefreshLocation
+                  : l10n.addressUseCurrentLocation,
+            ),
           ),
         ),
       ],

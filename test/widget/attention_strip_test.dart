@@ -3,14 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:traders_retailer/core/constants/route_names.dart';
+import 'package:traders_retailer/domain/entities/order_entity.dart';
 import 'package:traders_retailer/features/admin/controllers/admin_dashboard_controller.dart';
+import 'package:traders_retailer/features/admin/screens/all_orders_screen.dart';
 import 'package:traders_retailer/features/admin/widgets/admin_stat_card.dart';
 import 'package:traders_retailer/features/admin/widgets/attention_strip.dart';
 import 'package:traders_retailer/l10n/app_localizations.dart';
 
 /// Hosts the strip on '/' with stub pages at the routes its chips open, so a
 /// tap proves both *where* it goes and that it lands there.
-Widget _host(AttentionSummary? summary) {
+Widget _host(
+  AttentionSummary? summary, {
+  List<Override> extraOverrides = const [],
+}) {
   Widget page(String label) => Scaffold(body: Center(child: Text(label)));
   final router = GoRouter(
     routes: [
@@ -33,7 +38,10 @@ Widget _host(AttentionSummary? summary) {
     ],
   );
   return ProviderScope(
-    overrides: [attentionSummaryProvider.overrideWithValue(summary)],
+    overrides: [
+      attentionSummaryProvider.overrideWithValue(summary),
+      ...extraOverrides,
+    ],
     child: MaterialApp.router(
       routerConfig: router,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -123,21 +131,36 @@ void main() {
       expect(find.text('approval-queue-page'), findsOneWidget);
     });
 
-    testWidgets('payments and stale orders open the Orders tab', (
-      tester,
-    ) async {
-      await tester.pumpWidget(_host(_busy));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('UPI payments to confirm'));
-      await tester.pumpAndSettle();
-      expect(find.text('orders-page'), findsOneWidget);
-
+    testWidgets('stale orders opens the Orders tab', (tester) async {
       await tester.pumpWidget(_host(_busy));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Orders unconfirmed 30+ min'));
       await tester.pumpAndSettle();
       expect(find.text('orders-page'), findsOneWidget);
     });
+
+    testWidgets(
+      'payments pushes a payment-scoped Orders screen, not the unfiltered tab',
+      (tester) async {
+        await tester.pumpWidget(
+          _host(
+            _busy,
+            extraOverrides: [
+              allOrdersProvider.overrideWith((ref) => Stream.value(const [])),
+            ],
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('UPI payments to confirm'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('orders-page'), findsNothing);
+        final screen = tester.widget<AllOrdersScreen>(
+          find.byType(AllOrdersScreen),
+        );
+        expect(screen.paymentStatus, PaymentStatus.paymentClaimed);
+      },
+    );
 
     testWidgets('low stock opens the Catalog tab', (tester) async {
       await tester.pumpWidget(_host(_busy));
