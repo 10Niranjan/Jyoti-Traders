@@ -11,6 +11,7 @@ import 'package:traders_retailer/data/repositories/auth_repository_provider.dart
 import 'package:traders_retailer/data/repositories/broadcast_repository_impl.dart';
 import 'package:traders_retailer/data/repositories/repository_providers.dart';
 import 'package:traders_retailer/data/datasources/local/broadcast_local_datasource.dart';
+import 'package:traders_retailer/data/datasources/remote/broadcast_remote_datasource.dart';
 import 'package:traders_retailer/domain/entities/address_entity.dart';
 import 'package:traders_retailer/domain/entities/bank_details_entity.dart';
 import 'package:traders_retailer/domain/entities/business_hours_entity.dart';
@@ -110,6 +111,19 @@ final _retailer = UserModel(
   createdAt: DateTime(2026, 1, 1),
 );
 
+/// The live auth stream re-emits the same signed-in user on every profile
+/// save (and the FCM token save at login), several in quick succession.
+class _BurstAuthRepository extends FakeAuthRepository {
+  _BurstAuthRepository() : super(_retailer);
+
+  @override
+  Stream<UserModel?> get authStateChanges => Stream.fromIterable([
+    _retailer,
+    _retailer.copyWith(businessName: 'Ramesh Kirana Store 2'),
+    _retailer.copyWith(businessName: 'Ramesh Kirana Store 3'),
+  ]);
+}
+
 /// Same reasoning as stock_alert_controller_test.dart's helper: a change
 /// needs several event-loop turns to propagate through auth stream ->
 /// broadcastsProvider -> ref.listen.
@@ -129,7 +143,7 @@ void main() {
     Hive.init(tempDir.path);
     notificationsBox = await Hive.openBox(HiveBoxes.notificationsCache);
     broadcastRepo = BroadcastRepositoryImpl(
-      BroadcastLocalDatasource(box: notificationsBox),
+      BroadcastRemoteDatasource(local: BroadcastLocalDatasource(box: notificationsBox)),
     );
   });
 
@@ -213,6 +227,27 @@ void main() {
       await _settle();
 
       expect(secondSession.added, isEmpty);
+    },
+  );
+
+  test(
+    'a burst of auth re-emits (profile saves) still copies a broadcast once',
+    () async {
+      await broadcastRepo.send(title: 'New stock arrived', body: 'Rice.');
+      final notificationRepo = FakeNotificationRepository();
+      final c = ProviderContainer(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(_BurstAuthRepository()),
+          broadcastRepositoryProvider.overrideWithValue(broadcastRepo),
+          notificationRepositoryProvider.overrideWithValue(notificationRepo),
+        ],
+      );
+      addTearDown(c.dispose);
+
+      c.read(broadcastIngestionProvider);
+      await _settle(20);
+
+      expect(notificationRepo.added, hasLength(1));
     },
   );
 

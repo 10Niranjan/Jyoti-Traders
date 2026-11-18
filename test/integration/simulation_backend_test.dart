@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:traders_retailer/data/datasources/local/broadcast_local_datasource.dart';
+import 'package:traders_retailer/data/datasources/remote/broadcast_remote_datasource.dart';
 import 'package:traders_retailer/data/datasources/local/cart_local_datasource.dart';
 import 'package:traders_retailer/data/datasources/local/wishlist_local_datasource.dart';
 import 'package:traders_retailer/data/repositories/broadcast_repository_impl.dart';
@@ -103,13 +104,22 @@ void main() {
       final pending = await userRepo.watchPendingUsers().first;
       expect(pending.map((u) => u.uid), contains(retailer.uid));
 
+      // Subscribed before the approval, like the admin dashboard is from
+      // login onward: the approval must arrive on this open stream.
+      final approvedEmissions = <List<String>>[];
+      final sub = userRepo.watchApprovedUsers().listen(
+        (users) => approvedEmissions.add(users.map((u) => u.uid).toList()),
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(approvedEmissions.last, isNot(contains(retailer.uid)));
+
       await userRepo.approveUser(retailer.uid);
+      await Future<void>.delayed(Duration.zero);
+      expect(approvedEmissions.last, contains(retailer.uid));
+      await sub.cancel();
 
       final refreshed = await authRepo.refreshUserStatus(retailer.uid);
       expect(refreshed!.isApproved, isTrue);
-
-      final approvedList = await userRepo.getApprovedUsers();
-      expect(approvedList.map((u) => u.uid), contains(retailer.uid));
     },
   );
 
@@ -239,7 +249,7 @@ void main() {
 
   test('broadcast send round-trips through Hive, newest first', () async {
     final broadcastRepo = BroadcastRepositoryImpl(
-      BroadcastLocalDatasource(box: notificationsBox),
+      BroadcastRemoteDatasource(local: BroadcastLocalDatasource(box: notificationsBox)),
     );
 
     await broadcastRepo.send(
@@ -442,7 +452,7 @@ void main() {
     ))!;
     await userRepo.approveUser(retailer.uid);
     expect(
-      (await userRepo.getApprovedUsers()).map((u) => u.uid),
+      (await userRepo.watchApprovedUsers().first).map((u) => u.uid),
       contains(retailer.uid),
     );
 
@@ -450,7 +460,7 @@ void main() {
 
     expect(await authRepo.getCurrentUser(), isNull); // signed out
     expect(
-      (await userRepo.getApprovedUsers()).map((u) => u.uid),
+      (await userRepo.watchApprovedUsers().first).map((u) => u.uid),
       isNot(contains(retailer.uid)),
     );
     expect(

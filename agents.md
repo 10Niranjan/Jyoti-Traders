@@ -997,6 +997,29 @@ Continuing autonomously from the user's own standing instruction ("verify the 3 
 3. Install the debug APK on the emulator and eyeball Home, a category page, Cart, Checkout, Profile pop-ups in light + dark.
 4. Delete `tool/ui_sweep/` (or keep it as a dev tool), then commit (nothing from 2026-10-13 onward is committed - see the earlier note).
 
+## 📅 Session Log: 2026-11-18 — Live Firebase project, demo seed, end-to-end order, live-mode fixes
+
+### 📋 Tasks completed:
+
+- **Live Firebase project `jyoti-traders-app`** (Spark plan, Firestore in asia-south1, Email/Password auth, Analytics linked). Real Android config in `google-services.json`/`firebase_options.dart` (web/iOS still placeholders). First admin created by hand in the console (`users/{uid}` with `role: admin`). `firestore.rules` published from the console (CLI login never completed); orders index `userId ASC, createdAt DESC` created. **Storage not enabled** — needs the Blaze plan; user deferred it, so photo/payment-screenshot uploads fail until then.
+- **Demo catalog seeded into live Firestore** (15 categories, 31 products) via a temporary admin button, removed again the same session.
+- **End-to-end order verified on the emulator against live Firebase**: retailer sign-up → order (2 × Basmati, ₹4,600 COD) → retailer Orders tab (index works) → admin All Orders → status Confirmed; stock 40 → 38. Test retailer `niranjanpatil1683+retailer@gmail.com`, order `#B0798C1C` remain in the live DB.
+- **Fixes found while doing it:**
+  1. Email validator rejected `+` (plus-addressing) — fixed + test.
+  2. Admin's Approved-retailers list / retailer count was a one-shot fetch made at login, so an approval never showed until pull-to-refresh → now a live stream (`watchApprovedUsers`). The "retailer approved itself" scare was this: rules make self-approval impossible; the approval came from the admin account.
+  3. **Live mode only:** the signed-in user was read once at sign-in, so profile saves (address, GST, payout, switches) and an admin's approval needed an app restart → `authStateChanges` now follows the user doc's `snapshots()`. Knock-ons fixed with it: FCM token save keyed on uid (it would otherwise loop: save → doc change → save), order history keyed on uid, broadcast ingestion keyed on uid and serialised (overlapping runs duplicated broadcasts).
+  4. Admin broadcasts were device-local Hive → now a Firestore `broadcasts` collection (simulation mode keeps Hive) + rule (signed-in read, admin write), republished.
+- **Verification**: `flutter analyze` clean; `flutter test` 636/636 (new: live auth-stream test with mocktail Firestore mocks, approved-stream regression, broadcast burst-dedupe regression — the last one confirmed red against the old code). On the emulator: profile name change shows instantly; broadcast lands in Firestore.
+- **Gotchas**: Gboard must be disabled for `adb input text` (re-enable after); disabling it shows a voice panel that pushes bottom sheets up — re-screenshot before tapping. Console rules URL is `/firestore/databases/-default-/security/rules`; paste rules via `Get-Content -Encoding UTF8 | Set-Clipboard` or ₹/— get garbled.
+
+### 💬 Open:
+1. Blaze + Storage (photos, UPI screenshots); `storage.rules` still unpublished.
+2. Coupon `discount` not validated by `firestore.rules`.
+3. Delete the test retailer/order/broadcast before launch; admin display name was changed to "Owner Admin" during testing.
+4. Client items unchanged: UPI ID, GSTIN/legal address, privacy-policy URL, Play Store graphics, real catalogue.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

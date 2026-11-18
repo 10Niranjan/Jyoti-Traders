@@ -76,14 +76,22 @@ final broadcastIngestionProvider = Provider<void>((ref) {
     await box.put(seenKey, seen.toList());
   }
 
+  // One run at a time: two overlapping runs would both read the same "seen"
+  // set and copy the same broadcast into the history twice. The auth state
+  // re-emits on every profile save, so overlap is common, not theoretical.
+  Future<void> running = Future.value();
+  void trigger() => running = running.then((_) => ingest());
+
   ref.listen(
-    authControllerProvider,
-    (previous, next) => ingest(),
+    authControllerProvider.select(
+      (s) => s is AuthenticatedCustomer ? s.user.uid : null,
+    ),
+    (previous, next) => trigger(),
     fireImmediately: true,
   );
   ref.listen(
     broadcastsProvider,
-    (previous, next) => ingest(),
+    (previous, next) => trigger(),
     fireImmediately: true,
   );
 });

@@ -108,6 +108,13 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Admin announcements: every signed-in user reads them, only the admin
+    // sends (or removes) one.
+    match /broadcasts/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
     // Single-document delivery config (config/delivery) — everyone signed
     // in needs to read the per-km rate at checkout; only admin sets it.
     match /config/{doc} {

@@ -53,15 +53,20 @@ class UserRemoteDatasource {
         .map((snap) => snap.docs.map((d) => d.data()).toList());
   }
 
-  Future<List<UserModel>> getApprovedUsers() async {
+  // Live, like the pending list: a one-shot fetch went stale the moment an
+  // admin approved someone (the dashboard reads it once at login).
+  Stream<List<UserModel>> watchApprovedUsers() {
     if (_useMock) {
-      return _readSimulated().where((u) => u.isApproved).toList();
+      return () async* {
+        yield _readSimulated().where((u) => u.isApproved).toList();
+        yield* _controller.stream.map((list) => list.where((u) => u.isApproved).toList());
+      }();
     }
-    final snap = await _collection
+    return _collection
         .where('role', isEqualTo: 'customer')
         .where('status', isEqualTo: 'approved')
-        .get();
-    return snap.docs.map((d) => d.data()).toList();
+        .snapshots()
+        .map((snap) => snap.docs.map((d) => d.data()).toList());
   }
 
   Future<void> approveUser(String uid) => _setStatus(uid, UserStatus.approved);

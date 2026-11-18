@@ -7,6 +7,9 @@ class FirestorePaths {
   static const String products = 'products';
   static const String orders = 'orders';
 
+  /// Admin announcements every retailer receives (newest first).
+  static const String broadcasts = 'broadcasts';
+
   /// Single-document config collection — not a list of many docs like the
   /// others above. `config/delivery` holds the warehouse coordinates and
   /// per-km delivery rate (Phase 5).

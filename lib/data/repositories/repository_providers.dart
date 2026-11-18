@@ -23,6 +23,7 @@ import '../datasources/remote/category_remote_datasource.dart';
 import '../datasources/remote/delivery_config_remote_datasource.dart';
 import '../datasources/remote/order_remote_datasource.dart';
 import '../datasources/remote/product_remote_datasource.dart';
+import '../datasources/remote/broadcast_remote_datasource.dart';
 import '../datasources/remote/business_profile_remote_datasource.dart';
 import '../datasources/remote/promo_banner_remote_datasource.dart';
 import '../datasources/remote/user_remote_datasource.dart';
@@ -98,7 +99,9 @@ final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
 
 final broadcastRepositoryProvider = Provider<BroadcastRepository>((ref) {
   final box = Hive.box(HiveBoxes.notificationsCache);
-  return BroadcastRepositoryImpl(BroadcastLocalDatasource(box: box));
+  return BroadcastRepositoryImpl(
+    BroadcastRemoteDatasource(local: BroadcastLocalDatasource(box: box)),
+  );
 });
 
 final deliveryConfigRepositoryProvider = Provider<DeliveryConfigRepository>((

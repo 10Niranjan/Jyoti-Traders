@@ -1,15 +1,15 @@
 import '../../domain/entities/broadcast_entity.dart';
 import '../../domain/repositories/broadcast_repository.dart';
-import '../datasources/local/broadcast_local_datasource.dart';
+import '../datasources/remote/broadcast_remote_datasource.dart';
 
 class BroadcastRepositoryImpl implements BroadcastRepository {
-  final BroadcastLocalDatasource _local;
+  final BroadcastRemoteDatasource _remote;
 
-  BroadcastRepositoryImpl(this._local);
-
-  @override
-  Stream<List<BroadcastEntity>> watchBroadcasts() => _local.watchBroadcasts();
+  BroadcastRepositoryImpl(this._remote);
 
   @override
-  Future<void> send({required String title, required String body}) => _local.send(title: title, body: body);
+  Stream<List<BroadcastEntity>> watchBroadcasts() => _remote.watchBroadcasts();
+
+  @override
+  Future<void> send({required String title, required String body}) => _remote.send(title: title, body: body);
 }

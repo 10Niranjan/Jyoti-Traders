@@ -22,7 +22,7 @@ class FakeUserRepository implements UserRepository {
   Stream<List<UserEntity>> watchPendingUsers() => Stream.value(pending);
 
   @override
-  Future<List<UserEntity>> getApprovedUsers() async => [];
+  Stream<List<UserEntity>> watchApprovedUsers() => Stream.value([]);
 
   @override
   Future<void> approveUser(String uid) async {

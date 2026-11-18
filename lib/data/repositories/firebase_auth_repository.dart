@@ -76,12 +76,56 @@ class FirebaseAuthRepository implements AuthRepository {
       }();
     }
 
-    return _firebaseAuth!.authStateChanges().asyncMap((fbUser) async {
-      if (fbUser == null) {
-        return null;
-      }
-      return await _getUserFromFirestore(fbUser.uid);
-    });
+    return _watchSignedInUser();
+  }
+
+  /// Follows the signed-in user's profile document live, not a one-off read
+  /// at sign-in: profile edits, an admin's approval and FCM token saves all
+  /// reach the app without a restart (simulation mode already re-emits).
+  Stream<UserModel?> _watchSignedInUser() {
+    StreamSubscription<fb.User?>? authSub;
+    StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? docSub;
+    late final StreamController<UserModel?> out;
+    out = StreamController<UserModel?>(
+      onListen: () {
+        authSub = _firebaseAuth!.authStateChanges().listen((fbUser) {
+          docSub?.cancel();
+          docSub = null;
+          if (fbUser == null) {
+            out.add(null);
+            return;
+          }
+          final uid = fbUser.uid;
+          docSub = _firestore!
+              .collection('users')
+              .doc(uid)
+              .snapshots()
+              .listen(
+                (doc) {
+                  final data = doc.data();
+                  if (data == null) {
+                    // Sign-up writes the profile a moment after the login
+                    // exists; the next snapshot carries it.
+                    out.add(_cachedUser(uid));
+                    return;
+                  }
+                  final user = UserModel.fromJson(data);
+                  _userCacheBox.put('current_user', user.toJson());
+                  out.add(user);
+                },
+                onError: (Object e) {
+                  logWarning('User profile stream error', e);
+                  out.add(_cachedUser(uid));
+                },
+              );
+        }, onError: out.addError);
+      },
+      onCancel: () async {
+        await docSub?.cancel();
+        await authSub?.cancel();
+      },
+    );
+    return out.stream;
   }
 
   Future<UserModel?> _getUserFromFirestore(String uid) async {
@@ -96,17 +140,15 @@ class FirebaseAuthRepository implements AuthRepository {
     } catch (e) {
       logWarning('Firestore read error', e);
     }
+    return _cachedUser(uid);
+  }
 
-    // Check cache as fallback
+  /// The last profile seen on this device, if it belongs to [uid].
+  UserModel? _cachedUser(String uid) {
     final cached = _userCacheBox.get('current_user');
-    if (cached != null) {
-      final Map<String, dynamic> map = Map<String, dynamic>.from(cached as Map);
-      final cachedUser = UserModel.fromJson(map);
-      if (cachedUser.uid == uid) {
-        return cachedUser;
-      }
-    }
-    return null;
+    if (cached == null) return null;
+    final user = UserModel.fromJson(Map<String, dynamic>.from(cached as Map));
+    return user.uid == uid ? user : null;
   }
 
   @override

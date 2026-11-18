@@ -62,12 +62,23 @@ final fcmInitializerProvider = Provider<void>((ref) {
 
   // Covers the case where the token was already fetched before login (e.g.
   // permission granted on the splash/auth screen) — re-save the moment the
-  // user actually signs in.
-  ref.listen(authControllerProvider, (previous, next) {
-    if (next is AuthenticatedAdmin || next is AuthenticatedCustomer) {
-      fcm.requestPermissionAndGetToken().then(saveTokenForCurrentUser);
-    }
-  });
+  // user actually signs in. Keyed on the uid, not the whole auth state: the
+  // auth state now follows the profile doc live, so saving the token would
+  // otherwise re-trigger this listener and loop.
+  ref.listen(
+    authControllerProvider.select(
+      (s) => switch (s) {
+        AuthenticatedAdmin(:final user) => user.uid,
+        AuthenticatedCustomer(:final user) => user.uid,
+        _ => null,
+      },
+    ),
+    (previous, uid) {
+      if (uid != null) {
+        fcm.requestPermissionAndGetToken().then(saveTokenForCurrentUser);
+      }
+    },
+  );
 
   ref.onDispose(() {
     tokenSub.cancel();

@@ -16,11 +16,12 @@ final pendingUsersProvider = StreamProvider.autoDispose<List<UserEntity>>((
   return useCase();
 });
 
-/// One-time fetch of approved retailers — feeds the "Total Retailers" stat.
-final approvedUsersProvider = FutureProvider.autoDispose<List<UserEntity>>((
+/// Live stream of approved retailers — feeds the "Total Retailers" stat and
+/// the Retailers tab, so an approval shows up without a manual refresh.
+final approvedUsersProvider = StreamProvider.autoDispose<List<UserEntity>>((
   ref,
 ) {
-  return ref.watch(userRepositoryProvider).getApprovedUsers();
+  return ref.watch(userRepositoryProvider).watchApprovedUsers();
 });
 
 /// Live stream of all orders (newest first, capped at 200 by the repository)

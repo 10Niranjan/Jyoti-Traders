@@ -9,11 +9,17 @@ import '../../auth/controllers/auth_state.dart';
 final orderHistoryProvider = StreamProvider.autoDispose<List<OrderEntity>>((
   ref,
 ) {
-  final authState = ref.watch(authControllerProvider);
-  if (authState is! AuthenticatedCustomer) return const Stream.empty();
+  // Only the uid: the auth state re-emits on every profile save, which must
+  // not restart the orders query.
+  final uid = ref.watch(
+    authControllerProvider.select(
+      (s) => s is AuthenticatedCustomer ? s.user.uid : null,
+    ),
+  );
+  if (uid == null) return const Stream.empty();
 
   final useCase = GetOrderHistoryUseCase(ref.watch(orderRepositoryProvider));
-  return useCase(authState.user.uid);
+  return useCase(uid);
 });
 
 /// Derived from the same history stream rather than a separate
