@@ -214,9 +214,10 @@ jyoti_traders/
 │   │   │   │   ├── register_usecase.dart
 │   │   │   │   └── logout_usecase.dart
 │   │   │   ├── order/
-│   │   │   │   ├── place_order_usecase.dart          # Includes ₹2500 validation
+│   │   │   │   ├── place_order_usecase.dart          # ₹2500 minimum + live-stock check, takes stock
 │   │   │   │   ├── get_order_history_usecase.dart
-│   │   │   │   └── update_order_status_usecase.dart
+│   │   │   │   ├── update_order_status_usecase.dart  # Cancel returns stock, un-cancel takes it again
+│   │   │   │   └── stock_adjustment.dart             # Shared stock take/return for an order's lines
 │   │   │   ├── product/
 │   │   │   │   ├── get_products_usecase.dart
 │   │   │   │   └── search_products_usecase.dart
@@ -310,7 +311,8 @@ jyoti_traders/
 │       │   ├── shimmer_loader.dart       # Generic shimmer placeholder
 │       │   ├── empty_state_widget.dart   # Lottie + message for empty screens
 │       │   ├── error_state_widget.dart   # Error UI with retry action
-│       │   └── bottom_nav_bar.dart       # Retailer bottom navigation
+│       │   ├── bottom_nav_bar.dart       # Retailer bottom navigation
+│       │   └── edge_to_edge_overlay.dart # Transparent, theme-aware system bars for full-bleed screens (Android 15+)
 │       └── providers/
 │           ├── auth_state_provider.dart  # Global auth state (the single source of truth)
 │           ├── theme_provider.dart       # Light/dark mode preference (Hive-backed)
@@ -377,7 +379,10 @@ Home Screen
                                 │
                                 └─► "Place Order" → PlaceOrderUseCase
                                       │
+                                      ├─► Re-check every line against live stock
+                                      │     (too much → InsufficientStockException, nothing written)
                                       ├─► Write Order doc to Firestore
+                                      ├─► Take the ordered quantity out of product stock
                                       ├─► Clear local cart (Hive)
                                       ├─► Send FCM notification to Admin
                                       └─► Navigate to OrderSuccessScreen
@@ -457,7 +462,7 @@ products/{productId}
   ├── imageUrl: String
   ├── price: double             // Wholesale price in ₹
   ├── unit: String              // "kg" | "piece" | "box" | "litre"
-  ├── stock: int
+  ├── stock: number             // kilos for kg products (may be fractional, e.g. 47.5); whole units otherwise
   ├── description: String?
   ├── isActive: bool
   └── updatedAt: Timestamp

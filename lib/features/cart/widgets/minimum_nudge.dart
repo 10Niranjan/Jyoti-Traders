@@ -100,7 +100,7 @@ class GapSuggestionRail extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 196,
+          height: CompactProductTile.railHeight(context),
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: products.length,

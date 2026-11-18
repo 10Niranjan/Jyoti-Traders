@@ -62,6 +62,9 @@
   "pendingUnableToOpenEmail": "Unable to open email client: vishvatejkatkar007@gmail.com",
   "pendingTitle": "Account Verification Pending",
   "pendingMessage": "Your retailer application is currently being reviewed by the owner of Jyoti Traders. Once approved, you will gain full access to wholesale product purchasing.",
+  "pendingRejectedTitle": "Application Not Approved",
+  "pendingRejectedMessage": "Your retailer application was not approved by the owner of Jyoti Traders. If you think this is a mistake, please call or email us below.",
+  "pendingRejectedContactTitle": "Questions? Contact the Owner",
   "pendingCheckingStatus": "Checking verification status...",
   "pendingCheckStatusAgain": "Check Status Again",
   "pendingContactSupportTitle": "Need Urgent Approval? Contact Support",
@@ -102,10 +105,11 @@
   "productInStock": "{stock} {unit} in stock",
   "@productInStock": {
     "placeholders": {
-      "stock": { "type": "int" },
+      "stock": { "type": "String" },
       "unit": { "type": "String" }
     }
   },
+  "productAllInCart": "All available stock is already in your cart",
   "productDescription": "Description",
   "productYouMayAlsoLike": "You may also like",
   "productAddButtonLabel": "Add {label} · {price}",
@@ -127,6 +131,8 @@
 
   "cartTitle": "Cart",
   "cartClearAll": "Clear all",
+  "cartClearConfirmTitle": "Clear cart?",
+  "cartClearConfirmMessage": "All items will be removed from your cart.",
   "cartEmptyTitle": "Your cart is empty",
   "cartEmptyMessage": "Add products to place a wholesale order.",
   "cartBrowseProducts": "Browse Products",
@@ -182,6 +188,17 @@
   "checkoutSaveAddressToggle": "Save this address for later",
   "checkoutSaveAddressLabelHint": "Label (e.g. Shop, Warehouse)",
   "checkoutSaveAddressLabelRequired": "Add a label to save this address",
+  "checkoutNotEnoughStock": "Only {available} of {name} is left. Please reduce it in your cart.",
+  "@checkoutNotEnoughStock": {
+    "placeholders": {
+      "available": { "type": "String" },
+      "name": { "type": "String" }
+    }
+  },
+  "checkoutItemUnavailable": "{name} is no longer available. Please remove it from your cart.",
+  "@checkoutItemUnavailable": {
+    "placeholders": { "name": { "type": "String" } }
+  },
 
   "upiGalleryError": "Couldn't open the gallery: {error}",
   "@upiGalleryError": {
@@ -400,6 +417,8 @@
 
   "quantityPickerSelectQuantity": "Select quantity",
   "quantityPickerCustomQuantity": "Custom quantity",
+  "quantityPickerDecrease": "Decrease quantity",
+  "quantityPickerIncrease": "Increase quantity",
 
   "rateSlabTitle": "Rate by quantity (₹ per kg)",
   "rateSlabSubtitle": "The whole weight is billed at the one rate its band earns.",
@@ -502,8 +521,7 @@
   "adminTodaysOrders": "Today's Orders",
   "adminTodaysRevenue": "Today's Revenue",
   "adminTopProducts": "Top Products",
-  "adminCouldntLoadTopProducts": "Couldn't load top products: {error}",
-  "@adminCouldntLoadTopProducts": { "placeholders": { "error": { "type": "String" } } },
+  "adminCouldntLoadTopProducts": "Couldn't load top products",
   "adminNoSalesYet": "No sales yet",
   "adminSendBroadcast": "Send Broadcast",
   "adminRetailerApprovalQueue": "Retailer Approval Queue",
@@ -730,7 +748,7 @@
   "adminPricePerUnit": "{price} · per {unit}",
   "@adminPricePerUnit": { "placeholders": { "price": { "type": "String" }, "unit": { "type": "String" } } },
   "adminStockLabel": "Stock: {count}",
-  "@adminStockLabel": { "placeholders": { "count": { "type": "int" } } },
+  "@adminStockLabel": { "placeholders": { "count": { "type": "String" } } },
   "adminActionFailed": "Action failed: {error}",
   "@adminActionFailed": { "placeholders": { "error": { "type": "String" } } },
   "adminReject": "Reject",

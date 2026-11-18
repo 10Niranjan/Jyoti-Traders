@@ -25,10 +25,10 @@ class AdminOrderController extends StateNotifier<AsyncValue<void>> {
     this._updatePaymentStatusUseCase,
   ) : super(const AsyncValue.data(null));
 
-  Future<bool> updateStatus(String orderId, OrderStatus status) async {
+  Future<bool> updateStatus(OrderEntity order, OrderStatus status) async {
     state = const AsyncValue.loading();
     try {
-      await _updateStatusUseCase(orderId, status);
+      await _updateStatusUseCase(order, status);
       state = const AsyncValue.data(null);
       return true;
     } catch (e, st) {
@@ -56,7 +56,10 @@ final adminOrderControllerProvider =
     ) {
       final repository = ref.watch(orderRepositoryProvider);
       return AdminOrderController(
-        UpdateOrderStatusUseCase(repository),
+        UpdateOrderStatusUseCase(
+          repository,
+          ref.watch(productRepositoryProvider),
+        ),
         UpdatePaymentStatusUseCase(repository),
       );
     });

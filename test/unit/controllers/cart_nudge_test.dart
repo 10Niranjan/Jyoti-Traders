@@ -7,7 +7,7 @@ import 'package:traders_retailer/features/cart/controllers/cart_nudge_controller
 ProductEntity _p(
   String id,
   double price, {
-  int stock = 10,
+  double stock = 10,
   ProductUnit unit = ProductUnit.box,
   WeightRateSlabs? slabs,
 }) => ProductEntity(

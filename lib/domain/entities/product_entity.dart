@@ -30,7 +30,10 @@ class ProductEntity extends Equatable {
   /// rate) — the amount actually charged comes from the slabs.
   final Money price;
   final ProductUnit unit;
-  final int stock;
+
+  /// Kilos for kg products (fractional — orders are weighed in grams),
+  /// whole units otherwise.
+  final double stock;
   final String? description;
   final bool isActive;
 
@@ -70,7 +73,11 @@ class ProductEntity extends Equatable {
 
   /// Largest quantity the picker may reach, in the same unit [qty] is in.
   /// [stock] is counted in kilos for weighed products, so it scales up.
-  int get maxQty => isWeighed ? stock * 1000 : stock;
+  int get maxQty => isWeighed ? (stock * 1000).round() : stock.floor();
+
+  /// [stock] for display: `47.5`, or `40` with no trailing `.0`.
+  String get stockLabel =>
+      stock.toStringAsFixed(3).replaceAll(RegExp(r'\.?0+$'), '');
 
   /// Smallest sensible starting quantity — 100 g, or one whole unit.
   int get minQty => isWeighed ? 100 : 1;
@@ -79,7 +86,7 @@ class ProductEntity extends Equatable {
   String labelForQty(int qty) =>
       isWeighed ? formatGrams(qty) : '$qty ${unit.value}';
 
-  ProductEntity copyWith({String? imageUrl, Money? price, int? stock}) {
+  ProductEntity copyWith({String? imageUrl, Money? price, double? stock}) {
     return ProductEntity(
       id: id,
       name: name,

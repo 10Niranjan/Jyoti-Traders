@@ -5,7 +5,9 @@ import 'package:traders_retailer/domain/entities/address_entity.dart';
 import 'package:traders_retailer/domain/entities/order_entity.dart';
 import 'package:traders_retailer/domain/entities/order_item_entity.dart';
 import 'package:traders_retailer/domain/exceptions/domain_exceptions.dart';
+import 'package:traders_retailer/domain/entities/product_entity.dart';
 import 'package:traders_retailer/domain/repositories/order_repository.dart';
+import 'package:traders_retailer/domain/repositories/product_repository.dart';
 import 'package:traders_retailer/domain/usecases/order/place_order_usecase.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/cart/controllers/cart_controller.dart';
@@ -14,6 +16,8 @@ import 'package:traders_retailer/features/checkout/controllers/checkout_controll
 class MockOrderRepository extends Mock implements OrderRepository {}
 
 class MockCartController extends Mock implements CartController {}
+
+class MockProductRepository extends Mock implements ProductRepository {}
 
 void main() {
   late MockOrderRepository orderRepository;
@@ -29,8 +33,22 @@ void main() {
     cartController = MockCartController();
     when(() => orderRepository.placeOrder(any())).thenAnswer((_) async {});
     when(() => cartController.clearCart()).thenAnswer((_) async {});
+    final products = MockProductRepository();
+    final rice = ProductEntity(
+      id: 'p1',
+      name: 'Rice 25kg',
+      categoryId: 'c1',
+      imageUrl: '',
+      price: Money(100),
+      unit: ProductUnit.box,
+      stock: 10,
+      isActive: true,
+    );
+    registerFallbackValue(rice);
+    when(() => products.getProductById('p1')).thenAnswer((_) async => rice);
+    when(() => products.updateProduct(any())).thenAnswer((_) async {});
     controller = CheckoutController(
-      PlaceOrderUseCase(orderRepository),
+      PlaceOrderUseCase(orderRepository, products),
       cartController,
     );
   });

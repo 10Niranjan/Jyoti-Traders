@@ -111,6 +111,9 @@ class CategoriesListView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Keeps the auto-disposing controller alive across the awaited delete /
+    // reorder below (rules.md §5).
+    ref.watch(adminCategoryControllerProvider.notifier);
     final categories = ref.watch(adminCategoriesProvider);
     final l10n = AppLocalizations.of(context)!;
 

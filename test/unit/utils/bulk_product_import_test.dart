@@ -39,6 +39,30 @@ void main() {
     expect(rows[1].product!.description, isNull);
   });
 
+  test('accepts cells pasted from Excel / Google Sheets (tab-separated)', () {
+    // A comma inside a cell must stay part of the cell, not split it.
+    const tsv =
+        'name\tcategory\tprice\tunit\tstock\tdescription\r\n'
+        'Basmati Rice 25kg\tRice\t1800\tbox\t10\tLong grain, aged\r\n'
+        'Loose Turmeric\tRice\t210\tkg\t12.5\t\r\n';
+    final rows = parseBulkProductCsv(tsv, categories);
+
+    expect(rows, hasLength(2));
+    expect(rows.every((r) => r.isValid), isTrue);
+    expect(rows[0].product!.description, 'Long grain, aged');
+    expect(rows[1].product!.stock, 12.5); // kilos may be fractional
+  });
+
+  test('a fractional stock is only allowed for kg products', () {
+    const csv =
+        'name,category,price,unit,stock\n'
+        'Rice Box,Rice,1800,box,2.5';
+    final rows = parseBulkProductCsv(csv, categories);
+
+    expect(rows.single.isValid, isFalse);
+    expect(rows.single.error, contains('whole number'));
+  });
+
   test('flags a missing required column in the header', () {
     const csv = 'name,category,price,stock\nRice,Rice,100,10';
     final rows = parseBulkProductCsv(csv, categories);
@@ -96,14 +120,26 @@ void main() {
   });
 
   test(
-    'a kg product with partial rate-slab columns falls back to flat pricing (no rateSlabs)',
+    'a kg product always gets a rate card: blank rate columns use the price',
     () {
+      // Without one it would be a "flat kg" product whose order lines read
+      // as grams (3 kg shown and stocked as 3 g).
       const csv =
           'name,category,price,unit,stock,description,below240g\n'
-          'Sugar,Rice,44,kg,20,,44';
+          'Sugar,Rice,42,kg,20,,46\n'
+          'Jaggery,Rice,60,kg,20,,';
       final rows = parseBulkProductCsv(csv, categories);
 
-      expect(rows.single.product!.rateSlabs, isNull);
+      final partial = rows[0].product!;
+      expect(partial.isWeighed, isTrue);
+      expect(partial.rateSlabs!.below240g, 46);
+      expect(partial.rateSlabs!.above2400g, 42);
+
+      final none = rows[1].product!.rateSlabs!;
+      expect(
+        [none.below240g, none.upto999g, none.upto2400g, none.above2400g],
+        [60, 60, 60, 60],
+      );
     },
   );
 

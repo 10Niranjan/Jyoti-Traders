@@ -55,4 +55,18 @@ void main() {
       expect(find.text(l10n.orderSuccessViewOrder), findsOneWidget);
     },
   );
+
+  testWidgets('scrolls instead of overflowing on a short landscape viewport', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 320);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(
+      _app(const OrderSuccessScreen(orderId: 'abcdef123456')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+  });
 }

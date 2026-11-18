@@ -10,7 +10,7 @@ class ProductModel {
   final String imageUrl;
   final double price;
   final String unit;
-  final int stock;
+  final double stock;
   final String? description;
   final bool isActive;
   final WeightRateSlabs? rateSlabs;
@@ -46,7 +46,7 @@ class ProductModel {
       imageUrl: json['imageUrl'] as String? ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0,
       unit: json['unit'] as String? ?? 'piece',
-      stock: json['stock'] as int? ?? 0,
+      stock: (json['stock'] as num?)?.toDouble() ?? 0,
       description: json['description'] as String?,
       isActive: json['isActive'] as bool? ?? true,
       rateSlabs: _slabsFrom(json),
@@ -62,7 +62,7 @@ class ProductModel {
       imageUrl: json['imageUrl'] as String? ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0,
       unit: json['unit'] as String? ?? 'piece',
-      stock: json['stock'] as int? ?? 0,
+      stock: (json['stock'] as num?)?.toDouble() ?? 0,
       description: json['description'] as String?,
       isActive: json['isActive'] as bool? ?? true,
       rateSlabs: _slabsFrom(json),

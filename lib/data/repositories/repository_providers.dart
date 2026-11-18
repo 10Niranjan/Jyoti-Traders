@@ -40,7 +40,9 @@ import 'wishlist_repository_impl.dart';
 
 final categoryRepositoryProvider = Provider<CategoryRepository>((ref) {
   final catalogBox = Hive.box(HiveBoxes.catalogCache);
-  return CategoryRepositoryImpl(CategoryRemoteDatasource(catalogBox: catalogBox));
+  return CategoryRepositoryImpl(
+    CategoryRemoteDatasource(catalogBox: catalogBox),
+  );
 });
 
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
@@ -61,32 +63,32 @@ final userRepositoryProvider = Provider<UserRepository>((ref) {
   return UserRepositoryImpl(UserRemoteDatasource(userCacheBox: userCacheBox));
 });
 
-/// Watches auth state so a different account signing in on the same device
-/// gets a fresh [CartLocalDatasource] keyed to its own uid, instead of
-/// inheriting whatever the previous account left in the shared cart box.
+String _uidOf(AuthState authState) => switch (authState) {
+  AuthenticatedAdmin(user: final u) => u.uid,
+  AuthenticatedCustomer(user: final u) => u.uid,
+  PendingApproval(user: final u) => u.uid,
+  _ => 'signed_out',
+};
+
+/// Keyed by uid so a different account signing in on the same device gets a
+/// fresh [CartLocalDatasource] instead of inheriting whatever the previous
+/// account left in the shared cart box. Watches only the uid: a profile save
+/// or push-token refresh also emits a new auth state, and rebuilding the cart
+/// on those tore down the checkout controller mid-order (order placed, but
+/// the screen never reached Order Success).
 final cartRepositoryProvider = Provider<CartRepository>((ref) {
-  final authState = ref.watch(authControllerProvider);
-  final uid = switch (authState) {
-    AuthenticatedAdmin(user: final u) => u.uid,
-    AuthenticatedCustomer(user: final u) => u.uid,
-    PendingApproval(user: final u) => u.uid,
-    _ => 'signed_out',
-  };
+  final uid = ref.watch(authControllerProvider.select(_uidOf));
   final cartBox = Hive.box(HiveBoxes.cartBox);
   return CartRepositoryImpl(CartLocalDatasource(cartBox: cartBox, uid: uid));
 });
 
-/// Same auth-uid-scoping reason as [cartRepositoryProvider] above.
+/// Same uid-scoping as [cartRepositoryProvider] above.
 final wishlistRepositoryProvider = Provider<WishlistRepository>((ref) {
-  final authState = ref.watch(authControllerProvider);
-  final uid = switch (authState) {
-    AuthenticatedAdmin(user: final u) => u.uid,
-    AuthenticatedCustomer(user: final u) => u.uid,
-    PendingApproval(user: final u) => u.uid,
-    _ => 'signed_out',
-  };
+  final uid = ref.watch(authControllerProvider.select(_uidOf));
   final cartBox = Hive.box(HiveBoxes.cartBox);
-  return WishlistRepositoryImpl(WishlistLocalDatasource(box: cartBox, uid: uid));
+  return WishlistRepositoryImpl(
+    WishlistLocalDatasource(box: cartBox, uid: uid),
+  );
 });
 
 final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
@@ -99,14 +101,20 @@ final broadcastRepositoryProvider = Provider<BroadcastRepository>((ref) {
   return BroadcastRepositoryImpl(BroadcastLocalDatasource(box: box));
 });
 
-final deliveryConfigRepositoryProvider = Provider<DeliveryConfigRepository>((ref) {
+final deliveryConfigRepositoryProvider = Provider<DeliveryConfigRepository>((
+  ref,
+) {
   final settingsBox = Hive.box(HiveBoxes.settingsCache);
-  return DeliveryConfigRepositoryImpl(DeliveryConfigRemoteDatasource(settingsBox: settingsBox));
+  return DeliveryConfigRepositoryImpl(
+    DeliveryConfigRemoteDatasource(settingsBox: settingsBox),
+  );
 });
 
 final promoBannerRepositoryProvider = Provider<PromoBannerRepository>((ref) {
   final settingsBox = Hive.box(HiveBoxes.settingsCache);
-  return PromoBannerRepositoryImpl(PromoBannerRemoteDatasource(settingsBox: settingsBox));
+  return PromoBannerRepositoryImpl(
+    PromoBannerRemoteDatasource(settingsBox: settingsBox),
+  );
 });
 
 final businessProfileRepositoryProvider = Provider<BusinessProfileRepository>((

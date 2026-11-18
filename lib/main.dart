@@ -88,6 +88,7 @@ void main() async {
   await seedDemoCatalogIfEmpty(catalogBox);
   await seedDemoRetailersIfEmpty(userCacheBox);
   await seedDemoOrdersIfEmpty(ordersBox);
+  await redateDemoOrders(ordersBox);
   await seedDemoNotificationsIfEmpty(notificationsBox);
 
   runApp(const ProviderScope(child: JyotiTradersApp()));

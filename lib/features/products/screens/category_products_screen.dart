@@ -20,7 +20,9 @@ import '../controllers/product_controller.dart';
 
 /// Height of one rail entry ([CategoryCard]'s 56 dp ring + a 2-line name +
 /// padding). Fixed so the rail can jump straight to the selected entry.
-const double _kRailItemExtent = 112;
+/// A rail row: the category card plus its 8 px top and bottom padding.
+double _railItemExtent(BuildContext context) =>
+    CategoryCard.heightFor(context) + 16;
 const double _kRailWidth = 76;
 
 class CategoryProductsScreen extends ConsumerStatefulWidget {
@@ -143,24 +145,27 @@ class _CategoryRail extends StatefulWidget {
 }
 
 class _CategoryRailState extends State<_CategoryRail> {
-  late final ScrollController _scroll;
+  ScrollController? _scroll;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     // Start with the selected category in view — with a dozen categories the
-    // one the retailer just tapped on Home can be well below the fold.
+    // one the retailer just tapped on Home can be well below the fold. Built
+    // here, not in initState, because the row height depends on text size.
     final index = widget.categories.indexWhere(
       (c) => c.id == widget.selectedId,
     );
-    _scroll = ScrollController(
-      initialScrollOffset: index <= 0 ? 0 : (index - 1) * _kRailItemExtent,
+    _scroll ??= ScrollController(
+      initialScrollOffset: index <= 0
+          ? 0
+          : (index - 1) * _railItemExtent(context),
     );
   }
 
   @override
   void dispose() {
-    _scroll.dispose();
+    _scroll?.dispose();
     super.dispose();
   }
 
@@ -175,7 +180,7 @@ class _CategoryRailState extends State<_CategoryRail> {
       ),
       child: ListView.builder(
         controller: _scroll,
-        itemExtent: _kRailItemExtent,
+        itemExtent: _railItemExtent(context),
         itemCount: widget.categories.length,
         itemBuilder: (context, index) {
           final category = widget.categories[index];

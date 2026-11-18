@@ -16,9 +16,14 @@ String buildOrderShareText(OrderEntity order) {
     buffer.writeln('- ${item.name} $qty — ${item.totalPrice.formatted}');
   }
 
+  final discount = order.discount;
   buffer
     ..writeln()
-    ..writeln('Subtotal: ${order.subtotal.formatted}')
+    ..writeln('Subtotal: ${order.subtotal.formatted}');
+  if (discount != null && discount.amount > 0) {
+    buffer.writeln('Discount (${order.couponCode}): -${discount.formatted}');
+  }
+  buffer
     ..writeln('Delivery: ${order.deliveryCharge.formatted}')
     ..writeln('Total: ${order.grandTotal.formatted}')
     ..writeln()

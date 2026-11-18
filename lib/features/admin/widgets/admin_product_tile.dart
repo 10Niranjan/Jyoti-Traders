@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../../../core/theme/theme_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
@@ -74,7 +75,7 @@ class AdminProductTile extends StatelessWidget {
                   Text(
                     product.isWeighed
                         ? l10n.homeFromRatePerKg(
-                            product.rateSlabs!.bestRatePerKg.toStringAsFixed(0),
+                            formatRate(product.rateSlabs!.bestRatePerKg),
                           )
                         : l10n.adminPricePerUnit(
                             product.price.formatted,
@@ -98,7 +99,7 @@ class AdminProductTile extends StatelessWidget {
                         const SizedBox(width: 4),
                       ],
                       Text(
-                        l10n.adminStockLabel(product.stock),
+                        l10n.adminStockLabel(product.stockLabel),
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           fontWeight: isLowStock

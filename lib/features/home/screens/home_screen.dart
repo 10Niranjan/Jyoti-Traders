@@ -191,9 +191,9 @@ class _CategoryGrid extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: categories.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
-        childAspectRatio: 0.85,
+        mainAxisExtent: CategoryCard.heightFor(context),
         crossAxisSpacing: 10,
         mainAxisSpacing: 12,
       ),
@@ -479,7 +479,7 @@ class _BuyAgainRail extends ConsumerWidget {
             ),
             const SizedBox(height: 12),
             SizedBox(
-              height: 196,
+              height: CompactProductTile.railHeight(context),
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: products.length,

@@ -44,7 +44,7 @@ OrderEntity _order(
   createdAt: createdAt,
 );
 
-ProductEntity _product(String id, int stock, {bool isActive = true}) =>
+ProductEntity _product(String id, double stock, {bool isActive = true}) =>
     ProductEntity(
       id: id,
       name: 'P$id',

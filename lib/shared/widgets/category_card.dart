@@ -58,6 +58,12 @@ class CategoryCard extends StatelessWidget {
     return Icons.category_outlined;
   }
 
+  /// Height this card needs: the 56 px icon, the gap and two lines of its
+  /// 10 px label at the current text size. A width-based aspect ratio came out
+  /// too short on narrow phones and with larger text.
+  static double heightFor(BuildContext context) =>
+      64 + MediaQuery.textScalerOf(context).scale(10) * 2 * 1.5;
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;

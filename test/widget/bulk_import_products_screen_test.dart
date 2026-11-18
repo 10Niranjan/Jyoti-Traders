@@ -27,9 +27,15 @@ class FakeProductRepository implements ProductRepository {
   @override
   Future<ProductEntity?> getProductById(String productId) async => null;
 
+  /// Slower than one test frame step (pumpAndSettle moves 100 ms a frame),
+  /// like a real Hive/Firestore write can be — an instant save finished the
+  /// whole import before a frame ran, which hid the save controller being
+  /// disposed mid-import.
   @override
-  Future<void> createProduct(ProductEntity product) async =>
-      created.add(product);
+  Future<void> createProduct(ProductEntity product) async {
+    await Future<void>.delayed(const Duration(milliseconds: 150));
+    created.add(product);
+  }
 
   @override
   Future<void> updateProduct(ProductEntity product) async {}
@@ -139,5 +145,32 @@ void main() {
     expect(repo.created, hasLength(1));
     expect(repo.created.single.name, 'Basmati Rice 25kg');
     expect(find.text('1 product(s) created.'), findsOneWidget);
+  });
+
+  testWidgets('a multi-row import creates every product, not just the first', (
+    tester,
+  ) async {
+    // The save controller auto-disposes; unwatched, it was torn down during
+    // the first awaited save and the loop broke after one product.
+    final repo = FakeProductRepository();
+    await tester.pumpWidget(_wrap(repo));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byType(TextField).first,
+      'name,category,price,unit,stock,description\n'
+      'Basmati Rice 25kg,Rice,1800,box,10,\n'
+      'Sona Masoori 25kg,Rice,1500,box,8,\n'
+      'Loose Rice,Rice,52,kg,40.5,',
+    );
+    await tester.pump();
+    await tester.tap(find.text('Preview'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Import 3'));
+    await tester.pumpAndSettle();
+
+    expect(repo.created, hasLength(3));
+    expect(find.text('3 product(s) created.'), findsOneWidget);
   });
 }

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../../../core/theme/theme_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -62,7 +63,9 @@ class SearchResultsView extends ConsumerWidget {
           child: RefreshIndicator(
             onRefresh: notifier.retry,
             child: state.hasError
-                ? ListView(children: [ErrorStateWidget(onRetry: notifier.retry)])
+                ? ListView(
+                    children: [ErrorStateWidget(onRetry: notifier.retry)],
+                  )
                 : results.isEmpty
                 ? ListView(
                     children: [
@@ -280,7 +283,7 @@ class _SearchResultTile extends StatelessWidget {
                     // ₹260/kg. Same "from ₹x/kg" treatment as ProductCard.
                     product.isWeighed
                         ? AppLocalizations.of(context)!.homeFromRatePerKg(
-                            product.rateSlabs!.bestRatePerKg.toStringAsFixed(0),
+                            formatRate(product.rateSlabs!.bestRatePerKg),
                           )
                         : product.price.formatted,
                     style: GoogleFonts.inter(

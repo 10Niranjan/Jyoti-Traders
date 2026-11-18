@@ -52,7 +52,7 @@ ProductEntity _product(
   String id,
   String name,
   double price, {
-  int stock = 10,
+  double stock = 10,
 }) => ProductEntity(
   id: id,
   name: name,

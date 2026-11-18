@@ -218,7 +218,7 @@ void main() {
       await tester.pumpWidget(_wrap(FakeOrderRepository([])));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.ios_share_rounded));
+      await tester.tap(find.byIcon(Icons.share_rounded));
       await tester.pumpAndSettle();
 
       expect(find.text('No orders to export.'), findsOneWidget);
@@ -237,7 +237,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.ios_share_rounded));
+      await tester.tap(find.byIcon(Icons.share_rounded));
       await tester.pumpAndSettle();
 
       expect(tester.takeException(), isNull);

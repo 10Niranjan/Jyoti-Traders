@@ -97,7 +97,7 @@ final stockAlertInitializerProvider = Provider<void>((ref) {
               : '${product.name} is running low',
           body: product.stock == 0
               ? 'One of your regulars is currently unavailable.'
-              : 'Only ${product.stock} left of one of your regulars — order soon.',
+              : 'Only ${product.stockLabel} left of one of your regulars — order soon.',
           receivedAt: DateTime.now(),
           isRead: false,
           kind: NotificationKind.stock,

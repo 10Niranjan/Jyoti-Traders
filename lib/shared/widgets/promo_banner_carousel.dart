@@ -21,23 +21,24 @@ class PromoBannerCarousel extends ConsumerWidget {
     AppLocalizations l10n,
     List<PromoBannerEntity> offers,
   ) => [
-        for (final offer in offers) (Icons.campaign_rounded, offer.title, offer.body),
-        (
-          Icons.info_outline_rounded,
-          l10n.promoMinOrderTitle,
-          l10n.promoMinOrderBody(formatRupees(AppConstants.kMinOrderAmount)),
-        ),
-        (
-          Icons.local_shipping_outlined,
-          l10n.promoDeliveryTitle,
-          l10n.promoDeliveryBody,
-        ),
-        (
-          Icons.support_agent_rounded,
-          l10n.promoHelpTitle,
-          l10n.promoHelpBody(AppConstants.kSupportPhone),
-        ),
-      ];
+    for (final offer in offers)
+      (Icons.campaign_rounded, offer.title, offer.body),
+    (
+      Icons.info_outline_rounded,
+      l10n.promoMinOrderTitle,
+      l10n.promoMinOrderBody(formatRupees(AppConstants.kMinOrderAmount)),
+    ),
+    (
+      Icons.local_shipping_outlined,
+      l10n.promoDeliveryTitle,
+      l10n.promoDeliveryBody,
+    ),
+    (
+      Icons.support_agent_rounded,
+      l10n.promoHelpTitle,
+      l10n.promoHelpBody(AppConstants.kSupportPhone),
+    ),
+  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -45,7 +46,8 @@ class PromoBannerCarousel extends ConsumerWidget {
     final offers = ref.watch(activePromoBannersProvider);
     return CarouselSlider(
       options: CarouselOptions(
-        height: 92,
+        // 92 at normal text; the title and two body lines grow with it.
+        height: 42 + MediaQuery.textScalerOf(context).scale(50),
         viewportFraction: 1,
         // A repeating autoPlay Timer never settles under widget tests
         // (pumpAndSettle would hang forever) — same guard as the splash
@@ -67,7 +69,10 @@ class PromoBannerCarousel extends ConsumerWidget {
           ),
           child: Row(
             children: [
-              CircleAvatar(backgroundColor: Colors.white24, child: Icon(icon, color: Colors.white)),
+              CircleAvatar(
+                backgroundColor: Colors.white24,
+                child: Icon(icon, color: Colors.white),
+              ),
               const SizedBox(width: 14),
               Expanded(
                 child: Column(
@@ -78,7 +83,11 @@ class PromoBannerCarousel extends ConsumerWidget {
                       title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
                     ),
                     if (body.isNotEmpty) ...[
                       const SizedBox(height: 2),
@@ -86,7 +95,11 @@ class PromoBannerCarousel extends ConsumerWidget {
                         body,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(color: Colors.white.withOpacity(0.9), fontSize: 11, height: 1.4),
+                        style: GoogleFonts.inter(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 11,
+                          height: 1.4,
+                        ),
                       ),
                     ],
                   ],

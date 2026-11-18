@@ -53,6 +53,9 @@
   "pendingUnableToOpenEmail": "ईमेल क्लाइंट नहीं खुल सका: vishvatejkatkar007@gmail.com",
   "pendingTitle": "खाता सत्यापन लंबित है",
   "pendingMessage": "आपका रिटेलर आवेदन फ़िलहाल Jyoti Traders के मालिक द्वारा जांचा जा रहा है। स्वीकृति मिलते ही आपको थोक उत्पाद खरीदने की पूरी सुविधा मिल जाएगी।",
+  "pendingRejectedTitle": "आवेदन स्वीकृत नहीं हुआ",
+  "pendingRejectedMessage": "आपका रिटेलर आवेदन Jyoti Traders के मालिक ने स्वीकृत नहीं किया है। अगर आपको लगता है कि यह गलती है, तो नीचे दिए गए फ़ोन या ईमेल पर हमसे संपर्क करें।",
+  "pendingRejectedContactTitle": "कोई सवाल? मालिक से संपर्क करें",
   "pendingCheckingStatus": "सत्यापन स्थिति जांची जा रही है...",
   "pendingCheckStatusAgain": "फिर से स्थिति जांचें",
   "pendingContactSupportTitle": "तुरंत स्वीकृति चाहिए? सहायता से संपर्क करें",
@@ -85,6 +88,7 @@
   "productNoLongerAvailable": "यह उत्पाद अब उपलब्ध नहीं है।",
   "productSoldPer": "{unit} के हिसाब से बिकता है",
   "productInStock": "{stock} {unit} स्टॉक में",
+  "productAllInCart": "उपलब्ध पूरा स्टॉक पहले से आपकी कार्ट में है",
   "productDescription": "विवरण",
   "productYouMayAlsoLike": "आपको यह भी पसंद आ सकता है",
   "productAddButtonLabel": "{label} जोड़ें · {price}",
@@ -97,6 +101,8 @@
 
   "cartTitle": "कार्ट",
   "cartClearAll": "सभी हटाएं",
+  "cartClearConfirmTitle": "कार्ट खाली करें?",
+  "cartClearConfirmMessage": "आपकी कार्ट से सभी वस्तुएं हटा दी जाएंगी।",
   "cartEmptyTitle": "आपकी कार्ट खाली है",
   "cartEmptyMessage": "थोक ऑर्डर देने के लिए उत्पाद जोड़ें।",
   "cartBrowseProducts": "उत्पाद देखें",
@@ -132,6 +138,8 @@
   "checkoutSaveAddressToggle": "यह पता बाद के लिए सहेजें",
   "checkoutSaveAddressLabelHint": "लेबल (जैसे दुकान, गोदाम)",
   "checkoutSaveAddressLabelRequired": "इस पते को सहेजने के लिए एक लेबल जोड़ें",
+  "checkoutNotEnoughStock": "{name} का केवल {available} बचा है। कृपया कार्ट में मात्रा कम करें।",
+  "checkoutItemUnavailable": "{name} अब उपलब्ध नहीं है। कृपया इसे कार्ट से हटा दें।",
 
   "upiGalleryError": "गैलरी नहीं खुल सकी: {error}",
   "upiIdCopied": "UPI आईडी कॉपी हो गई।",
@@ -260,6 +268,8 @@
 
   "quantityPickerSelectQuantity": "मात्रा चुनें",
   "quantityPickerCustomQuantity": "कस्टम मात्रा",
+  "quantityPickerDecrease": "मात्रा घटाएं",
+  "quantityPickerIncrease": "मात्रा बढ़ाएं",
 
   "rateSlabTitle": "मात्रा अनुसार दर (₹ प्रति किलो)",
   "rateSlabSubtitle": "पूरा वजन उसके बैंड की एक ही दर पर बिल किया जाता है।",
@@ -327,7 +337,7 @@
   "adminTodaysOrders": "आज के ऑर्डर",
   "adminTodaysRevenue": "आज की आय",
   "adminTopProducts": "टॉप प्रोडक्ट्स",
-  "adminCouldntLoadTopProducts": "टॉप प्रोडक्ट्स लोड नहीं हो सके: {error}",
+  "adminCouldntLoadTopProducts": "टॉप प्रोडक्ट्स लोड नहीं हो सके",
   "adminNoSalesYet": "अभी तक कोई बिक्री नहीं",
   "adminSendBroadcast": "ब्रॉडकास्ट भेजें",
   "adminRetailerApprovalQueue": "रिटेलर स्वीकृति सूची",

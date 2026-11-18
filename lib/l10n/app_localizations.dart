@@ -388,6 +388,24 @@ abstract class AppLocalizations {
   /// **'Your retailer application is currently being reviewed by the owner of Jyoti Traders. Once approved, you will gain full access to wholesale product purchasing.'**
   String get pendingMessage;
 
+  /// No description provided for @pendingRejectedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Application Not Approved'**
+  String get pendingRejectedTitle;
+
+  /// No description provided for @pendingRejectedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Your retailer application was not approved by the owner of Jyoti Traders. If you think this is a mistake, please call or email us below.'**
+  String get pendingRejectedMessage;
+
+  /// No description provided for @pendingRejectedContactTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions? Contact the Owner'**
+  String get pendingRejectedContactTitle;
+
   /// No description provided for @pendingCheckingStatus.
   ///
   /// In en, this message translates to:
@@ -566,7 +584,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{stock} {unit} in stock'**
-  String productInStock(int stock, String unit);
+  String productInStock(String stock, String unit);
+
+  /// No description provided for @productAllInCart.
+  ///
+  /// In en, this message translates to:
+  /// **'All available stock is already in your cart'**
+  String get productAllInCart;
 
   /// No description provided for @productDescription.
   ///
@@ -627,6 +651,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear all'**
   String get cartClearAll;
+
+  /// No description provided for @cartClearConfirmTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear cart?'**
+  String get cartClearConfirmTitle;
+
+  /// No description provided for @cartClearConfirmMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'All items will be removed from your cart.'**
+  String get cartClearConfirmMessage;
 
   /// No description provided for @cartEmptyTitle.
   ///
@@ -831,6 +867,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add a label to save this address'**
   String get checkoutSaveAddressLabelRequired;
+
+  /// No description provided for @checkoutNotEnoughStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Only {available} of {name} is left. Please reduce it in your cart.'**
+  String checkoutNotEnoughStock(String available, String name);
+
+  /// No description provided for @checkoutItemUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is no longer available. Please remove it from your cart.'**
+  String checkoutItemUnavailable(String name);
 
   /// No description provided for @upiGalleryError.
   ///
@@ -1522,6 +1570,18 @@ abstract class AppLocalizations {
   /// **'Custom quantity'**
   String get quantityPickerCustomQuantity;
 
+  /// No description provided for @quantityPickerDecrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Decrease quantity'**
+  String get quantityPickerDecrease;
+
+  /// No description provided for @quantityPickerIncrease.
+  ///
+  /// In en, this message translates to:
+  /// **'Increase quantity'**
+  String get quantityPickerIncrease;
+
   /// No description provided for @rateSlabTitle.
   ///
   /// In en, this message translates to:
@@ -1855,8 +1915,8 @@ abstract class AppLocalizations {
   /// No description provided for @adminCouldntLoadTopProducts.
   ///
   /// In en, this message translates to:
-  /// **'Couldn\'t load top products: {error}'**
-  String adminCouldntLoadTopProducts(String error);
+  /// **'Couldn\'t load top products'**
+  String get adminCouldntLoadTopProducts;
 
   /// No description provided for @adminNoSalesYet.
   ///
@@ -2822,7 +2882,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Stock: {count}'**
-  String adminStockLabel(int count);
+  String adminStockLabel(String count);
 
   /// No description provided for @adminActionFailed.
   ///

@@ -43,7 +43,7 @@ class FakeProductRepository implements ProductRepository {
 ProductEntity _product({
   required String id,
   required String name,
-  int stock = 20,
+  double stock = 20,
   bool isActive = true,
 }) => ProductEntity(
   id: id,

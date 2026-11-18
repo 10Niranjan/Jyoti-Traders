@@ -76,7 +76,7 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
   void _seedFrom(ProductEntity product) {
     _nameController.text = product.name;
     _priceController.text = product.price.amount.toStringAsFixed(2);
-    _stockController.text = '${product.stock}';
+    _stockController.text = product.stockLabel;
     _descriptionController.text = product.description ?? '';
     _categoryId = product.categoryId;
     _unit = product.unit;
@@ -162,7 +162,7 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
           ? Money(slabs.below240g)
           : Money(double.parse(_priceController.text.trim())),
       unit: _unit,
-      stock: int.parse(_stockController.text.trim()),
+      stock: double.parse(_stockController.text.trim()),
       description: _descriptionController.text.trim().isEmpty
           ? null
           : _descriptionController.text.trim(),
@@ -393,7 +393,12 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                 controller: _stockController,
                 enabled: !isSaving,
                 keyboardType: TextInputType.number,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                // Kilos can be fractional (12.5 kg); other units are counts.
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                    RegExp(_unit == ProductUnit.kg ? r'[0-9.]' : r'[0-9]'),
+                  ),
+                ],
                 decoration: InputDecoration(
                   labelText: l10n.adminStockQuantity,
                   helperText: _unit == ProductUnit.kg
@@ -401,8 +406,12 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                       : l10n.adminInUnits(_pluralUnit(_unit)),
                 ),
                 validator: (v) {
-                  final parsed = int.tryParse(v?.trim() ?? '');
-                  if (parsed == null) return l10n.adminEnterValidStock;
+                  final parsed = double.tryParse(v?.trim() ?? '');
+                  if (parsed == null ||
+                      (_unit != ProductUnit.kg &&
+                          parsed != parsed.roundToDouble())) {
+                    return l10n.adminEnterValidStock;
+                  }
                   if (parsed < 0) return l10n.adminStockCannotBeNegative;
                   return null;
                 },

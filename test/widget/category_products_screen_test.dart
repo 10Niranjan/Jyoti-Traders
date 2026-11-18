@@ -38,7 +38,7 @@ ProductEntity _product(
   String id,
   String name,
   String categoryId, {
-  int stock = 20,
+  double stock = 20,
 }) => ProductEntity(
   id: id,
   name: name,

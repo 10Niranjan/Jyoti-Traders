@@ -878,6 +878,125 @@ Continuing autonomously from the user's own standing instruction ("verify the 3 
 
 ---
 
+## 📅 Session Log: 2026-10-12 — Manual QA fixes (Pincode, Catalog FAB overlap, UPI payments chip)
+
+### 📋 Tasks completed:
+
+- **Pincode validation at Checkout**: Added strict 6-digit Indian PIN code validation so incomplete/invalid pincodes cannot pass order placement.
+- **Catalog FAB overlap fix**: Fixed the "Add Product" floating action button overlapping the last row of short product lists on admin Catalog screen by ensuring scroll padding and bottom margins.
+- **UPI payments chip scoping**: Filtered the admin dashboard's "UPI payments to confirm" shortcut chip so it routes directly to payment-status-scoped orders (`paymentStatus == paymentClaimed`) instead of dumping to the unfiltered All Orders tab.
+- **Verification**: Committed as `0d797bb` after live verification on Android emulator.
+
+---
+
+## 📅 Session Log: 2026-10-13 — Edge-to-Edge Android 15+, Devanagari validation, accessibility & landscape responsiveness
+
+### 📋 Tasks completed:
+
+- **Edge-to-Edge display support for Android 15/16**:
+  - Created shared `EdgeToEdgeOverlay` widget (`lib/shared/widgets/edge_to_edge_overlay.dart`) configuring `AnnotatedRegion<SystemUiOverlayStyle>` with transparent status and navigation bars and theme-aware icon brightness.
+  - Applied `EdgeToEdgeOverlay` to full-bleed screens: `AuthScreen`, `OnboardingScreen`, `PendingApprovalScreen`, and `OrderSuccessScreen`.
+- **Landscape & short viewport overflow resilience**:
+  - Refactored `PendingApprovalScreen` to use `LayoutBuilder` + `SingleChildScrollView` + `ConstrainedBox(minHeight: constraints.maxHeight)` to eliminate layout overflow in landscape viewports (tested at 800×360).
+  - Refactored `OrderSuccessScreen` with a centered `SingleChildScrollView` to prevent content clipping/overflow on short viewports (tested at 800×320).
+- **Devanagari script support in validation**:
+  - Updated `Validators.name` and `Validators.businessName` regular expressions to include the Devanagari Unicode block (`ऀ-ॿ`), allowing genuine Hindi and Marathi shop names and personal names (e.g., "रमेश काटकर", "साई कृपा ट्रेडर्स & कंपनी").
+  - Added unit test cases in `test/unit/utils/validators_test.dart`.
+- **Accessibility pass on Quantity Picker**:
+  - Wrapped `_StepButton` in `QuantityPicker` with `Semantics` (`button: true`, `enabled`, localized `label`) and `Tooltip` with localized strings `quantityPickerDecrease` / `quantityPickerIncrease`.
+  - Updated `app_en.arb`, `app_hi.arb`, and `app_mr.arb` localization files and regenerated localization classes.
+- **Admin Dashboard Top Products error handling**:
+  - Replaced raw string-interpolated error display (`Couldn't load top products: $e`) with `debugPrint` and a clean, localized error text `adminCouldntLoadTopProducts`.
+- **Icon consistency**:
+  - Swapped `Icons.ios_share_rounded` to Material `Icons.share_rounded` in `AllOrdersScreen` and updated widget test expectations.
+- **Verification**:
+  - `flutter analyze` — zero issues.
+  - `flutter test` — 615/615 passing.
+
+---
+
+## 📅 Session Log: 2026-10-15 — Full manual test plan (A to Z, Light + Dark)
+
+### 📋 Tasks completed:
+
+- **`TEST_PLAN.md`** (repo root): setup, test accounts, demo data with expected slab prices / coupon / delivery-charge numbers, a Light/Dark visual checklist (V1–V12), **346 test cases** in 31 modules (127 P1 / 161 P2 / 58 P3) each with ☀ and 🌙 result columns, 10 cross-role end-to-end scenarios, a 55-screen theme sweep, bug template, exit criteria. Written from the actual routes, l10n strings, validators, seeder and constants — not from memory.
+- **`Jyoti_Traders_Test_Cases.xlsx`** (repo root, generated from the .md): Summary sheet with live per-module/per-priority counts, Test Cases + Theme Sweep sheets with Pass/Fail/Blocked/N/A dropdowns and colours, Test Data, Known Issues, Bug Log.
+- **10 known issues found while reading the code** (listed in §9 of the plan, not fixed — user asked for the plan first): sim login ignores password for self-signed-up accounts; rejected retailers see "pending" forever; Product Detail "Add" can push the cart past stock; cart "Clear all" has no confirm/undo; validator & coupon messages are English-only; orders never reduce stock (client question); bulk import only understands commas, so a paste from Excel/Sheets (tabs) likely fails; WELCOME10 is always exactly ₹250; launch placeholders (UPI ID, GSTIN, privacy URL); "Firecrackers" mid-word wrap.
+
+### 💬 Latest Discussion Summary:
+
+1. User asked for a structured A-to-Z test-case set covering light and dark mode. No app code changed. Nothing committed or pushed.
+
+---
+
+## 📅 Session Log: 2026-10-15 (continued) — Fixed 5 known issues + 1 checkout bug found on the emulator
+
+### 📋 Tasks completed:
+
+- **KI-02 Rejected retailer**: `PendingApprovalScreen` now checks `user.status == rejected` and shows a red "Application Not Approved" variant (block icon, own message and contact title, no "Browse Catalog"). New l10n keys in en/hi/mr.
+- **KI-03 Cart past stock**: Product Detail's picker/Add only reach `maxQty − already in cart`; at the limit the button reads "All available stock is already in your cart". Buy Again capped the same way. Checkout re-checks live stock too (below).
+- **KI-04 Clear all**: "Clear cart?" confirmation dialog before emptying.
+- **KI-06 Stock never reduced** (default chosen, flagged for client in PRD §3): `ProductEntity.stock` is now a **double** (kg stock keeps decimals, 50 − 2.5 = 47.5; `stockLabel` for display; admin form/bulk import accept decimals for kg only). `PlaceOrderUseCase` takes `ProductRepository`, refuses lines above live stock (`InsufficientStockException`, localized at checkout) and takes stock after saving; `UpdateOrderStatusUseCase(order, status)` puts stock back on → Cancelled and takes it again on un-cancel. Shared `stock_adjustment.dart` (ponytail: read-modify-write, move to a Firestore transaction when Firebase is live).
+- **KI-07 Bulk import from Excel/Sheets**: `decodeCsv(separator:)`; bulk import detects a tab-separated header.
+- **New bug found on the emulator, fixed at the root**: Place Order saved the order but stayed on Checkout (`Bad state: Tried to use CheckoutController after dispose` in logcat). Cause: `cartRepositoryProvider`/`wishlistRepositoryProvider` watched the whole auth state, so Checkout's own profile save (and the FCM token refresh) rebuilt the cart → disposed the checkout controller mid-order. Now they `select` only the uid. Also added a `_placing` guard — the button's spinner only started after the profile save, leaving a double-tap window for two orders. Regression test `cart_repository_scope_test.dart`.
+- **Tests**: 16 test helpers moved to `double stock`; new cases for stock take/return/refusal, weighed kilos, cancel/un-cancel, TSV import, decimal stock rules, uid-scoped cart. `flutter analyze` 0 issues, `flutter test` **625/625**.
+- **Emulator verification** (Medium Phone API 36.1, debug APK): rejected screen (light + dark), PDP stock cap, Clear-all dialog (cancel + confirm, light + dark), order of all 4 Toor Dal → "Out of stock", cancel → back to 4, new order → Order Success screen, admin catalog "Stock: 2" and Turmeric "Stock: 47.5". **Not verified on device**: tab-separated paste (adb can't type a tab into a Flutter field — covered by unit test).
+- **Gotchas**: on this emulator adb `input text` into plain-text Flutter fields only works with Gboard disabled (`adb shell ime disable …LatinIME`, re-enable after); fast injected text into search/name fields keeps only the first character.
+
+### 💬 Latest Discussion Summary:
+
+1. **KI-11 fixed at the user's request (same day)**: per-kg rates were shown rounded to whole rupees ("2.5 kg @ ₹200/kg" while ₹199.50/kg was charged; rate card ₹205 for ₹204.75). New `formatRate()` in `currency_formatter.dart` (reuses `formatRupees`, minus the ₹ the l10n strings already carry) replaces all 11 `toStringAsFixed(0)` rate displays — rate card, product card, compact tile, search result, quantity sheet (×3), product page, cart line, order line, admin product tile. Found while checking it on the emulator: `formatRupees` showed float dust as fake paise (210 × 1.10 = 231.00000000000003 → "₹231.00"); now it rounds to paise before deciding whole vs. fractional, which fixes it for every money display. Tests added in `currency_formatter_test.dart`. `flutter test` **628/628**, analyze clean; emulator shows ₹231 · ₹210 · ₹204.75 · ₹199.50/kg and "2.5 kg @ ₹199.50/kg — ₹498.75" in cart and order detail (dark mode).
+2. `TEST_PLAN.md`/xlsx updated (PEND-10, PDP-12, CART-09/22, ORD-18…21, BULK-06/07, APRD-05b, KI table — KI-11 now fixed). `PRD.md` §3 gained the Stock rule.
+3. **User asked again to fix the checkout bug** (quoting the summary) — it was already fixed; re-verified on the emulator, adding the untested piece: a fast **double tap** on Place Order (two taps in one adb call) → exactly one order (#84CD3FB5) and straight to Order Success. While re-checking, the device log showed `Tried to use RetailerOrderController after dispose` from an earlier cancel: Order Detail only `ref.read` its autoDispose cancel controller, so Riverpod disposed it mid-call (the "Order cancelled." snackbar was swallowed in debug). Fixed by watching it in `build()` and using its `isLoading` for the button (dropped the local `_isCancelling`); re-verified on the emulator — cancelled, snackbar shown, no errors in the log. Same read-only pattern remains in admin product/category list actions → logged as **KI-13** (harmless in release).
+4. **Docs/context files updated at the user's request**: `phases.md` (progress table fixed — Phase 8 was shown "Not Started 0/8" though 6/13 were done, Phase 9 row was missing; new Post-Launch entries for 2026-10-12/13 and today; stale "Next Immediate Task" replaced), `PRD.md` (rejected-retailer screen, decimal kg stock, exact rates), `ARCHITECTURE.md` (stock_adjustment.dart, edge_to_edge_overlay.dart, order flow stock steps, `products.stock: number`), `rules.md` (§5: watch autoDispose controllers you await, select only the uid for user-scoped providers; §10: never oversell stock, money shown exactly as charged), `README.md` (stock rule, test-plan pointer, stale "56 test files" → 97), `DEVLOG.md` (stock-timing decision). `New folder/code/AGENTS.md` is an unrelated Figma Make scaffold — left alone. `flutter test` 628/628, analyze clean. Then committed and pushed at the user's request.
+
+---
+
+## 📅 Session Log: 2026-11-07 — Full-app bug sweep
+
+### 📋 Tasks completed:
+
+- **Automated checks first**: `flutter analyze` clean, `flutter test` 628/628 before any change. Then read the money/stock/auth/data paths by hand (pricing, cart, checkout, order placement, stock, Firestore models + rules, auth, router, admin controllers).
+- **Fixed (9)**:
+  1. **Stock writes blocked in live Firebase** — `firestore.rules` let only admins write `/products`, but placing/cancelling an order writes stock from the retailer's phone. An approved retailer may now change only `stock`/`updatedAt` (`ponytail:` any value — move to a Cloud Function/transaction later).
+  2. **Duplicate-order risk** — if that stock write failed *after* the order was saved, checkout reported failure, kept the cart, and a retry placed the order twice. New `adjustStockBestEffort()` (`stock_adjustment.dart`), used by `PlaceOrderUseCase` and `UpdateOrderStatusUseCase`.
+  3. **Bulk-imported kg products without rate columns** had no rate card; their order lines then read as grams (3 kg shown on the order/invoice/share text as "3 g", stock reduced by 0.003 kg). Blank rate columns now default to the row's price, so every kg product is sold by weight like the Add/Edit form already enforces.
+  4. **Coupon discount missing** from Order Detail (retailer + admin) and the share text — Subtotal + Delivery didn't equal Total. Added the line; CSV export gained a Discount column and prints amounts to 2 decimals (no float dust).
+  5. Checkout recorded a coupon code on orders where it gave ₹0 (cart below the coupon's minimum).
+  6. **KI-13 fixed** — Manage Products, Manage Categories and Bulk Import now watch their auto-disposing controller. Bulk import was the real casualty: in debug, a save slower than one frame disposed the controller and the import stopped after the first product. New multi-row test proves it (red without the fix).
+  7. Router: a signed-in retailer was only redirected away from `/admin` exactly; now from every `/admin/...` route.
+  8. Email validator rejected real domains with 5+ letter endings (`.store`, `.online`).
+  9. Added `firestore.indexes.json` (orders: `userId` + `createdAt desc`) and wired it in `firebase.json` — the retailer's Orders query fails without it on live Firestore.
+- **Verification**: `flutter analyze` zero issues; `flutter test` **634/634** (6 new). Not run on a device this session.
+
+### 💬 Open — needs the live Firebase project (not changed blind):
+
+1. **Profile edits don't reach the app in Firebase mode** — the auth stream only fires on sign-in/out, so saved address/GST/payout/notification switches show the old values until restart (simulation mode is fine). Fix: drive auth state from the user doc's `snapshots()`; also removes the sign-up race where the first auth event can find no profile doc yet.
+2. **Admin broadcasts are device-local Hive** — they never reach other phones. Needs a Firestore `broadcasts` collection + rule.
+3. Coupon `discount` on an order isn't validated by `firestore.rules`.
+
+## 📅 Session Log: 2026-11-07 (continued) — UI bug hunt (paused mid-way)
+
+### 📋 Done (all uncommitted; nothing pushed):
+
+- **Method**: a temporary overflow sweep (`tool/ui_sweep/ui_sweep_test.dart.txt` — rename to `test/zz_ui_sweep_test.dart` to use, delete after). It boots the real app per role (retailer/admin/pending/rejected/guest/onboarding) x language (en/hi/mr), visits ~60 routes, opens every Settings/Profile pop-up and one quantity sheet, and logs every RenderFlex overflow/exception. Needs a merged Noto Sans + Devanagari font so text measures realistically: build `SweepFont-Regular.ttf`/`-Bold.ttf` with `fontTools.merge.Merger` from `assets/fonts/NotoSans-*.ttf` + `NotoSansDevanagari-*.ttf` (set `PYTHONIOENCODING=utf-8` on Windows). Run: `flutter test test/zz_ui_sweep_test.dart --dart-define=SWEEP_FONT_DIR=<dir> --dart-define=SWEEP_OUT=<file> [--dart-define=SWEEP_W=360|320] [--dart-define=SWEEP_SCALE=1.0|1.3] [--dart-define=SWEEP_STRESS=true]` (STRESS = long shop/product/category names). The run hangs at teardown if Hive is closed between tests; the file reuses boxes instead.
+- **UI bugs found + fixed**:
+  1. Category cards overflowed on Home / category page / side rail (fixed-ratio grid, fixed 112 rail rows) -> `CategoryCard.heightFor(context)` drives the Home grid (`mainAxisExtent`) and the rail (`_railItemExtent`); rail scroll controller now built in `didChangeDependencies`.
+  2. "Buy again"/"You may also like" rails overflowed at large text (fixed 196) -> `CompactProductTile.railHeight(context)`.
+  3. Promo banner overflowed at large text (fixed 92) -> scales with text size.
+  4. Admin dashboard "Retailer approval queue" header overflowed (Hindi/Marathi, narrow) -> `Expanded` + ellipsis. Admin order card header (order number vs status badge) overflowed -> `Flexible`.
+  5. `/admin/approval-queue/:uid` crashed with a null cast when opened without the in-memory retailer -> router `redirect` to the queue.
+  6. Appearance pop-up preview overflowed 22px on 320dp phones -> `FittedBox(scaleDown)` in `_MiniScreen`.
+- **Sweep status**: 360dp @1.0x text = clean. 360dp @1.3x had only a 0.3px category-card overflow (bumped the label line-height factor 1.45 -> 1.5, **not re-run**). 320dp @1.0x had only the Appearance pop-up (fixed, **not re-run**). Not yet run: 320dp @1.3x, `SWEEP_STRESS=true`, and the **dark-theme** pass.
+- **Not yet verified after the last two edits**: `flutter analyze` + `flutter test` (last full run 634/634 was before the UI edits; analyze was clean after the first batch). Debug APK is built (`build/app/outputs/flutter-apk/app-debug.apk`) and an Android emulator (`emulator-5554`, adb at `%LOCALAPPDATA%/Android/Sdk/platform-tools/adb.exe`) was booted but nothing was looked at on it yet.
+- Static checks done: no light-only colors without a dark check (only the two intended gradients); all IconButtons have tooltips.
+
+### 💬 Next steps when resuming:
+1. `flutter analyze` + `flutter test`; fix anything the layout edits broke (existing tests may pin old sizes).
+2. Re-run the sweep: 360/320 x 1.0/1.3, then `SWEEP_STRESS=true`; add a dark-theme pass (sweep is light only).
+3. Install the debug APK on the emulator and eyeball Home, a category page, Cart, Checkout, Profile pop-ups in light + dark.
+4. Delete `tool/ui_sweep/` (or keep it as a dev tool), then commit (nothing from 2026-10-13 onward is committed - see the earlier note).
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
@@ -886,6 +1005,9 @@ Continuing autonomously from the user's own standing instruction ("verify the 3 
 - [x] Enforce business rules in code (Minimum order of ₹2,500, delivery charge calculation per km, quantity-based slab pricing for per-kg products — `PRD.md` §4.5).
 - [x] Confirm the 1 kg – 2.4 kg slab rate with the client (₹39 confirmed).
 - [x] Implement initial theme & design system screens (Home, Category, Detail).
+- [ ] Confirm the stock rule with the client — stock taken when an order is placed, returned on cancel (`PRD.md` §3, `DEVLOG.md` 2026-10-15).
+- [ ] Run the full manual QA pass in `TEST_PLAN.md` (Light + Dark) on the client's phone before the Play Store build.
+- [x] Fix KI-13 (admin product/category list actions should watch their autoDispose controller).
 
 ---
 

@@ -117,7 +117,7 @@ class _ProductsListViewState extends ConsumerState<ProductsListView> {
         .bulkUpdate(
           selected,
           (product) => product.copyWith(
-            stock: result.stock,
+            stock: result.stock?.toDouble(),
             price: result.priceAdjustPercent == null
                 ? null
                 : Money(
@@ -200,6 +200,9 @@ class _ProductsListViewState extends ConsumerState<ProductsListView> {
 
   @override
   Widget build(BuildContext context) {
+    // Keeps the auto-disposing controller alive across the awaited delete /
+    // bulk edit below (rules.md §5).
+    ref.watch(adminProductControllerProvider.notifier);
     final products = ref.watch(allProductsProvider);
     final categoriesAsync = ref.watch(adminCategoriesProvider);
     final l10n = AppLocalizations.of(context)!;

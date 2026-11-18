@@ -53,7 +53,7 @@ The app ships with a **Hive-backed simulation mode**: with Firebase on placehold
 | 📦 **Product categories** | 15 |
 | 🗂️ **Dart source files** | 181 |
 | 🧮 **Lines of Dart** | ~16,500 |
-| ✅ **Test files** | 56 |
+| ✅ **Test files** | 97 (628 automated tests) + a 351-case manual test plan |
 | 🏗️ **Architecture** | Clean Architecture, feature-first |
 | 📱 **Min Android** | 7.0 (API 24) |
 
@@ -70,6 +70,7 @@ These are hard-enforced constraints, not suggestions:
 | **Payments** | Cash on Delivery, or UPI (QR-code based, no gateway) |
 | **Own delivery** | The client's own delivery staff — no third-party logistics |
 | **Self-cancel window** | Retailer can cancel only while `Pending`, only within 10 minutes of placing |
+| **Stock** | Taken the moment an order is placed, returned if it's cancelled; an order asking for more than is left is refused at checkout. Kg stock keeps decimals (47.5 kg) |
 
 ## ✨ Feature Set
 
@@ -162,7 +163,7 @@ stateDiagram-v2
     Cancelled --> [*]
 ```
 
-A placed order **freezes** its line-item pricing — editing a product's rates later never re-prices a historical invoice.
+A placed order **freezes** its line-item pricing — editing a product's rates later never re-prices a historical invoice. Stock comes off the shelf when the order is placed (`Pending`) and goes back on `Cancelled`.
 
 ## 🏗️ Architecture
 
@@ -286,6 +287,8 @@ flutter analyze
 flutter test
 ```
 
+Manual QA: [`TEST_PLAN.md`](TEST_PLAN.md) — 351 test cases (each run in Light and Dark mode), a 55-screen theme sweep, test accounts and expected prices. Track results in `Jyoti_Traders_Test_Cases.xlsx` (Pass/Fail dropdowns + auto-summary).
+
 ## 📦 Building a Release APK
 
 ```bash
@@ -308,7 +311,7 @@ Output: `build/app/outputs/flutter-apk/app-release.apk`
 | 8 — Launch Prep & Play Store | 🔶 In progress |
 | 9 — Navigation Redesign | ✅ Complete |
 
-Plus post-launch additions: order cancellation, "Buy Again", low-stock alerts, admin CSV export, order-confirmation sharing, self-service Change Password, Crashlytics. Full detail in [`phases.md`](phases.md) — the single source of truth for "what's done" and "what's next."
+Plus post-launch additions: order cancellation, "Buy Again", low-stock alerts, admin CSV export, order-confirmation sharing, self-service Change Password, Crashlytics, stock tracking on order/cancel, and a full manual test plan. Full detail in [`phases.md`](phases.md) — the single source of truth for "what's done" and "what's next."
 
 ## 📞 Support
 

@@ -43,7 +43,7 @@ class FakeProductRepository implements ProductRepository {
   Future<void> deleteProduct(String productId) async {}
 }
 
-ProductEntity _product(String id, {double price = 100, int stock = 10}) =>
+ProductEntity _product(String id, {double price = 100, double stock = 10}) =>
     ProductEntity(
       id: id,
       name: id,

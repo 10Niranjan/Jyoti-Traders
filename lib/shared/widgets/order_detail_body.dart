@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../../core/utils/currency_formatter.dart';
 import '../../core/theme/theme_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
@@ -55,10 +56,7 @@ class OrderDetailBody extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           formatOrderDateTime(order.createdAt),
-          style: GoogleFonts.inter(
-            fontSize: 12,
-            color: context.textSecondary,
-          ),
+          style: GoogleFonts.inter(fontSize: 12, color: context.textSecondary),
         ),
         if (showShopName) ...[
           const SizedBox(height: 4),
@@ -79,7 +77,10 @@ class OrderDetailBody extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         OrderTrackingStepper(status: order.orderStatus),
-        Text(l10n.orderItemsHeading, style: GoogleFonts.inter(fontWeight: FontWeight.w600)),
+        Text(
+          l10n.orderItemsHeading,
+          style: GoogleFonts.inter(fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 8),
         ...order.items.map(
           (item) => Padding(
@@ -91,7 +92,10 @@ class OrderDetailBody extends StatelessWidget {
                   child: Text(
                     item.isWeighed
                         ? l10n.orderWeighedLine(
-                            item.name, formatGrams(item.qty), item.unitPrice.amount.toStringAsFixed(0))
+                            item.name,
+                            formatGrams(item.qty),
+                            formatRate(item.unitPrice.amount),
+                          )
                         : l10n.orderUnitLine(item.name, item.qty),
                     style: GoogleFonts.inter(fontSize: 13),
                   ),
@@ -109,6 +113,11 @@ class OrderDetailBody extends StatelessWidget {
         ),
         const Divider(height: 28),
         _TotalRow(label: l10n.cartSubtotal, value: order.subtotal.formatted),
+        if (order.discount != null && order.discount!.amount > 0)
+          _TotalRow(
+            label: l10n.cartDiscount,
+            value: '-${order.discount!.formatted}',
+          ),
         _TotalRow(
           label: l10n.checkoutDeliveryCharge,
           value: order.deliveryCharge.formatted,
@@ -130,7 +139,11 @@ class OrderDetailBody extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          l10n.orderAddressLine(order.deliveryAddress.street, order.deliveryAddress.city, order.deliveryAddress.pincode),
+          l10n.orderAddressLine(
+            order.deliveryAddress.street,
+            order.deliveryAddress.city,
+            order.deliveryAddress.pincode,
+          ),
           style: GoogleFonts.inter(fontSize: 13),
         ),
         const SizedBox(height: 24),
@@ -145,7 +158,9 @@ class OrderDetailBody extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Text(
-          order.paymentMethod == PaymentMethod.cod ? l10n.orderPaymentCod : l10n.checkoutUpi,
+          order.paymentMethod == PaymentMethod.cod
+              ? l10n.orderPaymentCod
+              : l10n.checkoutUpi,
           style: GoogleFonts.inter(fontSize: 13),
         ),
         const SizedBox(height: 6),
@@ -159,10 +174,7 @@ class OrderDetailBody extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             l10n.orderPaymentScreenshotLabel,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
+            style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 6),
           ClipRRect(

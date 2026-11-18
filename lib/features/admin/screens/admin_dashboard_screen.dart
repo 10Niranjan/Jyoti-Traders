@@ -122,8 +122,18 @@ class AdminDashboardScreen extends ConsumerWidget {
                       padding: EdgeInsets.symmetric(vertical: 12),
                       child: Center(child: CircularProgressIndicator()),
                     ),
-                    error: (e, _) =>
-                        Text(l10n.adminCouldntLoadTopProducts('$e')),
+                    error: (e, _) {
+                      debugPrint(
+                        'AdminDashboardScreen: top products load failed: $e',
+                      );
+                      return Text(
+                        l10n.adminCouldntLoadTopProducts,
+                        style: GoogleFonts.inter(
+                          color: AppColors.error,
+                          fontSize: 13,
+                        ),
+                      );
+                    },
                     data: (products) => products.isEmpty
                         ? Text(
                             l10n.adminNoSalesYet,
@@ -215,14 +225,18 @@ class AdminDashboardScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    l10n.adminRetailerApprovalQueue,
-                    style: GoogleFonts.inter(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: isDark
-                          ? AppColors.textPrimaryDark
-                          : AppColors.textPrimaryLight,
+                  Expanded(
+                    child: Text(
+                      l10n.adminRetailerApprovalQueue,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDark
+                            ? AppColors.textPrimaryDark
+                            : AppColors.textPrimaryLight,
+                      ),
                     ),
                   ),
                   TextButton(

@@ -120,7 +120,7 @@ void main() {
     // Checkout: place the order via the real CheckoutController, which both
     // writes the order and clears the cart on success.
     final checkoutController = CheckoutController(
-      PlaceOrderUseCase(orderRepo),
+      PlaceOrderUseCase(orderRepo, productRepo),
       cartController,
     );
     final order = OrderEntity(
@@ -160,6 +160,10 @@ void main() {
 
     final history = await orderRepo.watchOrderHistory('retailer_1').first;
     expect(history.map((o) => o.id), contains('order_flow_test'));
+
+    // Stock: the 2 boxes ordered came off the shelf (40 -> 38).
+    final afterOrder = await productRepo.getProductById('prod_rice_25kg');
+    expect(afterOrder!.stock, 38);
   });
 
   test(
@@ -187,7 +191,13 @@ void main() {
       expect(cart.subtotal.amount, 1800); // below the ₹2,500 minimum
 
       final checkoutController = CheckoutController(
-        PlaceOrderUseCase(orderRepo),
+        PlaceOrderUseCase(
+          orderRepo,
+          ProductRepositoryImpl(
+            ProductRemoteDatasource(catalogBox: catalogBox),
+            ProductLocalDatasource(catalogBox: catalogBox),
+          ),
+        ),
         cartController,
       );
       final order = OrderEntity(

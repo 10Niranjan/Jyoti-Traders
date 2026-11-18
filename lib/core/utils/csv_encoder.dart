@@ -16,8 +16,9 @@ String encodeCsv(List<List<Object?>> rows) {
 /// Minimal RFC 4180 CSV decoder — the counterpart to [encodeCsv]. Handles
 /// quoted fields (commas/newlines/doubled-quotes inside them) via a small
 /// character-by-character state machine rather than a naive `split(',')`,
-/// which would break on any quoted field containing a comma.
-List<List<String>> decodeCsv(String input) {
+/// which would break on any quoted field containing a comma. Pass
+/// `separator: '\t'` for text copied out of Excel / Google Sheets.
+List<List<String>> decodeCsv(String input, {String separator = ','}) {
   final rows = <List<String>>[];
   var row = <String>[];
   final field = StringBuffer();
@@ -49,7 +50,7 @@ List<List<String>> decodeCsv(String input) {
       }
     } else if (c == '"') {
       inQuotes = true;
-    } else if (c == ',') {
+    } else if (c == separator) {
       endField();
     } else if (c == '\r') {
       // Swallowed; the paired '\n' (or its absence, for a lone '\r') ends

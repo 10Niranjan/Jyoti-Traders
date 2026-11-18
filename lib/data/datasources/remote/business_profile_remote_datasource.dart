@@ -53,9 +53,14 @@ class BusinessProfileRemoteDatasource {
     if (_useMock) {
       return () async* {
         final raw = _settingsBox.get(HiveKeys.simulatedBusinessProfile);
-        yield _fromMap(
-          raw == null ? null : Map<String, dynamic>.from(raw as Map),
-        );
+        // Demo build: prefill until the owner saves real details.
+        yield raw == null
+            ? const BusinessProfileEntity(
+                legalName: 'Jyoti Traders Wholesale',
+                address: 'Main Market Road, Pune, Maharashtra 411002',
+                gstin: '27AABCJ1234K1Z9',
+              )
+            : _fromMap(Map<String, dynamic>.from(raw as Map));
         yield* _controller.stream;
       }();
     }

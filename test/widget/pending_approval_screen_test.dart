@@ -144,4 +144,16 @@ void main() {
 
     expect(repository.signedOut, isTrue);
   });
+
+  testWidgets('scrolls instead of overflowing on a short landscape viewport', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(800, 360);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    await tester.pumpWidget(wrap(FakeAuthRepository(_retailer)));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+  });
 }

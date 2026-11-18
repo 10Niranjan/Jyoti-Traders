@@ -76,6 +76,7 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
         'Shop Name',
         'Items',
         'Subtotal',
+        'Discount',
         'Delivery Charge',
         'Grand Total',
         'Payment Method',
@@ -88,9 +89,11 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
           o.id,
           o.shopName,
           o.items.length,
-          o.subtotal.amount,
-          o.deliveryCharge.amount,
-          o.grandTotal.amount,
+          // Fixed to paise — raw doubles print float dust (2749.9999999999995).
+          o.subtotal.amount.toStringAsFixed(2),
+          (o.discount?.amount ?? 0).toStringAsFixed(2),
+          o.deliveryCharge.amount.toStringAsFixed(2),
+          o.grandTotal.amount.toStringAsFixed(2),
           o.paymentMethod.value,
           o.paymentStatus.value,
           o.orderStatus.value,
@@ -144,7 +147,7 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.ios_share_rounded),
+            icon: const Icon(Icons.share_rounded),
             tooltip: l10n.adminExportCsvTooltip,
             onPressed: () => _exportCsv(
               _filteredOrders(ordersAsync.valueOrNull ?? const []),
@@ -234,13 +237,18 @@ class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    l10n.orderNumber(order.id.shortId),
-                                    style: GoogleFonts.inter(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 13,
+                                  Flexible(
+                                    child: Text(
+                                      l10n.orderNumber(order.id.shortId),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.inter(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
                                     ),
                                   ),
+                                  const SizedBox(width: 8),
                                   OrderStatusBadge(status: order.orderStatus),
                                 ],
                               ),

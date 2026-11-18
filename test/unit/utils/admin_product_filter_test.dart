@@ -8,7 +8,7 @@ ProductEntity _product({
   required String name,
   String categoryId = 'c1',
   double price = 10,
-  int stock = 10,
+  double stock = 10,
 }) {
   return ProductEntity(
     id: id,

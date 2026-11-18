@@ -172,6 +172,16 @@ class AppLocalizationsMr extends AppLocalizations {
       'तुमचा रिटेलर अर्ज सध्या Jyoti Traders च्या मालकाकडून तपासला जात आहे. मंजुरी मिळाल्यावर तुम्हाला घाऊक उत्पादने खरेदी करण्याची पूर्ण सुविधा मिळेल.';
 
   @override
+  String get pendingRejectedTitle => 'अर्ज मंजूर झाला नाही';
+
+  @override
+  String get pendingRejectedMessage =>
+      'तुमचा रिटेलर अर्ज Jyoti Traders च्या मालकाने मंजूर केलेला नाही. ही चूक आहे असे वाटत असल्यास, खालील फोन किंवा ईमेलवर आमच्याशी संपर्क साधा.';
+
+  @override
+  String get pendingRejectedContactTitle => 'काही प्रश्न? मालकाशी संपर्क साधा';
+
+  @override
   String get pendingCheckingStatus => 'पडताळणी स्थिती तपासत आहे...';
 
   @override
@@ -267,9 +277,13 @@ class AppLocalizationsMr extends AppLocalizations {
   }
 
   @override
-  String productInStock(int stock, String unit) {
+  String productInStock(String stock, String unit) {
     return '$stock $unit स्टॉकमध्ये';
   }
+
+  @override
+  String get productAllInCart =>
+      'उपलब्ध सर्व स्टॉक आधीच तुमच्या कार्टमध्ये आहे';
 
   @override
   String get productDescription => 'वर्णन';
@@ -305,6 +319,13 @@ class AppLocalizationsMr extends AppLocalizations {
 
   @override
   String get cartClearAll => 'सर्व काढा';
+
+  @override
+  String get cartClearConfirmTitle => 'कार्ट रिकामी करायची?';
+
+  @override
+  String get cartClearConfirmMessage =>
+      'तुमच्या कार्टमधील सर्व वस्तू काढल्या जातील.';
 
   @override
   String get cartEmptyTitle => 'तुमची कार्ट रिकामी आहे';
@@ -417,6 +438,16 @@ class AppLocalizationsMr extends AppLocalizations {
   @override
   String get checkoutSaveAddressLabelRequired =>
       'हा पत्ता जतन करण्यासाठी लेबल जोडा';
+
+  @override
+  String checkoutNotEnoughStock(String available, String name) {
+    return '$name फक्त $available शिल्लक आहे. कृपया कार्टमधील प्रमाण कमी करा.';
+  }
+
+  @override
+  String checkoutItemUnavailable(String name) {
+    return '$name आता उपलब्ध नाही. कृपया ते कार्टमधून काढा.';
+  }
 
   @override
   String upiGalleryError(String error) {
@@ -834,6 +865,12 @@ class AppLocalizationsMr extends AppLocalizations {
   String get quantityPickerCustomQuantity => 'सानुकूल प्रमाण';
 
   @override
+  String get quantityPickerDecrease => 'प्रमाण कमी करा';
+
+  @override
+  String get quantityPickerIncrease => 'प्रमाण वाढवा';
+
+  @override
   String get rateSlabTitle => 'प्रमाणानुसार दर (₹ प्रति किलो)';
 
   @override
@@ -1026,9 +1063,7 @@ class AppLocalizationsMr extends AppLocalizations {
   String get adminTopProducts => 'टॉप प्रॉडक्ट्स';
 
   @override
-  String adminCouldntLoadTopProducts(String error) {
-    return 'टॉप प्रॉडक्ट्स लोड होऊ शकले नाहीत: $error';
-  }
+  String get adminCouldntLoadTopProducts => 'टॉप प्रॉडक्ट्स लोड होऊ शकले नाहीत';
 
   @override
   String get adminNoSalesYet => 'अद्याप विक्री नाही';
@@ -1614,7 +1649,7 @@ class AppLocalizationsMr extends AppLocalizations {
   }
 
   @override
-  String adminStockLabel(int count) {
+  String adminStockLabel(String count) {
     return 'स्टॉक: $count';
   }
 

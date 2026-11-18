@@ -235,7 +235,7 @@ OrderEntity _orderWith(
 
 ProductEntity _product({
   required String id,
-  required int stock,
+  required double stock,
   bool isTopProduct = false,
 }) => ProductEntity(
   id: id,

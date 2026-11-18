@@ -183,9 +183,13 @@ class _MiniScreen extends StatelessWidget {
           ],
         );
     }
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(14),
-      child: SizedBox(width: width, height: height, child: drawing),
+    // Scales down when three tiles share a narrow phone (under 72 px each).
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(14),
+        child: SizedBox(width: width, height: height, child: drawing),
+      ),
     );
   }
 

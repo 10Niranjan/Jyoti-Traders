@@ -13,9 +13,12 @@ class CheckoutController extends StateNotifier<AsyncValue<String?>> {
   final CartController _cartController;
   final AnalyticsService _analytics;
 
-  CheckoutController(this._placeOrderUseCase, this._cartController, [AnalyticsService? analytics])
-      : _analytics = analytics ?? AnalyticsService(),
-        super(const AsyncValue.data(null));
+  CheckoutController(
+    this._placeOrderUseCase,
+    this._cartController, [
+    AnalyticsService? analytics,
+  ]) : _analytics = analytics ?? AnalyticsService(),
+       super(const AsyncValue.data(null));
 
   Future<void> placeOrder(OrderEntity order) async {
     state = const AsyncValue.loading();
@@ -39,8 +42,13 @@ class CheckoutController extends StateNotifier<AsyncValue<String?>> {
 }
 
 final checkoutControllerProvider =
-    StateNotifierProvider.autoDispose<CheckoutController, AsyncValue<String?>>((ref) {
-  final useCase = PlaceOrderUseCase(ref.watch(orderRepositoryProvider));
-  final cartController = ref.watch(cartControllerProvider.notifier);
-  return CheckoutController(useCase, cartController);
-});
+    StateNotifierProvider.autoDispose<CheckoutController, AsyncValue<String?>>((
+      ref,
+    ) {
+      final useCase = PlaceOrderUseCase(
+        ref.watch(orderRepositoryProvider),
+        ref.watch(productRepositoryProvider),
+      );
+      final cartController = ref.watch(cartControllerProvider.notifier);
+      return CheckoutController(useCase, cartController);
+    });

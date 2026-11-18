@@ -216,7 +216,7 @@ OrderEntity _orderWith(String productId, {String id = 'o1'}) => OrderEntity(
   createdAt: DateTime(2026, 7, 20),
 );
 
-ProductEntity _product({required String id, required int stock}) =>
+ProductEntity _product({required String id, required double stock}) =>
     ProductEntity(
       id: id,
       name: 'Basmati Rice',

@@ -8,7 +8,7 @@ import 'package:traders_retailer/shared/widgets/quantity_picker.dart';
 
 /// Stock is counted in kilos for a weighed product, so `stock: 5` is a 5 kg
 /// (5000 g) ceiling.
-ProductEntity _weighed({int stock = 5}) => ProductEntity(
+ProductEntity _weighed({double stock = 5}) => ProductEntity(
   id: 'p1',
   name: 'Toor Dal',
   categoryId: 'cat_pulses',
@@ -20,7 +20,7 @@ ProductEntity _weighed({int stock = 5}) => ProductEntity(
   rateSlabs: WeightRateSlabs.defaults,
 );
 
-ProductEntity _unit({int stock = 50}) => ProductEntity(
+ProductEntity _unit({double stock = 50}) => ProductEntity(
   id: 'p2',
   name: 'Soap Box',
   categoryId: 'cat_misc',

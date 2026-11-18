@@ -154,7 +154,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         final target =
             (location == RouteNames.splash ||
                 location == RouteNames.login ||
-                location == RouteNames.admin ||
+                location.startsWith(RouteNames.admin) ||
                 location == RouteNames.pendingApproval)
             ? RouteNames.home
             : null;
@@ -186,6 +186,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: RouteNames.adminRetailerDetail,
+        // The retailer is handed over in memory from the approval card. Opened
+        // any other way (deep link, rebuilt route) there is none, so go back
+        // to the queue that lists them instead of crashing on the cast.
+        redirect: (context, state) =>
+            state.extra is UserEntity ? null : RouteNames.adminApprovalQueue,
         builder: (context, state) =>
             RetailerDetailScreen(user: state.extra as UserEntity),
       ),

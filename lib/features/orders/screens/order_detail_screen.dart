@@ -29,7 +29,6 @@ class OrderDetailScreen extends ConsumerStatefulWidget {
 
 class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
   bool _isReordering = false;
-  bool _isCancelling = false;
 
   Future<void> _shareOrder(OrderEntity order) async {
     // Wrapped defensively like every other platform-plugin call in this
@@ -93,19 +92,15 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
     if (confirmed != true) return;
     if (!mounted) return;
 
-    setState(() => _isCancelling = true);
     final success = await ref
         .read(retailerOrderControllerProvider.notifier)
-        .cancelOrder(order.id);
+        .cancelOrder(order);
     if (!mounted) return;
-    setState(() => _isCancelling = false);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          success
-              ? l10n.orderCancelledMessage
-              : l10n.orderCancelFailedMessage,
+          success ? l10n.orderCancelledMessage : l10n.orderCancelFailedMessage,
         ),
         backgroundColor: success ? AppColors.success : AppColors.error,
         behavior: SnackBarBehavior.floating,
@@ -116,6 +111,9 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final orderAsync = ref.watch(orderByIdProvider(widget.orderId));
+    // Watched, not just read: the controller is autoDispose, and with no
+    // listener Riverpod tore it down mid-cancel ("used after dispose").
+    final isCancelling = ref.watch(retailerOrderControllerProvider).isLoading;
     final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authControllerProvider);
     final buyerGstin = authState is AuthenticatedCustomer
@@ -153,9 +151,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
         error: (error, stack) => const ErrorStateWidget(),
         data: (order) {
           if (order == null) {
-            return ErrorStateWidget(
-              message: l10n.upiOrderNotFound,
-            );
+            return ErrorStateWidget(message: l10n.upiOrderNotFound);
           }
           return Column(
             children: [
@@ -179,7 +175,7 @@ class _OrderDetailScreenState extends ConsumerState<OrderDetailScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: _isCancelling
+                            onPressed: isCancelling
                                 ? null
                                 : () => _cancelOrder(order),
                             icon: const Icon(Icons.cancel_outlined, size: 18),

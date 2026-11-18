@@ -55,6 +55,7 @@ These are **hard requirements** enforced in the app at all times:
 | **Payment Methods**      | Cash on Delivery (COD) and Online UPI payment.                                                                               |
 | **Own Delivery**         | Deliveries are handled by the client's own delivery personnel. No third-party logistics.                                     |
 | **Order Cancellation**   | A retailer may self-cancel their own order only while it's still `Pending` and only within 10 minutes of placing it. Once the admin confirms it, or the window passes, cancellation is no longer available. |
+| **Stock**                | Stock is reduced the moment an order is placed and put back if the order is cancelled (by the retailer or the admin). An order asking for more than is left is refused at checkout. Kg stock is kept in decimals (50 kg − 2.5 kg = 47.5 kg). *Default chosen 2026-10-15 — confirm with the client.* |
 
 ---
 
@@ -73,6 +74,7 @@ These are **hard requirements** enforced in the app at all times:
 - **Pending Approval Screen**: After sign-up, user sees a lock screen with:
   - Message: _"Your account is under review."_
   - Admin contact: 📞 9860460325 | ✉️ vishvatejkatkar007@gmail.com
+  - A **rejected** retailer sees the same screen as "Application Not Approved" (red, no "Browse Catalog" button) — never a review that will not happen (2026-10-15)
 - **Admin Login**: Separate admin credentials with a secured login path
 - **Role-Based Routing**: On login, the app automatically routes:
   - `Admin` → Admin Dashboard
@@ -138,8 +140,9 @@ Rules:
 - The **whole weight is billed at the single rate its band earns** — 3 kg costs 3 × ₹38, *not* the first 240 g at ₹44 with the remainder cheaper. This is not tax-bracket style marginal pricing.
 - The three gram boundaries (240 g / 999 g / 2.4 kg) are **fixed shop-wide**. The four rates are set **per product** by the Admin on Add/Edit Product — rice, sugar and dal don't share a rate card. The table above is the default prefill.
 - Retailers pick weight via quick-pick chips (100 g / 250 g / 500 g / 1 kg / 2.5 kg / 5 kg) plus a ± stepper. The product page shows the full rate card with the active band highlighted, so the next discount is visible before buying.
-- Stock for a kg product is counted in **kilograms**.
+- Stock for a kg product is counted in **kilograms**, decimals allowed (50 kg − a 2.5 kg order = 47.5 kg).
 - Line totals round to whole paise. Amounts display paise only when non-zero (a 100 g line at ₹44/kg is ₹4.40, not ₹4).
+- **Rates are shown exactly as charged** — ₹204.75/kg, never rounded to ₹205 (rate card, product cards, cart and order lines).
 - A placed order **freezes** its line totals — editing a product's rates later never re-prices a historical invoice.
 - Products saved before this feature carry no rate card and keep flat per-kilo pricing, so no data migration was required.
 

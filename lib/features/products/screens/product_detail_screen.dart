@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/route_names.dart';
 import '../../../domain/entities/cart_item_entity.dart';
@@ -176,6 +177,19 @@ class _ProductDetailBody extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final l10n = AppLocalizations.of(context)!;
 
+    // "Add" here adds on top of the cart line, so the picker may only reach
+    // what's left after it — otherwise the cart could ask for more than
+    // exists.
+    final remaining =
+        product.maxQty - ref.watch(cartControllerProvider).qtyFor(product.id);
+    final pickable = product.copyWith(
+      stock: product.isWeighed ? remaining / 1000 : remaining.toDouble(),
+    );
+    final canAddMore = remaining >= product.minQty;
+    final qty = canAddMore && this.qty > pickable.maxQty
+        ? pickable.maxQty
+        : this.qty;
+
     return Column(
       children: [
         Expanded(
@@ -209,8 +223,7 @@ class _ProductDetailBody extends ConsumerWidget {
                       Text(
                         product.isWeighed
                             ? l10n.homeFromRatePerKg(
-                                product.rateSlabs!.bestRatePerKg
-                                    .toStringAsFixed(0),
+                                formatRate(product.rateSlabs!.bestRatePerKg),
                               )
                             : product.price.formatted,
                         style: GoogleFonts.inter(
@@ -223,7 +236,7 @@ class _ProductDetailBody extends ConsumerWidget {
                       Text(
                         product.isInStock
                             ? l10n.productInStock(
-                                product.stock,
+                                product.stockLabel,
                                 product.unit.value,
                               )
                             : l10n.homeOutOfStock,
@@ -242,10 +255,10 @@ class _ProductDetailBody extends ConsumerWidget {
                           activeGrams: qty,
                         ),
                       ],
-                      if (product.isInStock) ...[
+                      if (canAddMore) ...[
                         const SizedBox(height: 20),
                         QuantityPicker(
-                          product: product,
+                          product: pickable,
                           qty: qty,
                           onChanged: onQtyChanged,
                         ),
@@ -280,17 +293,19 @@ class _ProductDetailBody extends ConsumerWidget {
               children: [
                 InlineToast(key: toastKey),
                 PrimaryButton(
-                  label: product.isInStock
-                      ? l10n.productAddButtonLabel(
+                  label: !product.isInStock
+                      ? l10n.productOutOfStockButton
+                      : !canAddMore
+                      ? l10n.productAllInCart
+                      : l10n.productAddButtonLabel(
                           product.labelForQty(qty),
                           product.priceForQty(qty).formatted,
-                        )
-                      : l10n.productOutOfStockButton,
+                        ),
                   icon: Icons.shopping_cart_outlined,
                   onPressed:
-                      (product.isInStock &&
+                      (canAddMore &&
                           qty >= product.minQty &&
-                          qty <= product.maxQty)
+                          qty <= pickable.maxQty)
                       ? () {
                           ref
                               .read(cartControllerProvider.notifier)

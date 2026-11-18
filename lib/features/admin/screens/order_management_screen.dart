@@ -28,7 +28,7 @@ class OrderManagementScreen extends ConsumerWidget {
 
     final success = await ref
         .read(adminOrderControllerProvider.notifier)
-        .updateStatus(order.id, newStatus);
+        .updateStatus(order, newStatus);
     if (!context.mounted) return;
 
     ScaffoldMessenger.of(context).showSnackBar(

@@ -76,6 +76,9 @@ class _BulkImportProductsScreenState
 
   @override
   Widget build(BuildContext context) {
+    // Keeps the auto-disposing controller alive across the awaited create
+    // loop in _import — unwatched, it was disposed after the first product.
+    ref.watch(adminProductControllerProvider.notifier);
     final categoriesAsync = ref.watch(adminCategoriesProvider);
     final parsed = _parsed;
     final validCount = parsed?.where((r) => r.isValid).length ?? 0;

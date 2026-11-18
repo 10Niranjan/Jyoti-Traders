@@ -37,10 +37,10 @@ class RetailerOrderController extends StateNotifier<AsyncValue<void>> {
   RetailerOrderController(this._updateStatusUseCase)
     : super(const AsyncValue.data(null));
 
-  Future<bool> cancelOrder(String orderId) async {
+  Future<bool> cancelOrder(OrderEntity order) async {
     state = const AsyncValue.loading();
     try {
-      await _updateStatusUseCase(orderId, OrderStatus.cancelled);
+      await _updateStatusUseCase(order, OrderStatus.cancelled);
       state = const AsyncValue.data(null);
       return true;
     } catch (e, st) {
@@ -56,6 +56,9 @@ final retailerOrderControllerProvider =
       AsyncValue<void>
     >((ref) {
       return RetailerOrderController(
-        UpdateOrderStatusUseCase(ref.watch(orderRepositoryProvider)),
+        UpdateOrderStatusUseCase(
+          ref.watch(orderRepositoryProvider),
+          ref.watch(productRepositoryProvider),
+        ),
       );
     });

@@ -10,7 +10,7 @@ import 'package:traders_retailer/shared/widgets/product_card.dart';
 
 import '../helpers/fake_cart_repository.dart';
 
-ProductEntity _product({int stock = 20, bool isActive = true}) => ProductEntity(
+ProductEntity _product({double stock = 20, bool isActive = true}) => ProductEntity(
   id: 'p1',
   name: 'Basmati Rice 25kg',
   categoryId: 'cat_grains',

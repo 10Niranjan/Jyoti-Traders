@@ -11,10 +11,12 @@ import '../../../core/services/location_service.dart';
 import '../../../core/utils/delivery_eta.dart';
 import '../../../core/utils/distance_calculator.dart';
 import '../../../core/utils/saved_addresses.dart';
+import '../../../data/models/user_model.dart';
 import '../../../data/repositories/auth_repository_provider.dart';
 import '../../../domain/entities/address_entity.dart';
 import '../../../domain/entities/order_entity.dart';
 import '../../../domain/entities/order_item_entity.dart';
+import '../../../domain/exceptions/domain_exceptions.dart';
 import '../../../domain/usecases/delivery/calculate_delivery_charge_usecase.dart';
 import '../../../domain/value_objects/money.dart';
 import '../../../shared/widgets/address_form_fields.dart';
@@ -50,6 +52,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   bool _isLocating = false;
   bool _saveAddress = false;
   PaymentMethod _paymentMethod = PaymentMethod.cod;
+
+  /// True from the tap until the order call returns — the controller's own
+  /// loading state only starts after the profile save below, which left a
+  /// window where a second tap placed a second order.
+  bool _placing = false;
 
   @override
   void dispose() {
@@ -134,12 +141,20 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   );
 
   Future<void> _placeOrder() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (_placing || !_formKey.currentState!.validate()) return;
 
     final authState = ref.read(authControllerProvider);
     if (authState is! AuthenticatedCustomer) return;
     final user = authState.user;
+    setState(() => _placing = true);
+    try {
+      await _submitOrder(user);
+    } finally {
+      if (mounted) setState(() => _placing = false);
+    }
+  }
 
+  Future<void> _submitOrder(UserModel user) async {
     final address = _currentAddress();
 
     // Persist the address to the profile too, so it's pre-filled next time.
@@ -162,6 +177,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final cart = ref.read(cartControllerProvider);
     final coupon = ref.read(couponControllerProvider).coupon;
     final discount = coupon?.discountFor(cart.subtotal);
+    // A coupon whose minimum the cart no longer meets gives nothing, so it
+    // isn't recorded on the order either.
+    final applied = discount != null && discount.amount > 0;
     final order = OrderEntity(
       id: const Uuid().v4(),
       userId: user.uid,
@@ -187,8 +205,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       orderStatus: OrderStatus.pending,
       deliveryAddress: address,
       createdAt: DateTime.now(),
-      couponCode: coupon?.code,
-      discount: (discount != null && discount.amount > 0) ? discount : null,
+      couponCode: applied ? coupon!.code : null,
+      discount: applied ? discount : null,
     );
 
     await ref.read(checkoutControllerProvider.notifier).placeOrder(order);
@@ -224,11 +242,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           }
         },
         error: (error, stack) {
+          final l10n = AppLocalizations.of(context)!;
+          final message = switch (error) {
+            InsufficientStockException(:final productName, :final available) =>
+              available == null
+                  ? l10n.checkoutItemUnavailable(productName)
+                  : l10n.checkoutNotEnoughStock(available, productName),
+            _ => error.toString(),
+          };
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(error.toString()),
-              backgroundColor: AppColors.error,
-            ),
+            SnackBar(content: Text(message), backgroundColor: AppColors.error),
           );
         },
       );
@@ -390,7 +413,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               PrimaryButton(
                 label: l10n.checkoutPlaceOrder,
                 icon: Icons.check_circle_outline_rounded,
-                isLoading: checkoutState.isLoading,
+                isLoading: _placing || checkoutState.isLoading,
                 onPressed: _placeOrder,
               ),
               const SizedBox(height: 16),

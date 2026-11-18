@@ -14,7 +14,7 @@ import '../helpers/fake_cart_repository.dart';
 
 /// Stock is counted in kilos for a weighed product, so `stock: 5` is a 5 kg
 /// (5000 g) ceiling.
-ProductEntity _weighed({int stock = 5}) => ProductEntity(
+ProductEntity _weighed({double stock = 5}) => ProductEntity(
   id: 'p1',
   name: 'Toor Dal',
   categoryId: 'cat_pulses',

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:traders_retailer/data/repositories/repository_providers.dart';
 import 'package:traders_retailer/domain/entities/address_entity.dart';
 import 'package:traders_retailer/domain/entities/order_entity.dart';
 import 'package:traders_retailer/domain/entities/order_item_entity.dart';
 import 'package:traders_retailer/domain/repositories/order_repository.dart';
+import 'package:traders_retailer/domain/repositories/product_repository.dart';
 import 'package:traders_retailer/domain/value_objects/money.dart';
 import 'package:traders_retailer/features/admin/screens/order_management_screen.dart';
 import 'package:traders_retailer/l10n/app_localizations.dart';
@@ -45,6 +47,8 @@ class FakeOrderRepository implements OrderRepository {
   }
 }
 
+class _NoProducts extends Mock implements ProductRepository {}
+
 final _order = OrderEntity(
   id: 'o1',
   userId: 'u1',
@@ -72,7 +76,11 @@ final _order = OrderEntity(
 
 Widget _wrap(FakeOrderRepository repo, {String orderId = 'o1'}) =>
     ProviderScope(
-      overrides: [orderRepositoryProvider.overrideWithValue(repo)],
+      overrides: [
+        orderRepositoryProvider.overrideWithValue(repo),
+        // Only touched when an order moves into/out of Cancelled.
+        productRepositoryProvider.overrideWithValue(_NoProducts()),
+      ],
       child: MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,

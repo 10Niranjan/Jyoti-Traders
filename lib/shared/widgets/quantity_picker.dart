@@ -76,7 +76,9 @@ class _QuantityPickerState extends State<QuantityPicker> {
   /// Weight presets straddle every rate band so each rate on the card is one
   /// tap away; unit presets are just common counts. Capped at what's in stock.
   List<int> get _presets =>
-      (_weighed ? const [250, 500, 1000, 2500, 5000, 10000] : const [1, 2, 5, 10, 25])
+      (_weighed
+              ? const [250, 500, 1000, 2500, 5000, 10000]
+              : const [1, 2, 5, 10, 25])
           .where((q) => q <= _p.maxQty)
           .toList();
 
@@ -133,7 +135,9 @@ class _QuantityPickerState extends State<QuantityPicker> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                   side: BorderSide(
-                    color: preset == qty ? AppColors.primary : AppColors.primary.withOpacity(0.35),
+                    color: preset == qty
+                        ? AppColors.primary
+                        : AppColors.primary.withOpacity(0.35),
                   ),
                 ),
                 onSelected: (_) => _set(preset),
@@ -147,19 +151,32 @@ class _QuantityPickerState extends State<QuantityPicker> {
             Expanded(
               child: TextField(
                 controller: _field,
-                keyboardType: TextInputType.numberWithOptions(decimal: _weighed),
+                keyboardType: TextInputType.numberWithOptions(
+                  decimal: _weighed,
+                ),
                 inputFormatters: [
-                  FilteringTextInputFormatter.allow(_weighed ? RegExp(r'[0-9.]') : RegExp(r'[0-9]')),
+                  FilteringTextInputFormatter.allow(
+                    _weighed ? RegExp(r'[0-9.]') : RegExp(r'[0-9]'),
+                  ),
                 ],
                 onChanged: _onTyped,
-                style: GoogleFonts.inter(fontSize: 15, fontWeight: FontWeight.bold),
+                style: GoogleFonts.inter(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
                 decoration: InputDecoration(
                   labelText: l10n.quantityPickerCustomQuantity,
                   suffixText: _weighed ? 'kg' : _p.unit.value,
-                  helperText: l10n.quantitySheetInStock(_p.labelForQty(_p.maxQty)),
-                  errorText: qty > 0 && qty < _p.minQty ? l10n.quantitySheetMinimum(_p.labelForQty(_p.minQty)) : null,
+                  helperText: l10n.quantitySheetInStock(
+                    _p.labelForQty(_p.maxQty),
+                  ),
+                  errorText: qty > 0 && qty < _p.minQty
+                      ? l10n.quantitySheetMinimum(_p.labelForQty(_p.minQty))
+                      : null,
                   isDense: true,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
             ),
@@ -173,16 +190,27 @@ class _QuantityPickerState extends State<QuantityPicker> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  _StepButton(icon: Icons.remove_rounded, onTap: qty > _p.minQty ? _halve : null),
+                  _StepButton(
+                    icon: Icons.remove_rounded,
+                    label: l10n.quantityPickerDecrease,
+                    onTap: qty > _p.minQty ? _halve : null,
+                  ),
                   SizedBox(
                     width: 60,
                     child: Text(
                       _p.labelForQty(qty),
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13),
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
                     ),
                   ),
-                  _StepButton(icon: Icons.add_rounded, onTap: qty < _p.maxQty ? _double : null),
+                  _StepButton(
+                    icon: Icons.add_rounded,
+                    label: l10n.quantityPickerIncrease,
+                    onTap: qty < _p.maxQty ? _double : null,
+                  ),
                 ],
               ),
             ),
@@ -191,16 +219,26 @@ class _QuantityPickerState extends State<QuantityPicker> {
         const SizedBox(height: 10),
         Align(
           alignment: Alignment.centerRight,
-          child: Text(
-                total?.formatted ?? '—',
-                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.primary),
-              )
-              // A quantity change re-prices the line — a quick pop is the
-              // same "it moved" feedback the chips' own selected-color
-              // transition already gives, so the total doesn't just
-              // silently jump to a new number.
-              .animate(key: ValueKey(qty))
-              .scale(begin: const Offset(1.1, 1.1), end: const Offset(1, 1), duration: 150.ms, curve: Curves.easeOut),
+          child:
+              Text(
+                    total?.formatted ?? '—',
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  )
+                  // A quantity change re-prices the line — a quick pop is the
+                  // same "it moved" feedback the chips' own selected-color
+                  // transition already gives, so the total doesn't just
+                  // silently jump to a new number.
+                  .animate(key: ValueKey(qty))
+                  .scale(
+                    begin: const Offset(1.1, 1.1),
+                    end: const Offset(1, 1),
+                    duration: 150.ms,
+                    curve: Curves.easeOut,
+                  ),
         ),
       ],
     );
@@ -209,25 +247,40 @@ class _QuantityPickerState extends State<QuantityPicker> {
 
 class _StepButton extends StatelessWidget {
   final IconData icon;
+  final String label;
   final VoidCallback? onTap;
 
-  const _StepButton({required this.icon, required this.onTap});
+  const _StepButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap == null
-          ? null
-          : () {
-              HapticFeedback.selectionClick();
-              onTap!();
-            },
-      child: Padding(
-        padding: const EdgeInsets.all(8),
-        child: Icon(
-          icon,
-          size: 18,
-          color: onTap == null ? context.textSecondary.withOpacity(0.4) : AppColors.primary,
+    return Semantics(
+      button: true,
+      enabled: onTap != null,
+      label: label,
+      child: Tooltip(
+        message: label,
+        child: InkWell(
+          onTap: onTap == null
+              ? null
+              : () {
+                  HapticFeedback.selectionClick();
+                  onTap!();
+                },
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Icon(
+              icon,
+              size: 18,
+              color: onTap == null
+                  ? context.textSecondary.withOpacity(0.4)
+                  : AppColors.primary,
+            ),
+          ),
         ),
       ),
     );

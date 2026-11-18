@@ -173,6 +173,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your retailer application is currently being reviewed by the owner of Jyoti Traders. Once approved, you will gain full access to wholesale product purchasing.';
 
   @override
+  String get pendingRejectedTitle => 'Application Not Approved';
+
+  @override
+  String get pendingRejectedMessage =>
+      'Your retailer application was not approved by the owner of Jyoti Traders. If you think this is a mistake, please call or email us below.';
+
+  @override
+  String get pendingRejectedContactTitle => 'Questions? Contact the Owner';
+
+  @override
   String get pendingCheckingStatus => 'Checking verification status...';
 
   @override
@@ -268,9 +278,12 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String productInStock(int stock, String unit) {
+  String productInStock(String stock, String unit) {
     return '$stock $unit in stock';
   }
+
+  @override
+  String get productAllInCart => 'All available stock is already in your cart';
 
   @override
   String get productDescription => 'Description';
@@ -305,6 +318,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cartClearAll => 'Clear all';
+
+  @override
+  String get cartClearConfirmTitle => 'Clear cart?';
+
+  @override
+  String get cartClearConfirmMessage =>
+      'All items will be removed from your cart.';
 
   @override
   String get cartEmptyTitle => 'Your cart is empty';
@@ -417,6 +437,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get checkoutSaveAddressLabelRequired =>
       'Add a label to save this address';
+
+  @override
+  String checkoutNotEnoughStock(String available, String name) {
+    return 'Only $available of $name is left. Please reduce it in your cart.';
+  }
+
+  @override
+  String checkoutItemUnavailable(String name) {
+    return '$name is no longer available. Please remove it from your cart.';
+  }
 
   @override
   String upiGalleryError(String error) {
@@ -835,6 +865,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get quantityPickerCustomQuantity => 'Custom quantity';
 
   @override
+  String get quantityPickerDecrease => 'Decrease quantity';
+
+  @override
+  String get quantityPickerIncrease => 'Increase quantity';
+
+  @override
   String get rateSlabTitle => 'Rate by quantity (₹ per kg)';
 
   @override
@@ -1026,9 +1062,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminTopProducts => 'Top Products';
 
   @override
-  String adminCouldntLoadTopProducts(String error) {
-    return 'Couldn\'t load top products: $error';
-  }
+  String get adminCouldntLoadTopProducts => 'Couldn\'t load top products';
 
   @override
   String get adminNoSalesYet => 'No sales yet';
@@ -1612,7 +1646,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String adminStockLabel(int count) {
+  String adminStockLabel(String count) {
     return 'Stock: $count';
   }
 

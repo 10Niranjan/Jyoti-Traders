@@ -215,6 +215,11 @@ class FirebaseAuthRepository implements AuthRepository {
           role: UserRole.admin,
           status: UserStatus.approved,
           businessName: 'Jyoti Traders Wholesale',
+          address: const AddressEntity(
+            street: 'Main Market Road',
+            city: 'Pune',
+            pincode: '411002',
+          ),
           createdAt: DateTime.now(),
         );
         _mockCurrentUser = admin;
@@ -232,6 +237,27 @@ class FirebaseAuthRepository implements AuthRepository {
           role: UserRole.customer,
           status: UserStatus.approved,
           businessName: 'Ram Kirana Store',
+          address: const AddressEntity(
+            street: 'Shop 12, Laxmi Road',
+            city: 'Pune',
+            pincode: '411030',
+            latitude: 18.5167,
+            longitude: 73.8562,
+            formattedAddress: 'Shop 12, Laxmi Road, Pune, Maharashtra 411030',
+            label: 'Shop',
+          ),
+          gstNumber: '27AAGFR4521K1Z8',
+          bankDetails: const BankDetailsEntity(
+            accountHolderName: 'Ram Kirana Store',
+            accountNumber: '00004567890123',
+            ifscCode: 'HDFC0000456',
+            bankName: 'HDFC Bank',
+            upiId: 'ramkirana@okhdfcbank',
+          ),
+          businessHours: const BusinessHoursEntity(
+            openTime: '09:00',
+            closeTime: '21:00',
+          ),
           createdAt: DateTime.now(),
         );
         _mockCurrentUser = retailer;

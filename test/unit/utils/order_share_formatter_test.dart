@@ -40,6 +40,41 @@ void main() {
       expect(text, contains('× 2'));
       expect(text, contains('Total: ₹3,050'));
       expect(text, contains('Status: Pending'));
+      expect(text, isNot(contains('Discount')));
+    });
+
+    test('a coupon discount is listed, so the lines add up to the total', () {
+      final order = OrderEntity(
+        id: 'order_abcdefgh1234',
+        userId: 'u1',
+        shopName: 'Ramesh Kirana Store',
+        items: [
+          OrderItemEntity(
+            productId: 'p1',
+            name: 'Basmati Rice',
+            qty: 2,
+            unitPrice: Money(1500),
+          ),
+        ],
+        subtotal: Money(3000),
+        deliveryCharge: Money(50),
+        paymentMethod: PaymentMethod.cod,
+        paymentStatus: PaymentStatus.pending,
+        orderStatus: OrderStatus.pending,
+        deliveryAddress: const AddressEntity(
+          street: 'St',
+          city: 'City',
+          pincode: '123456',
+        ),
+        createdAt: DateTime(2026, 7, 20, 15, 30),
+        couponCode: 'WELCOME10',
+        discount: Money(250),
+      );
+
+      final text = buildOrderShareText(order);
+
+      expect(text, contains('Discount (WELCOME10): -₹250'));
+      expect(text, contains('Total: ₹2,800'));
     });
   });
 }

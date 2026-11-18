@@ -463,13 +463,13 @@ void main() {
   });
 
   test(
-    'business profile starts blank, then round-trips an admin save',
+    'business profile starts prefilled with demo details, then round-trips an admin save',
     () async {
       final repo = BusinessProfileRepositoryImpl(
         BusinessProfileRemoteDatasource(settingsBox: settingsBox),
       );
 
-      expect((await repo.watchProfile().first).isEmpty, isTrue);
+      expect((await repo.watchProfile().first).isEmpty, isFalse);
 
       await repo.saveProfile(
         const BusinessProfileEntity(

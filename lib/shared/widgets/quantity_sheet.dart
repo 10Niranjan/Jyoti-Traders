@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../core/utils/currency_formatter.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/weight_formatter.dart';
 import '../../domain/entities/cart_item_entity.dart';
@@ -260,14 +261,13 @@ class _QuantitySheetState extends ConsumerState<_QuantitySheet> {
                         _p.isWeighed
                             ? (valid
                                   ? l10n.quantitySheetRateAtBand(
-                                      _p.rateSlabs!
-                                          .ratePerKgFor(_qty)
-                                          .toStringAsFixed(0),
+                                      formatRate(
+                                        _p.rateSlabs!.ratePerKgFor(_qty),
+                                      ),
                                       _p.rateSlabs!.bandLabelFor(_qty),
                                     )
                                   : l10n.homeFromRatePerKg(
-                                      _p.rateSlabs!.bestRatePerKg
-                                          .toStringAsFixed(0),
+                                      formatRate(_p.rateSlabs!.bestRatePerKg),
                                     ))
                             : l10n.quantitySheetPricePerUnit(
                                 _p.price.formatted,
@@ -369,7 +369,7 @@ class _Header extends StatelessWidget {
               Text(
                 product.isWeighed
                     ? AppLocalizations.of(context)!.homeFromRatePerKg(
-                        product.rateSlabs!.bestRatePerKg.toStringAsFixed(0),
+                        formatRate(product.rateSlabs!.bestRatePerKg),
                       )
                     : AppLocalizations.of(
                         context,

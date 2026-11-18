@@ -19,7 +19,8 @@
 | Phase 5 | Delivery, Payments & Notifications | ✅ Complete | 10/10 |
 | Phase 6 | Polish, Animations & UX Refinement | ✅ Complete | 11/11 |
 | Phase 7 | Testing & Quality Assurance | ✅ Complete | 12/12 |
-| Phase 8 | Launch Preparation & Play Store | ⬜ Not Started | 0/8 |
+| Phase 8 | Launch Preparation & Play Store | 🔶 In Progress | 6/13 |
+| Phase 9 | Navigation Redesign | ✅ Complete | 9/9 |
 
 ---
 
@@ -463,6 +464,25 @@
 
 > **Scope notes**: (1) **Why the restructure**: the Profile tab was one long form with a single Save; nothing warned about unsaved edits, and `profile_screen.dart` was 1,108 lines. It is now 267 lines (under the rules.md 300-line limit); header, cards and sections are separate widgets in `features/profile/widgets/`. Edit sheets run `enableDrag: false` because a drag-dismiss calls `Navigator.pop`, which would bypass the `PopScope` guard and silently drop typed edits; errors render inside the sheet (a snackbar would sit behind the modal). (2) **Completeness** counts photo, GPS-tagged address (a typed address without coordinates leaves delivery charge on the flat placeholder, so it doesn't count), GST, payout (UPI alone counts). (3) **Insights** compare this month so far with the *same days* of last month (clamped for shorter months) so the 3rd never reads as a collapse; cancelled orders never count; `trendPercent` moved to `core/utils/trend.dart` and the trend arrow to a shared `TrendLabel`, used by admin and retailer cards. (4) **Business profile** is a single `config/business` document (dual-mode like `config/delivery`); the existing Firestore rule `config/{doc}` already grants signed-in read / admin write, so retailers' phones can build invoices with the owner's details. Logo was in the original idea list and is **not** done (needs an image-embed step in the PDF). (5) **Delete account** is retailer-only — the owner's account is deliberately not self-deletable. Firebase mode re-authenticates with the password, deletes the `users/{uid}` doc, then the login (in that order); orders stay on record for accounting, which the dialog says. Simulation mode removes the simulated user and signs out (passwords aren't stored there). `firestore.rules` now lets a *customer* delete their own user doc — **needs deploying**. `ProfileController.deleteAccount` guards every state write with `mounted`: success signs the user out, tearing down the screen and this autoDispose controller before the await returns (the same failure class as the approval-queue bug in 4.2). (6) `AuthRepository.deleteAccount` is a normal abstract method; a default body doesn't help because `implements` fakes must override every member, so the nine test fakes got a one-line stub. (7) **Privacy policy URL is empty on purpose** (`AppConstants.kPrivacyPolicyUrl`) — no policy exists yet and a link to nothing is worse than none; the row appears automatically once it's set, and the same URL is needed in the Play Console. (8) Tests: 46 new/updated; `flutter analyze` zero issues, `flutter test` 551/551. **Not verified on a physical device.**
 
+### Manual-QA fixes, edge-to-edge & Devanagari names (2026-10-12 / 10-13)
+- [x] Checkout pincode must be 6 digits; Catalog "Add Product" button no longer covers the last row; "UPI payments to confirm" chip opens only payment-claimed orders
+- [x] Edge-to-edge system bars on Login, Onboarding, Pending and Order Success (`EdgeToEdgeOverlay`), with landscape-safe scrolling on Pending and Order Success
+- [x] Hindi/Marathi (Devanagari) accepted in personal and shop names; quantity −/+ buttons got screen-reader labels; admin "Top Products" error is now a clean localized message
+
+> **Scope note**: details and verification in `agents.md` (2026-10-12, 2026-10-13). `flutter test` 615/615 at the time.
+
+### Test plan, stock tracking & order-flow fixes (2026-10-15)
+- [x] `TEST_PLAN.md` — A-to-Z manual test plan: 351 cases, each with a Light (☀) and Dark (🌙) result, 10 cross-role scenarios, 55-screen theme sweep, accounts, expected prices; tracked in `Jyoti_Traders_Test_Cases.xlsx`
+- [x] Rejected retailer sees "Application Not Approved" instead of waiting on "Verification Pending" forever
+- [x] Product page and Buy Again can't put more in the cart than is in stock; checkout re-checks live stock
+- [x] "Clear all" in the cart asks first
+- [x] **Stock is taken when an order is placed and returned when it's cancelled** (kg stock keeps decimals) — default chosen, **confirm with the client**
+- [x] Bulk import accepts rows pasted from Excel / Google Sheets (tab-separated)
+- [x] Per-kg rates shown exactly as charged (₹199.50/kg, not ₹200/kg)
+- [x] Place Order now reaches Order Success (was: order saved, screen stuck on Checkout); double tap can't create two orders; order cancel no longer tears down its controller mid-call
+
+> **Scope notes**: (1) Found by writing the test plan from the code (KI-01…KI-10 in `TEST_PLAN.md` §9), then fixed at the user's request; KI-12/KI-13 found while verifying on the Android emulator. (2) **Stock**: `ProductEntity.stock` is now a `double` (Firestore field type widened int → number; existing values read fine). `PlaceOrderUseCase(orderRepo, productRepo)` refuses lines above live stock (`InsufficientStockException`, localized at checkout) and takes stock after saving; `UpdateOrderStatusUseCase(order, status)` returns it on → Cancelled and takes it again on un-cancel. Shared `domain/usecases/order/stock_adjustment.dart`. `ponytail:` read-modify-write, not atomic — move into a Firestore transaction once Firebase is live. (3) **Checkout root cause**: `cartRepositoryProvider`/`wishlistRepositoryProvider` watched the whole auth state, so Checkout's own address save rebuilt the cart and disposed the checkout controller mid-order; they now `select` only the uid (regression test `cart_repository_scope_test.dart`). The Place Order spinner now starts on tap (`_placing`), closing a double-order window that matters once the profile save is a network call. (4) **Cancel**: Order Detail now watches its `autoDispose` controller instead of only reading it. Same pre-existing pattern remains in admin product/category list actions — harmless in release builds, logged as KI-13. (5) **Rates**: new `formatRate()`; `formatRupees` rounds to paise before deciding whole vs. fractional, so float dust (210 × 1.10) can't show a fake ".00". (6) Tests 615 → 628; `flutter analyze` zero issues. Verified on an Android emulator in light and dark mode — except the tab-separated paste, which adb can't type (unit-tested).
+
 ---
 
 ## 🧭 How to Use This File
@@ -473,7 +493,7 @@
 ### Next Immediate Task:
 > ✅ **Phase 7 (Testing & Quality Assurance) is fully complete — 12/12** (2026-07-31). `flutter analyze` zero issues, `flutter test` 163/163 passing.
 >
-> 🔶 **Phase 8 in progress** — 1/12 done (2026-08-19). Next unchecked task: configure `firebase_analytics` to track key events (order placed, user registered, login).
+> 🔶 **Phase 8 in progress** — 6/13 done (as of 2026-10-15). First unchecked task, "Deploy Firestore Security Rules", is **blocked** until a live Firebase project exists. Next actionable: run the full `TEST_PLAN.md` pass (Light + Dark), then `flutter build appbundle --release`. Client items still outstanding: UPI ID, GSTIN/legal details, privacy-policy URL, Play Store graphics, and confirming the new stock rule.
 >
 > ✅ **Phase 9 (Navigation Redesign) is fully complete — 9/9** (2026-08-19). `flutter analyze` zero issues, `flutter test` 270/270 passing.
 

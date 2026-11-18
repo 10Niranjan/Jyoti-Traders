@@ -28,7 +28,15 @@ Future<BuyAgainResult> buyAgainItems(WidgetRef ref, OrderEntity order) async {
       unavailable++;
       continue;
     }
-    final qty = item.qty > product.maxQty ? product.maxQty : item.qty;
+    // addItem adds on top of any line already in the cart, so cap at what's
+    // left after it — never more than is in stock.
+    final remaining =
+        product.maxQty - ref.read(cartControllerProvider).qtyFor(product.id);
+    final qty = item.qty > remaining ? remaining : item.qty;
+    if (qty <= 0) {
+      added++; // already in the cart at the most stock allows
+      continue;
+    }
     await cart.addItem(
       CartItemEntity(
         productId: product.id,

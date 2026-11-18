@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/constants/route_names.dart';
@@ -73,7 +74,28 @@ class _CartScreenState extends ConsumerState<CartScreen> {
         actions: [
           if (!cart.isEmpty)
             TextButton(
-              onPressed: () {
+              onPressed: () async {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (dialogContext) => AlertDialog(
+                    title: Text(l10n.cartClearConfirmTitle),
+                    content: Text(l10n.cartClearConfirmMessage),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        child: Text(l10n.cancelButton),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.error,
+                        ),
+                        child: Text(l10n.cartClearAll),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed != true) return;
                 ref.read(cartControllerProvider.notifier).clearCart();
                 ref.read(couponControllerProvider.notifier).remove();
               },
@@ -100,8 +122,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                     // the cart is under the minimum.
                     itemCount: cart.items.length + (belowMinimum ? 1 : 0),
                     separatorBuilder: (_, _) => const SizedBox(height: 12),
-                    itemBuilder: (context, index) =>
-                        index == cart.items.length
+                    itemBuilder: (context, index) => index == cart.items.length
                         ? GapSuggestionRail(minimum: minimum)
                         : _CartItemTile(
                             key: ValueKey(cart.items[index].productId),
@@ -305,15 +326,25 @@ class _CartItemTileState extends ConsumerState<_CartItemTile> {
     final item = widget.item;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return AnimatedSize(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeInOut,
-      alignment: Alignment.topCenter,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 160),
-        opacity: _removing ? 0 : 1,
-        child: _removing ? const SizedBox(width: double.infinity) : _buildTile(context, isDark, item),
-      ),
-    ).animate().fadeIn(duration: 240.ms, curve: Curves.easeOut).slideX(begin: 0.08, end: 0, duration: 220.ms, curve: Curves.easeOutCubic);
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          alignment: Alignment.topCenter,
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 160),
+            opacity: _removing ? 0 : 1,
+            child: _removing
+                ? const SizedBox(width: double.infinity)
+                : _buildTile(context, isDark, item),
+          ),
+        )
+        .animate()
+        .fadeIn(duration: 240.ms, curve: Curves.easeOut)
+        .slideX(
+          begin: 0.08,
+          end: 0,
+          duration: 220.ms,
+          curve: Curves.easeOutCubic,
+        );
   }
 
   Widget _buildTile(BuildContext context, bool isDark, CartItemEntity item) {
@@ -402,7 +433,7 @@ class _CartItemTileState extends ConsumerState<_CartItemTile> {
                     Text(
                       AppLocalizations.of(context)!.cartWeightAtRate(
                         formatGrams(item.qty),
-                        item.ratePerKg!.toStringAsFixed(0),
+                        formatRate(item.ratePerKg!),
                       ),
                       style: GoogleFonts.inter(
                         fontSize: 11,

@@ -7,7 +7,7 @@ import 'package:traders_retailer/domain/value_objects/weight_rate_slabs.dart';
 ProductEntity _product({
   required String id,
   required double price,
-  int stock = 10,
+  double stock = 10,
   WeightRateSlabs? rateSlabs,
 }) {
   return ProductEntity(

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../../core/utils/currency_formatter.dart';
 import '../../core/theme/theme_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,6 +21,11 @@ import 'quantity_sheet.dart';
 class CompactProductTile extends ConsumerWidget {
   final ProductEntity product;
   final VoidCallback onTap;
+
+  /// Height of a horizontal rail of these tiles. The name, price and stepper
+  /// grow with the text-size setting, so a fixed 196 overflowed at large text.
+  static double railHeight(BuildContext context) =>
+      196 + 48 * (MediaQuery.textScalerOf(context).scale(1) - 1);
 
   const CompactProductTile({
     super.key,
@@ -81,7 +87,7 @@ class CompactProductTile extends ConsumerWidget {
                   Text(
                     product.isWeighed
                         ? l10n.homeFromRatePerKg(
-                            product.rateSlabs!.bestRatePerKg.toStringAsFixed(0),
+                            formatRate(product.rateSlabs!.bestRatePerKg),
                           )
                         : product.price.formatted,
                     maxLines: 1,

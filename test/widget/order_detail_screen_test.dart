@@ -161,6 +161,7 @@ OrderEntity _order({
   String id = 'o1',
   OrderStatus status = OrderStatus.pending,
   DateTime? createdAt,
+  Money? discount,
 }) => OrderEntity(
   id: id,
   userId: 'u1',
@@ -184,6 +185,8 @@ OrderEntity _order({
     pincode: '123456',
   ),
   createdAt: createdAt ?? DateTime.now(),
+  couponCode: discount == null ? null : 'WELCOME10',
+  discount: discount,
 );
 
 final _product = ProductEntity(
@@ -230,6 +233,19 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('This order could not be found.'), findsOneWidget);
+  });
+
+  testWidgets('a coupon discount is shown, so the totals add up', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(orderRepo: FakeOrderRepository([_order(discount: Money(250))])),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Discount'), findsOneWidget);
+    expect(find.text('-₹250'), findsOneWidget);
+    expect(find.text('₹2,800'), findsOneWidget);
   });
 
   testWidgets(

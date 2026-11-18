@@ -38,7 +38,13 @@ List<BulkImportRow> parseBulkProductCsv(
   String csv,
   List<CategoryEntity> categories,
 ) {
-  final rows = decodeCsv(csv.trim());
+  final text = csv.trim();
+  // Cells copied out of Excel / Google Sheets paste tab-separated.
+  final firstLine = text.split('\n').first;
+  final rows = decodeCsv(
+    text,
+    separator: firstLine.contains('\t') ? '\t' : ',',
+  );
   if (rows.isEmpty) return const [];
 
   final header = rows.first.map((h) => h.trim().toLowerCase()).toList();
@@ -115,12 +121,17 @@ List<BulkImportRow> parseBulkProductCsv(
       continue;
     }
 
-    final stock = int.tryParse(cell('stock'));
-    if (stock == null || stock < 0) {
+    // Kilos may be fractional (12.5 kg); every other unit is a whole count.
+    final stock = double.tryParse(cell('stock'));
+    if (stock == null ||
+        stock < 0 ||
+        (unit != ProductUnit.kg && stock != stock.roundToDouble())) {
       results.add(
         BulkImportRow(
           rowNumber: rowNumber,
-          error: 'Stock must be a whole number ≥ 0',
+          error: unit == ProductUnit.kg
+              ? 'Stock must be a number ≥ 0'
+              : 'Stock must be a whole number ≥ 0',
         ),
       );
       continue;
@@ -132,17 +143,15 @@ List<BulkImportRow> parseBulkProductCsv(
       final upto999g = double.tryParse(cell('upto999g'));
       final upto2400g = double.tryParse(cell('upto2400g'));
       final above2400g = double.tryParse(cell('above2400g'));
-      if (below240g != null &&
-          upto999g != null &&
-          upto2400g != null &&
-          above2400g != null) {
-        rateSlabs = WeightRateSlabs(
-          below240g: below240g,
-          upto999g: upto999g,
-          upto2400g: upto2400g,
-          above2400g: above2400g,
-        );
-      }
+      // Rate columns left blank: one flat rate at `price` per kg. Every kg
+      // product must have a rate card — the Add/Edit form always gives one,
+      // and an order line can only tell grams from whole kilos by it.
+      rateSlabs = WeightRateSlabs(
+        below240g: below240g ?? price,
+        upto999g: upto999g ?? price,
+        upto2400g: upto2400g ?? price,
+        above2400g: above2400g ?? price,
+      );
     }
 
     results.add(

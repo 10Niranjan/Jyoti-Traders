@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../../core/utils/currency_formatter.dart';
 import '../../core/theme/theme_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -137,8 +138,7 @@ class ProductCard extends ConsumerWidget {
                       final price = Text(
                         product.isWeighed
                             ? l10n.homeFromRatePerKg(
-                                product.rateSlabs!.bestRatePerKg
-                                    .toStringAsFixed(0),
+                                formatRate(product.rateSlabs!.bestRatePerKg),
                               )
                             : product.price.formatted,
                         maxLines: 1,
@@ -184,7 +184,10 @@ class ProductCard extends ConsumerWidget {
                       }
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [Expanded(child: price), control],
+                        children: [
+                          Expanded(child: price),
+                          control,
+                        ],
                       );
                     },
                   ),
