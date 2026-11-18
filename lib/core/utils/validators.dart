@@ -13,11 +13,15 @@ class Validators {
   /// Letters only, single spaces/apostrophes/hyphens between words — the
   /// alternation (separator must be followed by another letter run) is what
   /// rules out doubled-up spaces/punctuation without a separate check.
-  static final RegExp _fullName = RegExp(r"^[A-Za-z]+(?:[ '-][A-Za-z]+)*$");
-  static final RegExp _shopName = RegExp(
-    r'^[A-Za-z0-9](?:[A-Za-z0-9 &.-]*[A-Za-z0-9])?$',
+  /// Includes the Devanagari block (ऀ-ॿ) for Hindi/Marathi names.
+  static final RegExp _fullName = RegExp(
+    r"^[A-Za-zऀ-ॿ]+(?:[ '-][A-Za-zऀ-ॿ]+)*$",
   );
-  static final RegExp _email = RegExp(r'^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$');
+  static final RegExp _shopName = RegExp(
+    r'^[A-Za-z0-9ऀ-ॿ](?:[A-Za-z0-9ऀ-ॿ &.-]*[A-Za-z0-9ऀ-ॿ])?$',
+  );
+  // Any ending of 2+ letters — `.store`, `.online` and `.co.in` are all real.
+  static final RegExp _email = RegExp(r'^[\w.+-]+@([\w-]+\.)+[\w-]{2,}$');
   static final RegExp _hasUpper = RegExp(r'[A-Z]');
   static final RegExp _hasLower = RegExp(r'[a-z]');
   static final RegExp _hasDigit = RegExp(r'\d');

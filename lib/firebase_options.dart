@@ -56,11 +56,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'YOUR-ANDROID-API-KEY',
-    appId: '1:1234567890:android:abcdef123456',
-    messagingSenderId: '1234567890',
-    projectId: 'jyoti-traders-placeholder',
-    storageBucket: 'jyoti-traders-placeholder.appspot.com',
+    apiKey: 'AIzaSyBaddCE_iiDaGNCbsHNiPLiocw2pnZrGAc',
+    appId: '1:209014436723:android:49677d8b4af26d6dc5cb06',
+    messagingSenderId: '209014436723',
+    projectId: 'jyoti-traders-app',
+    storageBucket: 'jyoti-traders-app.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

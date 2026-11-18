@@ -63,6 +63,15 @@ service cloud.firestore {
     match /products/{id} {
       allow read: if isSignedIn();
       allow write: if isAdmin();
+
+      // Placing or cancelling an order moves stock from the retailer's own
+      // device (PlaceOrderUseCase / UpdateOrderStatusUseCase), so an approved
+      // retailer may change the stock figure — and nothing else.
+      // ponytail: a retailer could still set any stock value; move stock
+      // moves into a Cloud Function or transaction to close that.
+      allow update: if isApproved()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['stock', 'updatedAt']);
     }
 
     match /orders/{id} {

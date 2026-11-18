@@ -21,6 +21,10 @@ void main() {
     test('rejects over 50 characters', () {
       expect(Validators.name('A' * 51), isNotNull);
     });
+    test('accepts Devanagari Hindi/Marathi names', () {
+      expect(Validators.name('रमेश काटकर'), isNull);
+      expect(Validators.name('विष्णू बाळू पाटील'), isNull);
+    });
   });
 
   group('Validators.businessName', () {
@@ -38,6 +42,10 @@ void main() {
     });
     test('rejects emoji/unsupported symbols', () {
       expect(Validators.businessName('Shop 😀'), isNotNull);
+    });
+    test('accepts Devanagari shop names', () {
+      expect(Validators.businessName('जय गणेश किराणा'), isNull);
+      expect(Validators.businessName('साई कृपा ट्रेडर्स & कंपनी'), isNull);
     });
   });
 
@@ -68,6 +76,15 @@ void main() {
     });
     test('rejects over 254 characters', () {
       expect(Validators.email('${'a' * 250}@a.com'), isNotNull);
+    });
+    test('accepts long domain endings (.store, .online) and .co.in', () {
+      expect(Validators.email('owner@jyoti.store'), isNull);
+      expect(Validators.email('owner@kirana.online'), isNull);
+      expect(Validators.email('owner@shop.co.in'), isNull);
+      expect(Validators.email('owner+orders@gmail.com'), isNull);
+    });
+    test('rejects a one-letter ending', () {
+      expect(Validators.email('owner@shop.c'), isNotNull);
     });
   });
 
