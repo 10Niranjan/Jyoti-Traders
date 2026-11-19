@@ -183,8 +183,11 @@ class ImageUploadService {
   }
 
   /// A retailer's optional UPI payment screenshot.
-  // ponytail: on Cloudinary this URL is public to anyone holding it. Move
-  // screenshots to Firebase Storage (access-restricted) once Blaze is on.
+  // ponytail: on Cloudinary the URL itself is the only lock — a random,
+  // unguessable id, folder listing is off (401), and the link lives only in
+  // the order doc, which firestore.rules lets just the owner and admin read.
+  // A forwarded link still opens it; move to Firebase Storage (rule-checked
+  // on every view) if the shop goes on Blaze anyway.
   Future<String> uploadPaymentScreenshot({
     required String orderId,
     required String localFilePath,
