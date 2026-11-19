@@ -19,6 +19,14 @@ class AppConstants {
   /// Settings row appears; the same URL goes in the Play Console listing.
   static const String kPrivacyPolicyUrl = '';
 
+  /// Cloudinary (free, no card) hosts product photos, category icons, profile
+  /// photos and payment screenshots. Both values are public by design — the
+  /// preset must be an *unsigned* preset, so no API secret ever ships in the
+  /// app. While either is empty, uploads fall back to Firebase Storage /
+  /// simulation mode exactly as before.
+  static const String kCloudinaryCloudName = 'docslwg97';
+  static const String kCloudinaryUploadPreset = 'Jyoti Traders';
+
   /// Stock at or below this level is flagged as "low" in the admin product
   /// list (phases.md §4.3).
   static const int kLowStockThreshold = 5;
