@@ -3,10 +3,16 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../controllers/auth_controller.dart';
+import '../controllers/auth_state.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../domain/entities/user_entity.dart';
+import '../../../core/constants/route_names.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/edge_to_edge_overlay.dart';
 
 class PendingApprovalScreen extends ConsumerWidget {
   const PendingApprovalScreen({super.key});
@@ -22,7 +28,10 @@ class PendingApprovalScreen extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        _showErrorSnackBar(context, 'Unable to dial phone: 9860460325');
+        _showErrorSnackBar(
+          context,
+          AppLocalizations.of(context)!.pendingUnableToDialPhone,
+        );
       }
     }
   }
@@ -33,7 +42,7 @@ class PendingApprovalScreen extends ConsumerWidget {
       scheme: 'mailto',
       path: 'vishvatejkatkar007@gmail.com',
       queryParameters: {
-        'subject': 'Jyoti Kirana Account Verification Request',
+        'subject': 'Jyoti Traders Account Verification Request',
       },
     );
     try {
@@ -44,7 +53,10 @@ class PendingApprovalScreen extends ConsumerWidget {
       }
     } catch (e) {
       if (context.mounted) {
-        _showErrorSnackBar(context, 'Unable to open email client: vishvatejkatkar007@gmail.com');
+        _showErrorSnackBar(
+          context,
+          AppLocalizations.of(context)!.pendingUnableToOpenEmail,
+        );
       }
     }
   }
@@ -62,199 +74,294 @@ class PendingApprovalScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
+    // A rejected retailer lands here too (not approved = not let in), but
+    // must be told the truth rather than wait on a review that's over.
+    final authState = ref.watch(authControllerProvider);
+    final rejected =
+        authState is PendingApproval &&
+        authState.user.status == UserStatus.rejected;
+    final accent = rejected ? AppColors.error : AppColors.warning;
 
-    return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: isDark
-                ? [AppColors.backgroundDark, const Color(0xFF070B19)]
-                : [const Color(0xFFFFF7ED), AppColors.backgroundLight], // soft amber to white
+    return EdgeToEdgeOverlay(
+      child: Scaffold(
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: isDark
+                  ? [AppColors.backgroundDark, AppColors.canvasDark]
+                  : [AppColors.surfaceLight, AppColors.backgroundLight],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Spacer(),
-
-                // Pending Verification Icon / Animation
-                Center(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Container(
-                        width: 140,
-                        height: 140,
-                        decoration: BoxDecoration(
-                          color: AppColors.warning.withOpacity(0.1),
-                          shape: BoxShape.circle,
-                        ),
-                      ).animate(onPlay: (controller) {
-                        if (!kIsWeb && Platform.environment.containsKey('FLUTTER_TEST')) return;
-                        controller.repeat(reverse: true);
-                      }).scale(begin: const Offset(0.9, 0.9), end: const Offset(1.1, 1.1), duration: 1500.ms, curve: Curves.easeInOut),
-                      
-                      Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          color: AppColors.warning.withOpacity(0.2),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      
-                      const Icon(
-                        Icons.pending_actions_rounded,
-                        size: 56,
-                        color: AppColors.warning,
-                      ),
-                    ],
-                  ),
+          child: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 32.0,
                 ),
-                
-                const SizedBox(height: 40),
-
-                // Main message
-                Text(
-                  'Account Verification Pending',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.poppins(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-                  ),
-                ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1),
-                
-                const SizedBox(height: 12),
-                
-                Text(
-                  'Your retailer application is currently being reviewed by the owner of Jyoti Kirana. '
-                  'Once approved, you will gain full access to wholesale product purchasing.',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    height: 1.5,
-                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-                  ),
-                ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
-
-                const SizedBox(height: 32),
-
-                // Refresh Status Button
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Checking verification status...'),
-                        duration: Duration(seconds: 1),
-                      ),
-                    );
-                    await ref.read(authControllerProvider.notifier).checkApprovalStatus();
-                  },
-                  icon: const Icon(Icons.refresh_rounded),
-                  label: const Text('Check Status Again'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    elevation: 1,
-                  ),
-                ).animate().fadeIn(delay: 350.ms),
-
-                const Spacer(),
-
-                // Contact Support Panel
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: isDark ? AppColors.surfaceDark : Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(isDark ? 0.2 : 0.04),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                    border: Border.all(
-                      color: isDark ? Colors.white10 : Colors.black12,
-                    ),
-                  ),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      const SizedBox(height: 32),
+
+                      // Pending Verification Icon / Animation
+                      Center(
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Container(
+                                  width: 140,
+                                  height: 140,
+                                  decoration: BoxDecoration(
+                                    color: accent.withOpacity(0.1),
+                                    shape: BoxShape.circle,
+                                  ),
+                                )
+                                .animate(
+                                  onPlay: (controller) {
+                                    if (!kIsWeb &&
+                                        Platform.environment.containsKey(
+                                          'FLUTTER_TEST',
+                                        )) {
+                                      return;
+                                    }
+                                    controller.repeat(reverse: true);
+                                  },
+                                )
+                                .scale(
+                                  begin: const Offset(0.9, 0.9),
+                                  end: const Offset(1.1, 1.1),
+                                  duration: 1500.ms,
+                                  curve: Curves.easeInOut,
+                                ),
+
+                            Container(
+                              width: 100,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                color: accent.withOpacity(0.2),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+
+                            Icon(
+                              rejected
+                                  ? Icons.block_rounded
+                                  : Icons.pending_actions_rounded,
+                              size: 56,
+                              color: accent,
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      // Main message
                       Text(
-                        'Need Urgent Approval? Contact Support',
+                        rejected
+                            ? l10n.pendingRejectedTitle
+                            : l10n.pendingTitle,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: isDark
+                              ? AppColors.textPrimaryDark
+                              : AppColors.textPrimaryLight,
+                        ),
+                      ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1),
+
+                      const SizedBox(height: 12),
+
+                      Text(
+                        rejected
+                            ? l10n.pendingRejectedMessage
+                            : l10n.pendingMessage,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
                           fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                          height: 1.5,
+                          color: isDark
+                              ? AppColors.textSecondaryDark
+                              : AppColors.textSecondaryLight,
                         ),
-                      ),
-                      const SizedBox(height: 16),
-                      
-                      // Call Button
-                      OutlinedButton.icon(
-                        onPressed: () => _makeCall(context),
-                        icon: const Icon(Icons.phone_rounded, color: AppColors.success),
-                        label: Text(
-                          'Call Owner: +91 98604 60325',
-                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.success),
-                          foregroundColor: AppColors.success,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
+                      ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
+
+                      const SizedBox(height: 32),
+
+                      // Refresh Status Button
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(l10n.pendingCheckingStatus),
+                              duration: const Duration(seconds: 1),
+                            ),
+                          );
+                          await ref
+                              .read(authControllerProvider.notifier)
+                              .checkApprovalStatus();
+                        },
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: Text(l10n.pendingCheckStatusAgain),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryDark,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 1,
+                        ),
+                      ).animate().fadeIn(delay: 350.ms),
+
+                      // Read-only catalog preview while waiting for approval —
+                      // pointless once the application has been turned down.
+                      if (!rejected) ...[
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: () => context.go(RouteNames.home),
+                          icon: const Icon(Icons.storefront_outlined),
+                          label: Text(l10n.pendingBrowseCatalog),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.primaryDark,
+                            side: const BorderSide(color: AppColors.primary),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                        ).animate().fadeIn(delay: 400.ms),
+                      ],
+
+                      const SizedBox(height: 32),
+
+                      // Contact Support Panel
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.surfaceDark : Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(
+                                isDark ? 0.2 : 0.04,
+                              ),
+                              blurRadius: 15,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
+                          border: Border.all(
+                            color: isDark ? Colors.white10 : Colors.black12,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      
-                      // Email Button
-                      OutlinedButton.icon(
-                        onPressed: () => _sendEmail(context),
-                        icon: const Icon(Icons.email_outlined, color: AppColors.primary),
-                        label: Text(
-                          'Email: vishvatejkatkar007@gmail.com',
-                          style: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w600),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              rejected
+                                  ? l10n.pendingRejectedContactTitle
+                                  : l10n.pendingContactSupportTitle,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: isDark
+                                    ? AppColors.textPrimaryDark
+                                    : AppColors.textPrimaryLight,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // Call Button
+                            OutlinedButton.icon(
+                              onPressed: () => _makeCall(context),
+                              icon: const Icon(
+                                Icons.phone_rounded,
+                                color: AppColors.success,
+                              ),
+                              label: Text(
+                                l10n.pendingCallOwner,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                  color: AppColors.success,
+                                ),
+                                foregroundColor: AppColors.success,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Email Button
+                            OutlinedButton.icon(
+                              onPressed: () => _sendEmail(context),
+                              icon: const Icon(
+                                Icons.email_outlined,
+                                color: AppColors.primary,
+                              ),
+                              label: Text(
+                                l10n.pendingEmailSupport,
+                                style: GoogleFonts.inter(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                  color: AppColors.primary,
+                                ),
+                                foregroundColor: AppColors.primaryDark,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: AppColors.primary),
-                          foregroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
+                      ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1),
+
+                      const SizedBox(height: 24),
+
+                      // Log out / Exit Button
+                      TextButton.icon(
+                        onPressed: () =>
+                            ref.read(authControllerProvider.notifier).signOut(),
+                        icon: const Icon(
+                          Icons.logout_rounded,
+                          color: AppColors.error,
+                        ),
+                        label: Text(
+                          l10n.pendingSignOut,
+                          style: GoogleFonts.inter(
+                            color: AppColors.error,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
+                      ).animate().fadeIn(delay: 600.ms),
                     ],
                   ),
-                ).animate().fadeIn(delay: 500.ms).slideY(begin: 0.1),
-
-                const SizedBox(height: 24),
-
-                // Log out / Exit Button
-                TextButton.icon(
-                  onPressed: () => ref.read(authControllerProvider.notifier).signOut(),
-                  icon: const Icon(Icons.logout_rounded, color: AppColors.error),
-                  label: Text(
-                    'Sign Out & Try Another Account',
-                    style: GoogleFonts.inter(color: AppColors.error, fontWeight: FontWeight.bold),
-                  ),
-                ).animate().fadeIn(delay: 600.ms),
-              ],
+                ),
+              ),
             ),
           ),
         ),

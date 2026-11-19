@@ -2,9 +2,12 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import '../../../core/theme/theme_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/category_entity.dart';
+import '../../../l10n/app_localizations.dart';
+import '../../../shared/widgets/status_pill.dart';
 
 /// One row in the admin category list — thumbnail, name, an inactive badge,
 /// a drag handle for reordering, and edit/delete actions.
@@ -25,6 +28,7 @@ class AdminCategoryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -34,9 +38,12 @@ class AdminCategoryTile extends StatelessWidget {
           children: [
             ReorderableDragStartListener(
               index: dragHandleIndex,
-              child: const Padding(
+              child: Padding(
                 padding: EdgeInsets.only(right: 4),
-                child: Icon(Icons.drag_handle_rounded, color: AppColors.textSecondaryLight),
+                child: Icon(
+                  Icons.drag_handle_rounded,
+                  color: context.textSecondary,
+                ),
               ),
             ),
             ClipRRect(
@@ -56,20 +63,16 @@ class AdminCategoryTile extends StatelessWidget {
                       category.name,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13.5),
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13.5,
+                      ),
                     ),
                   ),
                   if (!category.isActive)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppColors.textSecondaryLight.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        'Inactive',
-                        style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.w600),
-                      ),
+                    StatusPill(
+                      label: l10n.adminInactiveBadge,
+                      color: context.textSecondary,
                     ),
                 ],
               ),
@@ -77,14 +80,22 @@ class AdminCategoryTile extends StatelessWidget {
             IconButton(
               onPressed: onEdit,
               visualDensity: VisualDensity.compact,
-              icon: const Icon(Icons.edit_outlined, size: 20, color: AppColors.primary),
-              tooltip: 'Edit',
+              icon: const Icon(
+                Icons.edit_outlined,
+                size: 20,
+                color: AppColors.primary,
+              ),
+              tooltip: l10n.adminEditTooltip,
             ),
             IconButton(
               onPressed: onDelete,
               visualDensity: VisualDensity.compact,
-              icon: const Icon(Icons.delete_outline_rounded, size: 20, color: AppColors.error),
-              tooltip: 'Delete',
+              icon: const Icon(
+                Icons.delete_outline_rounded,
+                size: 20,
+                color: AppColors.error,
+              ),
+              tooltip: l10n.adminDeleteTooltip,
             ),
           ],
         ),

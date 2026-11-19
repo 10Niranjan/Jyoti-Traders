@@ -6,6 +6,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/utils/validators.dart';
 import '../../data/models/user_model.dart';
 import '../../features/profile/controllers/profile_controller.dart';
+import '../../l10n/app_localizations.dart';
 import 'primary_button.dart';
 
 /// Bottom sheet for the identity fields (name/phone/[shop name]) — reuses
@@ -49,7 +50,10 @@ class _EditBasicInfoSheetState extends State<EditBasicInfoSheet> {
     final result = ref.read(profileControllerProvider);
     if (result.hasError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Update failed: ${result.error}'), backgroundColor: AppColors.error),
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.profileUpdateFailed(result.error.toString())),
+          backgroundColor: AppColors.error,
+        ),
       );
       return;
     }
@@ -61,6 +65,7 @@ class _EditBasicInfoSheetState extends State<EditBasicInfoSheet> {
     return Consumer(
       builder: (context, ref, _) {
         final isSaving = ref.watch(profileControllerProvider).isLoading;
+        final l10n = AppLocalizations.of(context)!;
         return Padding(
           padding: EdgeInsets.only(
             left: 20,
@@ -74,11 +79,11 @@ class _EditBasicInfoSheetState extends State<EditBasicInfoSheet> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Text('Edit Profile', style: GoogleFonts.poppins(fontSize: 17, fontWeight: FontWeight.bold)),
+                Text(l10n.editProfileTitle, style: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Full Name', helperText: 'Letters and spaces only'),
+                  decoration: InputDecoration(labelText: l10n.authFullName, helperText: l10n.authFullNameHelper),
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: Validators.name,
                   inputFormatters: [
@@ -89,7 +94,7 @@ class _EditBasicInfoSheetState extends State<EditBasicInfoSheet> {
                 const SizedBox(height: 12),
                 TextFormField(
                   controller: _phoneController,
-                  decoration: const InputDecoration(labelText: 'Phone Number', helperText: '10-digit mobile number'),
+                  decoration: InputDecoration(labelText: l10n.authPhoneNumber, helperText: l10n.authPhoneHelper),
                   keyboardType: TextInputType.phone,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: Validators.phone,
@@ -102,7 +107,7 @@ class _EditBasicInfoSheetState extends State<EditBasicInfoSheet> {
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _shopController,
-                    decoration: const InputDecoration(labelText: 'Business / Shop Name'),
+                    decoration: InputDecoration(labelText: l10n.authBusinessName),
                     autovalidateMode: AutovalidateMode.onUserInteraction,
                     validator: Validators.businessName,
                     inputFormatters: [
@@ -113,7 +118,7 @@ class _EditBasicInfoSheetState extends State<EditBasicInfoSheet> {
                 ],
                 const SizedBox(height: 20),
                 PrimaryButton(
-                  label: 'Save',
+                  label: l10n.save,
                   isLoading: isSaving,
                   onPressed: () => _save(ref),
                 ),

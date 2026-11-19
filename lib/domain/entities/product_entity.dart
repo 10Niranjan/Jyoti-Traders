@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../core/utils/weight_formatter.dart';
 import '../value_objects/money.dart';
 import '../value_objects/weight_rate_slabs.dart';
 
@@ -29,7 +30,10 @@ class ProductEntity extends Equatable {
   /// rate) — the amount actually charged comes from the slabs.
   final Money price;
   final ProductUnit unit;
-  final int stock;
+
+  /// Kilos for kg products (fractional — orders are weighed in grams),
+  /// whole units otherwise.
+  final double stock;
   final String? description;
   final bool isActive;
 
@@ -37,6 +41,11 @@ class ProductEntity extends Equatable {
   /// A kg product saved before slab pricing existed leaves this null and
   /// keeps its old flat price-per-kilo behaviour.
   final WeightRateSlabs? rateSlabs;
+
+  /// Admin-curated flag — true shows this product in the retailer Home
+  /// screen's "Top Products" section. Defaults false, so every product
+  /// saved before this flag existed simply doesn't appear there.
+  final bool isTopProduct;
 
   const ProductEntity({
     required this.id,
@@ -49,6 +58,7 @@ class ProductEntity extends Equatable {
     this.description,
     required this.isActive,
     this.rateSlabs,
+    this.isTopProduct = false,
   });
 
   bool get isInStock => stock > 0;
@@ -63,27 +73,47 @@ class ProductEntity extends Equatable {
 
   /// Largest quantity the picker may reach, in the same unit [qty] is in.
   /// [stock] is counted in kilos for weighed products, so it scales up.
-  int get maxQty => isWeighed ? stock * 1000 : stock;
+  int get maxQty => isWeighed ? (stock * 1000).round() : stock.floor();
+
+  /// [stock] for display: `47.5`, or `40` with no trailing `.0`.
+  String get stockLabel =>
+      stock.toStringAsFixed(3).replaceAll(RegExp(r'\.?0+$'), '');
 
   /// Smallest sensible starting quantity — 100 g, or one whole unit.
   int get minQty => isWeighed ? 100 : 1;
 
-  ProductEntity copyWith({String? imageUrl}) {
+  /// How [qty] reads in prose: `2.5 kg`, or `3 box`.
+  String labelForQty(int qty) =>
+      isWeighed ? formatGrams(qty) : '$qty ${unit.value}';
+
+  ProductEntity copyWith({String? imageUrl, Money? price, double? stock}) {
     return ProductEntity(
       id: id,
       name: name,
       categoryId: categoryId,
       imageUrl: imageUrl ?? this.imageUrl,
-      price: price,
+      price: price ?? this.price,
       unit: unit,
-      stock: stock,
+      stock: stock ?? this.stock,
       description: description,
       isActive: isActive,
       rateSlabs: rateSlabs,
+      isTopProduct: isTopProduct,
     );
   }
 
   @override
-  List<Object?> get props =>
-      [id, name, categoryId, imageUrl, price, unit, stock, description, isActive, rateSlabs];
+  List<Object?> get props => [
+    id,
+    name,
+    categoryId,
+    imageUrl,
+    price,
+    unit,
+    stock,
+    description,
+    isActive,
+    rateSlabs,
+    isTopProduct,
+  ];
 }

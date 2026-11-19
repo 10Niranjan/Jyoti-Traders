@@ -13,6 +13,13 @@ extension StringCasingExtension on String {
   /// Falls back to the whole string if it's shorter than 8 — real order ids
   /// are always 36-char UUIDs, but nothing should crash on a shorter one.
   String get shortId => (length > 8 ? substring(0, 8) : this).toUpperCase();
+
+  /// Up to two initials for an avatar: "Ramesh Kirana Store" → "RK". Empty for
+  /// a blank string, so the caller picks its own fallback.
+  String get initials {
+    final words = trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty);
+    return words.take(2).map((w) => w[0].toUpperCase()).join();
+  }
 }
 
 extension DateTimeAgoExtension on DateTime {
@@ -31,11 +38,12 @@ extension DateTimeAgoExtension on DateTime {
 /// admin status-update dropdown so both read the exact same wording.
 extension OrderStatusLabelExtension on OrderStatus {
   String get label => switch (this) {
-        OrderStatus.pending => 'Pending',
-        OrderStatus.confirmed => 'Confirmed',
-        OrderStatus.outForDelivery => 'Out for Delivery',
-        OrderStatus.delivered => 'Delivered',
-      };
+    OrderStatus.pending => 'Pending',
+    OrderStatus.confirmed => 'Confirmed',
+    OrderStatus.outForDelivery => 'Out for Delivery',
+    OrderStatus.delivered => 'Delivered',
+    OrderStatus.cancelled => 'Cancelled',
+  };
 }
 
 /// Human-readable payment-status labels, shown on the order detail view for
@@ -43,10 +51,10 @@ extension OrderStatusLabelExtension on OrderStatus {
 /// for them — see `OrderDetailBody`).
 extension PaymentStatusLabelExtension on PaymentStatus {
   String get label => switch (this) {
-        PaymentStatus.pending => 'Awaiting payment',
-        PaymentStatus.paymentClaimed => 'Payment claimed — awaiting confirmation',
-        PaymentStatus.paid => 'Paid',
-      };
+    PaymentStatus.pending => 'Awaiting payment',
+    PaymentStatus.paymentClaimed => 'Payment claimed — awaiting confirmation',
+    PaymentStatus.paid => 'Paid',
+  };
 }
 
 extension ListChunkExtension<T> on List<T> {

@@ -36,6 +36,9 @@ class OrderItemEntity extends Equatable {
 
   Money get totalPrice => lineTotal ?? Money(unitPrice.amount * qty);
 
+  /// [qty] in the unit product stock is kept in — kilos for a weighed line.
+  double get stockQty => isWeighed ? qty / 1000 : qty.toDouble();
+
   @override
   List<Object?> get props => [productId, name, qty, unitPrice, unit, lineTotal];
 }

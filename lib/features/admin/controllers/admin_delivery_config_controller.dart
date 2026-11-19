@@ -6,9 +6,11 @@ import '../../../domain/entities/delivery_config_entity.dart';
 /// delivery, and by the admin's `DeliverySettingsScreen` to display and
 /// edit it. Ownership (the write side) is admin-only, via
 /// [adminDeliveryConfigControllerProvider] below.
-final deliveryConfigProvider = StreamProvider.autoDispose<DeliveryConfigEntity>((ref) {
-  return ref.watch(deliveryConfigRepositoryProvider).watchConfig();
-});
+final deliveryConfigProvider = StreamProvider.autoDispose<DeliveryConfigEntity>(
+  (ref) {
+    return ref.watch(deliveryConfigRepositoryProvider).watchConfig();
+  },
+);
 
 class AdminDeliveryConfigController extends StateNotifier<AsyncValue<void>> {
   final Ref _ref;
@@ -29,6 +31,9 @@ class AdminDeliveryConfigController extends StateNotifier<AsyncValue<void>> {
 }
 
 final adminDeliveryConfigControllerProvider =
-    StateNotifierProvider.autoDispose<AdminDeliveryConfigController, AsyncValue<void>>((ref) {
-  return AdminDeliveryConfigController(ref);
-});
+    StateNotifierProvider.autoDispose<
+      AdminDeliveryConfigController,
+      AsyncValue<void>
+    >((ref) {
+      return AdminDeliveryConfigController(ref);
+    });

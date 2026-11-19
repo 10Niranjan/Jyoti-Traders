@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/utils/product_sort.dart';
 import '../../../data/datasources/local_storage_service.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/entities/product_entity.dart';
@@ -11,6 +12,9 @@ class SearchState {
   final bool isLoading;
   final bool hasError;
   final List<String> recentSearches;
+  final ProductSort sort;
+  final bool inStockOnly;
+  final String? categoryId;
 
   const SearchState({
     this.query = '',
@@ -18,7 +22,26 @@ class SearchState {
     this.isLoading = false,
     this.hasError = false,
     this.recentSearches = const [],
+    this.sort = ProductSort.relevance,
+    this.inStockOnly = false,
+    this.categoryId,
   });
+
+  /// What the screen actually renders — [results] as fetched, with [sort],
+  /// [categoryId] and [inStockOnly] applied client-side. Kept as a derived
+  /// getter rather than a stored field so there's only one source of truth
+  /// for the raw results and no risk of the two drifting out of sync.
+  List<ProductEntity> get visibleResults => sortAndFilterProducts(
+    results,
+    sort: sort,
+    inStockOnly: inStockOnly,
+    categoryId: categoryId,
+  );
+
+  /// Distinct category ids actually present in the raw (pre-category-filter)
+  /// results — the category chip row only ever offers categories this
+  /// specific search actually spans, not the full app catalog.
+  Set<String> get resultCategoryIds => results.map((p) => p.categoryId).toSet();
 
   SearchState copyWith({
     String? query,
@@ -26,6 +49,10 @@ class SearchState {
     bool? isLoading,
     bool? hasError,
     List<String>? recentSearches,
+    ProductSort? sort,
+    bool? inStockOnly,
+    String? categoryId,
+    bool clearCategoryId = false,
   }) {
     return SearchState(
       query: query ?? this.query,
@@ -33,6 +60,9 @@ class SearchState {
       isLoading: isLoading ?? this.isLoading,
       hasError: hasError ?? this.hasError,
       recentSearches: recentSearches ?? this.recentSearches,
+      sort: sort ?? this.sort,
+      inStockOnly: inStockOnly ?? this.inStockOnly,
+      categoryId: clearCategoryId ? null : (categoryId ?? this.categoryId),
     );
   }
 }
@@ -52,7 +82,10 @@ class SearchController extends StateNotifier<SearchState> {
   }
 
   void onQueryChanged(String query) {
-    state = state.copyWith(query: query);
+    // A new query may span an entirely different set of categories, so any
+    // previously-picked category chip is reset rather than silently
+    // filtering the new results down to nothing.
+    state = state.copyWith(query: query, clearCategoryId: true);
     _debounce?.cancel();
 
     if (query.trim().isEmpty) {
@@ -90,6 +123,15 @@ class SearchController extends StateNotifier<SearchState> {
       state = state.copyWith(isLoading: false, hasError: true, results: []);
     }
   }
+
+  void setSort(ProductSort sort) => state = state.copyWith(sort: sort);
+
+  void setInStockOnly(bool value) => state = state.copyWith(inStockOnly: value);
+
+  void setCategory(String? categoryId) => state = state.copyWith(
+    categoryId: categoryId,
+    clearCategoryId: categoryId == null,
+  );
 
   Future<void> commitToRecentSearches(String query) async {
     if (query.trim().isEmpty) return;

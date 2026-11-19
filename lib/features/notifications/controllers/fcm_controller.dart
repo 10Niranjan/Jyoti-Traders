@@ -5,6 +5,7 @@ import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/entities/notification_entity.dart';
 import '../../auth/controllers/auth_controller.dart';
 import '../../auth/controllers/auth_state.dart';
+import 'notification_controller.dart';
 
 final fcmServiceProvider = Provider<FcmService>((ref) => FcmService());
 
@@ -14,7 +15,7 @@ final fcmServiceProvider = Provider<FcmService>((ref) => FcmService());
 /// foreground messages into the local notification history.
 ///
 /// A plain (non-autoDispose) `Provider<void>`, watched once from the app
-/// root (`JyotiKiranaApp`) so this initializes exactly once per app
+/// root (`JyotiTradersApp`) so this initializes exactly once per app
 /// lifetime — the `ref.watch` calls that follow read the cached value
 /// rather than re-running the body.
 final fcmInitializerProvider = Provider<void>((ref) {
@@ -30,7 +31,9 @@ final fcmInitializerProvider = Provider<void>((ref) {
       _ => null,
     };
     if (uid == null) return;
-    await ref.read(authRepositoryProvider).updateFcmToken(uid: uid, fcmToken: token);
+    await ref
+        .read(authRepositoryProvider)
+        .updateFcmToken(uid: uid, fcmToken: token);
   }
 
   fcm.requestPermissionAndGetToken().then(saveTokenForCurrentUser);
@@ -38,24 +41,44 @@ final fcmInitializerProvider = Provider<void>((ref) {
   final tokenSub = fcm.onTokenRefresh.listen(saveTokenForCurrentUser);
 
   final messageSub = fcm.onForegroundMessage.listen((message) {
-    notificationRepo.addNotification(NotificationEntity(
-      id: message.messageId ?? DateTime.now().microsecondsSinceEpoch.toString(),
-      title: message.notification?.title ?? 'Notification',
-      body: message.notification?.body ?? '',
-      orderId: message.data['orderId'] as String?,
-      receivedAt: DateTime.now(),
-      isRead: false,
-    ));
+    // A message carrying an orderId is an order update; honour the switch.
+    if (message.data['orderId'] != null &&
+        !ref.read(notificationPreferencesProvider).orderUpdates) {
+      return;
+    }
+    notificationRepo.addNotification(
+      NotificationEntity(
+        id:
+            message.messageId ??
+            DateTime.now().microsecondsSinceEpoch.toString(),
+        title: message.notification?.title ?? 'Notification',
+        body: message.notification?.body ?? '',
+        orderId: message.data['orderId'] as String?,
+        receivedAt: DateTime.now(),
+        isRead: false,
+      ),
+    );
   });
 
   // Covers the case where the token was already fetched before login (e.g.
   // permission granted on the splash/auth screen) — re-save the moment the
-  // user actually signs in.
-  ref.listen(authControllerProvider, (previous, next) {
-    if (next is AuthenticatedAdmin || next is AuthenticatedCustomer) {
-      fcm.requestPermissionAndGetToken().then(saveTokenForCurrentUser);
-    }
-  });
+  // user actually signs in. Keyed on the uid, not the whole auth state: the
+  // auth state now follows the profile doc live, so saving the token would
+  // otherwise re-trigger this listener and loop.
+  ref.listen(
+    authControllerProvider.select(
+      (s) => switch (s) {
+        AuthenticatedAdmin(:final user) => user.uid,
+        AuthenticatedCustomer(:final user) => user.uid,
+        _ => null,
+      },
+    ),
+    (previous, uid) {
+      if (uid != null) {
+        fcm.requestPermissionAndGetToken().then(saveTokenForCurrentUser);
+      }
+    },
+  );
 
   ref.onDispose(() {
     tokenSub.cancel();

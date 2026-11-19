@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import '../utils/app_logger.dart';
 
 /// Thin wrapper around `geolocator`. Every step (service-enabled check,
 /// permission check/request, position fetch) is wrapped in a single
@@ -19,16 +19,24 @@ class LocationService {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
-      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
         return null;
       }
 
-      return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.medium);
+      return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+      );
     } catch (e) {
-      debugPrint('LocationService: unable to get current position, skipping: $e');
+      logWarning(
+        'LocationService: unable to get current position, skipping',
+        e,
+      );
       return null;
     }
   }
 }
 
-final locationServiceProvider = Provider<LocationService>((ref) => LocationService());
+final locationServiceProvider = Provider<LocationService>(
+  (ref) => LocationService(),
+);

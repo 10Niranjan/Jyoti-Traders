@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart' as fb;
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'auth_repository.dart';
 import '../models/user_model.dart';
 import '../../core/network/firebase_mode.dart';
+import '../../core/utils/app_logger.dart';
 import '../../domain/entities/address_entity.dart';
 import '../../domain/entities/bank_details_entity.dart';
 import '../../domain/entities/business_hours_entity.dart';
@@ -24,11 +24,14 @@ class FirebaseAuthRepository implements AuthRepository {
     fb.FirebaseAuth? firebaseAuth,
     FirebaseFirestore? firestore,
     required Box userCacheBox,
-  })  : _userCacheBox = userCacheBox {
+  }) : _userCacheBox = userCacheBox {
     _initFirebaseAndMock(firebaseAuth, firestore);
   }
 
-  void _initFirebaseAndMock(fb.FirebaseAuth? firebaseAuth, FirebaseFirestore? firestore) {
+  void _initFirebaseAndMock(
+    fb.FirebaseAuth? firebaseAuth,
+    FirebaseFirestore? firestore,
+  ) {
     try {
       _firebaseAuth = firebaseAuth ?? fb.FirebaseAuth.instance;
       _firestore = firestore ?? FirebaseFirestore.instance;
@@ -42,20 +45,22 @@ class FirebaseAuthRepository implements AuthRepository {
     } catch (e) {
       _useMock = true;
       _initMockUser();
-      debugPrint('AuthRepository: Firebase not available, using simulation mode: $e');
+      logWarning('AuthRepository: Firebase not available, using simulation mode', e);
     }
-    debugPrint('AuthRepository: Running in ${_useMock ? "SIMULATION" : "FIREBASE"} mode.');
+    logWarning('AuthRepository: Running in ${_useMock ? "SIMULATION" : "FIREBASE"} mode.');
   }
 
   void _initMockUser() {
     final cached = _userCacheBox.get('current_user');
     if (cached != null) {
       try {
-        final Map<String, dynamic> map = Map<String, dynamic>.from(cached as Map);
+        final Map<String, dynamic> map = Map<String, dynamic>.from(
+          cached as Map,
+        );
         _mockCurrentUser = UserModel.fromJson(map);
         _mockStreamController.add(_mockCurrentUser);
       } catch (e) {
-        debugPrint('Error loading cached user: $e');
+        logWarning('Error loading cached user', e);
       }
     } else {
       _mockStreamController.add(null);
@@ -71,12 +76,56 @@ class FirebaseAuthRepository implements AuthRepository {
       }();
     }
 
-    return _firebaseAuth!.authStateChanges().asyncMap((fbUser) async {
-      if (fbUser == null) {
-        return null;
-      }
-      return await _getUserFromFirestore(fbUser.uid);
-    });
+    return _watchSignedInUser();
+  }
+
+  /// Follows the signed-in user's profile document live, not a one-off read
+  /// at sign-in: profile edits, an admin's approval and FCM token saves all
+  /// reach the app without a restart (simulation mode already re-emits).
+  Stream<UserModel?> _watchSignedInUser() {
+    StreamSubscription<fb.User?>? authSub;
+    StreamSubscription<DocumentSnapshot<Map<String, dynamic>>>? docSub;
+    late final StreamController<UserModel?> out;
+    out = StreamController<UserModel?>(
+      onListen: () {
+        authSub = _firebaseAuth!.authStateChanges().listen((fbUser) {
+          docSub?.cancel();
+          docSub = null;
+          if (fbUser == null) {
+            out.add(null);
+            return;
+          }
+          final uid = fbUser.uid;
+          docSub = _firestore!
+              .collection('users')
+              .doc(uid)
+              .snapshots()
+              .listen(
+                (doc) {
+                  final data = doc.data();
+                  if (data == null) {
+                    // Sign-up writes the profile a moment after the login
+                    // exists; the next snapshot carries it.
+                    out.add(_cachedUser(uid));
+                    return;
+                  }
+                  final user = UserModel.fromJson(data);
+                  _userCacheBox.put('current_user', user.toJson());
+                  out.add(user);
+                },
+                onError: (Object e) {
+                  logWarning('User profile stream error', e);
+                  out.add(_cachedUser(uid));
+                },
+              );
+        }, onError: out.addError);
+      },
+      onCancel: () async {
+        await docSub?.cancel();
+        await authSub?.cancel();
+      },
+    );
+    return out.stream;
   }
 
   Future<UserModel?> _getUserFromFirestore(String uid) async {
@@ -89,19 +138,17 @@ class FirebaseAuthRepository implements AuthRepository {
         return user;
       }
     } catch (e) {
-      debugPrint('Firestore read error: $e');
+      logWarning('Firestore read error', e);
     }
-    
-    // Check cache as fallback
+    return _cachedUser(uid);
+  }
+
+  /// The last profile seen on this device, if it belongs to [uid].
+  UserModel? _cachedUser(String uid) {
     final cached = _userCacheBox.get('current_user');
-    if (cached != null) {
-      final Map<String, dynamic> map = Map<String, dynamic>.from(cached as Map);
-      final cachedUser = UserModel.fromJson(map);
-      if (cachedUser.uid == uid) {
-        return cachedUser;
-      }
-    }
-    return null;
+    if (cached == null) return null;
+    final user = UserModel.fromJson(Map<String, dynamic>.from(cached as Map));
+    return user.uid == uid ? user : null;
   }
 
   @override
@@ -115,9 +162,12 @@ class FirebaseAuthRepository implements AuthRepository {
   }) async {
     if (_useMock) {
       await Future.delayed(const Duration(milliseconds: 800));
-      
+
       // Check if user already exists in simulated db
-      final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+      final List<dynamic> users = _userCacheBox.get(
+        'simulated_users',
+        defaultValue: [],
+      );
       final exists = users.any((u) => (u as Map)['email'] == email);
       if (exists) {
         throw Exception('An account already exists with this email address.');
@@ -126,7 +176,9 @@ class FirebaseAuthRepository implements AuthRepository {
       final uid = 'mock_uid_${DateTime.now().millisecondsSinceEpoch}';
 
       // Admins are approved by default; normal users need manual approval
-      final status = role == UserRole.admin ? UserStatus.approved : UserStatus.pending;
+      final status = role == UserRole.admin
+          ? UserStatus.approved
+          : UserStatus.pending;
 
       final newUser = UserModel(
         uid: uid,
@@ -166,7 +218,9 @@ class FirebaseAuthRepository implements AuthRepository {
     }
 
     // Admin is approved by default
-    final status = role == UserRole.admin ? UserStatus.approved : UserStatus.pending;
+    final status = role == UserRole.admin
+        ? UserStatus.approved
+        : UserStatus.pending;
     final user = UserModel(
       uid: fbUser.uid,
       name: name,
@@ -192,7 +246,7 @@ class FirebaseAuthRepository implements AuthRepository {
   }) async {
     if (_useMock) {
       await Future.delayed(const Duration(milliseconds: 800));
-      
+
       // Special accounts for quick testing
       if (email == 'admin@jyoti.com' && password == 'admin123') {
         final admin = UserModel(
@@ -202,7 +256,12 @@ class FirebaseAuthRepository implements AuthRepository {
           phone: '9860460325',
           role: UserRole.admin,
           status: UserStatus.approved,
-          businessName: 'Jyoti Kirana Wholesale',
+          businessName: 'Jyoti Traders Wholesale',
+          address: const AddressEntity(
+            street: 'Main Market Road',
+            city: 'Pune',
+            pincode: '411002',
+          ),
           createdAt: DateTime.now(),
         );
         _mockCurrentUser = admin;
@@ -210,7 +269,7 @@ class FirebaseAuthRepository implements AuthRepository {
         _mockStreamController.add(admin);
         return admin;
       }
-      
+
       if (email == 'retailer@jyoti.com' && password == 'retailer123') {
         final retailer = UserModel(
           uid: 'mock_retailer_uid',
@@ -220,6 +279,27 @@ class FirebaseAuthRepository implements AuthRepository {
           role: UserRole.customer,
           status: UserStatus.approved,
           businessName: 'Ram Kirana Store',
+          address: const AddressEntity(
+            street: 'Shop 12, Laxmi Road',
+            city: 'Pune',
+            pincode: '411030',
+            latitude: 18.5167,
+            longitude: 73.8562,
+            formattedAddress: 'Shop 12, Laxmi Road, Pune, Maharashtra 411030',
+            label: 'Shop',
+          ),
+          gstNumber: '27AAGFR4521K1Z8',
+          bankDetails: const BankDetailsEntity(
+            accountHolderName: 'Ram Kirana Store',
+            accountNumber: '00004567890123',
+            ifscCode: 'HDFC0000456',
+            bankName: 'HDFC Bank',
+            upiId: 'ramkirana@okhdfcbank',
+          ),
+          businessHours: const BusinessHoursEntity(
+            openTime: '09:00',
+            closeTime: '21:00',
+          ),
           createdAt: DateTime.now(),
         );
         _mockCurrentUser = retailer;
@@ -228,8 +308,31 @@ class FirebaseAuthRepository implements AuthRepository {
         return retailer;
       }
 
+      // Pending-approval demo account, for testing the "browse while
+      // pending" flow without depending on a prior sign-up surviving a
+      // reinstall (Hive-simulated accounts don't).
+      if (email == 'nirmala.store@example.com' && password == 'Nirmala@123') {
+        final nirmala = UserModel(
+          uid: 'mock_nirmala_uid',
+          name: 'Nirmala Devi',
+          email: 'nirmala.store@example.com',
+          phone: '9876543210',
+          role: UserRole.customer,
+          status: UserStatus.pending,
+          businessName: 'Nirmala Provision Store',
+          createdAt: DateTime.now(),
+        );
+        _mockCurrentUser = nirmala;
+        await _userCacheBox.put('current_user', nirmala.toJson());
+        _mockStreamController.add(nirmala);
+        return nirmala;
+      }
+
       // Check simulated users list
-      final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+      final List<dynamic> users = _userCacheBox.get(
+        'simulated_users',
+        defaultValue: [],
+      );
       final matchIndex = users.indexWhere((u) => (u as Map)['email'] == email);
       final matchingUserMap = matchIndex == -1 ? null : users[matchIndex];
 
@@ -237,7 +340,9 @@ class FirebaseAuthRepository implements AuthRepository {
         throw Exception('No account found for this email address.');
       }
 
-      final foundUser = UserModel.fromJson(Map<String, dynamic>.from(matchingUserMap as Map));
+      final foundUser = UserModel.fromJson(
+        Map<String, dynamic>.from(matchingUserMap as Map),
+      );
       _mockCurrentUser = foundUser;
       await _userCacheBox.put('current_user', foundUser.toJson());
       _mockStreamController.add(foundUser);
@@ -291,12 +396,17 @@ class FirebaseAuthRepository implements AuthRepository {
   Future<UserModel?> refreshUserStatus(String uid) async {
     if (_useMock) {
       // Re-read simulated database list
-      final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+      final List<dynamic> users = _userCacheBox.get(
+        'simulated_users',
+        defaultValue: [],
+      );
       final matchIndex = users.indexWhere((u) => (u as Map)['uid'] == uid);
       final matchingUserMap = matchIndex == -1 ? null : users[matchIndex];
 
       if (matchingUserMap != null) {
-        final updated = UserModel.fromJson(Map<String, dynamic>.from(matchingUserMap as Map));
+        final updated = UserModel.fromJson(
+          Map<String, dynamic>.from(matchingUserMap as Map),
+        );
         if (_mockCurrentUser?.uid == uid) {
           _mockCurrentUser = updated;
           await _userCacheBox.put('current_user', updated.toJson());
@@ -316,7 +426,7 @@ class FirebaseAuthRepository implements AuthRepository {
         return user;
       }
     } catch (e) {
-      debugPrint('Error refreshing user status: $e');
+      logWarning('Error refreshing user status', e);
     }
     return null;
   }
@@ -329,38 +439,60 @@ class FirebaseAuthRepository implements AuthRepository {
     String? businessName,
     String? photoUrl,
     AddressEntity? address,
+    List<AddressEntity>? savedAddresses,
     String? gstNumber,
     BankDetailsEntity? bankDetails,
     BusinessHoursEntity? businessHours,
     NotificationPreferencesEntity? notificationPreferences,
   }) async {
     if (_useMock) {
-      final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+      final List<dynamic> users = _userCacheBox.get(
+        'simulated_users',
+        defaultValue: [],
+      );
       final userMapList = List<Map<String, dynamic>>.from(
         users.map((e) => Map<String, dynamic>.from(e as Map)),
       );
 
       UserModel? updated;
-      for (int i = 0; i < userMapList.length; i++) {
-        if (userMapList[i]['uid'] == uid) {
-          final current = UserModel.fromJson(userMapList[i]);
-          updated = current.copyWith(
-            name: name,
-            phone: phone,
-            businessName: businessName,
-            photoUrl: photoUrl,
-            address: address,
-            gstNumber: gstNumber,
-            bankDetails: bankDetails,
-            businessHours: businessHours,
-            notificationPreferences: notificationPreferences,
-          );
-          userMapList[i] = updated.toJson();
-        }
+      final index = userMapList.indexWhere((u) => u['uid'] == uid);
+      if (index != -1) {
+        final current = UserModel.fromJson(userMapList[index]);
+        updated = current.copyWith(
+          name: name,
+          phone: phone,
+          businessName: businessName,
+          photoUrl: photoUrl,
+          address: address,
+          savedAddresses: savedAddresses,
+          gstNumber: gstNumber,
+          bankDetails: bankDetails,
+          businessHours: businessHours,
+          notificationPreferences: notificationPreferences,
+        );
+        userMapList[index] = updated.toJson();
+        await _userCacheBox.put('simulated_users', userMapList);
+      } else if (_mockCurrentUser?.uid == uid) {
+        // The special-cased quick-login accounts (admin@jyoti.com,
+        // retailer@jyoti.com, ...) are synthesized fresh on every signIn and
+        // never land in simulated_users, so an index match never happens for
+        // them — update the in-memory session directly instead, or their
+        // profile edits (e.g. saving a checkout address) silently no-op.
+        updated = _mockCurrentUser!.copyWith(
+          name: name,
+          phone: phone,
+          businessName: businessName,
+          photoUrl: photoUrl,
+          address: address,
+          savedAddresses: savedAddresses,
+          gstNumber: gstNumber,
+          bankDetails: bankDetails,
+          businessHours: businessHours,
+          notificationPreferences: notificationPreferences,
+        );
       }
-      await _userCacheBox.put('simulated_users', userMapList);
 
-      if (updated != null && _mockCurrentUser?.uid == uid) {
+      if (updated != null) {
         _mockCurrentUser = updated;
         await _userCacheBox.put('current_user', updated.toJson());
         _mockStreamController.add(updated);
@@ -389,7 +521,23 @@ class FirebaseAuthRepository implements AuthRepository {
         'latitude': address.latitude,
         'longitude': address.longitude,
         'formattedAddress': address.formattedAddress,
+        'id': address.id,
+        'label': address.label,
       };
+    }
+    if (savedAddresses != null) {
+      updateData['savedAddresses'] = savedAddresses
+          .map((a) => {
+                'street': a.street,
+                'city': a.city,
+                'pincode': a.pincode,
+                'latitude': a.latitude,
+                'longitude': a.longitude,
+                'formattedAddress': a.formattedAddress,
+                'id': a.id,
+                'label': a.label,
+              })
+          .toList();
     }
     if (gstNumber != null) {
       updateData['gstNumber'] = gstNumber;
@@ -426,15 +574,23 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<void> updateFcmToken({required String uid, required String fcmToken}) async {
+  Future<void> updateFcmToken({
+    required String uid,
+    required String fcmToken,
+  }) async {
     if (_useMock) {
-      final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+      final List<dynamic> users = _userCacheBox.get(
+        'simulated_users',
+        defaultValue: [],
+      );
       final userMapList = List<Map<String, dynamic>>.from(
         users.map((e) => Map<String, dynamic>.from(e as Map)),
       );
       for (int i = 0; i < userMapList.length; i++) {
         if (userMapList[i]['uid'] == uid) {
-          userMapList[i] = UserModel.fromJson(userMapList[i]).copyWith(fcmToken: fcmToken).toJson();
+          userMapList[i] = UserModel.fromJson(
+            userMapList[i],
+          ).copyWith(fcmToken: fcmToken).toJson();
         }
       }
       await _userCacheBox.put('simulated_users', userMapList);
@@ -447,7 +603,51 @@ class FirebaseAuthRepository implements AuthRepository {
       return;
     }
 
-    await _firestore!.collection('users').doc(uid).update({'fcmToken': fcmToken});
+    await _firestore!.collection('users').doc(uid).update({
+      'fcmToken': fcmToken,
+    });
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail(String email) async {
+    if (_useMock) {
+      await Future.delayed(const Duration(milliseconds: 600));
+      return;
+    }
+
+    await _firebaseAuth!.sendPasswordResetEmail(email: email);
+  }
+
+  @override
+  Future<void> deleteAccount({required String uid, String? password}) async {
+    if (_useMock) {
+      await Future.delayed(const Duration(milliseconds: 600));
+      final List<dynamic> users = _userCacheBox.get(
+        'simulated_users',
+        defaultValue: [],
+      );
+      final remaining = users
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .where((u) => u['uid'] != uid)
+          .toList();
+      await _userCacheBox.put('simulated_users', remaining);
+      await signOut();
+      return;
+    }
+
+    final fbUser = _firebaseAuth!.currentUser;
+    if (fbUser == null) throw Exception('Not signed in.');
+    final email = fbUser.email;
+    if (password != null && email != null) {
+      await fbUser.reauthenticateWithCredential(
+        fb.EmailAuthProvider.credential(email: email, password: password),
+      );
+    }
+    // Profile document first, while the session can still authorise it; the
+    // login last, since deleting it signs everyone out.
+    await _firestore!.collection('users').doc(uid).delete();
+    await fbUser.delete();
+    await _userCacheBox.delete('current_user');
   }
 
   // Simulation-only helper to toggle approval status of a user (useful for admin testing screen)
@@ -463,7 +663,10 @@ class FirebaseAuthRepository implements AuthRepository {
       return;
     }
 
-    final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+    final List<dynamic> users = _userCacheBox.get(
+      'simulated_users',
+      defaultValue: [],
+    );
     final userMapList = List<Map<String, dynamic>>.from(
       users.map((e) => Map<String, dynamic>.from(e as Map)),
     );
@@ -494,7 +697,10 @@ class FirebaseAuthRepository implements AuthRepository {
       return snap.docs.map((doc) => UserModel.fromJson(doc.data())).toList();
     }
 
-    final List<dynamic> users = _userCacheBox.get('simulated_users', defaultValue: []);
+    final List<dynamic> users = _userCacheBox.get(
+      'simulated_users',
+      defaultValue: [],
+    );
     return users
         .map((u) => UserModel.fromJson(Map<String, dynamic>.from(u as Map)))
         .where((u) => u.role == UserRole.customer && !u.isApproved)

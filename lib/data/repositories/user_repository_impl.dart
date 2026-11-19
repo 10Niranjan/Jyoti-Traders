@@ -13,9 +13,8 @@ class UserRepositoryImpl implements UserRepository {
   }
 
   @override
-  Future<List<UserEntity>> getApprovedUsers() async {
-    final list = await _remote.getApprovedUsers();
-    return list.map((m) => m.toEntity()).toList();
+  Stream<List<UserEntity>> watchApprovedUsers() {
+    return _remote.watchApprovedUsers().map((list) => list.map((m) => m.toEntity()).toList());
   }
 
   @override

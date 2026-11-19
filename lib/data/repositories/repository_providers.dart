@@ -6,29 +6,44 @@ import '../../domain/repositories/category_repository.dart';
 import '../../domain/repositories/delivery_config_repository.dart';
 import '../../domain/repositories/order_repository.dart';
 import '../../domain/repositories/product_repository.dart';
+import '../../domain/repositories/business_profile_repository.dart';
+import '../../domain/repositories/promo_banner_repository.dart';
 import '../../domain/repositories/user_repository.dart';
+import '../../domain/repositories/broadcast_repository.dart';
 import '../../domain/repositories/notification_repository.dart';
+import '../../domain/repositories/wishlist_repository.dart';
 import '../../features/auth/controllers/auth_controller.dart';
 import '../../features/auth/controllers/auth_state.dart';
+import '../datasources/local/broadcast_local_datasource.dart';
 import '../datasources/local/cart_local_datasource.dart';
 import '../datasources/local/notification_local_datasource.dart';
 import '../datasources/local/product_local_datasource.dart';
+import '../datasources/local/wishlist_local_datasource.dart';
 import '../datasources/remote/category_remote_datasource.dart';
 import '../datasources/remote/delivery_config_remote_datasource.dart';
 import '../datasources/remote/order_remote_datasource.dart';
 import '../datasources/remote/product_remote_datasource.dart';
+import '../datasources/remote/broadcast_remote_datasource.dart';
+import '../datasources/remote/business_profile_remote_datasource.dart';
+import '../datasources/remote/promo_banner_remote_datasource.dart';
 import '../datasources/remote/user_remote_datasource.dart';
+import 'broadcast_repository_impl.dart';
 import 'category_repository_impl.dart';
 import 'cart_repository_impl.dart';
 import 'delivery_config_repository_impl.dart';
 import 'notification_repository_impl.dart';
 import 'order_repository_impl.dart';
 import 'product_repository_impl.dart';
+import 'business_profile_repository_impl.dart';
+import 'promo_banner_repository_impl.dart';
 import 'user_repository_impl.dart';
+import 'wishlist_repository_impl.dart';
 
 final categoryRepositoryProvider = Provider<CategoryRepository>((ref) {
   final catalogBox = Hive.box(HiveBoxes.catalogCache);
-  return CategoryRepositoryImpl(CategoryRemoteDatasource(catalogBox: catalogBox));
+  return CategoryRepositoryImpl(
+    CategoryRemoteDatasource(catalogBox: catalogBox),
+  );
 });
 
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
@@ -49,19 +64,32 @@ final userRepositoryProvider = Provider<UserRepository>((ref) {
   return UserRepositoryImpl(UserRemoteDatasource(userCacheBox: userCacheBox));
 });
 
-/// Watches auth state so a different account signing in on the same device
-/// gets a fresh [CartLocalDatasource] keyed to its own uid, instead of
-/// inheriting whatever the previous account left in the shared cart box.
+String _uidOf(AuthState authState) => switch (authState) {
+  AuthenticatedAdmin(user: final u) => u.uid,
+  AuthenticatedCustomer(user: final u) => u.uid,
+  PendingApproval(user: final u) => u.uid,
+  _ => 'signed_out',
+};
+
+/// Keyed by uid so a different account signing in on the same device gets a
+/// fresh [CartLocalDatasource] instead of inheriting whatever the previous
+/// account left in the shared cart box. Watches only the uid: a profile save
+/// or push-token refresh also emits a new auth state, and rebuilding the cart
+/// on those tore down the checkout controller mid-order (order placed, but
+/// the screen never reached Order Success).
 final cartRepositoryProvider = Provider<CartRepository>((ref) {
-  final authState = ref.watch(authControllerProvider);
-  final uid = switch (authState) {
-    AuthenticatedAdmin(user: final u) => u.uid,
-    AuthenticatedCustomer(user: final u) => u.uid,
-    PendingApproval(user: final u) => u.uid,
-    _ => 'signed_out',
-  };
+  final uid = ref.watch(authControllerProvider.select(_uidOf));
   final cartBox = Hive.box(HiveBoxes.cartBox);
   return CartRepositoryImpl(CartLocalDatasource(cartBox: cartBox, uid: uid));
+});
+
+/// Same uid-scoping as [cartRepositoryProvider] above.
+final wishlistRepositoryProvider = Provider<WishlistRepository>((ref) {
+  final uid = ref.watch(authControllerProvider.select(_uidOf));
+  final cartBox = Hive.box(HiveBoxes.cartBox);
+  return WishlistRepositoryImpl(
+    WishlistLocalDatasource(box: cartBox, uid: uid),
+  );
 });
 
 final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
@@ -69,7 +97,34 @@ final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
   return NotificationRepositoryImpl(NotificationLocalDatasource(box: box));
 });
 
-final deliveryConfigRepositoryProvider = Provider<DeliveryConfigRepository>((ref) {
+final broadcastRepositoryProvider = Provider<BroadcastRepository>((ref) {
+  final box = Hive.box(HiveBoxes.notificationsCache);
+  return BroadcastRepositoryImpl(
+    BroadcastRemoteDatasource(local: BroadcastLocalDatasource(box: box)),
+  );
+});
+
+final deliveryConfigRepositoryProvider = Provider<DeliveryConfigRepository>((
+  ref,
+) {
   final settingsBox = Hive.box(HiveBoxes.settingsCache);
-  return DeliveryConfigRepositoryImpl(DeliveryConfigRemoteDatasource(settingsBox: settingsBox));
+  return DeliveryConfigRepositoryImpl(
+    DeliveryConfigRemoteDatasource(settingsBox: settingsBox),
+  );
+});
+
+final promoBannerRepositoryProvider = Provider<PromoBannerRepository>((ref) {
+  final settingsBox = Hive.box(HiveBoxes.settingsCache);
+  return PromoBannerRepositoryImpl(
+    PromoBannerRemoteDatasource(settingsBox: settingsBox),
+  );
+});
+
+final businessProfileRepositoryProvider = Provider<BusinessProfileRepository>((
+  ref,
+) {
+  final settingsBox = Hive.box(HiveBoxes.settingsCache);
+  return BusinessProfileRepositoryImpl(
+    BusinessProfileRemoteDatasource(settingsBox: settingsBox),
+  );
 });
