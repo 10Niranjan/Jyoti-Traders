@@ -56,3 +56,7 @@ android/key.properties
 # Local env overrides, if any get added later
 .env
 .env.*
+
+# Rules test tooling (tool/rules_test) and Firebase emulator logs
+node_modules/
+*-debug.log

@@ -1020,6 +1020,26 @@ Continuing autonomously from the user's own standing instruction ("verify the 3 
 
 ---
 
+## 📅 Session Log: 2026-11-19 — Repo cleanup, photos moved to Cloudinary (no Blaze needed)
+
+### 📋 Tasks completed:
+
+- **Repo cleanup** (`1b8050c`): removed what the Flutter app never used — the Vite/React scaffold from the Figma Make export (`src/`, `index.html`, `package.json`, `pnpm-lock.yaml`, `tsconfig.json`, `vite.config.ts`, `.mise.toml`), Figma reference folders (`New folder/`, `figma_reference/`, `.figma/`), `28 july.md`, `test_output.txt`, plus untracked junk (`build/`, `.dart_tool/`, `bash.exe.stackdump`, empty `cmdline-temp-test/`). Grepped `lib/`, `test/`, pubspec and Android/Firebase config first — nothing referenced them. Tracked files are recoverable from git history. **Kept**: screenshots/PDFs, client checklist, test cases, `temp_hive/` (`test/widget_test.dart` opens it), `tool/ui_sweep/`, the keystore.
+- **Verified after cleanup**: debug build installed and ran on the emulator (Firebase mode — permission prompt, onboarding, login validation, Sign Up all render; no app errors in logcat). `flutter analyze` clean, `flutter test` 636/636. A first full test run silently died at test 380 (output stopped, no process left); the file passed alone and a rerun passed in full — environment, not code.
+- **Photos now go to Cloudinary** (`45c3e87`) — the project is still on Spark, and Firebase Storage needs Blaze (Google asks a ₹1,000 prepayment in India, which the user didn't want). `ImageUploadService` now picks: Cloudinary when `AppConstants.kCloudinaryCloudName`/`kCloudinaryUploadPreset` are set → Firebase Storage on a live project → local path (simulation). The four upload methods (product image, category icon, payment screenshot, profile photo) collapsed onto one private `_upload`. Upload is a hand-rolled multipart POST on `dart:io` — **no new package**. Account: cloud name `docslwg97`, unsigned preset `Jyoti Traders` (both public by design; the API secret is not in the app and never should be). Unsigned presets can't overwrite or delete, so an edited photo uploads as a new image and `delete*` are no-ops on Cloudinary.
+- **Tests**: `test/unit/services/image_upload_service_test.dart` (3) against a local fake `HttpServer` — correct URL/preset/folder and `secure_url` returned; a non-200 throws instead of saving a broken URL; blank settings keep the old fallback. Full suite 639/639, analyze clean.
+- **Real-world checks**: a throwaway test pushed a 108 KB PNG through the real service to real Cloudinary; the returned link served it back (HTTP 200, same byte count). Then the user uploaded an admin profile photo from their phone (release APK, 26.3 MB arm64, installed on the Redmi `M2101K6I`) and confirmed it in the Cloudinary Media Library under `profile_photos`.
+- **Payment screenshots stay on Cloudinary** (`2245131`, comment only): the link is the only lock, but it's a random id, Cloudinary folder listing returns 401 (tested), and the URL lives only in the order doc, which `firestore.rules` lets just the owner and admin read. Remaining risk is a forwarded link. Firestore-stored images were rejected (more code, slower order lists). Move to Firebase Storage if the shop goes on Blaze anyway.
+
+### 💬 Latest Discussion Summary:
+
+1. The user believed the ₹2,500 Play Developer account covered "everything needed" for the Play Store. Clarified: that fee only lets you publish; Firebase Storage is a separate Google Cloud billing (Blaze) decision.
+2. **Gotchas**: Cloudinary rejects `data:` URIs on this account ("Unsupported source URL") — test with a real file (`-F file=@x.png`). A wrong cloud name and a missing preset give different errors, so a deliberately fake preset checks the cloud name. The Claude-in-Chrome extension wasn't connected; the user's Brave browser isn't reachable.
+3. **Open**: two throwaway test images in Cloudinary (`connection_test/`, one dashboard PNG in `product_images/`) — harmless, deletable only from the dashboard. The admin Add Product → photo → retailer grid flow wasn't clicked through by Claude (no admin login), but the upload path it uses is proven above. Previous open items unchanged (test retailer/order in live Firebase, client launch items).
+4. **Firestore rules hardened** (closes the old "coupon `discount` not validated" item): order create now requires a real coupon with its own minimum/percent/cap (WELCOME10, FLAT5 — mirrored from `kDemoCoupons`, `test/unit/firestore_rules_coupons_test.dart` fails if they drift), and `grandTotal == subtotal − discount + delivery` with delivery ≥ 0. A retailer's stock write must be a number ≥ 0. Proven in the Firestore emulator: `tool/rules_test/` (`npm install` once, then `npm test`; Java + Firebase CLI needed, no login) — 15/15 pass on the new rules, and 9 of them fail against the old rules (`RULES_FILE=<path> npm test`). **Ceiling, still open**: item prices/subtotal come from the retailer's phone and stock can still be zeroed or inflated by a tampered app — closing those needs server-side code (Cloud Functions → Blaze); admin order review is the backstop. **Must be republished in the Firebase console** (Firestore → Rules) to take effect.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

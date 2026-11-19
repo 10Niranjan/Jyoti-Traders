@@ -28,6 +28,31 @@ service cloud.firestore {
       return isSignedIn() && myUser().status == 'approved';
     }
 
+    // Mirrors kDemoCoupons in lib/domain/value_objects/coupon.dart — keep the
+    // two in step (test/unit/firestore_rules_coupons_test.dart checks the
+    // codes). +0.01 absorbs float rounding between Dart and the rules engine.
+    function validDiscount(order) {
+      let disc = order.get('discount', null);
+      let code = order.get('couponCode', null);
+      let sub = order.subtotal;
+      return disc == null || disc == 0 || (
+        disc is number && disc > 0 && (
+          (code == 'WELCOME10' && sub >= 2500 && disc <= sub * 0.10 + 0.01 && disc <= 250)
+          || (code == 'FLAT5' && sub >= 5000 && disc <= sub * 0.05 + 0.01 && disc <= 500)
+        )
+      );
+    }
+
+    // grandTotal is written by the app (OrderModel.toFirestore); it must be
+    // exactly subtotal - discount + delivery, never a smaller number.
+    function consistentTotal(order) {
+      let disc = order.get('discount', null);
+      return order.deliveryCharge is number && order.deliveryCharge >= 0
+        && order.grandTotal is number
+        && math.abs(order.grandTotal
+             - (order.subtotal - (disc == null ? 0 : disc) + order.deliveryCharge)) < 0.01;
+    }
+
     match /users/{uid} {
       allow read: if isSignedIn() && (uid == myUid() || isAdmin());
 
@@ -67,11 +92,14 @@ service cloud.firestore {
       // Placing or cancelling an order moves stock from the retailer's own
       // device (PlaceOrderUseCase / UpdateOrderStatusUseCase), so an approved
       // retailer may change the stock figure — and nothing else.
-      // ponytail: a retailer could still set any stock value; move stock
-      // moves into a Cloud Function or transaction to close that.
+      // ponytail: within that, a tampered app could still zero or inflate
+      // stock; closing it needs stock moved server-side (Cloud Function —
+      // Blaze plan). The admin sees and can correct stock in Catalog.
       allow update: if isApproved()
         && request.resource.data.diff(resource.data).affectedKeys()
-          .hasOnly(['stock', 'updatedAt']);
+          .hasOnly(['stock', 'updatedAt'])
+        && request.resource.data.stock is number
+        && request.resource.data.stock >= 0;
     }
 
     match /orders/{id} {
@@ -82,7 +110,10 @@ service cloud.firestore {
       // nobody could use to skip admin review (e.g. pre-marked "paid").
       allow create: if isApproved()
         && request.resource.data.userId == myUid()
+        && request.resource.data.subtotal is number
         && request.resource.data.subtotal >= 2500
+        && validDiscount(request.resource.data)
+        && consistentTotal(request.resource.data)
         && request.resource.data.orderStatus == 'pending'
         && request.resource.data.paymentStatus in ['pending', 'payment_claimed'];
 
