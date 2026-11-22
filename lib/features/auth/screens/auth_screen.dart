@@ -81,7 +81,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       if (next is AuthError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(next.message),
+            content: Text(_authErrorText(l10n, next)),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -578,5 +578,31 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       ),
       validator: validator,
     );
+  }
+}
+
+/// Firebase's own messages are English-only and technical
+/// ("[firebase_auth/invalid-credential] The supplied auth credential…").
+String _authErrorText(AppLocalizations l10n, AuthError error) {
+  switch (error.code) {
+    case null:
+      return error.message; // not from Firebase (simulation mode)
+    case 'invalid-credential':
+    case 'wrong-password':
+    case 'user-not-found':
+    case 'invalid-email':
+      return l10n.authErrorWrongCredentials;
+    case 'email-already-in-use':
+      return l10n.authErrorEmailInUse;
+    case 'weak-password':
+      return l10n.authErrorWeakPassword;
+    case 'too-many-requests':
+      return l10n.authErrorTooManyRequests;
+    case 'network-request-failed':
+      return l10n.authErrorNetwork;
+    case 'user-disabled':
+      return l10n.authErrorDisabled;
+    default:
+      return l10n.authErrorGeneric;
   }
 }

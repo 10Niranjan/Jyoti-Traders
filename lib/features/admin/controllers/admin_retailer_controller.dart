@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../domain/entities/order_entity.dart';
 import '../../../domain/entities/user_entity.dart';
 import '../../../domain/value_objects/money.dart';
 import 'admin_dashboard_controller.dart';
@@ -35,7 +36,9 @@ final retailerSummariesProvider =
             final summaries =
                 users.map((user) {
                   final userOrders = orders.where((o) => o.userId == user.uid);
-                  final totalSpend = userOrders.fold(
+                  final totalSpend = userOrders
+                      .where((o) => o.orderStatus != OrderStatus.cancelled)
+                      .fold(
                     Money.zero,
                     (sum, o) => sum + o.grandTotal,
                   );

@@ -31,10 +31,10 @@ class GeocodingService {
     required double longitude,
   }) async {
     try {
-      final placemarks = await geocoding.placemarkFromCoordinates(
-        latitude,
-        longitude,
-      );
+      // No answer from the geocoder (offline) shouldn't hang the caller.
+      final placemarks = await geocoding
+          .placemarkFromCoordinates(latitude, longitude)
+          .timeout(const Duration(seconds: 15));
       if (placemarks.isEmpty) return null;
       final place = placemarks.first;
 

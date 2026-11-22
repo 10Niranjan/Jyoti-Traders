@@ -129,7 +129,15 @@ class _AddEditCategoryScreenState extends ConsumerState<AddEditCategoryScreen> {
       // New categories go to the end of the list by default; reordering
       // afterwards happens via drag on the list screen.
       final categories = categoriesAsync.valueOrNull;
-      if (categories != null) _displayOrder = categories.length;
+      // One past the highest order, not the count: orders needn't start at 0
+      // (the seeded catalogue starts at 1) or be gap-free after deletes.
+      if (categories != null) {
+        _displayOrder = categories.fold(
+              -1,
+              (max, c) => c.displayOrder > max ? c.displayOrder : max,
+            ) +
+            1;
+      }
     } else if (!_seeded) {
       // Seed once from the live category when editing.
       final category = ref

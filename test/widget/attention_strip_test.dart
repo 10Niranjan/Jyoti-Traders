@@ -2,10 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:traders_retailer/core/constants/route_names.dart';
+import 'package:traders_retailer/data/repositories/repository_providers.dart';
 import 'package:traders_retailer/domain/entities/order_entity.dart';
+import 'package:traders_retailer/domain/repositories/product_repository.dart';
 import 'package:traders_retailer/features/admin/controllers/admin_dashboard_controller.dart';
+import 'package:traders_retailer/core/utils/admin_product_filter.dart';
+import 'package:traders_retailer/features/admin/controllers/admin_category_controller.dart';
+import 'package:traders_retailer/features/admin/controllers/admin_product_controller.dart';
 import 'package:traders_retailer/features/admin/screens/all_orders_screen.dart';
+import 'package:traders_retailer/features/admin/screens/manage_products_screen.dart';
 import 'package:traders_retailer/features/admin/widgets/admin_stat_card.dart';
 import 'package:traders_retailer/features/admin/widgets/attention_strip.dart';
 import 'package:traders_retailer/l10n/app_localizations.dart';
@@ -27,14 +34,6 @@ Widget _host(
         path: RouteNames.adminApprovalQueue,
         builder: (_, _) => page('approval-queue-page'),
       ),
-      GoRoute(
-        path: RouteNames.adminOrders,
-        builder: (_, _) => page('orders-page'),
-      ),
-      GoRoute(
-        path: RouteNames.adminCatalog,
-        builder: (_, _) => page('catalog-page'),
-      ),
     ],
   );
   return ProviderScope(
@@ -49,6 +48,8 @@ Widget _host(
     ),
   );
 }
+
+class _MockProductRepo extends Mock implements ProductRepository {}
 
 const _busy = AttentionSummary(
   pendingApprovals: 3,
@@ -131,12 +132,25 @@ void main() {
       expect(find.text('approval-queue-page'), findsOneWidget);
     });
 
-    testWidgets('stale orders opens the Orders tab', (tester) async {
-      await tester.pumpWidget(_host(_busy));
+    testWidgets('stale orders opens Orders filtered to Pending', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          _busy,
+          extraOverrides: [
+            allOrdersProvider.overrideWith((ref) => Stream.value(const [])),
+          ],
+        ),
+      );
       await tester.pumpAndSettle();
       await tester.tap(find.text('Orders unconfirmed 30+ min'));
       await tester.pumpAndSettle();
-      expect(find.text('orders-page'), findsOneWidget);
+
+      final screen = tester.widget<AllOrdersScreen>(
+        find.byType(AllOrdersScreen),
+      );
+      expect(screen.initialFilter, OrderStatus.pending);
     });
 
     testWidgets(
@@ -162,14 +176,31 @@ void main() {
       },
     );
 
-    testWidgets('low stock opens the Catalog tab', (tester) async {
-      await tester.pumpWidget(_host(_busy));
+    testWidgets('low stock opens Products sorted by lowest stock', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          _busy,
+          extraOverrides: [
+            allProductsProvider.overrideWith((ref) => Stream.value(const [])),
+            // Only handed to the list's save controller; nothing is called.
+            productRepositoryProvider.overrideWithValue(_MockProductRepo()),
+            adminCategoriesProvider.overrideWith(
+              (ref) => Stream.value(const []),
+            ),
+          ],
+        ),
+      );
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Low stock'));
       await tester.pumpAndSettle();
 
-      expect(find.text('catalog-page'), findsOneWidget);
+      final screen = tester.widget<ManageProductsScreen>(
+        find.byType(ManageProductsScreen),
+      );
+      expect(screen.initialSort, AdminProductSort.stockLowToHigh);
     });
   });
 

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
 
@@ -126,6 +127,13 @@ class AppTheme {
         backgroundColor: dark ? AppColors.surfaceDark2 : AppColors.surfaceLight,
         elevation: 0.0,
         centerTitle: false,
+        // Android 15+ draws the app behind the status bar (targetSdk 35+):
+        // keep it see-through and its icons readable on this bar's colour.
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: dark ? Brightness.light : Brightness.dark,
+          statusBarBrightness: dark ? Brightness.dark : Brightness.light,
+        ),
         iconTheme: IconThemeData(color: textPrimary),
         titleTextStyle: TextStyle(
           color: textPrimary,

@@ -88,6 +88,31 @@ class AppLocalizationsMr extends AppLocalizations {
   String get authEnterPasswordError => 'पासवर्ड टाका';
 
   @override
+  String get authErrorWrongCredentials => 'ईमेल किंवा पासवर्ड चुकीचा आहे.';
+
+  @override
+  String get authErrorEmailInUse => 'या ईमेलने आधीच खाते आहे.';
+
+  @override
+  String get authErrorWeakPassword =>
+      'पासवर्ड खूप कमकुवत आहे. किमान 6 अक्षरे वापरा.';
+
+  @override
+  String get authErrorTooManyRequests =>
+      'खूप प्रयत्न झाले. काही मिनिटे थांबून पुन्हा प्रयत्न करा.';
+
+  @override
+  String get authErrorNetwork =>
+      'इंटरनेट कनेक्शन नाही. नेटवर्क तपासा आणि पुन्हा प्रयत्न करा.';
+
+  @override
+  String get authErrorDisabled =>
+      'हे खाते बंद केले आहे. कृपया सहाय्याशी संपर्क साधा.';
+
+  @override
+  String get authErrorGeneric => 'काहीतरी चुकले. कृपया पुन्हा प्रयत्न करा.';
+
+  @override
   String get authSignIn => 'साइन इन करा';
 
   @override

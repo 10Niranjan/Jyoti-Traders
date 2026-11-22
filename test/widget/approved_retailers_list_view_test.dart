@@ -75,6 +75,7 @@ OrderEntity _order({
   required String userId,
   required String shopName,
   required double subtotal,
+  OrderStatus status = OrderStatus.delivered,
 }) => OrderEntity(
   id: id,
   userId: userId,
@@ -91,7 +92,7 @@ OrderEntity _order({
   deliveryCharge: Money(0),
   paymentMethod: PaymentMethod.cod,
   paymentStatus: PaymentStatus.pending,
-  orderStatus: OrderStatus.delivered,
+  orderStatus: status,
   deliveryAddress: const AddressEntity(
     street: 'St',
     city: 'City',
@@ -187,4 +188,28 @@ void main() {
       expect(bigSpenderTop.dy, lessThan(smallSpenderTop.dy));
     },
   );
+
+  testWidgets('a cancelled order counts as an order but not as spend', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        FakeUserRepository([_user('u1', 'Shop')]),
+        FakeOrderRepository([
+          _order(id: 'o1', userId: 'u1', shopName: 'Shop', subtotal: 1000),
+          _order(
+            id: 'o2',
+            userId: 'u1',
+            shopName: 'Shop',
+            subtotal: 9000,
+            status: OrderStatus.cancelled,
+          ),
+        ]),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('₹1,000'), findsOneWidget);
+    expect(find.text('2 orders'), findsOneWidget);
+  });
 }

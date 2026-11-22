@@ -338,7 +338,7 @@ void main() {
     'notifications round-trip through Hive, newest first, mark-as-read persists',
     () async {
       final notificationRepo = NotificationRepositoryImpl(
-        NotificationLocalDatasource(box: notificationsBox),
+        NotificationLocalDatasource(box: notificationsBox, uid: 'u1'),
       );
 
       await notificationRepo.addNotification(
@@ -376,6 +376,12 @@ void main() {
       await notificationRepo.markAllAsRead();
       notifications = await notificationRepo.watchNotifications().first;
       expect(notifications.every((n) => n.isRead), isTrue);
+
+      // Another account on the same phone has its own, empty inbox.
+      final otherAccount = NotificationRepositoryImpl(
+        NotificationLocalDatasource(box: notificationsBox, uid: 'u2'),
+      );
+      expect(await otherAccount.watchNotifications().first, isEmpty);
     },
   );
 

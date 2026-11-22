@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/services/analytics_service.dart';
 import '../../../data/repositories/auth_repository.dart';
@@ -53,7 +54,7 @@ class AuthController extends StateNotifier<AuthState> {
       _handleUserChange(user);
       if (user != null) _analytics.logLogin(user.role.name);
     } catch (e) {
-      state = AuthError(e.toString().replaceAll('Exception: ', ''));
+      state = _errorFrom(e);
     }
   }
 
@@ -78,9 +79,13 @@ class AuthController extends StateNotifier<AuthState> {
       _handleUserChange(user);
       if (user != null) _analytics.logSignUp(user.role.name);
     } catch (e) {
-      state = AuthError(e.toString().replaceAll('Exception: ', ''));
+      state = _errorFrom(e);
     }
   }
+
+  static AuthError _errorFrom(Object e) => e is FirebaseAuthException
+      ? AuthError(e.message ?? e.code, code: e.code)
+      : AuthError(e.toString().replaceAll('Exception: ', ''));
 
   Future<void> signOut() async {
     state = const AuthLoading();

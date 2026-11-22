@@ -20,7 +20,6 @@ final fcmServiceProvider = Provider<FcmService>((ref) => FcmService());
 /// rather than re-running the body.
 final fcmInitializerProvider = Provider<void>((ref) {
   final fcm = ref.watch(fcmServiceProvider);
-  final notificationRepo = ref.watch(notificationRepositoryProvider);
 
   Future<void> saveTokenForCurrentUser(String? token) async {
     if (token == null) return;
@@ -46,7 +45,9 @@ final fcmInitializerProvider = Provider<void>((ref) {
         !ref.read(notificationPreferencesProvider).orderUpdates) {
       return;
     }
-    notificationRepo.addNotification(
+    // Read at message time: the inbox is per account, and watching it here
+    // would re-run this whole initializer on every sign-in.
+    ref.read(notificationRepositoryProvider).addNotification(
       NotificationEntity(
         id:
             message.messageId ??

@@ -110,7 +110,10 @@ class RetailerProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final totalSpend = orders.fold<double>(0, (sum, o) => sum + o.grandTotal.amount);
+    // Cancelled orders were never paid for — same rule as the insights card.
+    final totalSpend = orders
+        .where((o) => o.orderStatus != OrderStatus.cancelled)
+        .fold<double>(0, (sum, o) => sum + o.grandTotal.amount);
     final memberSince = DateFormat('MMM yyyy').format(user.createdAt);
 
     return Container(

@@ -4,11 +4,18 @@ import '../../../core/constants/hive_keys.dart';
 import '../../models/notification_model.dart';
 
 /// Pure Hive — notification history is device-local only (phases.md §5).
+/// Keyed by [uid] like the cart, so a second account signing in on the same
+/// phone doesn't see the first one's inbox.
 class NotificationLocalDatasource {
   final Box _box;
+  final String _uid;
   final _controller = StreamController<List<NotificationModel>>.broadcast();
 
-  NotificationLocalDatasource({required Box box}) : _box = box;
+  NotificationLocalDatasource({required Box box, required String uid})
+      : _box = box,
+        _uid = uid;
+
+  String get _key => '${HiveKeys.notificationItems}_$_uid';
 
   Stream<List<NotificationModel>> watchNotifications() async* {
     yield _read();
@@ -36,12 +43,12 @@ class NotificationLocalDatasource {
   }
 
   List<NotificationModel> _read() {
-    final List<dynamic> raw = _box.get(HiveKeys.notificationItems, defaultValue: []);
+    final List<dynamic> raw = _box.get(_key, defaultValue: []);
     return raw.map((e) => NotificationModel.fromJson(Map<String, dynamic>.from(e as Map))).toList();
   }
 
   Future<void> _save(List<NotificationModel> list) async {
-    await _box.put(HiveKeys.notificationItems, list.map((n) => n.toJson()).toList());
+    await _box.put(_key, list.map((n) => n.toJson()).toList());
     _controller.add(list);
   }
 }

@@ -1037,6 +1037,30 @@ Continuing autonomously from the user's own standing instruction ("verify the 3 
 2. **Gotchas**: Cloudinary rejects `data:` URIs on this account ("Unsupported source URL") — test with a real file (`-F file=@x.png`). A wrong cloud name and a missing preset give different errors, so a deliberately fake preset checks the cloud name. The Claude-in-Chrome extension wasn't connected; the user's Brave browser isn't reachable.
 3. **Open**: two throwaway test images in Cloudinary (`connection_test/`, one dashboard PNG in `product_images/`) — harmless, deletable only from the dashboard. The admin Add Product → photo → retailer grid flow wasn't clicked through by Claude (no admin login), but the upload path it uses is proven above. Previous open items unchanged (test retailer/order in live Firebase, client launch items).
 4. **Firestore rules hardened** (closes the old "coupon `discount` not validated" item): order create now requires a real coupon with its own minimum/percent/cap (WELCOME10, FLAT5 — mirrored from `kDemoCoupons`, `test/unit/firestore_rules_coupons_test.dart` fails if they drift), and `grandTotal == subtotal − discount + delivery` with delivery ≥ 0. A retailer's stock write must be a number ≥ 0. Proven in the Firestore emulator: `tool/rules_test/` (`npm install` once, then `npm test`; Java + Firebase CLI needed, no login) — 15/15 pass on the new rules, and 9 of them fail against the old rules (`RULES_FILE=<path> npm test`). **Ceiling, still open**: item prices/subtotal come from the retailer's phone and stock can still be zeroed or inflated by a tampered app — closing those needs server-side code (Cloud Functions → Blaze); admin order review is the backstop. **Must be republished in the Firebase console** (Firestore → Rules) to take effect.
+5. **Rules published by the user, then checked against live Firebase on two emulators** (admin on Medium Phone, a new retailer on Pixel 9a using an x86_64 release APK, since the 199 MB debug APK doesn't fit on either emulator). Flow tested: sign-up → admin approval → order without coupon (#55F9EBFC, ₹4,600) → order with WELCOME10 (#8E5295F8, ₹250 off, ₹4,350) → retailer cancel. All accepted. Basmati stock went 38 → 36 and stayed at 36 after the second order and its cancel, so both stock writes passed. **More test data to delete before launch**: retailer "Rules Test Store" (`…+rulestest@gmail.com`) and those two orders. **Gotcha**: a long-running emulator can lose DNS ("Unable to resolve host firestore.googleapis.com"; the app looks frozen or hits an ANR). Rebooting Android doesn't fix it: kill the emulator process and cold-boot (`-no-snapshot-load`).
+
+---
+
+## 📅 Session Log: 2026-11-20/21 — P1 manual test pass (live Firebase) + bug fixes
+
+### 📋 Tasks completed:
+
+- **Manual P1 pass** from `TEST_PLAN.md` on two emulators against live Firebase (admin: Medium Phone API 36.1, retailer: Pixel 9a; x86_64 release APK re-signed with the debug key). About 105 of the 135 P1 cases run; everything core passed (auth/approval, cart, slab prices, coupons, COD + UPI checkout with Cloudinary screenshot, order lifecycle both sides, stock down/up, profile, theme, language, invoice PDF, admin CRUD). Client details (UPI ID, GSTIN, privacy URL) skipped at the user's request.
+- **Bugs found and fixed**:
+  1. **targetSdk 34 → 36** (`android/app/build.gradle.kts`) — Play requires 36 for new apps. The app now draws behind the status bar (Android 15+), so `AppBarTheme.systemOverlayStyle` makes the bar transparent with icons matching the theme. Checked on Android 16: no more black band, icons readable in light and dark.
+  2. **Login/sign-up errors showed raw Firebase text** (`[firebase_auth/invalid-credential] …`). `AuthError` now carries the Firebase code; `auth_screen.dart` maps it to translated messages (wrong credentials, email in use, weak password, too many tries, no internet, disabled, generic). New keys `authError*` in en/hi/mr. Seen live: "Incorrect email or password.", "No internet connection…".
+  3. **Cancelled orders counted as spend** in the retailer profile header and the admin Retailers list. Both now skip cancelled orders (order count still includes them).
+  4. **Dashboard chips opened unfiltered tabs**: "Orders unconfirmed 30+ min" now pushes All Orders on the Pending filter (`initialFilter`), "Low stock" pushes Manage Products sorted lowest stock first (`initialSort`).
+  5. **Notifications were shared by every account on one phone** (and a broadcast showed twice after switching account). The Hive inbox is now keyed by uid like the cart; the FCM initializer reads the inbox at message time so it doesn't re-run on sign-in. Old shared-key notifications are no longer shown (device-local history only).
+  6. **New category landed before the last one** — order was `count`, but seeded orders start at 1. Now max order + 1.
+  7. **"Use current location" could spin forever** with no GPS fix: 20 s limit then last known position; reverse geocode times out after 15 s. Not reproduced on device after the fix (covered by the existing null-handling paths).
+- **Not bugs after all**: the "missing" bulk-imported soap row was the emulator losing DNS mid-import (the write sat queued in Firestore's local cache; re-tested, it imports fine). COD orders *do* have "Mark as Paid" — it's below the fold on Order Management.
+- **Tests**: new `auth_controller_error_test.dart`, notification per-account isolation (simulation test), cancelled-order spend (retailers list test), category order now asserts "after the highest order", attention-chip tests rewritten for the new targets. `flutter analyze` clean, `flutter test` **642/642**.
+
+### 💬 Open:
+1. Rest of the P1 list not run: BULK-06 (tab paste), DLV-03/05/06 + E2E-07 (rate change), APROF-03 (business details on invoice), SYS-07/08/10, most of the dark-mode visual pass.
+2. **More test data in live Firebase to delete before launch**: order #0EEA380D and #961A4CFF (Rules Test Store), product "hsjsns", "QA Bulk Rice 5kg", "QA Bulk Soap2", "QA Test Masala", "QA Test Category", banner "QA Test Offer", plus the items listed on 2026-11-19.
+3. Nothing committed or pushed.
 
 ---
 

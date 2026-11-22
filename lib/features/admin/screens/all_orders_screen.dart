@@ -37,14 +37,23 @@ class AllOrdersScreen extends ConsumerStatefulWidget {
   final String? retailerId;
   final PaymentStatus? paymentStatus;
 
-  const AllOrdersScreen({super.key, this.retailerId, this.paymentStatus});
+  /// Status chip selected on open — the dashboard's "unconfirmed orders"
+  /// chip opens this on Pending.
+  final OrderStatus? initialFilter;
+
+  const AllOrdersScreen({
+    super.key,
+    this.retailerId,
+    this.paymentStatus,
+    this.initialFilter,
+  });
 
   @override
   ConsumerState<AllOrdersScreen> createState() => _AllOrdersScreenState();
 }
 
 class _AllOrdersScreenState extends ConsumerState<AllOrdersScreen> {
-  OrderStatus? _filter;
+  late OrderStatus? _filter = widget.initialFilter;
 
   List<OrderEntity> _filteredOrders(List<OrderEntity> orders) {
     var scoped = widget.retailerId == null

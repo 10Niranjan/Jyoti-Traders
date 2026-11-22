@@ -92,9 +92,13 @@ final wishlistRepositoryProvider = Provider<WishlistRepository>((ref) {
   );
 });
 
+/// Same uid-scoping as [cartRepositoryProvider].
 final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
+  final uid = ref.watch(authControllerProvider.select(_uidOf));
   final box = Hive.box(HiveBoxes.notificationsCache);
-  return NotificationRepositoryImpl(NotificationLocalDatasource(box: box));
+  return NotificationRepositoryImpl(
+    NotificationLocalDatasource(box: box, uid: uid),
+  );
 });
 
 final broadcastRepositoryProvider = Provider<BroadcastRepository>((ref) {

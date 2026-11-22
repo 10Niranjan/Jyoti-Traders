@@ -8,7 +8,9 @@ import '../../../core/constants/route_names.dart';
 import '../../../domain/entities/order_entity.dart';
 import '../../../l10n/app_localizations.dart';
 import '../controllers/admin_dashboard_controller.dart';
+import '../../../core/utils/admin_product_filter.dart';
 import '../screens/all_orders_screen.dart';
+import '../screens/manage_products_screen.dart';
 
 /// "Needs attention" — the dashboard as a to-do list. One tappable chip per
 /// thing waiting on the owner (only the non-zero ones), each opening the place
@@ -24,8 +26,8 @@ class AttentionStrip extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // The queue is a pushed screen; Orders and Catalog are shell tabs, which
-    // `push` can't switch to (it stacks on the current branch) — `go` can.
+    // Each chip pushes a screen pre-scoped to what it names, rather than
+    // switching to the unfiltered Orders / Catalog tab.
     final chips = <Widget>[
       if (summary.pendingApprovals > 0)
         _AttentionChip(
@@ -60,7 +62,12 @@ class AttentionStrip extends ConsumerWidget {
             AppConstants.kUnconfirmedOrderMinutes,
           ),
           color: AppColors.warning,
-          onTap: () => context.go(RouteNames.adminOrders),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) =>
+                  const AllOrdersScreen(initialFilter: OrderStatus.pending),
+            ),
+          ),
         ),
       if (summary.lowStockProducts > 0)
         _AttentionChip(
@@ -68,7 +75,13 @@ class AttentionStrip extends ConsumerWidget {
           count: summary.lowStockProducts,
           label: l10n.adminAttentionLowStock,
           color: AppColors.error,
-          onTap: () => context.go(RouteNames.adminCatalog),
+          onTap: () => Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => const ManageProductsScreen(
+                initialSort: AdminProductSort.stockLowToHigh,
+              ),
+            ),
+          ),
         ),
     ];
 

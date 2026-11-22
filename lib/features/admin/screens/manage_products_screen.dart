@@ -18,11 +18,16 @@ import '../controllers/admin_category_controller.dart';
 import '../controllers/admin_product_controller.dart';
 import '../widgets/admin_product_tile.dart';
 
-/// Standalone screen at `/admin/products` — no longer linked to from
-/// anywhere in-app since the Catalog tab (Phase 9.4) embeds [ProductsListView]
-/// directly, but left in place (route + screen) as a working direct link.
+/// Standalone screen at `/admin/products`. The Catalog tab embeds
+/// [ProductsListView] directly; this is what the dashboard's "Low stock"
+/// chip pushes, opened with lowest stock first.
 class ManageProductsScreen extends StatelessWidget {
-  const ManageProductsScreen({super.key});
+  final AdminProductSort initialSort;
+
+  const ManageProductsScreen({
+    super.key,
+    this.initialSort = AdminProductSort.nameAsc,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +39,7 @@ class ManageProductsScreen extends StatelessWidget {
         ),
       ),
       floatingActionButton: const AddProductFab(),
-      body: const ProductsListView(),
+      body: ProductsListView(initialSort: initialSort),
     );
   }
 }
@@ -68,7 +73,12 @@ class AddProductFab extends ConsumerWidget {
 /// be embedded either inside [ManageProductsScreen] or, since Phase 9.4, as
 /// one segment of the admin Catalog tab.
 class ProductsListView extends ConsumerStatefulWidget {
-  const ProductsListView({super.key});
+  final AdminProductSort initialSort;
+
+  const ProductsListView({
+    super.key,
+    this.initialSort = AdminProductSort.nameAsc,
+  });
 
   @override
   ConsumerState<ProductsListView> createState() => _ProductsListViewState();
@@ -78,7 +88,7 @@ class _ProductsListViewState extends ConsumerState<ProductsListView> {
   final _searchController = TextEditingController();
   String _query = '';
   String? _categoryId;
-  AdminProductSort _sort = AdminProductSort.nameAsc;
+  late AdminProductSort _sort = widget.initialSort;
 
   bool _selectionMode = false;
   final Set<String> _selectedIds = {};

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import '../utils/app_logger.dart';
@@ -24,9 +26,16 @@ class LocationService {
         return null;
       }
 
-      return await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.medium,
-      );
+      // Indoors a fresh fix can take forever; give up after 20 s and fall
+      // back to the phone's last known position rather than spin endlessly.
+      try {
+        return await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.medium,
+          timeLimit: const Duration(seconds: 20),
+        );
+      } on TimeoutException {
+        return await Geolocator.getLastKnownPosition();
+      }
     } catch (e) {
       logWarning(
         'LocationService: unable to get current position, skipping',

@@ -71,12 +71,21 @@ void main() {
   testWidgets('creates a category placed after the existing ones', (
     tester,
   ) async {
+    // Orders start at 1, like the seeded catalogue: the count (2) would put
+    // the new one level with the last, not after it.
     final repo = FakeCategoryRepository([
       CategoryEntity(
         id: 'c1',
         name: 'Existing',
         iconUrl: '',
-        displayOrder: 0,
+        displayOrder: 1,
+        isActive: true,
+      ),
+      CategoryEntity(
+        id: 'c2',
+        name: 'Existing 2',
+        iconUrl: '',
+        displayOrder: 2,
         isActive: true,
       ),
     ]);
@@ -95,7 +104,7 @@ void main() {
     expect(repo.created, hasLength(1));
     final saved = repo.created.single;
     expect(saved.name, 'Edible Oils');
-    expect(saved.displayOrder, 1); // appended after the one existing category
+    expect(saved.displayOrder, 3); // after the highest existing order
     expect(saved.isActive, isTrue);
     expect(saved.id, isNotEmpty); // generated
   });
