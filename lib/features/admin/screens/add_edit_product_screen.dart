@@ -268,6 +268,7 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                   style: GoogleFonts.inter(color: AppColors.error),
                 ),
                 data: (list) => DropdownButtonFormField<String>(
+                  isExpanded: true,
                   initialValue: _categoryId,
                   decoration: InputDecoration(labelText: l10n.adminCategory),
                   items: [
@@ -318,6 +319,7 @@ class _AddEditProductScreenState extends ConsumerState<AddEditProductScreen> {
                   ],
                   Expanded(
                     child: DropdownButtonFormField<ProductUnit>(
+                      isExpanded: true,
                       initialValue: _unit,
                       decoration: InputDecoration(labelText: l10n.adminUnit),
                       items: [

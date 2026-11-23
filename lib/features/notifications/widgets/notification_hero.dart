@@ -171,12 +171,16 @@ class _GlassPill extends StatelessWidget {
             children: [
               Icon(icon, size: 18, color: Colors.white),
               const SizedBox(width: 8),
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ],

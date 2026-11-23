@@ -1064,6 +1064,23 @@ Continuing autonomously from the user's own standing instruction ("verify the 3 
 
 ---
 
+## 📅 Session Log: 2026-11-23 — UI overflow sweep finished, P1 device checks on Pixel_9a
+
+### 📋 Tasks completed:
+
+- **UI overflow sweep (tool/ui_sweep)**: 320dp @ 1.3x text found 13 overflows in 5 files, all fixed — notification hero pills (`Flexible` + ellipsis), Add/Edit Product category and unit dropdowns (`isExpanded`), `PrimaryButton` label, auth sign-in/sign-up toggle (`Row` -> `Wrap`). Re-run clean at 320/1.3x and the long-name stress at 360/1.0x and 320/1.3x. Dark theme not swept (overflow is theme-independent). `flutter analyze` 0 issues, `flutter test` 642/642.
+- **Live-Firebase device checks on Pixel_9a** (x86_64 release APK; uninstalled the old build first, version-code downgrade): DLV-05 rate save (Rs10 -> Rs15, preview x1.5), SYS-07 rate persists after force-stop, SYS-08 orders/statuses/session persist, DLV-06/E2E-07 checkout charge = 2.956 km x Rs15 = Rs44.34 (matches Haversine to the default warehouse), full retailer dark-mode pass (Home, Search, Orders, Cart, Checkout, Notifications, Profile, Settings) clean.
+- Created test retailer **QA Store** (`niranjanpatil1683+qa23nov@gmail.com`) and had it approved by the admin; the admin and retailer passwords were typed by the user / not stored here.
+- **Not run on device**: DLV-03 validation, APROF-03 invoice business details (would write fake legal data to live), BULK-06 tab paste, SYS-10, admin dark mode.
+
+### 💬 Open:
+1. Delivery rate in live Firebase is still Rs15/km from the test — set back (default Rs10) or to the client's real rate.
+2. More test data to delete before launch: retailer QA Store (+ its cart), plus everything listed on 2026-11-20/21.
+3. Orders tab shows a red dot with zero orders (probably a first-run hint, unconfirmed); delivery rate box shows `15` after a chip tap but `15.0` on reopen (cosmetic).
+4. Gotcha: with Gboard disabled for `adb input text`, Flutter's first BACK after typing opens an IME picker that swallows the next text — dismiss it and retype; two BACKs at a tab root exit the app.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

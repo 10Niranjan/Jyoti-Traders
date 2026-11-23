@@ -393,8 +393,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       const SizedBox(height: 24),
 
                       // Toggle mode
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Text(
                             _isLogin ? l10n.authNoAccount : l10n.authHasAccount,
