@@ -1074,7 +1074,7 @@ Continuing autonomously from the user's own standing instruction ("verify the 3 
 - **Not run on device**: DLV-03 validation, APROF-03 invoice business details (would write fake legal data to live), BULK-06 tab paste, SYS-10, admin dark mode.
 
 ### 💬 Open:
-1. Delivery rate in live Firebase is still Rs15/km from the test — set back (default Rs10) or to the client's real rate.
+1. Delivery rate in live Firebase was set back to Rs10/km (the default) after the Rs15 test and verified on Pixel_9a. Rs10 and the warehouse location (default 21.1458, 79.0882) are still placeholders — set the client's real rate and warehouse once given.
 2. More test data to delete before launch: retailer QA Store (+ its cart), plus everything listed on 2026-11-20/21.
 3. Orders tab shows a red dot with zero orders (probably a first-run hint, unconfirmed); delivery rate box shows `15` after a chip tap but `15.0` on reopen (cosmetic).
 4. Gotcha: with Gboard disabled for `adb input text`, Flutter's first BACK after typing opens an IME picker that swallows the next text — dismiss it and retype; two BACKs at a tab root exit the app.
