@@ -801,7 +801,7 @@ Future<void> seedDemoNotificationsIfEmpty(Box notificationsBox) async {
     NotificationModel(
       id: 'demo_notif_2',
       title: 'Low Stock Alert',
-      body: 'Toor Dal is running low on stock at Jyoti Traders.',
+      body: 'Toor Dal is running low on stock at Jyoti Kirana Store.',
       kind: NotificationKind.stock,
       receivedAt: now.subtract(const Duration(hours: 5)),
       isRead: false,
@@ -817,7 +817,7 @@ Future<void> seedDemoNotificationsIfEmpty(Box notificationsBox) async {
     ),
     NotificationModel(
       id: 'demo_notif_4',
-      title: 'Welcome to Jyoti Traders',
+      title: 'Welcome to Jyoti Kirana Store',
       body: 'Your account has been approved. Start shopping now.',
       receivedAt: now.subtract(const Duration(days: 3)),
       isRead: true,

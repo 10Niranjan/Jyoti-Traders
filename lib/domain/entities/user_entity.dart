@@ -35,7 +35,7 @@ enum UserStatus {
   }
 }
 
-/// Business object for a Jyoti Traders user — Admin or Retailer.
+/// Business object for a Jyoti Kirana Store user — Admin or Retailer.
 class UserEntity extends Equatable {
   final String uid;
   final String fullName;

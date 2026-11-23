@@ -1,5 +1,5 @@
 # 📜 RULES.md
-## Jyoti Traders — Project Development Rules & Regulations
+## Jyoti Kirana Store — Project Development Rules & Regulations
 
 > These rules are **non-negotiable** and must be followed on **every single implementation**, every file, every feature, every session — without exception.  
 > **Every AI agent, developer, or contributor working on this project must read and internalize this file before writing a single line of code.**

@@ -56,7 +56,7 @@ class BusinessProfileRemoteDatasource {
         // Demo build: prefill until the owner saves real details.
         yield raw == null
             ? const BusinessProfileEntity(
-                legalName: 'Jyoti Traders Wholesale',
+                legalName: 'Jyoti Kirana Store',
                 address: 'Main Market Road, Pune, Maharashtra 411002',
                 gstin: '27AABCJ1234K1Z9',
               )

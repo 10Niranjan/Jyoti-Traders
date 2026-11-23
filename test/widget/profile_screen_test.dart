@@ -501,7 +501,7 @@ void main() {
     await tester.tap(find.text('About'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Jyoti Traders'), findsOneWidget);
+    expect(find.text('Jyoti Kirana Store'), findsOneWidget);
     expect(
       tester.takeException(),
       isNull,

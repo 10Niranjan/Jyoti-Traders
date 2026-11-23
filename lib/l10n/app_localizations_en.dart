@@ -196,14 +196,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pendingMessage =>
-      'Your retailer application is currently being reviewed by the owner of Jyoti Traders. Once approved, you will gain full access to wholesale product purchasing.';
+      'Your retailer application is currently being reviewed by the owner of Jyoti Kirana Store. Once approved, you will gain full access to wholesale product purchasing.';
 
   @override
   String get pendingRejectedTitle => 'Application Not Approved';
 
   @override
   String get pendingRejectedMessage =>
-      'Your retailer application was not approved by the owner of Jyoti Traders. If you think this is a mistake, please call or email us below.';
+      'Your retailer application was not approved by the owner of Jyoti Kirana Store. If you think this is a mistake, please call or email us below.';
 
   @override
   String get pendingRejectedContactTitle => 'Questions? Contact the Owner';
@@ -1070,7 +1070,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminPreview => 'Preview';
 
   @override
-  String get adminDashboardTitle => 'Jyoti Traders Admin';
+  String get adminDashboardTitle => 'Jyoti Kirana Store Admin';
 
   @override
   String get adminPendingApprovals => 'Pending Approvals';

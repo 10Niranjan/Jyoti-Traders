@@ -1,5 +1,5 @@
 # 🏗️ ARCHITECTURE.md
-## Jyoti Traders — Enterprise Flutter Application Architecture
+## Jyoti Kirana Store — Enterprise Flutter Application Architecture
 
 > **Author Perspective**: Designed as a 17-year senior Android/Flutter engineer  
 > **Version**: 1.0.0 | **Last Updated**: 2026-07-15  

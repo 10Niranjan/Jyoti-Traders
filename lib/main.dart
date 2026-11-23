@@ -112,7 +112,7 @@ class JyotiTradersApp extends ConsumerWidget {
     final textSize = ref.watch(textSizeProvider);
 
     return MaterialApp.router(
-      title: 'Jyoti Traders',
+      title: 'Jyoti Kirana Store',
       debugShowCheckedModeBanner: false,
 
       // Theme settings using custom app design tokens

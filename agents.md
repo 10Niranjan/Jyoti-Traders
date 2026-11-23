@@ -1081,6 +1081,14 @@ Continuing autonomously from the user's own standing instruction ("verify the 3 
 
 ---
 
+## 📅 Session Log: 2026-11-23 (continued) — App renamed to "Jyoti Kirana Store"
+
+- Client wants the app called **Jyoti Kirana Store** (reverses the 2026-08-20 rename to Jyoti Traders for display purposes). Renamed everywhere user-visible: Android label, iOS/web names, `kAppName`, splash/login/pending screens, the three ARB files + generated localizations, invoice/share text, seeded demo data and defaults, the UPI payee placeholder, the dashboard title ("Jyoti Kirana Store Admin"), docs (README, PRD, ARCHITECTURE, rules, TEST_PLAN, phases) and the sweep tool.
+- **Deliberately unchanged**: package/application id (`com.traders.retailer.traders_retailer` — permanent after first upload, invisible to users), the Cloudinary upload preset name (`'Jyoti Traders'` — it must match the preset in the Cloudinary dashboard), the Firebase project id, the `JyotiTradersApp` class name, repo/folder names, keystore file name, and earlier history entries in this file.
+- Play Console: use **Jyoti Kirana Store** as the developer name and Store title. `flutter analyze` clean; `flutter test` all passing after updating one test.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).

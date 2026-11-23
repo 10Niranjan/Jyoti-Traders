@@ -114,7 +114,7 @@ Future<void> _setUpHive(String role) async {
     case 'retailer':
       user = _user('mock_retailer_uid', 'retailer@jyoti.com', UserRole.customer, UserStatus.approved, 'Shree Ganesh Kirana & General Stores');
     case 'admin':
-      user = _user('mock_admin_uid', 'admin@jyoti.com', UserRole.admin, UserStatus.approved, 'Jyoti Traders Wholesale');
+      user = _user('mock_admin_uid', 'admin@jyoti.com', UserRole.admin, UserStatus.approved, 'Jyoti Kirana Store');
     case 'pending':
       user = _user('mock_nirmala_uid', 'nirmala.store@example.com', UserRole.customer, UserStatus.pending, 'Nirmala Provision Store');
     case 'rejected':

@@ -580,7 +580,7 @@ class SplashScreen extends ConsumerWidget {
               const SizedBox(height: 24),
 
               Text(
-                'Jyoti Traders',
+                'Jyoti Kirana Store',
                 style: GoogleFonts.inter(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,

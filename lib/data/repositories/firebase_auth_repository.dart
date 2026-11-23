@@ -256,7 +256,7 @@ class FirebaseAuthRepository implements AuthRepository {
           phone: '9860460325',
           role: UserRole.admin,
           status: UserStatus.approved,
-          businessName: 'Jyoti Traders Wholesale',
+          businessName: 'Jyoti Kirana Store',
           address: const AddressEntity(
             street: 'Main Market Road',
             city: 'Pune',

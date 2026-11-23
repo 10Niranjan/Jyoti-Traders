@@ -1,10 +1,10 @@
 # 📦 Product Requirements Document (PRD)
 
-## Jyoti Traders — Wholesale Retailer Mobile App
+## Jyoti Kirana Store — Wholesale Retailer Mobile App
 
 > **Version**: 1.0.0  
 > **Last Updated**: 2026-07-15  
-> **Owner**: Jyoti Traders (Proprietor)  
+> **Owner**: Jyoti Kirana Store (Proprietor)  
 > **Contact**: 📞 +91 98604 60325 | ✉️ vishvatejkatkar007@gmail.com  
 > **Platform**: Android (Flutter)  
 > **Target Audience Scale**: ~30 verified retailer/wholesale users
@@ -13,7 +13,7 @@
 
 ## 1. 🎯 Purpose & Vision
 
-**Jyoti Traders** is a dedicated B2B mobile ordering application built for a local wholesale Kirana (grocery/FMCG) distributor. The app streamlines the ordering process between the owner and their trusted network of ~30 local retailers, replacing manual phone-call or WhatsApp-based ordering with a structured, trackable digital system.
+**Jyoti Kirana Store** is a dedicated B2B mobile ordering application built for a local wholesale Kirana (grocery/FMCG) distributor. The app streamlines the ordering process between the owner and their trusted network of ~30 local retailers, replacing manual phone-call or WhatsApp-based ordering with a structured, trackable digital system.
 
 The app is **not** a public marketplace. It is a **closed, invite-like system** where every new user must be manually verified and approved by the admin (owner) before they can place orders.
 
@@ -23,7 +23,7 @@ The app is **not** a public marketplace. It is a **closed, invite-like system** 
 
 | Role                       | Count | Description                                                                                                   |
 | -------------------------- | ----- | ------------------------------------------------------------------------------------------------------------- |
-| **Admin (Owner)**          | 1     | The proprietor of Jyoti Traders. Manages products, approves retailers, views and fulfills orders.              |
+| **Admin (Owner)**          | 1     | The proprietor of Jyoti Kirana Store. Manages products, approves retailers, views and fulfills orders.              |
 | **Normal User (Retailer)** | ~30   | Local shop owners, kirana store retailers who buy wholesale goods. Must be approved by Admin before ordering. |
 
 ### 2.1 User Persona: Retailer (Normal User)

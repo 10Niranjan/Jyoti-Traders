@@ -6,7 +6,7 @@ class AppConstants {
   /// without explicit client approval — see rules.md §11.
   static const double kMinOrderAmount = 2500.0;
 
-  static const String kAppName = 'Jyoti Traders';
+  static const String kAppName = 'Jyoti Kirana Store';
   static const String kSupportPhone = '9860460325';
   static const String kSupportEmail = 'vishvatejkatkar007@gmail.com';
 
@@ -53,7 +53,7 @@ class AppConstants {
   /// real UPI ID/QR yet. Replace before launch; nothing else in the UPI
   /// payment flow needs to change once real values are set here.
   static const String kUpiId = 'jyotitraders@upi';
-  static const String kUpiPayeeName = 'Jyoti Traders Wholesale';
+  static const String kUpiPayeeName = 'Jyoti Kirana Store';
 
   /// Seller block printed on invoices. Address and GSTIN are **empty on
   /// purpose** — the client hasn't supplied them yet (they're on the launch

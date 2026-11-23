@@ -134,7 +134,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Jyoti Traders',
+                        'Jyoti Kirana Store',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
                           fontSize: 32,

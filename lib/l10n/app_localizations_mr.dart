@@ -194,14 +194,14 @@ class AppLocalizationsMr extends AppLocalizations {
 
   @override
   String get pendingMessage =>
-      'तुमचा रिटेलर अर्ज सध्या Jyoti Traders च्या मालकाकडून तपासला जात आहे. मंजुरी मिळाल्यावर तुम्हाला घाऊक उत्पादने खरेदी करण्याची पूर्ण सुविधा मिळेल.';
+      'तुमचा रिटेलर अर्ज सध्या Jyoti Kirana Store च्या मालकाकडून तपासला जात आहे. मंजुरी मिळाल्यावर तुम्हाला घाऊक उत्पादने खरेदी करण्याची पूर्ण सुविधा मिळेल.';
 
   @override
   String get pendingRejectedTitle => 'अर्ज मंजूर झाला नाही';
 
   @override
   String get pendingRejectedMessage =>
-      'तुमचा रिटेलर अर्ज Jyoti Traders च्या मालकाने मंजूर केलेला नाही. ही चूक आहे असे वाटत असल्यास, खालील फोन किंवा ईमेलवर आमच्याशी संपर्क साधा.';
+      'तुमचा रिटेलर अर्ज Jyoti Kirana Store च्या मालकाने मंजूर केलेला नाही. ही चूक आहे असे वाटत असल्यास, खालील फोन किंवा ईमेलवर आमच्याशी संपर्क साधा.';
 
   @override
   String get pendingRejectedContactTitle => 'काही प्रश्न? मालकाशी संपर्क साधा';

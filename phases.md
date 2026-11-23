@@ -1,5 +1,5 @@
 # 🗺️ PHASES.md
-## Jyoti Traders — Master Project Roadmap & Task Tracker
+## Jyoti Kirana Store — Master Project Roadmap & Task Tracker
 
 > **This is the single source of truth for project progress.**
 > Whenever asked _"what's next?"_ or _"what to do now?"_ — always refer to this file and return the **next unchecked task** from the **current active phase**.

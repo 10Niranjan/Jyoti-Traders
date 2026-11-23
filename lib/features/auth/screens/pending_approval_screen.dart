@@ -42,7 +42,7 @@ class PendingApprovalScreen extends ConsumerWidget {
       scheme: 'mailto',
       path: 'vishvatejkatkar007@gmail.com',
       queryParameters: {
-        'subject': 'Jyoti Traders Account Verification Request',
+        'subject': 'Jyoti Kirana Store Account Verification Request',
       },
     );
     try {

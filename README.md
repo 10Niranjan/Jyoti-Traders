@@ -1,4 +1,4 @@
-# 🛒 Jyoti Traders
+# 🛒 Jyoti Kirana Store
 
 **A closed, invite-only B2B wholesale ordering app** for a local Kirana (grocery/FMCG) distributor and their network of ~30 verified retailers — replacing phone-call and WhatsApp ordering with a structured, trackable digital system.
 
@@ -40,7 +40,7 @@
 
 ## 🎯 What is this?
 
-**Jyoti Traders** is *not* a public marketplace — it's a **closed system**. Every retailer signs up, then sits in a "Pending" state until the admin (the shop owner) manually approves them. Once approved, retailers browse the catalog, place bulk orders (₹2,500 minimum), pay via COD or UPI, and track delivery — all from a phone. The admin runs the whole operation — catalog, retailer approvals, order fulfillment, delivery pricing — from a persistent admin shell.
+**Jyoti Kirana Store** is *not* a public marketplace — it's a **closed system**. Every retailer signs up, then sits in a "Pending" state until the admin (the shop owner) manually approves them. Once approved, retailers browse the catalog, place bulk orders (₹2,500 minimum), pay via COD or UPI, and track delivery — all from a phone. The admin runs the whole operation — catalog, retailer approvals, order fulfillment, delivery pricing — from a persistent admin shell.
 
 The app ships with a **Hive-backed simulation mode**: with Firebase on placeholder credentials, auth/catalog/cart/orders all run locally, so the full app is runnable and demoable with zero backend setup.
 

@@ -7,7 +7,7 @@ import 'weight_formatter.dart';
 /// a receipt-style message, not a rendering of [OrderDetailBody].
 String buildOrderShareText(OrderEntity order) {
   final buffer = StringBuffer()
-    ..writeln('Jyoti Traders — Order #${order.id.shortId}')
+    ..writeln('Jyoti Kirana Store — Order #${order.id.shortId}')
     ..writeln(formatOrderDateTime(order.createdAt))
     ..writeln();
 

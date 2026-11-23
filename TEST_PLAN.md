@@ -1,4 +1,4 @@
-# 🧪 Jyoti Traders — Full Manual Test Plan (A to Z)
+# 🧪 Jyoti Kirana Store — Full Manual Test Plan (A to Z)
 
 > **Build under test:** current `feature/change-password-settings-tab` working tree · **Written:** 2026-10-15
 > **Covers:** Retailer app + Admin panel · Light mode + Dark mode · English / हिन्दी / मराठी · Android
@@ -62,7 +62,7 @@ flutter install -d <device-id>        # or: adb install -r build/app/outputs/flu
 - **Tip:** layout overflow shows as yellow/black stripes **only in debug builds**. For the UI/Text-size cases, also run once with `flutter run` (debug) — in release, overflowing text is silently cut off instead.
 
 ### 2.3 Fresh start (do this before Pass 1)
-Android **Settings → Apps → Jyoti Traders → Storage → Clear data**. This re-seeds the demo catalog/orders and shows onboarding again.
+Android **Settings → Apps → Jyoti Kirana Store → Storage → Clear data**. This re-seeds the demo catalog/orders and shows onboarding again.
 Also: **Internet ON** (product photos load from the web), **Location ON**, allow permissions when asked.
 
 ### 2.4 How to switch theme, language, text size
@@ -191,7 +191,7 @@ Charges are not rounded to whole rupees, so paise may show (e.g. ₹202.95) — 
 | INST-06 | Back on onboarding | Press phone Back on slide 2 | No crash, no blank screen | P3 | | |
 | INST-07 | Session kept after restart | Log in as retailer → kill app → reopen | Opens directly on Home, still logged in | P1 | | |
 | INST-08 | Session kept (admin) | Log in as admin → kill app → reopen | Opens directly on Admin Dashboard | P1 | | |
-| INST-09 | App name & icon | Look at the launcher | Label "Jyoti Traders", correct icon, not stretched | P3 | | |
+| INST-09 | App name & icon | Look at the launcher | Label "Jyoti Kirana Store", correct icon, not stretched | P3 | | |
 | INST-10 | Update keeps data | Install a newer APK over the old one (no uninstall) | Still logged in, cart/orders kept, no crash | P2 | | |
 | INST-11 | Splash/onboarding landscape | Rotate phone on onboarding | No overflow, content readable | P3 | | |
 
@@ -411,7 +411,7 @@ Charges are not rounded to whole rupees, so paise may show (e.g. ₹202.95) — 
 |---|---|---|---|---|---|---|
 | UPI-01 | Screen | Place a UPI order | "UPI Payment", "Pay ₹<grand total>", QR code, UPI ID `jyotitraders@upi`, copy icon, optional screenshot, **I Have Paid**, note "The admin will confirm your payment shortly after." | P1 | | |
 | UPI-02 | Copy ID | Tap copy | "UPI ID copied."; paste elsewhere shows `jyotitraders@upi` | P2 | | |
-| UPI-03 | QR is valid | Scan QR with GPay/PhonePe — **do NOT pay** (placeholder ID) | Payee "Jyoti Traders Wholesale", amount prefilled = grand total | P2 | | |
+| UPI-03 | QR is valid | Scan QR with GPay/PhonePe — **do NOT pay** (placeholder ID) | Payee "Jyoti Kirana Store", amount prefilled = grand total | P2 | | |
 | UPI-04 | Screenshot | Tap screenshot → pick an image; then try again and cancel the picker | Preview shown; cancelling the picker causes no error | P2 | | |
 | UPI-05 | I Have Paid | Tap I Have Paid | Order Success screen; order's payment shows "Payment claimed" | P1 | | |
 | UPI-06 | Without screenshot | I Have Paid with no image | Works | P2 | | |

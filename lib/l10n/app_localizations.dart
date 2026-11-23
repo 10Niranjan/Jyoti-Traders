@@ -427,7 +427,7 @@ abstract class AppLocalizations {
   /// No description provided for @pendingMessage.
   ///
   /// In en, this message translates to:
-  /// **'Your retailer application is currently being reviewed by the owner of Jyoti Traders. Once approved, you will gain full access to wholesale product purchasing.'**
+  /// **'Your retailer application is currently being reviewed by the owner of Jyoti Kirana Store. Once approved, you will gain full access to wholesale product purchasing.'**
   String get pendingMessage;
 
   /// No description provided for @pendingRejectedTitle.
@@ -439,7 +439,7 @@ abstract class AppLocalizations {
   /// No description provided for @pendingRejectedMessage.
   ///
   /// In en, this message translates to:
-  /// **'Your retailer application was not approved by the owner of Jyoti Traders. If you think this is a mistake, please call or email us below.'**
+  /// **'Your retailer application was not approved by the owner of Jyoti Kirana Store. If you think this is a mistake, please call or email us below.'**
   String get pendingRejectedMessage;
 
   /// No description provided for @pendingRejectedContactTitle.
@@ -1921,7 +1921,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminDashboardTitle.
   ///
   /// In en, this message translates to:
-  /// **'Jyoti Traders Admin'**
+  /// **'Jyoti Kirana Store Admin'**
   String get adminDashboardTitle;
 
   /// No description provided for @adminPendingApprovals.
