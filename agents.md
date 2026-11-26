@@ -1089,6 +1089,24 @@ Continuing autonomously from the user's own standing instruction ("verify the 3 
 
 ---
 
+## 📅 Session Log: 2026-11-26 — Play developer account created, privacy policy written, first .aab build
+
+### 📋 Tasks completed:
+
+- **Google Play developer account created** (personal, developer name **Jyoti Kirana Store**). Trader status declared as **Trader** (the app serves a business; contact details are shown only to EU users). Identity documents uploaded — Google is reviewing (a few days, email on completion). Android-device verification done. **Phone verification still open**; it unlocks after identity approval. Website = "I don't have a website" for now.
+- **Privacy policy** written at `hosting/privacy-policy.html`, from what the code actually collects: sign-up details, addresses + GPS only on tap, GST, bank/UPI payout details, gallery-only images (profile photo, payment screenshot → Cloudinary), orders, FCM token, Analytics events, Crashlytics, App Check. States that orders/invoices are kept up to 8 years (tax records), since `deleteAccount` removes only the login and the `users/{uid}` doc. The `#delete-account` section doubles as Play's required **account-deletion web link** (in-app path Profile → Settings → Delete account, or by email). Mobile-friendly, light/dark.
+- `firebase.json` gained `"hosting": { "public": "hosting", "cleanUrls": true }` → free Firebase Hosting on Spark, URL will be **https://jyoti-traders-app.web.app/privacy-policy**.
+- Started `flutter build appbundle --release` (version 1.0.0+1, signed with the upload key from `android/key.properties`). Output: `build/app/outputs/bundle/release/app-release.aab`.
+
+### 💬 Next steps when resuming:
+
+1. User runs `! firebase login` (Firebase CLI 15.36 is installed, no account authorised yet), then `firebase deploy --only hosting` and open the URL to check it.
+2. Set `AppConstants.kPrivacyPolicyUrl` to that URL (makes the in-app Privacy policy row appear), `flutter analyze` + `flutter test`, rebuild the `.aab`.
+3. While Google verifies identity: collect ~12 testers' Gmail addresses for the 14-day closed test, store graphics (512×512 icon, 1024×500 feature graphic, ≥2 screenshots; client still owes the logo).
+4. Privacy page, `firebase.json` hosting block and the `phases.md` Phase 8 refresh committed (`0a4a6b5`) on 2026-11-26. Not pushed.
+
+---
+
 ## 📈 Future Action Items & Checklist
 
 - [x] Receive details from the client (Name, Logo, Business model, Payments, Play Store details).
