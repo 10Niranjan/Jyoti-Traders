@@ -8,9 +8,9 @@ List<Map<String, dynamic>> _list(Box box, String key) => (box.get(key) as List)
     .map((e) => Map<String, dynamic>.from(e as Map))
     .toList();
 
-/// The 15 per-category filler products version 5 added on top of the
-/// original 16 (ids prod_17–prod_31).
-final _kNewProductIds = List.generate(15, (i) => 'prod_${i + 17}').toSet();
+/// The filler products versions 5 and 6 added on top of the original 16
+/// (ids prod_17–prod_78).
+final _kNewProductIds = List.generate(62, (i) => 'prod_${i + 17}').toSet();
 
 void main() {
   late Directory tempDir;
@@ -38,11 +38,11 @@ void main() {
       await seedDemoCatalogIfEmpty(box);
 
       final products = _list(box, HiveKeys.simulatedProducts);
-      expect(products, hasLength(31));
+      expect(products, hasLength(78));
       final withoutPhoto = products
           .where((p) => (p['imageUrl'] as String).isEmpty)
           .map((p) => p['id']);
-      expect(withoutPhoto, ['prod_31']); // Suavda product, same exception as its category icon
+      expect(withoutPhoto, ['prod_31', 'prod_77', 'prod_78']); // Suavda product, same exception as its category icon
 
       final categories = _list(box, HiveKeys.simulatedCategories);
       final withoutIcon = categories
@@ -93,7 +93,7 @@ void main() {
         after.where((p) => _kNewProductIds.contains(p['id'])),
         hasLength(_kNewProductIds.length),
       ); // every v5 category-filler product caught up
-      expect(box.get(HiveKeys.catalogSeedVersion), 5);
+      expect(box.get(HiveKeys.catalogSeedVersion), 6);
     },
   );
 

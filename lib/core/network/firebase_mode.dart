@@ -8,6 +8,9 @@ import 'package:firebase_core/firebase_core.dart';
 /// mode — this keeps the app fully runnable/testable before a real Firebase
 /// project is wired up.
 bool isFirebasePlaceholder(FirebaseApp app) {
+  // `--dart-define=DEMO_MODE=true` forces the offline demo data on a build
+  // that has real credentials — for showing the app without touching live data.
+  if (const bool.fromEnvironment('DEMO_MODE')) return true;
   return app.options.projectId == 'jyoti-traders-placeholder' ||
       app.options.projectId == 'jyoti-traders-demo' ||
       app.options.apiKey.contains('YOUR-') ||

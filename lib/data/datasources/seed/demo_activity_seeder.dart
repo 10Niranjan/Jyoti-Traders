@@ -24,7 +24,7 @@ import '../../../domain/entities/notification_entity.dart';
 /// (`mock_admin_uid` / `mock_retailer_uid`) — those stay as they are; this
 /// only adds *other* retailers/orders around them so the lists they browse
 /// aren't empty either.
-const int _kActivitySeedVersion = 2;
+const int _kActivitySeedVersion = 3;
 
 Future<void> seedDemoRetailersIfEmpty(Box userCacheBox) async {
   if (!_isSimulationMode()) return;
@@ -847,6 +847,49 @@ Future<void> seedDemoNotificationsIfEmpty(Box notificationsBox) async {
       orderId: 'demo_order_17',
       kind: NotificationKind.order,
       receivedAt: now.subtract(const Duration(days: 20)),
+      isRead: true,
+    ),
+    // Version 3: a fuller inbox for demo builds.
+    NotificationModel(
+      id: 'demo_notif_8',
+      title: 'New arrivals: Suhana Masala',
+      body: 'Pav Bhaji, Misal and Kanda Lasun masala are now in stock.',
+      kind: NotificationKind.broadcast,
+      receivedAt: now.subtract(const Duration(minutes: 30)),
+      isRead: false,
+    ),
+    NotificationModel(
+      id: 'demo_notif_9',
+      title: 'Low Stock Alert',
+      body: 'Kabuli Chana has only 2 kg left — order soon.',
+      kind: NotificationKind.stock,
+      receivedAt: now.subtract(const Duration(hours: 3)),
+      isRead: false,
+    ),
+    NotificationModel(
+      id: 'demo_notif_10',
+      title: 'Order Confirmed',
+      body: 'Order #demo_order_19 has been confirmed and is being packed.',
+      orderId: 'demo_order_19',
+      kind: NotificationKind.order,
+      receivedAt: now.subtract(const Duration(days: 2)),
+      isRead: true,
+    ),
+    NotificationModel(
+      id: 'demo_notif_11',
+      title: 'Use coupon WELCOME10',
+      body: 'Get 10% off (up to ₹250) on orders above ₹2,500.',
+      kind: NotificationKind.broadcast,
+      receivedAt: now.subtract(const Duration(days: 4)),
+      isRead: true,
+    ),
+    NotificationModel(
+      id: 'demo_notif_12',
+      title: 'Order Cancelled',
+      body: 'Order #demo_order_18 was cancelled and the stock returned.',
+      orderId: 'demo_order_18',
+      kind: NotificationKind.order,
+      receivedAt: now.subtract(const Duration(days: 6)),
       isRead: true,
     ),
   ];

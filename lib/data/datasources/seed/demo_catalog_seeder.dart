@@ -13,7 +13,7 @@ import '../../models/product_model.dart';
 /// data, so it's safe to overwrite: a real Firestore catalog is never
 /// affected once a real Firebase project is configured (see
 /// `_isSimulationMode`).
-const int _kCatalogSeedVersion = 5;
+const int _kCatalogSeedVersion = 6;
 
 /// Phase 4's Admin product/category management UI doesn't exist yet, so
 /// without this the simulated catalog would stay empty forever and nothing
@@ -71,6 +71,58 @@ List<ProductModel> get _kNewProducts => [
   _product('prod_31', 'Suavda Special Mix 500g', 'cat_suavda', 150, 'piece', 20),
 ];
 
+/// Version 6: a fuller shelf (3 more per category) so every screen of a demo
+/// build looks like a real shop. Photos fall back to the category's icon.
+List<ProductModel> get _kMoreProducts => [
+  _product('prod_32', 'Triphala Churna 500g', 'cat_ayurved', 160, 'piece', 40),
+  _product('prod_33', 'Amla Juice 1L', 'cat_ayurved', 190, 'piece', 35),
+  _product('prod_34', 'Pudin Hara (Pack of 10)', 'cat_ayurved', 220, 'box', 30),
+  _product('prod_35', 'Poha (Flattened Rice)', 'cat_grocery', 60, 'kg', 120, isTopProduct: true),
+  _product('prod_36', 'Jaggery (Gul)', 'cat_grocery', 58, 'kg', 90),
+  _product('prod_37', 'Maggi Noodles (96 pack)', 'cat_grocery', 1150, 'box', 25, isTopProduct: true),
+  _product('prod_38', 'Matchbox Bundle (10 x 10)', 'cat_grocery', 95, 'box', 3),
+  _product('prod_39', 'AA Battery (Pack of 10)', 'cat_electricals', 180, 'box', 45),
+  _product('prod_40', 'Copper Wire 90m Coil', 'cat_electricals', 1450, 'piece', 12),
+  _product('prod_41', 'Rechargeable Torch', 'cat_electricals', 260, 'piece', 30),
+  _product('prod_42', 'Lux Soap (Pack of 4)', 'cat_cosmetics', 150, 'box', 60),
+  _product('prod_43', 'Coconut Hair Oil 500ml', 'cat_cosmetics', 210, 'piece', 50),
+  _product('prod_44', 'Fairness Cream 50g (Box of 12)', 'cat_cosmetics', 780, 'box', 18),
+  _product('prod_45', 'Shampoo Sachets (Strip of 16)', 'cat_shampoo', 32, 'piece', 200, isTopProduct: true),
+  _product('prod_46', 'Conditioner 180ml', 'cat_shampoo', 165, 'piece', 40),
+  _product('prod_47', 'Baby Shampoo 200ml', 'cat_shampoo', 195, 'piece', 25),
+  _product('prod_48', 'Assam CTC Tea', 'cat_tea', 380, 'kg', 70, isTopProduct: true),
+  _product('prod_49', 'Green Tea (100 bags)', 'cat_tea', 450, 'box', 20),
+  _product('prod_50', 'Masala Chai Premix 1kg', 'cat_tea', 340, 'piece', 30),
+  _product('prod_51', 'Kolam Rice', 'cat_rice', 62, 'kg', 300, isTopProduct: true),
+  _product('prod_52', 'Indrayani Rice', 'cat_rice', 78, 'kg', 250),
+  _product('prod_53', 'Sona Masoori Rice 25kg', 'cat_rice', 1450, 'box', 30),
+  _product('prod_54', 'Groundnut Oil 15L Tin', 'cat_oils', 2650, 'piece', 15),
+  _product('prod_55', 'Mustard Oil 1L (Box of 12)', 'cat_oils', 1980, 'box', 20),
+  _product('prod_56', 'Sesame Seeds (Til)', 'cat_oils', 180, 'kg', 40),
+  _product('prod_57', 'Moong Dal', 'cat_pulses', 118, 'kg', 150),
+  _product('prod_58', 'Masoor Dal', 'cat_pulses', 96, 'kg', 140),
+  _product('prod_59', 'Kabuli Chana', 'cat_pulses', 132, 'kg', 2),
+  _product('prod_60', 'Rajma (Red Kidney Beans)', 'cat_pulses', 145, 'kg', 80),
+  _product('prod_61', 'Gulkand 1kg', 'cat_paan', 240, 'piece', 25),
+  _product('prod_62', 'Saunf (Fennel Seeds)', 'cat_paan', 210, 'kg', 35),
+  _product('prod_63', 'Elaichi (Green Cardamom)', 'cat_paan', 2400, 'kg', 8),
+  _product('prod_64', 'Ground Chakra (Box of 10)', 'cat_firecrackers', 280, 'box', 40),
+  _product('prod_65', 'Rocket (Box of 10)', 'cat_firecrackers', 420, 'box', 25),
+  _product('prod_66', 'Diya Set (Pack of 12)', 'cat_firecrackers', 120, 'box', 60),
+  _product('prod_67', 'Jowar', 'cat_cereals', 48, 'kg', 200),
+  _product('prod_68', 'Bajra', 'cat_cereals', 38, 'kg', 180),
+  _product('prod_69', 'Rava (Sooji)', 'cat_cereals', 52, 'kg', 160),
+  _product('prod_70', 'Besan (Gram Flour)', 'cat_cereals', 95, 'kg', 110),
+  _product('prod_71', 'Plastic Bucket 20L', 'cat_hardware', 180, 'piece', 30),
+  _product('prod_72', 'Padlock 50mm', 'cat_hardware', 210, 'piece', 25),
+  _product('prod_73', 'Jute Sutli 1kg', 'cat_hardware', 140, 'piece', 40),
+  _product('prod_74', 'Suhana Pav Bhaji Masala 100g', 'cat_suhana', 65, 'piece', 80),
+  _product('prod_75', 'Suhana Kanda Lasun Masala 200g', 'cat_suhana', 110, 'piece', 70, isTopProduct: true),
+  _product('prod_76', 'Suhana Misal Masala 100g', 'cat_suhana', 60, 'piece', 4),
+  _product('prod_77', 'Suavda Mouth Freshener Jar', 'cat_suavda', 120, 'piece', 30),
+  _product('prod_78', 'Suavda Mukhwas 1kg', 'cat_suavda', 260, 'piece', 25),
+];
+
 /// Appends any of [_kNewProducts] a device doesn't already have, by id —
 /// never touches a product that's already there, admin-edited or not.
 Future<void> _appendNewProducts(Box box) async {
@@ -78,7 +130,7 @@ Future<void> _appendNewProducts(Box box) async {
       .map((e) => Map<String, dynamic>.from(e as Map))
       .toList();
   final existingIds = items.map((p) => p['id'] as String).toSet();
-  final toAdd = _kNewProducts.where((p) => !existingIds.contains(p.id));
+  final toAdd = _demoProducts().where((p) => !existingIds.contains(p.id));
   items.addAll(toAdd.map((p) => p.toJson()));
   await box.put(HiveKeys.simulatedProducts, items);
 }
@@ -106,7 +158,7 @@ ProductModel _product(
     id: id,
     name: name,
     categoryId: categoryId,
-    imageUrl: _kProductImages[id] ?? '',
+    imageUrl: _kProductImages[id] ?? _kCategoryImages[categoryId] ?? '',
     price: price,
     unit: unit,
     stock: stock,
@@ -238,4 +290,5 @@ List<ProductModel> _demoProducts() => <ProductModel>[
     _product('prod_15', 'Tata Salt Iodized (24 x 1kg Box)', 'cat_grocery', 580, 'box', 42),
     _product('prod_16', 'Sugar 25kg', 'cat_grocery', 1320, 'box', 30),
     ..._kNewProducts,
+    ..._kMoreProducts,
 ];
