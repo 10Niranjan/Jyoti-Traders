@@ -14,10 +14,12 @@ class AppConstants {
   static const String kSupportWhatsAppUrl = 'https://wa.me/91$kSupportPhone';
 
   /// Public privacy-policy page (Google Play requires one for any app with
-  /// accounts). **Empty on purpose** — the client hasn't published one yet, and
-  /// a link to a page that doesn't exist is worse than no link. Set it and the
-  /// Settings row appears; the same URL goes in the Play Console listing.
-  static const String kPrivacyPolicyUrl = '';
+  /// accounts). Served from `hosting/privacy-policy.html` via Firebase Hosting
+  /// (`firebase deploy --only hosting`). Empty hides the Settings row; the same
+  /// URL goes in the Play Console listing, and `#delete-account` on it is the
+  /// Play account-deletion link.
+  static const String kPrivacyPolicyUrl =
+      'https://jyoti-traders-app.web.app/privacy-policy';
 
   /// Cloudinary (free, no card) hosts product photos, category icons, profile
   /// photos and payment screenshots. Both values are public by design — the
