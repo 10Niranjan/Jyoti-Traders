@@ -1138,3 +1138,13 @@ _Every code snippet generated during this project must adhere to these guideline
    - Require account verification/manual approval check on onboarding/login.
    - Show contact support with phone `9860460325` / email `vishvatejkatkar007@gmail.com` if account is pending approval.
    - Support two user roles: Admin (owner) and Normal User. On login, dynamically route Admin to the Admin dashboard (to manage products, categories, and view orders) and Normal Users to the consumer marketplace.
+
+---
+
+## 📅 Session Log: 2026-11-26 — Demo APK with fuller built-in data
+
+- `isFirebasePlaceholder` now returns true when built with `--dart-define=DEMO_MODE=true`, so a build with real Firebase credentials can still run fully offline on the Hive demo data (live Firebase untouched).
+- Demo catalog v6: 47 more products (3 per category, prod_32–prod_78; total 78 across 15 categories), photos fall back to the category icon; upgrade path now appends any missing demo product by id. Activity seed v3: 5 more notifications.
+- `flutter analyze` clean, `flutter test` 642/642. Built `flutter build apk --release --target-platform android-arm64 --dart-define=DEMO_MODE=true` → `build/app/outputs/flutter-apk/JyotiKiranaStore-DEMO.apk` (26.3 MB), installed on the Redmi `M2101K6I`; it replaced the live build there (same package id). Demo logins: admin@jyoti.com / admin123, retailer@jyoti.com / retailer123.
+- **Never upload a DEMO_MODE build to Play** — the Play `.aab` must be built without that define.
+- **Theme "System" bug fixed (same day)**: picking System cleared the saved value, which loaded back as Light on the next launch. The theme is now saved by name (`light`/`dark`/`system`, `LocalStorageService.saveThemeMode`/`getThemeMode`); older installs' saved true/false still read as dark/light; nothing saved = Light (unchanged default). Test `System survives a restart`. `flutter test` 641/641, analyze clean; demo APK rebuilt and reinstalled on the Redmi.

@@ -36,19 +36,17 @@ class LocalStorageService {
   // App Settings & Preferences
   // ==========================================
 
-  /// Saves the user's theme preference (true for dark mode, false for light)
-  Future<void> saveThemePreference(bool isDarkMode) async {
-    await _settingsBox.put(HiveKeys.themeMode, isDarkMode);
+  /// Saves the chosen theme: 'light', 'dark' or 'system'.
+  Future<void> saveThemeMode(String mode) async {
+    await _settingsBox.put(HiveKeys.themeMode, mode);
   }
 
-  /// Returns the saved theme preference, defaults to system (null) if not set
-  bool? getThemePreference() {
-    return _settingsBox.get(HiveKeys.themeMode) as bool?;
-  }
-
-  /// Resets to following the OS theme (used when the user picks "System").
-  Future<void> clearThemePreference() async {
-    await _settingsBox.delete(HiveKeys.themeMode);
+  /// The saved theme ('light'/'dark'/'system'), or null if never chosen.
+  /// Older installs stored a bool (true = dark), read the same way.
+  String? getThemeMode() {
+    final value = _settingsBox.get(HiveKeys.themeMode);
+    if (value is bool) return value ? 'dark' : 'light';
+    return value as String?;
   }
 
   /// Checks if the app is launched for the first time (to show onboarding)

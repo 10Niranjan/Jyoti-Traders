@@ -108,18 +108,14 @@ class FakeDeliveryConfigRepository implements DeliveryConfigRepository {
 }
 
 class FakeLocalStorageService extends LocalStorageService {
-  bool? stored;
+  String? stored;
   FakeLocalStorageService([this.stored]);
 
   @override
-  bool? getThemePreference() => stored;
+  String? getThemeMode() => stored;
 
   @override
-  Future<void> saveThemePreference(bool isDarkMode) async =>
-      stored = isDarkMode;
-
-  @override
-  Future<void> clearThemePreference() async => stored = null;
+  Future<void> saveThemeMode(String mode) async => stored = mode;
 
   @override
   String? getTextSizePreference() => null;

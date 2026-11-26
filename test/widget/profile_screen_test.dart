@@ -106,18 +106,14 @@ class FakeAuthRepository implements AuthRepository {
 }
 
 class FakeLocalStorageService extends LocalStorageService {
-  bool? stored;
+  String? stored;
   FakeLocalStorageService([this.stored]);
 
   @override
-  bool? getThemePreference() => stored;
+  String? getThemeMode() => stored;
 
   @override
-  Future<void> saveThemePreference(bool isDarkMode) async =>
-      stored = isDarkMode;
-
-  @override
-  Future<void> clearThemePreference() async => stored = null;
+  Future<void> saveThemeMode(String mode) async => stored = mode;
 
   @override
   String? getLanguagePreference() => null;
@@ -151,15 +147,13 @@ final _retailer = UserModel(
 
 Widget _wrap(
   FakeAuthRepository repository, {
-  ThemeMode initial = ThemeMode.system,
+  ThemeMode? initial, // null = nothing saved yet
 }) => ProviderScope(
   overrides: [
     authRepositoryProvider.overrideWithValue(repository),
     themeModeProvider.overrideWith(
       (ref) => ThemeModeController(
-        FakeLocalStorageService(
-          initial == ThemeMode.system ? null : initial == ThemeMode.dark,
-        ),
+        FakeLocalStorageService(initial?.name),
       ),
     ),
     localStorageProvider.overrideWithValue(FakeLocalStorageService()),

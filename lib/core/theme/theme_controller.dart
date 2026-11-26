@@ -3,30 +3,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/datasources/local_storage_service.dart';
 
 /// The user's chosen appearance (System/Light/Dark), persisted via
-/// `LocalStorageService`, which already round-trips a nullable bool through
-/// Hive — `null` means no saved preference (defaults to Light, matching the
-/// brand's Zepto Violet design), `true` dark, `false` light.
+/// `LocalStorageService` by name. Nothing saved yet means Light (the brand's
+/// default look); "System" is saved too, so it survives a restart.
 class ThemeModeController extends StateNotifier<ThemeMode> {
   final LocalStorageService _storage;
 
   ThemeModeController(this._storage)
-    : super(_fromPreference(_storage.getThemePreference()));
-
-  static ThemeMode _fromPreference(bool? isDark) {
-    if (isDark == null) return ThemeMode.light;
-    return isDark ? ThemeMode.dark : ThemeMode.light;
-  }
+    : super(
+        ThemeMode.values.asNameMap()[_storage.getThemeMode()] ??
+            ThemeMode.light,
+      );
 
   Future<void> setThemeMode(ThemeMode mode) async {
     state = mode;
-    switch (mode) {
-      case ThemeMode.system:
-        await _storage.clearThemePreference();
-      case ThemeMode.dark:
-        await _storage.saveThemePreference(true);
-      case ThemeMode.light:
-        await _storage.saveThemePreference(false);
-    }
+    await _storage.saveThemeMode(mode.name);
   }
 }
 
