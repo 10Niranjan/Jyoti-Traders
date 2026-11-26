@@ -7,62 +7,52 @@ import 'package:traders_retailer/data/datasources/local_storage_service.dart';
 /// real Hive box — `LocalStorageService`'s other members are untouched by
 /// `ThemeModeController`.
 class FakeLocalStorageService extends LocalStorageService {
-  bool? stored;
+  String? stored;
   FakeLocalStorageService([this.stored]);
 
   @override
-  bool? getThemePreference() => stored;
+  String? getThemeMode() => stored;
 
   @override
-  Future<void> saveThemePreference(bool isDarkMode) async => stored = isDarkMode;
-
-  @override
-  Future<void> clearThemePreference() async => stored = null;
+  Future<void> saveThemeMode(String mode) async => stored = mode;
 }
 
 void main() {
-  test('defaults to system when nothing is stored', () {
+  test('defaults to light when nothing is stored', () {
     final controller = ThemeModeController(FakeLocalStorageService());
-    expect(controller.state, ThemeMode.system);
-  });
-
-  test('loads dark mode from a stored true preference', () {
-    final controller = ThemeModeController(FakeLocalStorageService(true));
-    expect(controller.state, ThemeMode.dark);
-  });
-
-  test('loads light mode from a stored false preference', () {
-    final controller = ThemeModeController(FakeLocalStorageService(false));
     expect(controller.state, ThemeMode.light);
   });
 
-  test('setThemeMode(dark) updates state and persists true', () async {
+  test('loads each saved mode', () {
+    for (final mode in ThemeMode.values) {
+      final controller = ThemeModeController(
+        FakeLocalStorageService(mode.name),
+      );
+      expect(controller.state, mode);
+    }
+  });
+
+  test('an unknown saved value falls back to light', () {
+    final controller = ThemeModeController(FakeLocalStorageService('purple'));
+    expect(controller.state, ThemeMode.light);
+  });
+
+  test('setThemeMode updates state and persists the mode', () async {
     final storage = FakeLocalStorageService();
     final controller = ThemeModeController(storage);
 
     await controller.setThemeMode(ThemeMode.dark);
 
     expect(controller.state, ThemeMode.dark);
-    expect(storage.stored, isTrue);
+    expect(storage.stored, 'dark');
   });
 
-  test('setThemeMode(light) updates state and persists false', () async {
-    final storage = FakeLocalStorageService();
-    final controller = ThemeModeController(storage);
+  // The bug this guards: "System" used to clear the saved value, which then
+  // loaded back as Light on the next launch.
+  test('System survives a restart', () async {
+    final storage = FakeLocalStorageService('dark');
+    await ThemeModeController(storage).setThemeMode(ThemeMode.system);
 
-    await controller.setThemeMode(ThemeMode.light);
-
-    expect(controller.state, ThemeMode.light);
-    expect(storage.stored, isFalse);
-  });
-
-  test('setThemeMode(system) clears the persisted preference', () async {
-    final storage = FakeLocalStorageService(true);
-    final controller = ThemeModeController(storage);
-
-    await controller.setThemeMode(ThemeMode.system);
-
-    expect(controller.state, ThemeMode.system);
-    expect(storage.stored, isNull);
+    expect(ThemeModeController(storage).state, ThemeMode.system);
   });
 }

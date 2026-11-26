@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 import '../../firebase_options.dart';
+import '../utils/app_logger.dart';
 
 /// Thin wrapper around `firebase_messaging`. Every entry point is wrapped in
 /// its own try/catch and degrades to a no-op (null token / empty stream)
@@ -20,7 +20,10 @@ class FcmService {
       await messaging.requestPermission(alert: true, badge: true, sound: true);
       return await messaging.getToken();
     } catch (e) {
-      debugPrint('FcmService: permission/token request unavailable, skipping: $e');
+      logWarning(
+        'FcmService: permission/token request unavailable, skipping',
+        e,
+      );
       return null;
     }
   }
@@ -31,7 +34,7 @@ class FcmService {
     try {
       return FirebaseMessaging.instance.onTokenRefresh;
     } catch (e) {
-      debugPrint('FcmService: onTokenRefresh unavailable, skipping: $e');
+      logWarning('FcmService: onTokenRefresh unavailable, skipping', e);
       return const Stream.empty();
     }
   }
@@ -43,7 +46,7 @@ class FcmService {
     try {
       return FirebaseMessaging.onMessage;
     } catch (e) {
-      debugPrint('FcmService: onMessage unavailable, skipping: $e');
+      logWarning('FcmService: onMessage unavailable, skipping', e);
       return const Stream.empty();
     }
   }
@@ -60,8 +63,10 @@ class FcmService {
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   } catch (e) {
-    debugPrint('firebaseMessagingBackgroundHandler: Firebase init failed: $e');
+    logWarning('firebaseMessagingBackgroundHandler: Firebase init failed', e);
   }
 }

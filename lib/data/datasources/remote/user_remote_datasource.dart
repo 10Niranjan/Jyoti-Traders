@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/constants/firestore_paths.dart';
 import '../../../core/constants/hive_keys.dart';
 import '../../../core/network/firebase_mode.dart';
+import '../../../core/utils/app_logger.dart';
 import '../../models/user_model.dart';
 
 /// Admin-side user management (approve/reject/list). Reads and writes the
@@ -28,7 +28,7 @@ class UserRemoteDatasource {
       _useMock = isFirebasePlaceholder(_firestore!.app);
     } catch (e) {
       _useMock = true;
-      debugPrint('UserRemoteDatasource: Firestore unavailable, using simulation mode: $e');
+      logWarning('UserRemoteDatasource: Firestore unavailable, using simulation mode', e);
     }
   }
 
@@ -53,15 +53,20 @@ class UserRemoteDatasource {
         .map((snap) => snap.docs.map((d) => d.data()).toList());
   }
 
-  Future<List<UserModel>> getApprovedUsers() async {
+  // Live, like the pending list: a one-shot fetch went stale the moment an
+  // admin approved someone (the dashboard reads it once at login).
+  Stream<List<UserModel>> watchApprovedUsers() {
     if (_useMock) {
-      return _readSimulated().where((u) => u.isApproved).toList();
+      return () async* {
+        yield _readSimulated().where((u) => u.isApproved).toList();
+        yield* _controller.stream.map((list) => list.where((u) => u.isApproved).toList());
+      }();
     }
-    final snap = await _collection
+    return _collection
         .where('role', isEqualTo: 'customer')
         .where('status', isEqualTo: 'approved')
-        .get();
-    return snap.docs.map((d) => d.data()).toList();
+        .snapshots()
+        .map((snap) => snap.docs.map((d) => d.data()).toList());
   }
 
   Future<void> approveUser(String uid) => _setStatus(uid, UserStatus.approved);

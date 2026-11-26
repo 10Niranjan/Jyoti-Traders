@@ -1,0 +1,305 @@
+// TEMPORARY — UI overflow sweep. Delete after use.
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:traders_retailer/core/constants/hive_keys.dart';
+import 'package:traders_retailer/core/navigation/app_router.dart';
+import 'package:traders_retailer/data/datasources/seed/demo_activity_seeder.dart';
+import 'package:traders_retailer/data/datasources/seed/demo_catalog_seeder.dart';
+import 'package:traders_retailer/data/models/cart_item_model.dart';
+import 'package:traders_retailer/data/models/product_model.dart';
+import 'package:traders_retailer/data/models/user_model.dart';
+import 'package:traders_retailer/main.dart';
+import 'package:traders_retailer/features/settings/widgets/settings_widgets.dart';
+import 'package:traders_retailer/shared/widgets/add_to_cart_pill.dart';
+import 'package:go_router/go_router.dart';
+
+const _fontDir = String.fromEnvironment('SWEEP_FONT_DIR');
+final _width = double.parse(const String.fromEnvironment('SWEEP_W', defaultValue: '360'));
+final _scale = double.parse(const String.fromEnvironment('SWEEP_SCALE', defaultValue: '1.3'));
+final _out = File(const String.fromEnvironment('SWEEP_OUT'));
+const _stress = bool.fromEnvironment('SWEEP_STRESS');
+
+Future<void> _loadFonts() async {
+  ByteData font(String w) =>
+      ByteData.view(File('$_fontDir/SweepFont-$w.ttf').readAsBytesSync().buffer);
+  // google_fonts styles name a per-weight family (Inter_regular, Inter_600…).
+  final families = <String, String>{
+    'Inter': 'both', 'Roboto': 'both', 'RobotoMono_regular': 'Regular',
+    'Inter_regular': 'Regular', 'Inter_italic': 'Regular',
+    for (final w in [100, 200, 300, 500]) 'Inter_$w': 'Regular',
+    for (final w in [600, 700, 800, 900]) 'Inter_$w': 'Bold',
+  };
+  for (final e in families.entries) {
+    final loader = FontLoader(e.key);
+    if (e.value == 'both') {
+      loader.addFont(Future.value(font('Regular')));
+      loader.addFont(Future.value(font('Bold')));
+    } else {
+      loader.addFont(Future.value(font(e.value)));
+    }
+    await loader.load();
+  }
+}
+
+UserModel _user(String uid, String email, UserRole role, UserStatus status, String shop) => UserModel(
+  uid: uid,
+  name: 'Ramesh Bhausaheb Kulkarni',
+  email: email,
+  phone: '9876543210',
+  role: role,
+  status: status,
+  businessName: shop,
+  createdAt: DateTime(2026, 1, 5),
+);
+
+late Map<String, String> ids;
+var _hiveReady = false;
+var _stressed = false;
+
+Future<void> _setUpHive(String role) async {
+  if (!_hiveReady) {
+    Hive.init((await Directory.systemTemp.createTemp('ui_sweep')).path);
+    _hiveReady = true;
+  }
+  final settings = await Hive.openBox(HiveBoxes.settingsCache);
+  final userBox = await Hive.openBox(HiveBoxes.userCache);
+  final catalog = await Hive.openBox(HiveBoxes.catalogCache);
+  final orders = await Hive.openBox(HiveBoxes.ordersCache);
+  final cart = await Hive.openBox(HiveBoxes.cartBox);
+  final notif = await Hive.openBox(HiveBoxes.notificationsCache);
+  await seedDemoCatalogIfEmpty(catalog);
+  await seedDemoRetailersIfEmpty(userBox);
+  await seedDemoOrdersIfEmpty(orders);
+  await seedDemoNotificationsIfEmpty(notif);
+  await settings.put(HiveKeys.isFirstLaunch, role == 'onboarding');
+
+  if (_stress && !_stressed) {
+    _stressed = true;
+    // Long but realistic user-entered names.
+    Future<void> rename(Box box, String key, String field, String suffix) async {
+      final list = (box.get(key) as List)
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .map((m) => m..[field] = '${m[field]}$suffix')
+          .toList();
+      await box.put(key, list);
+    }
+    await rename(catalog, HiveKeys.simulatedProducts, 'name', ' Premium Wholesale Family Pack');
+    await rename(catalog, HiveKeys.simulatedCategories, 'name', ' & Daily Essentials');
+    await rename(userBox, HiveKeys.simulatedUsers, 'businessName', ' Kirana & General Stores Pvt Ltd');
+    await rename(orders, HiveKeys.simulatedOrders, 'shopName', ' Kirana & General Stores Pvt Ltd');
+  }
+  final products = (catalog.get(HiveKeys.simulatedProducts) as List)
+      .map((e) => ProductModel.fromJson(Map<String, dynamic>.from(e as Map)))
+      .toList();
+  final weighed = products.firstWhere((p) => p.rateSlabs != null);
+  final piece = products.firstWhere((p) => p.rateSlabs == null);
+  final allOrders = (orders.get(HiveKeys.simulatedOrders) as List)
+      .map((e) => Map<String, dynamic>.from(e as Map))
+      .toList();
+  final mine = allOrders.where((o) => o['userId'] == 'mock_retailer_uid').toList();
+  ids = {
+    'weighed': weighed.id,
+    'piece': piece.id,
+    'order': mine.first['id'] as String,
+    'anyOrder': allOrders.first['id'] as String,
+  };
+
+  UserModel? user;
+  switch (role) {
+    case 'retailer':
+      user = _user('mock_retailer_uid', 'retailer@jyoti.com', UserRole.customer, UserStatus.approved, 'Shree Ganesh Kirana & General Stores');
+    case 'admin':
+      user = _user('mock_admin_uid', 'admin@jyoti.com', UserRole.admin, UserStatus.approved, 'Jyoti Kirana Store');
+    case 'pending':
+      user = _user('mock_nirmala_uid', 'nirmala.store@example.com', UserRole.customer, UserStatus.pending, 'Nirmala Provision Store');
+    case 'rejected':
+      user = _user('mock_rej_uid', 'rej@example.com', UserRole.customer, UserStatus.rejected, 'Rejected Store');
+  }
+  if (user != null) {
+    await userBox.put('current_user', user.toJson());
+  } else {
+    await userBox.delete('current_user');
+  }
+
+  if (role == 'retailer') {
+    CartItemModel line(ProductModel p, int qty) => CartItemModel(
+      productId: p.id,
+      name: p.name,
+      imageUrl: p.imageUrl,
+      unitPrice: p.price,
+      unit: p.unit,
+      qty: qty,
+      rateSlabs: p.rateSlabs,
+    );
+    await cart.put('${HiveKeys.cartItems}_mock_retailer_uid', [
+      line(weighed, 2500).toJson(),
+      line(piece, 3).toJson(),
+      ...products.skip(2).take(2).map((p) => line(p, p.rateSlabs != null ? 1500 : 2).toJson()),
+    ]);
+    await cart.put('${HiveKeys.wishlistItems}_mock_retailer_uid', [weighed.id, piece.id]);
+  }
+}
+
+List<String> _routes(String role) => switch (role) {
+  'retailer' => [
+    '/home', '/search', '/orders', '/profile', '/view-cart', '/checkout',
+    '/product-category/cat_rice', '/product-category/cat_pulses',
+    '/product/${ids['weighed']}', '/product/${ids['piece']}',
+    '/order/${ids['order']}', '/order-success/${ids['order']}',
+    '/upi-payment/${ids['order']}', '/notifications', '/wishlist',
+  ],
+  'admin' => [
+    '/admin', '/admin/orders', '/admin/catalog', '/admin/retailers', '/admin/profile',
+    '/admin/approval-queue', '/admin/approval-queue/demo_retailer_verma',
+    '/admin/products/new', '/admin/products/${ids['weighed']}/edit',
+    '/admin/products/${ids['piece']}/edit', '/admin/products/bulk-import',
+    '/admin/categories/new', '/admin/categories/cat_rice/edit',
+    '/admin/delivery-settings', '/admin/broadcast', '/admin/banners',
+    '/admin/orders/${ids['anyOrder']}', '/admin/retailers/demo_retailer_sharma/orders',
+    '/notifications',
+  ],
+  'pending' => ['/pending-approval', '/home', '/product/${ids['piece']}'],
+  'rejected' => ['/pending-approval'],
+  'guest' => ['/login'],
+  'onboarding' => ['/onboarding'],
+  _ => [],
+};
+
+final _loc = RegExp(r'lib/[^\s:]+\.dart:\d+');
+final _amount = RegExp(r'overflowed by ([\d.]+) pixels on the (\w+)');
+
+void main() {
+  setUpAll(_loadFonts);
+
+  for (final role in ['retailer', 'admin', 'pending', 'rejected', 'guest', 'onboarding']) {
+    for (final lang in ['en', 'hi', 'mr']) {
+      testWidgets('sweep $role $lang', (tester) async {
+        await tester.runAsync(() => _setUpHive(role));
+        tester.view.physicalSize = Size(_width, 760);
+        tester.view.devicePixelRatio = 1;
+        tester.platformDispatcher.textScaleFactorTestValue = _scale;
+        tester.platformDispatcher.localeTestValue = Locale(lang);
+        tester.platformDispatcher.localesTestValue = [Locale(lang)];
+
+        final found = <String>{};
+        var route = 'boot';
+        final original = FlutterError.onError;
+        FlutterError.onError = (d) {
+          final text = d.toString();
+          if (text.contains('google_fonts') || text.contains('HTTP request failed') ||
+              text.contains('NetworkImageLoadException') || text.contains('Invalid image data') ||
+              text.contains('SocketException') || text.contains('HttpException')) {
+            return;
+          }
+          final m = _amount.firstMatch(text);
+          final where = _loc.allMatches(text).map((x) => x.group(0)).toSet().take(2).join(' <- ');
+          final what = m != null
+              ? 'OVERFLOW ${m.group(1)}px ${m.group(2)}'
+              : 'ERROR ${d.exceptionAsString().split('\n').first}';
+          found.add('$role/$lang $route | $what | $where');
+        };
+        try {
+          await tester.pumpWidget(const ProviderScope(child: JyotiTradersApp()));
+          for (var i = 0; i < 25; i++) {
+            await tester.pump(const Duration(milliseconds: 100));
+          }
+          final container = ProviderScope.containerOf(tester.element(find.byType(JyotiTradersApp)));
+          final router = container.read(appRouterProvider);
+          for (final r in _routes(role)) {
+            route = r;
+            router.go(r);
+            for (var i = 0; i < 20; i++) {
+              await tester.pump(const Duration(milliseconds: 100));
+            }
+            await _explore(tester, router, r, (t) => route = t);
+            // Scroll the main scrollable to surface lazily-built rows.
+            final scrollables = find.byType(Scrollable);
+            if (scrollables.evaluate().isNotEmpty) {
+              try {
+                await tester.drag(scrollables.first, const Offset(0, -600), warnIfMissed: false);
+                for (var i = 0; i < 8; i++) {
+                  await tester.pump(const Duration(milliseconds: 100));
+                }
+              } catch (_) {}
+            }
+          }
+          await tester.pumpWidget(const SizedBox());
+          await tester.pump(const Duration(seconds: 6));
+        } finally {
+          FlutterError.onError = original;
+          _out.writeAsStringSync(found.map((f) => '$f\n').join(), mode: FileMode.append);
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+          tester.platformDispatcher.clearAllTestValues();
+        }
+      });
+    }
+  }
+}
+
+
+Future<void> _pumpFor(WidgetTester tester, int frames) async {
+  for (var i = 0; i < frames; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
+/// Opens every pop-up/sheet reachable from [r] once, closing each again.
+Future<void> _explore(
+  WidgetTester tester,
+  GoRouter router,
+  String r,
+  void Function(String) tag,
+) async {
+  final nav = router.routerDelegate.navigatorKey.currentState!;
+  Future<void> closeLayers(int base) async {
+    for (var i = 0; i < 4 && find.byType(ModalBarrier).evaluate().length > base; i++) {
+      nav.maybePop();
+      await _pumpFor(tester, 6);
+    }
+  }
+
+  Future<void> tapNth(Finder f, int i, String label) async {
+    final base = find.byType(ModalBarrier).evaluate().length;
+    final target = f.at(i);
+    try {
+      await tester.ensureVisible(target);
+      await _pumpFor(tester, 3);
+      tag('$r :: $label#$i');
+      await tester.tap(target, warnIfMissed: false);
+      await _pumpFor(tester, 15);
+    } catch (e) {
+      tag('$r :: $label#$i (tap failed: $e)');
+    }
+    await closeLayers(base);
+  }
+
+  if (r == '/profile' || r == '/admin/profile') {
+    final tabs = find.byType(Tab).evaluate().length;
+    for (var t = 0; t < tabs; t++) {
+      router.go(r);
+      await _pumpFor(tester, 6);
+      await tester.tap(find.byType(Tab).at(t), warnIfMissed: false);
+      await _pumpFor(tester, 8);
+      final n = find.byType(SettingsRow).evaluate().length;
+      for (var i = 0; i < n; i++) {
+        router.go(r);
+        await _pumpFor(tester, 4);
+        await tester.tap(find.byType(Tab).at(t), warnIfMissed: false);
+        await _pumpFor(tester, 6);
+        if (find.byType(SettingsRow).evaluate().length <= i) break;
+        await tapNth(find.byType(SettingsRow), i, 'tab$t/row');
+      }
+    }
+    router.go(r);
+    await _pumpFor(tester, 6);
+  }
+  if (r.startsWith('/product-category/') && find.byType(AddToCartPill).evaluate().isNotEmpty) {
+    await tapNth(find.byType(AddToCartPill), 0, 'quantity-sheet');
+  }
+}

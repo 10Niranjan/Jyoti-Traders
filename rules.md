@@ -1,5 +1,5 @@
 # 📜 RULES.md
-## Jyoti Kirana — Project Development Rules & Regulations
+## Jyoti Kirana Store — Project Development Rules & Regulations
 
 > These rules are **non-negotiable** and must be followed on **every single implementation**, every file, every feature, every session — without exception.  
 > **Every AI agent, developer, or contributor working on this project must read and internalize this file before writing a single line of code.**
@@ -34,8 +34,10 @@ Only the following packages are approved for this project. **Do not introduce an
 | Icons/SVG | `flutter_svg` |
 | Fonts | `google_fonts` — Poppins + Inter only |
 | Serialization | `freezed`, `json_annotation`, `json_serializable` |
-| Utilities | `intl`, `equatable`, `uuid`, `url_launcher`, `geolocator`, `permission_handler` |
+| Utilities | `intl`, `equatable`, `uuid`, `url_launcher`, `geolocator`, `permission_handler`, `share_plus` |
+| App info & cache | `package_info_plus` — shows the installed version in Settings → About; `flutter_cache_manager` — clears the on-disk image cache (already a dependency of `cached_network_image`, now declared directly). Both approved by the user in session, 2026-09-19 |
 | Payments | `qr_flutter` — renders the UPI QR code client-side from the UPI ID string (Phase 5, approved by client-facing user in session) |
+| Documents | `pdf` — builds the order invoice PDF on the phone (approved by the user in session, 2026-09-19). Ships with Noto Sans + Noto Sans Devanagari font files in `assets/fonts/` (SIL OFL 1.1, licence text alongside), because the PDF built-in fonts have neither `₹` nor Devanagari |
 | Testing | `flutter_test`, `mocktail`, `integration_test` |
 | Code Gen | `build_runner` |
 
@@ -115,6 +117,8 @@ Presentation  →  Domain  →  Data
 - ❌ Never use `ProviderContainer` manually inside widget code.
 - ❌ Never use `ref.read()` inside `build()` — only inside callbacks/event handlers.
 - ❌ Never store `BuildContext` in a provider or controller.
+- ✅ A screen that awaits an `autoDispose` controller's method must also `ref.watch` that controller in `build()` (e.g. for its loading state). With only `ref.read`, nothing listens, and Riverpod disposes the controller mid-call ("used after dispose") — this bit the approval queue (4.2), checkout and order cancel.
+- ✅ A provider scoped to the signed-in user (cart, wishlist) must watch **only the uid** — `authControllerProvider.select(...)` — never the whole auth state. A profile save or push-token refresh emits a new auth state for the same user; rebuilding on it reset the cart mid-checkout.
 
 ---
 
@@ -207,6 +211,8 @@ These are client-defined hard constraints. They must **never** be skippable:
 | **Support contact display** | `PendingApprovalScreen` must always show `+91 98604 60325` and `vishvatejkatkar007@gmail.com` |
 | **Delivery charge calculation** | `CheckoutController` must always calculate and display delivery charge before order confirmation |
 | **COD / UPI only** | Checkout screen must only offer these two options — no other payment method |
+| **Never sell more than is in stock** | `PlaceOrderUseCase` re-checks every line against live stock (throws `InsufficientStockException`) and takes the stock; cancelling returns it (`UpdateOrderStatusUseCase`). Product page and Buy Again only offer what's left after the cart line |
+| **Money shown exactly as charged** | Amounts and ₹/kg rates go through `formatRupees` / `formatRate` — never `toStringAsFixed(0)` (₹204.75/kg must not read ₹205) |
 
 ---
 

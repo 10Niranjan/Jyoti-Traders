@@ -1,5 +1,5 @@
 # 🏗️ ARCHITECTURE.md
-## Jyoti Kirana — Enterprise Flutter Application Architecture
+## Jyoti Kirana Store — Enterprise Flutter Application Architecture
 
 > **Author Perspective**: Designed as a 17-year senior Android/Flutter engineer  
 > **Version**: 1.0.0 | **Last Updated**: 2026-07-15  
@@ -102,6 +102,10 @@ This application is built on **Clean Architecture** principles, popularized by R
 | `permission_handler` | Runtime permissions (notifications, location) |
 | `geolocator` | Retailer GPS location for delivery km calculation |
 | `qr_flutter` | Renders the UPI payment QR code client-side from the UPI ID (Phase 5) |
+| `pdf` | Builds the order invoice PDF on the phone (shared via `share_plus`). Uses bundled Noto Sans / Noto Sans Devanagari from `assets/fonts/` |
+| `share_plus` | OS share sheet — order confirmation text, admin CSV order export |
+| `package_info_plus` | Installed app version/build shown in Settings → About |
+| `flutter_cache_manager` | Clears the on-disk image cache from Settings (also powers `cached_network_image`) |
 
 ### 2.8 Dev & Quality
 
@@ -117,7 +121,7 @@ This application is built on **Clean Architecture** principles, popularized by R
 ## 3. 📁 Folder & File Structure
 
 ```
-jyoti_kirana/
+jyoti_traders/
 │
 ├── android/                          # Android native project
 │   └── app/
@@ -210,9 +214,10 @@ jyoti_kirana/
 │   │   │   │   ├── register_usecase.dart
 │   │   │   │   └── logout_usecase.dart
 │   │   │   ├── order/
-│   │   │   │   ├── place_order_usecase.dart          # Includes ₹2500 validation
+│   │   │   │   ├── place_order_usecase.dart          # ₹2500 minimum + live-stock check, takes stock
 │   │   │   │   ├── get_order_history_usecase.dart
-│   │   │   │   └── update_order_status_usecase.dart
+│   │   │   │   ├── update_order_status_usecase.dart  # Cancel returns stock, un-cancel takes it again
+│   │   │   │   └── stock_adjustment.dart             # Shared stock take/return for an order's lines
 │   │   │   ├── product/
 │   │   │   │   ├── get_products_usecase.dart
 │   │   │   │   └── search_products_usecase.dart
@@ -306,7 +311,8 @@ jyoti_kirana/
 │       │   ├── shimmer_loader.dart       # Generic shimmer placeholder
 │       │   ├── empty_state_widget.dart   # Lottie + message for empty screens
 │       │   ├── error_state_widget.dart   # Error UI with retry action
-│       │   └── bottom_nav_bar.dart       # Retailer bottom navigation
+│       │   ├── bottom_nav_bar.dart       # Retailer bottom navigation
+│       │   └── edge_to_edge_overlay.dart # Transparent, theme-aware system bars for full-bleed screens (Android 15+)
 │       └── providers/
 │           ├── auth_state_provider.dart  # Global auth state (the single source of truth)
 │           ├── theme_provider.dart       # Light/dark mode preference (Hive-backed)
@@ -344,7 +350,7 @@ main()
   ├─► Initialize Hive boxes (users, cart, settings)
   ├─► Initialize FlutterSecureStorage
   │
-  └─► runApp(ProviderScope(child: JyotiKiranaApp()))
+  └─► runApp(ProviderScope(child: JyotiTradersApp()))
             │
             └─► GoRouter reads authStateProvider (StreamProvider)
                       │
@@ -373,7 +379,10 @@ Home Screen
                                 │
                                 └─► "Place Order" → PlaceOrderUseCase
                                       │
+                                      ├─► Re-check every line against live stock
+                                      │     (too much → InsufficientStockException, nothing written)
                                       ├─► Write Order doc to Firestore
+                                      ├─► Take the ordered quantity out of product stock
                                       ├─► Clear local cart (Hive)
                                       ├─► Send FCM notification to Admin
                                       └─► Navigate to OrderSuccessScreen
@@ -406,6 +415,9 @@ Admin → AllOrdersScreen
   └─► Tap Order → OrderManagementScreen
         └─► Update Status: pending → confirmed → out_for_delivery → delivered
               └─► Firestore write + FCM to Retailer at each status change
+
+Retailer → OrderDetailScreen (self-service, within 10 min of a still-`pending` order)
+  └─► Cancel Order → orderStatus: cancelled
 ```
 
 ---
@@ -450,7 +462,7 @@ products/{productId}
   ├── imageUrl: String
   ├── price: double             // Wholesale price in ₹
   ├── unit: String              // "kg" | "piece" | "box" | "litre"
-  ├── stock: int
+  ├── stock: number             // kilos for kg products (may be fractional, e.g. 47.5); whole units otherwise
   ├── description: String?
   ├── isActive: bool
   └── updatedAt: Timestamp
@@ -469,7 +481,7 @@ orders/{orderId}
   ├── grandTotal: double
   ├── paymentMethod: String    // "cod" | "upi"
   ├── paymentStatus: String    // "pending" | "paid"
-  ├── orderStatus: String      // "pending" | "confirmed" | "out_for_delivery" | "delivered"
+  ├── orderStatus: String      // "pending" | "confirmed" | "out_for_delivery" | "delivered" | "cancelled"
   ├── deliveryAddress: Map
   ├── notes: String?
   └── createdAt: Timestamp

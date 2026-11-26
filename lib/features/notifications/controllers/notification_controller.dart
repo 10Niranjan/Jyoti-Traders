@@ -1,16 +1,38 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/repository_providers.dart';
 import '../../../domain/entities/notification_entity.dart';
+import '../../../domain/entities/notification_preferences_entity.dart';
 import '../../../domain/repositories/notification_repository.dart';
+import '../../auth/controllers/auth_controller.dart';
+import '../../auth/controllers/auth_state.dart';
 
-final notificationsProvider = StreamProvider.autoDispose<List<NotificationEntity>>((ref) {
-  return ref.watch(notificationRepositoryProvider).watchNotifications();
-});
+/// The signed-in retailer's notification opt-ins, read by every place that
+/// creates a local notification (stock alerts, broadcasts, pushed order
+/// updates) so the Settings switches actually do something. Everything-on
+/// `defaults` for admins and signed-out users, who have no preferences.
+final notificationPreferencesProvider = Provider<NotificationPreferencesEntity>(
+  (ref) {
+    final auth = ref.watch(authControllerProvider);
+    return auth is AuthenticatedCustomer
+        ? auth.user.notificationPreferences
+        : NotificationPreferencesEntity.defaults;
+  },
+);
+
+final notificationsProvider =
+    StreamProvider.autoDispose<List<NotificationEntity>>((ref) {
+      return ref.watch(notificationRepositoryProvider).watchNotifications();
+    });
 
 /// Derived from the same stream rather than a separate query — every
 /// notification is already loaded for the list screen.
 final unreadNotificationCountProvider = Provider.autoDispose<int>((ref) {
-  return ref.watch(notificationsProvider).valueOrNull?.where((n) => !n.isRead).length ?? 0;
+  return ref
+          .watch(notificationsProvider)
+          .valueOrNull
+          ?.where((n) => !n.isRead)
+          .length ??
+      0;
 });
 
 class NotificationController {
@@ -23,6 +45,7 @@ class NotificationController {
   Future<void> markAllAsRead() => _repository.markAllAsRead();
 }
 
-final notificationControllerProvider = Provider.autoDispose<NotificationController>((ref) {
-  return NotificationController(ref.watch(notificationRepositoryProvider));
-});
+final notificationControllerProvider =
+    Provider.autoDispose<NotificationController>((ref) {
+      return NotificationController(ref.watch(notificationRepositoryProvider));
+    });

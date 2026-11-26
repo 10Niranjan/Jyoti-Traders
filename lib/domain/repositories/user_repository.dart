@@ -6,7 +6,7 @@ import '../entities/user_entity.dart';
 abstract class UserRepository {
   Stream<List<UserEntity>> watchPendingUsers();
 
-  Future<List<UserEntity>> getApprovedUsers();
+  Stream<List<UserEntity>> watchApprovedUsers();
 
   Future<void> approveUser(String uid);
 

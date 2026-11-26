@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/theme_colors.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 
@@ -32,14 +33,14 @@ class ReadOnlyField extends StatelessWidget {
       child: Row(
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 16, color: AppColors.textSecondaryLight),
+            Icon(icon, size: 16, color: context.textSecondary),
             const SizedBox(width: 10),
           ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: GoogleFonts.inter(fontSize: 11, color: AppColors.textSecondaryLight)),
+                Text(label, style: GoogleFonts.inter(fontSize: 11, color: context.textSecondary)),
                 const SizedBox(height: 2),
                 Text(
                   value,
@@ -48,7 +49,7 @@ class ReadOnlyField extends StatelessWidget {
               ],
             ),
           ),
-          Icon(Icons.lock_outline_rounded, size: 14, color: AppColors.textSecondaryLight.withOpacity(0.6)),
+          Icon(Icons.lock_outline_rounded, size: 14, color: context.textSecondary.withOpacity(0.6)),
         ],
       ),
     );

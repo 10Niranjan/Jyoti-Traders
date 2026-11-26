@@ -1,0 +1,156 @@
+rules_version = '2';
+
+// Server-side enforcement for the business rules that today live only in
+// Dart (PlaceOrderUseCase's ₹2,500 minimum, ApproveUserUseCase's admin gate,
+// OrderEntity.isCancellable's 10-minute window). Without this file, anyone
+// with a valid Firebase Auth session can call the Firestore SDK directly and
+// bypass every one of those checks — the app's UI is not a security boundary.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function myUid() {
+      return request.auth.uid;
+    }
+
+    function myUser() {
+      return get(/databases/$(database)/documents/users/$(myUid())).data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && myUser().role == 'admin';
+    }
+
+    function isApproved() {
+      return isSignedIn() && myUser().status == 'approved';
+    }
+
+    // Mirrors kDemoCoupons in lib/domain/value_objects/coupon.dart — keep the
+    // two in step (test/unit/firestore_rules_coupons_test.dart checks the
+    // codes). +0.01 absorbs float rounding between Dart and the rules engine.
+    function validDiscount(order) {
+      let disc = order.get('discount', null);
+      let code = order.get('couponCode', null);
+      let sub = order.subtotal;
+      return disc == null || disc == 0 || (
+        disc is number && disc > 0 && (
+          (code == 'WELCOME10' && sub >= 2500 && disc <= sub * 0.10 + 0.01 && disc <= 250)
+          || (code == 'FLAT5' && sub >= 5000 && disc <= sub * 0.05 + 0.01 && disc <= 500)
+        )
+      );
+    }
+
+    // grandTotal is written by the app (OrderModel.toFirestore); it must be
+    // exactly subtotal - discount + delivery, never a smaller number.
+    function consistentTotal(order) {
+      let disc = order.get('discount', null);
+      return order.deliveryCharge is number && order.deliveryCharge >= 0
+        && order.grandTotal is number
+        && math.abs(order.grandTotal
+             - (order.subtotal - (disc == null ? 0 : disc) + order.deliveryCharge)) < 0.01;
+    }
+
+    match /users/{uid} {
+      allow read: if isSignedIn() && (uid == myUid() || isAdmin());
+
+      // Sign-up creates your own doc, but only as an unapproved customer —
+      // never self-assign admin or a pre-approved status this way. The
+      // first admin account must be created directly in the Firebase
+      // Console (or via the Admin SDK, which ignores these rules).
+      allow create: if isSignedIn() && uid == myUid()
+        && request.resource.data.role == 'customer'
+        && request.resource.data.status == 'pending';
+
+      // Profile edits: you may update your own doc, but role/status/
+      // isApproved are frozen unless the actor is already an admin.
+      allow update: if isAdmin() || (
+        isSignedIn() && uid == myUid()
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.isApproved == resource.data.isApproved
+      );
+
+      // A retailer may delete their own profile (the in-app "Delete account",
+      // which Google Play requires). Admin accounts are not self-deletable.
+      allow delete: if isAdmin() || (
+        isSignedIn() && uid == myUid() && myUser().role == 'customer'
+      );
+    }
+
+    match /categories/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /products/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+
+      // Placing or cancelling an order moves stock from the retailer's own
+      // device (PlaceOrderUseCase / UpdateOrderStatusUseCase), so an approved
+      // retailer may change the stock figure — and nothing else.
+      // ponytail: within that, a tampered app could still zero or inflate
+      // stock; closing it needs stock moved server-side (Cloud Function —
+      // Blaze plan). The admin sees and can correct stock in Catalog.
+      allow update: if isApproved()
+        && request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['stock', 'updatedAt'])
+        && request.resource.data.stock is number
+        && request.resource.data.stock >= 0;
+    }
+
+    match /orders/{id} {
+      allow read: if isSignedIn() && (resource.data.userId == myUid() || isAdmin());
+
+      // Only an approved retailer can place an order, only for themselves,
+      // only for >= the enforced minimum, and only starting in a state
+      // nobody could use to skip admin review (e.g. pre-marked "paid").
+      allow create: if isApproved()
+        && request.resource.data.userId == myUid()
+        && request.resource.data.subtotal is number
+        && request.resource.data.subtotal >= 2500
+        && validDiscount(request.resource.data)
+        && consistentTotal(request.resource.data)
+        && request.resource.data.orderStatus == 'pending'
+        && request.resource.data.paymentStatus in ['pending', 'payment_claimed'];
+
+      // Admin: unrestricted updates (status, payment confirmation, etc).
+      // Owner: exactly two narrow self-service actions, nothing else —
+      // cancelling their own still-pending order inside the 10-minute
+      // window, or claiming a UPI payment they made.
+      allow update: if isAdmin() || (
+        isSignedIn() && resource.data.userId == myUid() && (
+          (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['orderStatus'])
+            && request.resource.data.orderStatus == 'cancelled'
+            && resource.data.orderStatus == 'pending'
+            && request.time < resource.data.createdAt + duration.value(10, 'm')
+          ) || (
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['paymentStatus', 'paymentScreenshotUrl'])
+            && request.resource.data.paymentStatus == 'payment_claimed'
+            && resource.data.paymentStatus == 'pending'
+          )
+        )
+      );
+
+      allow delete: if false;
+    }
+
+    // Admin announcements: every signed-in user reads them, only the admin
+    // sends (or removes) one.
+    match /broadcasts/{id} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Single-document delivery config (config/delivery) — everyone signed
+    // in needs to read the per-km rate at checkout; only admin sets it.
+    match /config/{doc} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

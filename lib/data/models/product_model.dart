@@ -10,10 +10,11 @@ class ProductModel {
   final String imageUrl;
   final double price;
   final String unit;
-  final int stock;
+  final double stock;
   final String? description;
   final bool isActive;
   final WeightRateSlabs? rateSlabs;
+  final bool isTopProduct;
 
   ProductModel({
     required this.id,
@@ -26,6 +27,7 @@ class ProductModel {
     this.description,
     required this.isActive,
     this.rateSlabs,
+    this.isTopProduct = false,
   });
 
   /// Absent on every product saved before slab pricing shipped — those keep
@@ -44,10 +46,11 @@ class ProductModel {
       imageUrl: json['imageUrl'] as String? ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0,
       unit: json['unit'] as String? ?? 'piece',
-      stock: json['stock'] as int? ?? 0,
+      stock: (json['stock'] as num?)?.toDouble() ?? 0,
       description: json['description'] as String?,
       isActive: json['isActive'] as bool? ?? true,
       rateSlabs: _slabsFrom(json),
+      isTopProduct: json['isTopProduct'] as bool? ?? false,
     );
   }
 
@@ -59,10 +62,11 @@ class ProductModel {
       imageUrl: json['imageUrl'] as String? ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0,
       unit: json['unit'] as String? ?? 'piece',
-      stock: json['stock'] as int? ?? 0,
+      stock: (json['stock'] as num?)?.toDouble() ?? 0,
       description: json['description'] as String?,
       isActive: json['isActive'] as bool? ?? true,
       rateSlabs: _slabsFrom(json),
+      isTopProduct: json['isTopProduct'] as bool? ?? false,
     );
   }
 
@@ -77,6 +81,7 @@ class ProductModel {
       'description': description,
       'isActive': isActive,
       'rateSlabs': rateSlabs?.toJson(),
+      'isTopProduct': isTopProduct,
       // Plain DateTime, not Timestamp.now() — this map is also written to
       // Hive in simulation mode, which cannot serialize Timestamp directly.
       // Firestore auto-converts DateTime -> Timestamp on write.
@@ -98,6 +103,7 @@ class ProductModel {
       description: description,
       isActive: isActive,
       rateSlabs: rateSlabs,
+      isTopProduct: isTopProduct,
     );
   }
 
@@ -113,6 +119,7 @@ class ProductModel {
       description: entity.description,
       isActive: entity.isActive,
       rateSlabs: entity.rateSlabs,
+      isTopProduct: entity.isTopProduct,
     );
   }
 }

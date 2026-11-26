@@ -51,7 +51,10 @@ void main() {
 
     test('crossing a boundary can make more weight cost less', () {
       // The discount ladder's whole point: 240 g is cheaper than 239 g.
-      expect(slabs.priceFor(239).amount, greaterThan(slabs.priceFor(240).amount));
+      expect(
+        slabs.priceFor(239).amount,
+        greaterThan(slabs.priceFor(240).amount),
+      );
     });
 
     test('rounds to whole paise so cart subtotals stay clean', () {
@@ -61,18 +64,20 @@ void main() {
   });
 
   group('ProductEntity pricing', () {
-    ProductEntity product({required ProductUnit unit, WeightRateSlabs? rates}) =>
-        ProductEntity(
-          id: 'p1',
-          name: 'Sugar',
-          categoryId: 'c1',
-          imageUrl: '',
-          price: Money(50),
-          unit: unit,
-          stock: 10,
-          isActive: true,
-          rateSlabs: rates,
-        );
+    ProductEntity product({
+      required ProductUnit unit,
+      WeightRateSlabs? rates,
+    }) => ProductEntity(
+      id: 'p1',
+      name: 'Sugar',
+      categoryId: 'c1',
+      imageUrl: '',
+      price: Money(50),
+      unit: unit,
+      stock: 10,
+      isActive: true,
+      rateSlabs: rates,
+    );
 
     test('a kg product with rates prices off the ladder, in grams', () {
       final p = product(unit: ProductUnit.kg, rates: slabs);
@@ -89,24 +94,30 @@ void main() {
       expect(p.minQty, 1);
     });
 
-    test('a kg product saved before slab pricing keeps flat per-kilo pricing', () {
-      final p = product(unit: ProductUnit.kg, rates: null);
-      expect(p.isWeighed, isFalse);
-      expect(p.priceForQty(3).amount, 150); // 3 kg × ₹50, as it always was
-    });
+    test(
+      'a kg product saved before slab pricing keeps flat per-kilo pricing',
+      () {
+        final p = product(unit: ProductUnit.kg, rates: null);
+        expect(p.isWeighed, isFalse);
+        expect(p.priceForQty(3).amount, 150); // 3 kg × ₹50, as it always was
+      },
+    );
   });
 
   group('CartItemEntity', () {
-    CartItemEntity item({required ProductUnit unit, WeightRateSlabs? rates, required int qty}) =>
-        CartItemEntity(
-          productId: 'p1',
-          name: 'Sugar',
-          imageUrl: '',
-          unitPrice: Money(50),
-          unit: unit,
-          qty: qty,
-          rateSlabs: rates,
-        );
+    CartItemEntity item({
+      required ProductUnit unit,
+      WeightRateSlabs? rates,
+      required int qty,
+    }) => CartItemEntity(
+      productId: 'p1',
+      name: 'Sugar',
+      imageUrl: '',
+      unitPrice: Money(50),
+      unit: unit,
+      qty: qty,
+      rateSlabs: rates,
+    );
 
     test('re-prices onto a cheaper band as the quantity grows', () {
       final small = item(unit: ProductUnit.kg, rates: slabs, qty: 200);
@@ -118,7 +129,14 @@ void main() {
     });
 
     test('copyWith carries the rate card over', () {
-      expect(item(unit: ProductUnit.kg, rates: slabs, qty: 300).copyWith(qty: 400).rateSlabs, slabs);
+      expect(
+        item(
+          unit: ProductUnit.kg,
+          rates: slabs,
+          qty: 300,
+        ).copyWith(qty: 400).rateSlabs,
+        slabs,
+      );
     });
 
     test('a non-weighed line still multiplies flat', () {
@@ -127,32 +145,37 @@ void main() {
   });
 
   test('a weighed line counts as one item, not its weight in grams', () {
-    final cart = CartEntity(items: [
-      CartItemEntity(
-        productId: 'p1',
-        name: 'Sugar',
-        imageUrl: '',
-        unitPrice: Money(44),
-        unit: ProductUnit.kg,
-        qty: 2500,
-        rateSlabs: slabs,
-      ),
-      CartItemEntity(
-        productId: 'p2',
-        name: 'Soap',
-        imageUrl: '',
-        unitPrice: Money(30),
-        unit: ProductUnit.piece,
-        qty: 3,
-      ),
-    ]);
+    final cart = CartEntity(
+      items: [
+        CartItemEntity(
+          productId: 'p1',
+          name: 'Sugar',
+          imageUrl: '',
+          unitPrice: Money(44),
+          unit: ProductUnit.kg,
+          qty: 2500,
+          rateSlabs: slabs,
+        ),
+        CartItemEntity(
+          productId: 'p2',
+          name: 'Soap',
+          imageUrl: '',
+          unitPrice: Money(30),
+          unit: ProductUnit.piece,
+          qty: 3,
+        ),
+      ],
+    );
     expect(cart.itemCount, 4); // 1 weighed line + 3 pieces, not 2,503
     expect(cart.subtotal.amount, 185); // 2.5 × 38 = 95, plus 3 × 30 = 90
   });
 
-  test('a partially-written rate map is rejected rather than priced at ₹0/kg', () {
-    expect(WeightRateSlabs.fromJson({'below240g': 44}), isNull);
-    expect(WeightRateSlabs.fromJson(null), isNull);
-    expect(WeightRateSlabs.fromJson(slabs.toJson()), slabs);
-  });
+  test(
+    'a partially-written rate map is rejected rather than priced at ₹0/kg',
+    () {
+      expect(WeightRateSlabs.fromJson({'below240g': 44}), isNull);
+      expect(WeightRateSlabs.fromJson(null), isNull);
+      expect(WeightRateSlabs.fromJson(slabs.toJson()), slabs);
+    },
+  );
 }

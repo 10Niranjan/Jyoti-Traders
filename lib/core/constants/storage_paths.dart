@@ -9,11 +9,14 @@ class StoragePaths {
   static const String paymentScreenshots = 'payment_screenshots';
   static const String profilePhotos = 'profile_photos';
 
-  static String productImage(String productId) => '$productImages/$productId.jpg';
+  static String productImage(String productId) =>
+      '$productImages/$productId.jpg';
 
-  static String categoryIcon(String categoryId) => '$categoryIcons/$categoryId.jpg';
+  static String categoryIcon(String categoryId) =>
+      '$categoryIcons/$categoryId.jpg';
 
-  static String paymentScreenshot(String orderId) => '$paymentScreenshots/$orderId.jpg';
+  static String paymentScreenshot(String orderId) =>
+      '$paymentScreenshots/$orderId.jpg';
 
   static String profilePhoto(String uid) => '$profilePhotos/$uid.jpg';
 }

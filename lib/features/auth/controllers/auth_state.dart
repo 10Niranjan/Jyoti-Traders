@@ -33,5 +33,9 @@ class PendingApproval extends AuthState {
 
 class AuthError extends AuthState {
   final String message;
-  const AuthError(this.message);
+
+  /// Firebase Auth error code (e.g. `invalid-credential`) when the error came
+  /// from Firebase — the screen turns it into a translated message.
+  final String? code;
+  const AuthError(this.message, {this.code});
 }

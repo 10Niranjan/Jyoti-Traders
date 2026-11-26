@@ -1,4 +1,9 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import '../../core/theme/theme_colors.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/constants/app_colors.dart';
 
@@ -9,12 +14,14 @@ class EmptyStateWidget extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? message;
+  final Widget? action;
 
   const EmptyStateWidget({
     super.key,
     this.icon = Icons.inbox_outlined,
     required this.title,
     this.message,
+    this.action,
   });
 
   @override
@@ -26,12 +33,27 @@ class EmptyStateWidget extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 56, color: AppColors.textSecondaryLight.withOpacity(0.5)),
+            Icon(icon, size: 56, color: context.textSecondary.withOpacity(0.5))
+                .animate(
+                  // A perpetual `.repeat()` would leave `pumpAndSettle` never
+                  // settling — same guard `PendingApprovalScreen`'s pulse and
+                  // `PromoBannerCarousel`'s autoplay already use.
+                  onPlay: (controller) {
+                    if (!kIsWeb && Platform.environment.containsKey('FLUTTER_TEST')) return;
+                    controller.repeat(reverse: true);
+                  },
+                )
+                .scale(
+                  begin: const Offset(1, 1),
+                  end: const Offset(1.06, 1.06),
+                  duration: 1400.ms,
+                  curve: Curves.easeInOut,
+                ),
             const SizedBox(height: 16),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
+              style: GoogleFonts.inter(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
                 color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
@@ -47,6 +69,10 @@ class EmptyStateWidget extends StatelessWidget {
                   color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
                 ),
               ),
+            ],
+            if (action != null) ...[
+              const SizedBox(height: 20),
+              action!,
             ],
           ],
         ),

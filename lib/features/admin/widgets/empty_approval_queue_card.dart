@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Shown on both the dashboard preview and the full [ApprovalQueueScreen]
 /// when there are no retailers awaiting approval.
@@ -12,6 +13,7 @@ class EmptyApprovalQueueCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 20),
       width: double.infinity,
@@ -22,15 +24,24 @@ class EmptyApprovalQueueCard extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          const Icon(Icons.verified_user_outlined, size: 48, color: AppColors.success),
+          const Icon(
+            Icons.verified_user_outlined,
+            size: 48,
+            color: AppColors.success,
+          ),
           const SizedBox(height: 16),
-          Text('Approval queue is clear!', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 15)),
+          Text(
+            l10n.adminApprovalQueueClear,
+            style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 15),
+          ),
           const SizedBox(height: 4),
           Text(
-            'All registered customers are verified.',
+            l10n.adminAllRetailersVerified,
             style: GoogleFonts.inter(
               fontSize: 12,
-              color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+              color: isDark
+                  ? AppColors.textSecondaryDark
+                  : AppColors.textSecondaryLight,
             ),
           ),
         ],
