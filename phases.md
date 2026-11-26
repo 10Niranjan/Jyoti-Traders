@@ -19,7 +19,7 @@
 | Phase 5 | Delivery, Payments & Notifications | ✅ Complete | 10/10 |
 | Phase 6 | Polish, Animations & UX Refinement | ✅ Complete | 11/11 |
 | Phase 7 | Testing & Quality Assurance | ✅ Complete | 12/12 |
-| Phase 8 | Launch Preparation & Play Store | 🔶 In Progress | 6/13 |
+| Phase 8 | Launch Preparation & Play Store | 🔶 In Progress | 8/14 |
 | Phase 9 | Navigation Redesign | ✅ Complete | 9/9 |
 
 ---
@@ -349,15 +349,16 @@
 
 - [x] Write Firestore Security Rules — role-based read/write guards
 - [x] Deploy Firestore Security Rules — published from the Firebase console on 2026-11-18 (live project `jyoti-traders-app`); `storage.rules` still unpublished until Storage is enabled (needs the Blaze plan)
-- [x] Set Android `minSdkVersion = 24`, `targetSdkVersion = 34` in `build.gradle.kts`
+- [x] Set Android `minSdkVersion = 24`, `targetSdkVersion = 36` in `build.gradle.kts` (raised 34 → 36 on 2026-11-21 — Play requires 36 for new apps)
 
 > **Scope note (2026-09-22)**: audited before writing anything new — both were already done in earlier sessions, just never checked off. `firestore.rules`/`storage.rules` are already fully role-based (users/categories/products/orders/config; product/category/profile/payment-screenshot storage paths) and match every real datasource in the app — nothing left to *write*. Deploying needs `firebase deploy --only firestore:rules,storage` against a real project, but `firebase_options.dart` is still 100% placeholder credentials and there's no `.firebaserc` — same "no live Firebase project" gap documented since Phase 2, so deployment stays blocked, split into its own line rather than marked done. `build.gradle.kts` already had `minSdk 24`/`targetSdk 34`/`compileSdk 36` set from an earlier session.
 - [x] Generate upload keystore — `keytool` command, store `.jks` file securely
 - [x] Configure `key.properties` + `build.gradle.kts` for signed release build
 
 > **Scope note (2026-09-22)**: root cause of the first two failed attempts — `keytool -genkeypair` without `-storepass`/`-keypass` reads the password from Java's interactive `System.console()`, which returns `null` (silently, no file written) when invoked through a non-TTY shell bridge like Claude Code's `!` command relay. Fixed by passing `-storepass`/`-keypass` as explicit flags instead of relying on the interactive prompt. `android/keystore/jyoti-traders-upload.jks` now exists (alias `upload`, RSA 2048, 10,000-day validity), verified with `keytool -list -v`. `android/key.properties` holds the real credentials — confirmed gitignored (`git check-ignore`) alongside the `.jks` itself, so neither can land in a commit. `android/app/build.gradle.kts` reads `key.properties` into a real `signingConfigs["release"]`, falling back to debug signing only if that file is ever absent. **Password saved by the user outside this repo — losing it blocks all future Play Store updates to this app.** Native `flutter build apk/appbundle` still can't be verified from this sandbox (no network access to `dl.google.com` here) — build and test the signed release yourself once ready.
-- [ ] Build signed App Bundle: `flutter build appbundle --release`
-- [ ] Create Google Play Developer Account (guidance to client)
+- [ ] Privacy policy online — page written (`hosting/privacy-policy.html`, also the Play account-deletion link via `#delete-account`, served by Firebase Hosting per `firebase.json`); still needs `firebase login` + `firebase deploy --only hosting`, then set `AppConstants.kPrivacyPolicyUrl` to `https://jyoti-traders-app.web.app/privacy-policy`
+- [ ] Build signed App Bundle: `flutter build appbundle --release` (a first 1.0.0+1 build was made 2026-11-26; rebuild once the privacy-policy URL is set)
+- [x] Create Google Play Developer Account — personal account "Jyoti Kirana Store" created 2026-11-26; identity documents under Google review, phone verification follows. A new personal account needs a closed test (~12 testers, 14 days) before production.
 - [ ] Create Play Store listing — app name, description, screenshots (min 2), feature graphic
 - [ ] Submit `app-release.aab` to Play Store internal testing track
 - [ ] Test on physical device via internal testing link
@@ -493,7 +494,7 @@
 ### Next Immediate Task:
 > ✅ **Phase 7 (Testing & Quality Assurance) is fully complete — 12/12** (2026-07-31). `flutter analyze` zero issues, `flutter test` 163/163 passing.
 >
-> 🔶 **Phase 8 in progress** — 6/13 done (as of 2026-10-15). First unchecked task, "Deploy Firestore Security Rules", is **blocked** until a live Firebase project exists. Next actionable: run the full `TEST_PLAN.md` pass (Light + Dark), then `flutter build appbundle --release`. Client items still outstanding: UPI ID, GSTIN/legal details, privacy-policy URL, Play Store graphics, and confirming the new stock rule.
+> 🔶 **Phase 8 in progress** — 8/14 done (as of 2026-11-26). Live Firebase project and Firestore rules are done. Next: deploy the privacy policy (`firebase login`, then `firebase deploy --only hosting`), set `kPrivacyPolicyUrl`, rebuild the `.aab`. Client items still outstanding: UPI ID, GSTIN/legal details, logo/launcher icon, Play Store graphics, real catalogue, real per-km rate + warehouse location, and confirming the stock rule. Delete the QA test data in live Firebase before launch.
 >
 > ✅ **Phase 9 (Navigation Redesign) is fully complete — 9/9** (2026-08-19). `flutter analyze` zero issues, `flutter test` 270/270 passing.
 
